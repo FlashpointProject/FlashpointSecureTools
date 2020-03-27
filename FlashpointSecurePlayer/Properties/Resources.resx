@@ -1,0 +1,207 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ActiveXControlInstallFailed" xml:space="preserve">
+    <value>The ActiveX Control failed to install.</value>
+  </data>
+  <data name="ActiveXControlUninstallFailed" xml:space="preserve">
+    <value>The ActiveX Control failed to uninstall.</value>
+  </data>
+  <data name="ConfigurationFailedLoad" xml:space="preserve">
+    <value>The configuration failed to load.
+Please ensure Flashpoint is not corrupted, was extracted correctly, and is not running from OneDrive or a network drive.</value>
+  </data>
+  <data name="ConnectionNotEstablished" xml:space="preserve">
+    <value>Connection could not be established with the remote host.</value>
+  </data>
+  <data name="CurationMissingModificationName" xml:space="preserve">
+    <value>This curation is missing a modification name. If you are not a curator, please report this bug.</value>
+  </data>
+  <data name="EnvironmentVariablesFailed" xml:space="preserve">
+    <value>The Environment Variables failed.</value>
+  </data>
+  <data name="FlashpointSecurePlayer" xml:space="preserve">
+    <value>Flashpoint Secure Player</value>
+  </data>
+  <data name="GameFailedAdministratorMode" xml:space="preserve">
+    <value>This game failed to launch in Administrator Mode.</value>
+  </data>
+  <data name="GameIsMissingFiles" xml:space="preserve">
+    <value>The game files ({0}) are missing.
+Please ensure Flashpoint is not corrupted, was extracted correctly, and is not running from OneDrive or a network drive.</value>
+  </data>
+  <data name="GameNotActiveXControl" xml:space="preserve">
+    <value>This game is not a valid ActiveX Control.</value>
+  </data>
+  <data name="GameNotCuratedCorrectly" xml:space="preserve">
+    <value>This game was not curated correctly. Please report this bug.</value>
+  </data>
+  <data name="JobObjectNotCreated" xml:space="preserve">
+    <value>The Job Object could not be created. Is your Windows Version new enough? Flashpoint only supports Windows 7, Windows 8, Windows 8.1, and Windows 10.</value>
+  </data>
+  <data name="LaunchInAdministratorMode" xml:space="preserve">
+    <value>This game will not work unless run in Administrator Mode. Do you want to launch it in Administrator Mode?
+If you choose No, the application will exit.</value>
+  </data>
+  <data name="ModeTemplatesFailed" xml:space="preserve">
+    <value>The Mode Templates failed.</value>
+  </data>
+  <data name="NoGameSelected" xml:space="preserve">
+    <value>No game was selected to start, so the application is exiting.</value>
+  </data>
+  <data name="OpenFlashpointLauncher" xml:space="preserve">
+    <value>Open the Flashpoint Launcher by opening the Start Flashpoint shortcut in the Flashpoint folder.</value>
+  </data>
+  <data name="ProcessCompatibilityConflict" xml:space="preserve">
+    <value>The process {0} causes a compatibility conflict with this game. Please close it to continue.</value>
+  </data>
+  <data name="ProcessFailedStart" xml:space="preserve">
+    <value>The process failed to start.</value>
+  </data>
+  <data name="RegistryBackupAlreadyRunning" xml:space="preserve">
+    <value>The Registry Backup cannot run because another one is already running.</value>
+  </data>
+  <data name="RegistryBackupFailed" xml:space="preserve">
+    <value>The Registry Backup failed.</value>
+  </data>
+  <data name="RegistryBackupInProgress" xml:space="preserve">
+    <value>A Registry Backup is in progress. Please do not turn off your computer.</value>
+  </data>
+  <data name="RegistryBackupNotRunning" xml:space="preserve">
+    <value>The Registry Backup cannot exit because it was not running.</value>
+  </data>
+  <data name="RegistryBackupWasSuccessful" xml:space="preserve">
+    <value>The Registry Backup was successful.</value>
+  </data>
+  <data name="RequiredComponentsAreLoading" xml:space="preserve">
+    <value>The required components are loading. Please do not turn off your computer.</value>
+  </data>
+  <data name="RequiredComponentsAreUnloading" xml:space="preserve">
+    <value>The required components are unloading. Please do not turn off your computer.</value>
+  </data>
+  <data name="UnknownProcessCompatibilityConflict" xml:space="preserve">
+    <value>An unknown process is causing a compatibility conflict with this game, and the application cannot continue.</value>
+  </data>
+  <data name="UseFlashpointLauncher" xml:space="preserve">
+    <value>Please use the Flashpoint Launcher to select a game to start.</value>
+  </data>
+  <data name="WindowsVersionTooOld" xml:space="preserve">
+    <value>Your Windows Version is too old for Flashpoint Secure Player. Flashpoint supports Windows 7, Windows 8, Windows 8.1, and Windows 10.</value>
+  </data>
+</root>
