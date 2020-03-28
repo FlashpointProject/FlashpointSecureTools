@@ -389,16 +389,20 @@ namespace FlashpointSecurePlayer {
                 
                 try {
                     await ActivateModificationsAsync(null, delegate (string text) {
-                        ShowError(text);
+                        if (text.IndexOf("\n") == -1) {
+                            ShowError(text);
+                        } else {
+                            ShowError();
+                            MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+
                         throw new InvalidModificationException();
                     }).ConfigureAwait(true);
                 } catch (InvalidModificationException) {
                     return;
                 }
 
-                Server serverForm = new Server {
-                    WebBrowserURL = new Uri(Server)
-                };
+                Server serverForm = new Server(new Uri(Server));
 
                 registryBackupProgressBar.Value = 100;
                 Hide();
@@ -411,7 +415,13 @@ namespace FlashpointSecurePlayer {
 
                 try {
                     await ActivateModificationsAsync(Software, delegate (string text) {
-                        ShowError(text);
+                        if (text.IndexOf("\n") == -1) {
+                            ShowError(text);
+                        } else {
+                            ShowError();
+                            MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+
                         throw new InvalidModificationException();
                     }).ConfigureAwait(true);
                 } catch (InvalidModificationException) {
