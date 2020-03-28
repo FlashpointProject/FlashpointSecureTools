@@ -488,9 +488,13 @@ namespace FlashpointSecurePlayer {
             // only if closing...
             ShowOutput(Properties.Resources.RequiredComponentsAreUnloading);
 
-            await DeactivateModificationsAsync(delegate (string text) {
-                // I will assassinate the Cyrollan delegate myself...
-            }).ConfigureAwait(false);
+            try {
+                await DeactivateModificationsAsync(delegate (string text) {
+                    // I will assassinate the Cyrollan delegate myself...
+                }).ConfigureAwait(false);
+            } catch (InvalidModificationException) {
+                // Fail silently.
+            }
         }
 
         private async void FlashpointSecurePlayer_Load(object sender, EventArgs e) {
@@ -649,7 +653,13 @@ namespace FlashpointSecurePlayer {
             // do stuff, but not if restarting
             // not too important for this to work, we can reset it on restart
             if (!e.Cancel) {
-                await StopSecurePlayback(e).ConfigureAwait(false);
+                try {
+                    await StopSecurePlayback(e).ConfigureAwait(false);
+                } catch (InvalidModificationException) {
+                    // Fail silently.
+                } catch (InvalidCurationException) {
+                    // Fail silently.
+                }
             }
         }
     }
