@@ -513,6 +513,23 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
+            try {
+                try {
+                    Directory.SetCurrentDirectory(Application.StartupPath);
+                } catch (System.Security.SecurityException) {
+                    throw new TaskRequiresElevationException();
+                } catch {
+                    // Fail silently.
+                }
+            } catch (TaskRequiresElevationException) {
+                try {
+                    AskLaunchInAdministratorMode();
+                } catch (InvalidModificationException) {
+                    Application.Exit();
+                    return;
+                }
+            }
+
             ShowOutput(Properties.Resources.RequiredComponentsAreUnloading);
 
             string arg = null;
@@ -568,6 +585,7 @@ namespace FlashpointSecurePlayer {
             try {
                 await StartSecurePlayback().ConfigureAwait(false);
             } catch (InvalidModificationException) {
+                // no need to exit here, error shown in interface
                 //Application.Exit();
                 return;
             } catch (InvalidCurationException) {
