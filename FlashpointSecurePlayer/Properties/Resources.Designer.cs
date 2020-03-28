@@ -98,7 +98,7 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This curation is missing a modification name. If you are not a curator, please report this bug..
+        ///   Looks up a localized string similar to This curation is missing a modification name..
         /// </summary>
         internal static string CurationMissingModificationName {
             get {

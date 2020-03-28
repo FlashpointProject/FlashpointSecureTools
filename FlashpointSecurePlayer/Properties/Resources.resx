@@ -131,7 +131,7 @@ Please ensure Flashpoint is not corrupted, was extracted correctly, and is not r
     <value>Connection could not be established with the remote host.</value>
   </data>
   <data name="CurationMissingModificationName" xml:space="preserve">
-    <value>This curation is missing a modification name. If you are not a curator, please report this bug.</value>
+    <value>This curation is missing a modification name.</value>
   </data>
   <data name="EnvironmentVariablesFailed" xml:space="preserve">
     <value>The Environment Variables failed.</value>
