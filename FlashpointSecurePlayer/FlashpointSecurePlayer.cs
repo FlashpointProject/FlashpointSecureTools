@@ -27,7 +27,7 @@ namespace FlashpointSecurePlayer {
         private readonly DownloadsBefore DownloadsBefore;
         private readonly RegistryBackup RegistryBackup;
         private readonly SingleInstance SingleInstance;
-        string ModificationsName = null;
+        string ModificationsName = ACTIVE_EXE_CONFIGURATION_NAME;
         bool RunAsAdministratorModification = false;
         List<string> DownloadsBeforeModificationNames = null;
         bool ActiveX = false;
