@@ -341,6 +341,7 @@ You may notice that because the Flashpoint Secure Player is effectively capable 
 - startBasilisk_compat.bat
 - startGroove.bat
 - startJava.bat
+- startShiVa.bat
 - startUnity.bat
 - unityRestoreRegistry.bat
 - elevate.exe
