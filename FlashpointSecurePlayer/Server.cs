@@ -15,8 +15,9 @@ namespace FlashpointSecurePlayer {
     public partial class Server : Form {
         public Uri WebBrowserURL = null;
 
-        public Server() {
+        public Server(Uri WebBrowserURL) {
             InitializeComponent();
+            this.WebBrowserURL = WebBrowserURL;
         }
 
         private void Server_Load(object sender, EventArgs e) {
