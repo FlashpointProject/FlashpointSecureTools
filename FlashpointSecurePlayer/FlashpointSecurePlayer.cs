@@ -122,6 +122,13 @@ namespace FlashpointSecurePlayer {
                     modificationsElement = GetModificationsElement(false, ModificationsName);
                 } catch (System.Configuration.ConfigurationErrorsException) {
                     errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                    // we really need modificationsElement to exist
+                    throw new InvalidModificationException();
+                }
+
+                if (modificationsElement == null) {
+                    errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                    throw new InvalidModificationException();
                 }
 
                 if (DownloadsBeforeModificationNames == null) {
