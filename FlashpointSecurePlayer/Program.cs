@@ -96,10 +96,10 @@ namespace FlashpointSecurePlayer {
         [DllImport("KERNEL32.DLL")]
         public static extern bool GetBinaryType(string applicationNamePointer, out BINARY_TYPE binaryTypePointer);
 
-        public const int PBM_SETSTATE = 0x0410;
-        public static readonly IntPtr PBST_NORMAL = (IntPtr)0;
-        public static readonly IntPtr PBST_ERROR = (IntPtr)1;
-        public static readonly IntPtr PBST_PAUSED = (IntPtr)2;
+        public const uint PBM_SETSTATE = 0x0410;
+        public static readonly IntPtr PBST_NORMAL = (IntPtr)1;
+        public static readonly IntPtr PBST_ERROR = (IntPtr)2;
+        public static readonly IntPtr PBST_PAUSED = (IntPtr)3;
 
         [DllImport("USER32.DLL", CharSet = CharSet.Auto, SetLastError = false)]
         public static extern IntPtr SendMessage(IntPtr windowHandle, uint message, IntPtr wParam, IntPtr lParam);
@@ -901,7 +901,7 @@ namespace FlashpointSecurePlayer {
         }
         
         // where should ConfigurationErrorsExceptions all be caught? Review this
-        private static Configuration GetEXEConfiguration(string name) {
+        private static Configuration GetEXEConfiguration(bool create, string name) {
             // active
             if (String.IsNullOrEmpty(name)) {
                 return GetActiveEXEConfiguration();
@@ -957,12 +957,22 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
-            EXEConfiguration = exeConfiguration ?? throw new ConfigurationErrorsException();
+            if (exeConfiguration == null) {
+                throw new ConfigurationErrorsException();
+            }
+
+            if (!create) {
+                if (!exeConfiguration.HasFile) {
+                    throw new ConfigurationErrorsException();
+                }
+            }
+
+            EXEConfiguration = exeConfiguration;
             EXEConfigurationName = name;
             return EXEConfiguration;
         }
 
-        public static FlashpointSecurePlayerSection GetFlashpointSecurePlayerSection(string exeConfigurationName) {
+        public static FlashpointSecurePlayerSection GetFlashpointSecurePlayerSection(bool create, string exeConfigurationName) {
             FlashpointSecurePlayerSection flashpointSecurePlayerSection = null;
             Configuration exeConfiguration = null;
 
@@ -977,7 +987,7 @@ namespace FlashpointSecurePlayer {
                     return Shared.flashpointSecurePlayerSection;
                 }
                 
-                exeConfiguration = GetEXEConfiguration(exeConfigurationName);
+                exeConfiguration = GetEXEConfiguration(create, exeConfigurationName);
             }
 
             try {
@@ -1021,7 +1031,7 @@ namespace FlashpointSecurePlayer {
             activeEXEConfiguration.Save(ConfigurationSaveMode.Modified);
 
             if (!String.IsNullOrEmpty(exeConfigurationName)) {
-                Configuration exeConfiguration = GetEXEConfiguration(exeConfigurationName);
+                Configuration exeConfiguration = GetEXEConfiguration(true, exeConfigurationName);
                 exeConfiguration.Save(ConfigurationSaveMode.Modified);
             }
 
@@ -1031,7 +1041,7 @@ namespace FlashpointSecurePlayer {
         // does not save!
         public static FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement GetModificationsElement(bool createModificationsElement, string exeConfigurationName) {
             // need the section to operate on
-            FlashpointSecurePlayerSection flashpointSecurePlayerSection = GetFlashpointSecurePlayerSection(exeConfigurationName);
+            FlashpointSecurePlayerSection flashpointSecurePlayerSection = GetFlashpointSecurePlayerSection(createModificationsElement, exeConfigurationName);
             // get the element
             FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement modificationsElement = flashpointSecurePlayerSection.Modifications.Get(exeConfigurationName) as FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement;
 
@@ -1063,7 +1073,7 @@ namespace FlashpointSecurePlayer {
         // does not save!
         public static void SetModificationsElement(FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement modificationsElement, string exeConfigurationName) {
             // need the section to operate on
-            FlashpointSecurePlayerSection flashpointSecurePlayerSection = GetFlashpointSecurePlayerSection(exeConfigurationName);
+            FlashpointSecurePlayerSection flashpointSecurePlayerSection = GetFlashpointSecurePlayerSection(true, exeConfigurationName);
             // set it, and forget it
             // it gets replaced if it existed already
             flashpointSecurePlayerSection.Modifications.Set(modificationsElement);

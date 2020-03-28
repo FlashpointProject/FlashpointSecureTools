@@ -25,7 +25,7 @@
         private void InitializeComponent() {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FlashpointSecurePlayer));
             this.errorLabel = new System.Windows.Forms.Label();
-            this.registryBackupProgressBar = new System.Windows.Forms.ProgressBar();
+            this.securePlaybackProgressBar = new System.Windows.Forms.ProgressBar();
             this.SuspendLayout();
             // 
             // errorLabel
@@ -38,20 +38,20 @@
             this.errorLabel.Text = "Loading...";
             this.errorLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
-            // registryBackupProgressBar
+            // securePlaybackProgressBar
             // 
-            this.registryBackupProgressBar.Location = new System.Drawing.Point(13, 13);
-            this.registryBackupProgressBar.Name = "registryBackupProgressBar";
-            this.registryBackupProgressBar.Size = new System.Drawing.Size(359, 23);
-            this.registryBackupProgressBar.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
-            this.registryBackupProgressBar.TabIndex = 2;
+            this.securePlaybackProgressBar.Location = new System.Drawing.Point(13, 13);
+            this.securePlaybackProgressBar.Name = "securePlaybackProgressBar";
+            this.securePlaybackProgressBar.Size = new System.Drawing.Size(359, 23);
+            this.securePlaybackProgressBar.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            this.securePlaybackProgressBar.TabIndex = 2;
             // 
             // FlashpointSecurePlayer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(384, 71);
-            this.Controls.Add(this.registryBackupProgressBar);
+            this.Controls.Add(this.securePlaybackProgressBar);
             this.Controls.Add(this.errorLabel);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -68,6 +68,6 @@
 
         #endregion
         private System.Windows.Forms.Label errorLabel;
-        private System.Windows.Forms.ProgressBar registryBackupProgressBar;
+        private System.Windows.Forms.ProgressBar securePlaybackProgressBar;
     }
 }

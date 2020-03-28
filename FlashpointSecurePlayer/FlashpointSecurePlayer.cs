@@ -47,14 +47,15 @@ namespace FlashpointSecurePlayer {
         }
 
         private void ResetProgressBar() {
-            registryBackupProgressBar.Style = ProgressBarStyle.Blocks;
-            registryBackupProgressBar.Value = 0;
-            SetProgressBarState(registryBackupProgressBar, PBST_NORMAL);
-            registryBackupProgressBar.Style = ProgressBarStyle.Continuous;
+            securePlaybackProgressBar.Style = ProgressBarStyle.Blocks;
+            securePlaybackProgressBar.Value = 0;
+            securePlaybackProgressBar.Style = ProgressBarStyle.Continuous;
+            SetProgressBarState(securePlaybackProgressBar, PBST_NORMAL);
         }
 
         private void ShowOutput() {
-            SetProgressBarState(registryBackupProgressBar, PBST_NORMAL);
+            securePlaybackProgressBar.Style = ProgressBarStyle.Continuous;
+            SetProgressBarState(securePlaybackProgressBar, PBST_NORMAL);
         }
 
         private void ShowOutput(string errorLabelText) {
@@ -64,8 +65,9 @@ namespace FlashpointSecurePlayer {
 
         private void ShowError() {
             // TODO: why won't the progress bar change colour
-            SetProgressBarState(registryBackupProgressBar, PBST_ERROR);
-            registryBackupProgressBar.Value = 100;
+            securePlaybackProgressBar.Style = ProgressBarStyle.Continuous;
+            securePlaybackProgressBar.Value = 100;
+            SetProgressBarState(securePlaybackProgressBar, PBST_ERROR);
         }
 
         private void ShowError(string errorLabelText) {
@@ -117,7 +119,7 @@ namespace FlashpointSecurePlayer {
                 ModificationsElement modificationsElement = null;
 
                 try {
-                    modificationsElement = GetModificationsElement(true, ModificationsName);
+                    modificationsElement = GetModificationsElement(false, ModificationsName);
                 } catch (System.Configuration.ConfigurationErrorsException) {
                     errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                 }
@@ -251,9 +253,8 @@ namespace FlashpointSecurePlayer {
                 
                     if (activeModificationsElement != null) {
                         activeModificationsElement.Active = ACTIVE_EXE_CONFIGURATION_NAME;
+                        SetFlashpointSecurePlayerSection(ACTIVE_EXE_CONFIGURATION_NAME);
                     }
-
-                    SetFlashpointSecurePlayerSection(ModificationsName);
                 } catch (System.Configuration.ConfigurationErrorsException) {
                     errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                 }
@@ -304,7 +305,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                registryBackupProgressBar.Value = 17;
+                securePlaybackProgressBar.Value = 17;
 
                 // next, uninstall the control
                 // in case it was already installed before this whole process
@@ -317,7 +318,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                registryBackupProgressBar.Value = 33;
+                securePlaybackProgressBar.Value = 33;
 
                 try {
                     await RegistryBackup.StartImportAsync(ModificationsName, binaryType).ConfigureAwait(true);
@@ -340,7 +341,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                registryBackupProgressBar.Value = 50;
+                securePlaybackProgressBar.Value = 50;
 
                 // a registry backup is running, install the control
                 try {
@@ -350,7 +351,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                registryBackupProgressBar.Value = 67;
+                securePlaybackProgressBar.Value = 67;
 
                 try {
                     await RegistryBackup.StopImportAsync().ConfigureAwait(true);
@@ -366,7 +367,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                registryBackupProgressBar.Value = 83;
+                securePlaybackProgressBar.Value = 83;
 
                 // the registry backup is stopped, uninstall the control
                 // this will leave the control uninstalled on the system
@@ -379,7 +380,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                registryBackupProgressBar.Value = 100;
+                securePlaybackProgressBar.Value = 100;
                 ShowOutput(Properties.Resources.RegistryBackupWasSuccessful);
                 return;
             } else if (!String.IsNullOrEmpty(Server)) {
@@ -404,7 +405,7 @@ namespace FlashpointSecurePlayer {
 
                 Server serverForm = new Server(new Uri(Server));
 
-                registryBackupProgressBar.Value = 100;
+                securePlaybackProgressBar.Value = 100;
                 Hide();
                 serverForm.Show();
                 return;
@@ -428,7 +429,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                registryBackupProgressBar.Value = 50;
+                securePlaybackProgressBar.Value = 50;
 
                 try {
                     // default to zero in case of error
@@ -457,7 +458,7 @@ namespace FlashpointSecurePlayer {
                         return;
                     }
 
-                    registryBackupProgressBar.Value = 100;
+                    securePlaybackProgressBar.Value = 100;
                     Hide();
 
                     if (!process.HasExited) {
