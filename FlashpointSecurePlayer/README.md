@@ -169,7 +169,7 @@ With the "Java" Modification Name specified, the URL is factored into the regex,
 Set Via:
  - Configuration File: `environmentVariables` element
 
-The Environment Variables Modification may be used to set environment variables for the current process and any software it launches only. The envrionment variables are not set for the entire system. The %FLASHPOINTSECUREPLAYERSTARTUPPATH% variable may be used in the value, which will be substituted with the startup path of Flashpoint Secure Player.
+The Environment Variables Modification may be used to set environment variables for the current process and any software it launches only. The envrionment variables are not set for the entire system. The `%FLASHPOINTSECUREPLAYERSTARTUPPATH%` variable may be used in the value, which will be substituted with the startup path of Flashpoint Secure Player.
 
 Here is a modification `element` that sets the FP_UNITY_PATH variable to the location of the Unity Web Player plugin.
 
@@ -228,7 +228,7 @@ Here is a `modification` element that demonstrates the use of the Downloads Befo
 Set Via:
  - Configuration File: `registryBackups` element
 
-The Registry Backups Modification allows for specifying registry keys and values to be set temporarily and reverted when the application is closed. This allows for registry keys and values to only be set for the duration of time required. The %FLASHPOINTSECUREPLAYERSTARTUPPATH% variable may be used in values, which will be substituted with the startup path of Flashpoint Secure Player.
+The Registry Backups Modification allows for specifying registry keys and values to be set temporarily and reverted when the application is closed. This allows for registry keys and values to only be set for the duration of time required. The `%FLASHPOINTSECUREPLAYERSTARTUPPATH%` variable may be used in values, which will be substituted with the startup path of Flashpoint Secure Player.
 
 Here is a `modifications` element which temporarily changes the Unity directory.
 
