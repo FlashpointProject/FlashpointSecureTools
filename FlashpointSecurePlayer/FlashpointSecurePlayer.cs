@@ -27,7 +27,7 @@ namespace FlashpointSecurePlayer {
         private readonly DownloadsBefore DownloadsBefore;
         private readonly RegistryBackup RegistryBackup;
         private readonly SingleInstance SingleInstance;
-        string ModificationsName = null;
+        string ModificationsName = ACTIVE_EXE_CONFIGURATION_NAME;
         bool RunAsAdministratorModification = false;
         List<string> DownloadsBeforeModificationNames = null;
         bool ActiveX = false;
@@ -47,14 +47,15 @@ namespace FlashpointSecurePlayer {
         }
 
         private void ResetProgressBar() {
-            registryBackupProgressBar.Style = ProgressBarStyle.Blocks;
-            registryBackupProgressBar.Value = 0;
-            SetProgressBarState(registryBackupProgressBar, PBST_NORMAL);
-            registryBackupProgressBar.Style = ProgressBarStyle.Continuous;
+            securePlaybackProgressBar.Style = ProgressBarStyle.Blocks;
+            securePlaybackProgressBar.Value = 0;
+            securePlaybackProgressBar.Style = ProgressBarStyle.Continuous;
+            SetProgressBarState(securePlaybackProgressBar, PBST_NORMAL);
         }
 
         private void ShowOutput() {
-            SetProgressBarState(registryBackupProgressBar, PBST_NORMAL);
+            securePlaybackProgressBar.Style = ProgressBarStyle.Continuous;
+            SetProgressBarState(securePlaybackProgressBar, PBST_NORMAL);
         }
 
         private void ShowOutput(string errorLabelText) {
@@ -64,8 +65,9 @@ namespace FlashpointSecurePlayer {
 
         private void ShowError() {
             // TODO: why won't the progress bar change colour
-            SetProgressBarState(registryBackupProgressBar, PBST_ERROR);
-            registryBackupProgressBar.Value = 100;
+            securePlaybackProgressBar.Style = ProgressBarStyle.Continuous;
+            securePlaybackProgressBar.Value = 100;
+            SetProgressBarState(securePlaybackProgressBar, PBST_ERROR);
         }
 
         private void ShowError(string errorLabelText) {
@@ -117,9 +119,16 @@ namespace FlashpointSecurePlayer {
                 ModificationsElement modificationsElement = null;
 
                 try {
-                    modificationsElement = GetModificationsElement(true, ModificationsName);
+                    modificationsElement = GetModificationsElement(false, ModificationsName);
                 } catch (System.Configuration.ConfigurationErrorsException) {
                     errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                    // we really need modificationsElement to exist
+                    throw new InvalidModificationException();
+                }
+
+                if (modificationsElement == null) {
+                    errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                    throw new InvalidModificationException();
                 }
 
                 if (DownloadsBeforeModificationNames == null) {
@@ -251,9 +260,8 @@ namespace FlashpointSecurePlayer {
                 
                     if (activeModificationsElement != null) {
                         activeModificationsElement.Active = ACTIVE_EXE_CONFIGURATION_NAME;
+                        SetFlashpointSecurePlayerSection(ACTIVE_EXE_CONFIGURATION_NAME);
                     }
-
-                    SetFlashpointSecurePlayerSection(ModificationsName);
                 } catch (System.Configuration.ConfigurationErrorsException) {
                     errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                 }
@@ -304,7 +312,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                registryBackupProgressBar.Value = 17;
+                securePlaybackProgressBar.Value = 17;
 
                 // next, uninstall the control
                 // in case it was already installed before this whole process
@@ -317,7 +325,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                registryBackupProgressBar.Value = 33;
+                securePlaybackProgressBar.Value = 33;
 
                 try {
                     await RegistryBackup.StartImportAsync(ModificationsName, binaryType).ConfigureAwait(true);
@@ -340,7 +348,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                registryBackupProgressBar.Value = 50;
+                securePlaybackProgressBar.Value = 50;
 
                 // a registry backup is running, install the control
                 try {
@@ -350,7 +358,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                registryBackupProgressBar.Value = 67;
+                securePlaybackProgressBar.Value = 67;
 
                 try {
                     await RegistryBackup.StopImportAsync().ConfigureAwait(true);
@@ -366,7 +374,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                registryBackupProgressBar.Value = 83;
+                securePlaybackProgressBar.Value = 83;
 
                 // the registry backup is stopped, uninstall the control
                 // this will leave the control uninstalled on the system
@@ -379,7 +387,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                registryBackupProgressBar.Value = 100;
+                securePlaybackProgressBar.Value = 100;
                 ShowOutput(Properties.Resources.RegistryBackupWasSuccessful);
                 return;
             } else if (!String.IsNullOrEmpty(Server)) {
@@ -389,18 +397,22 @@ namespace FlashpointSecurePlayer {
                 
                 try {
                     await ActivateModificationsAsync(null, delegate (string text) {
-                        ShowError(text);
+                        if (text.IndexOf("\n") == -1) {
+                            ShowError(text);
+                        } else {
+                            ShowError();
+                            MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+
                         throw new InvalidModificationException();
                     }).ConfigureAwait(true);
                 } catch (InvalidModificationException) {
                     return;
                 }
 
-                Server serverForm = new Server {
-                    WebBrowserURL = new Uri(Server)
-                };
+                Server serverForm = new Server(new Uri(Server));
 
-                registryBackupProgressBar.Value = 100;
+                securePlaybackProgressBar.Value = 100;
                 Hide();
                 serverForm.Show();
                 return;
@@ -411,14 +423,20 @@ namespace FlashpointSecurePlayer {
 
                 try {
                     await ActivateModificationsAsync(Software, delegate (string text) {
-                        ShowError(text);
+                        if (text.IndexOf("\n") == -1) {
+                            ShowError(text);
+                        } else {
+                            ShowError();
+                            MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+
                         throw new InvalidModificationException();
                     }).ConfigureAwait(true);
                 } catch (InvalidModificationException) {
                     return;
                 }
 
-                registryBackupProgressBar.Value = 50;
+                securePlaybackProgressBar.Value = 50;
 
                 try {
                     // default to zero in case of error
@@ -447,7 +465,7 @@ namespace FlashpointSecurePlayer {
                         return;
                     }
 
-                    registryBackupProgressBar.Value = 100;
+                    securePlaybackProgressBar.Value = 100;
                     Hide();
 
                     if (!process.HasExited) {
@@ -470,9 +488,13 @@ namespace FlashpointSecurePlayer {
             // only if closing...
             ShowOutput(Properties.Resources.RequiredComponentsAreUnloading);
 
-            await DeactivateModificationsAsync(delegate (string text) {
-                // I will assassinate the Cyrollan delegate myself...
-            }).ConfigureAwait(false);
+            try {
+                await DeactivateModificationsAsync(delegate (string text) {
+                    // I will assassinate the Cyrollan delegate myself...
+                }).ConfigureAwait(false);
+            } catch (InvalidModificationException) {
+                // Fail silently.
+            }
         }
 
         private async void FlashpointSecurePlayer_Load(object sender, EventArgs e) {
@@ -501,6 +523,23 @@ namespace FlashpointSecurePlayer {
                 MessageBox.Show(Properties.Resources.WindowsVersionTooOld, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Application.Exit();
                 return;
+            }
+
+            try {
+                try {
+                    Directory.SetCurrentDirectory(Application.StartupPath);
+                } catch (System.Security.SecurityException) {
+                    throw new TaskRequiresElevationException();
+                } catch {
+                    // Fail silently.
+                }
+            } catch (TaskRequiresElevationException) {
+                try {
+                    AskLaunchInAdministratorMode();
+                } catch (InvalidModificationException) {
+                    Application.Exit();
+                    return;
+                }
             }
 
             ShowOutput(Properties.Resources.RequiredComponentsAreUnloading);
@@ -558,6 +597,7 @@ namespace FlashpointSecurePlayer {
             try {
                 await StartSecurePlayback().ConfigureAwait(false);
             } catch (InvalidModificationException) {
+                // no need to exit here, error shown in interface
                 //Application.Exit();
                 return;
             } catch (InvalidCurationException) {
@@ -613,7 +653,13 @@ namespace FlashpointSecurePlayer {
             // do stuff, but not if restarting
             // not too important for this to work, we can reset it on restart
             if (!e.Cancel) {
-                await StopSecurePlayback(e).ConfigureAwait(false);
+                try {
+                    await StopSecurePlayback(e).ConfigureAwait(false);
+                } catch (InvalidModificationException) {
+                    // Fail silently.
+                } catch (InvalidCurationException) {
+                    // Fail silently.
+                }
             }
         }
     }

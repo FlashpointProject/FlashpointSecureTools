@@ -1,4 +1,4 @@
-# Flashpoint Secure Player 1.0.0
+# Flashpoint Secure Player 1.0.1
 This application attempts to solve common compatibility or portability issues posed by browser plugins on Windows for the purpose of playback in BlueMaxima's Flashpoint.
 
 It is compatible with Windows 7, Windows 8, Windows 8.1 and Windows 10, and requires .NET Framework 4.5. If you are on Windows 8.1 or Windows 10, or if you are on Windows 7/8 and have updates enabled, you already have .NET Framework 4.5. Otherwise, you may [download .NET Framework 4.5.](http://www.microsoft.com/en-us/download/details.aspx?id=30653)
@@ -15,7 +15,7 @@ This application has bugs. Help me find them! See the [Known Issues](#known-issu
 The Mode determines what action Flashpoint Secure Player will perform after all of the Modifications are made. For example, the end goal may be to open a browser, or a specific software. The Mode to use is not optional. If it is not set, an error will occur. Modes are exclusive - there may only be one set at a time.
 
 ## <a name="activex-mode"></a>ActiveX Mode
-**Command Line:** --activex (or -ax)
+**Command Line:** `--activex` (or `-ax`)
 
 *For curator use only.*
 
@@ -34,7 +34,7 @@ Please note that you should NOT use the ActiveX Mode in your final curation. The
 This is a command you could use in your curation, remembering to include the Registry Backup in the curation. For more information about Registry Backups, see the section about [Registry Backup Modifications](#registry-backups) below.
 
 ## Server Mode
-**Command Line:** --server (or -sv)
+**Command Line:** `--server` (or `-sv`)
 
 The Server Mode opens a URL in an Internet Explorer frame. The Flashpoint Proxy is used to access the URL, so Server Mode is Redirectorless.
 
@@ -49,18 +49,23 @@ By default, the Internet Explorer version used in Server Mode is Internet Explor
 Here are some examples of meta elements that may be used to change the Internet Explorer version.
 
  - Internet Explorer 8
+ 
 `<meta http-equiv="X-UA-Compatible" content="IE=8" />`
  - Internet Explorer 9
+ 
 `<meta http-equiv="X-UA-Compatible" content="IE=9" />`
  - Internet Explorer 10
+ 
 `<meta http-equiv="X-UA-Compatible" content="IE=10" />`
  - Internet Explorer 11
+ 
 `<meta http-equiv="X-UA-Compatible" content="IE=11" />`
  - The highest supported version of the browser (this may disable ActiveX Controls)
+ 
 `<meta http-equiv="X-UA-Compatible" content="IE=edge" />`
 
 ## Software Mode
-**Command Line:** --software (or -sw)
+**Command Line:** `--software` (or `-sw`)
 
 The Software Mode opens any software. The command line argument *must* be the last argument specified, as everything after the command line argument will be interpreted as the command line to be passed to the software.
 
@@ -73,7 +78,7 @@ It is possible to modify the Software Mode's behaviour by using the Software Mod
 # Modifications
 The Modifications determine what temporary modifications will be made for the duration of time that the application is open. Modifications are optional, none are required to be set. Modifications are not exclusive - there may be multiple Modifications set at a time.
 
-The Modifications Name is set via the --name (or -n) command line argument. The Modifications Name is case-insensitive. When this argument is passed, Flashpoint Secure Player will check for a configuration file in the FlashpointSecurePlayerConfigs folder with the same name (with any invalid pathname characters replaced with a period character.) If it fails to find a configuration file in this folder, it will look for the configuration file on the Flashpoint Server at http://flashpointsecureplayerconfig/ using the same pathname rules. If the configuration file is not found in either location, an error occurs.
+The Modifications Name is set via the `--name` (or `-n`) command line argument. The Modifications Name is case-insensitive. When this argument is passed, Flashpoint Secure Player will check for a configuration file in the FlashpointSecurePlayerConfigs folder with the same name (with any invalid pathname characters replaced with a period character.) If it fails to find a configuration file in this folder, it will look for the configuration file on the Flashpoint Server at http://flashpointsecureplayerconfig/ using the same pathname rules. If the configuration file is not found in either location, an error occurs.
 
 Here is an example of a Modification that does not do anything, called "Example."
 
@@ -171,7 +176,7 @@ With the "Java" Modification Name specified, the URL is factored into the regex,
 Set Via:
  - Configuration File: `environmentVariables` element
 
-The Environment Variables Modification may be used to set environment variables for the current process and any software it launches only. The envrionment variables are not set for the entire system. The %FLASHPOINTSECUREPLAYERSTARTUPPATH% variable may be used in the value, which will be substituted with the startup path of Flashpoint Secure Player.
+The Environment Variables Modification may be used to set environment variables for the current process and any software it launches only. The envrionment variables are not set for the entire system. The `%FLASHPOINTSECUREPLAYERSTARTUPPATH%` variable may be used in the value, which will be substituted with the startup path of Flashpoint Secure Player.
 
 Here is a modification `element` that sets the FP_UNITY_PATH variable to the location of the Unity Web Player plugin.
 
@@ -235,7 +240,7 @@ Here is a `modification` element that demonstrates the use of the Downloads Befo
 Set Via:
  - Configuration File: `registryBackups` element
 
-The Registry Backups Modification allows for specifying registry keys and values to be set temporarily and reverted when the application is closed. This allows for registry keys and values to only be set for the duration of time required. The %FLASHPOINTSECUREPLAYERSTARTUPPATH% variable may be used in values, which will be substituted with the startup path of Flashpoint Secure Player.
+The Registry Backups Modification allows for specifying registry keys and values to be set temporarily and reverted when the application is closed. This allows for registry keys and values to only be set for the duration of time required. The `%FLASHPOINTSECUREPLAYERSTARTUPPATH%` variable may be used in values, which will be substituted with the startup path of Flashpoint Secure Player.
 
 Here is a `modifications` element which temporarily changes the Unity directory.
 
@@ -336,6 +341,7 @@ You may notice that because the Flashpoint Secure Player is effectively capable 
 - startBasilisk_compat.bat
 - startGroove.bat
 - startJava.bat
+- startShiVa.bat
 - startUnity.bat
 - unityRestoreRegistry.bat
 - elevate.exe
@@ -343,13 +349,12 @@ You may notice that because the Flashpoint Secure Player is effectively capable 
 - ActiveX/unregisterAll.bat
 
 # Planned Features
- - Currently, ActiveX Controls will be disabled if they are set to be disabled in Internet Options. The previous ActiveX implementation also had this issue, but I will be looking into the possibility of working around this.
  - Currently, only the registry value kind of String (REG_SZ) is supported. Other value kinds such as Binary (REG_BINARY) and MultiStrings (REG_MULTI_SZ) will be supported in a future version.
  - Currently, there is no way to edit configuration files other than manually, and a generic "configuration file failed to load" error occurs when there is a syntax error. It would be nice to have a seperate visual editor for configuration files.
+ - Generally speaking, more specific error reporting would be nice.
  - Old CPU Simulator integration?
 
 # <a name="known-issues"></a>Known Issues
- - The progress bar is intended to become red when an error occurs, but it does not.
  - The compatibility layers have no effect when using Server Mode.
 
 # Questions And Answers
