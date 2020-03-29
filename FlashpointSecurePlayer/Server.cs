@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.IO;
@@ -47,7 +48,13 @@ namespace FlashpointSecurePlayer {
                 MessageBox.Show(Properties.Resources.ConnectionNotEstablished, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
 
-            CustomSecurityManager = new CustomSecurityManager(webBrowser1);
+            try {
+                CustomSecurityManager = new CustomSecurityManager(webBrowser1);
+            } catch (Win32Exception) {
+                MessageBox.Show(Properties.Resources.FailedCreateCustomSecurityManager, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Application.Exit();
+                return;
+            }
 
             if (WebBrowserURL != null) {
                 webBrowser1.Url = WebBrowserURL;
