@@ -349,7 +349,6 @@ You may notice that because the Flashpoint Secure Player is effectively capable 
 - ActiveX/unregisterAll.bat
 
 # Planned Features
- - Currently, ActiveX Controls will be disabled if they are set to be disabled in Internet Options. The previous ActiveX implementation also had this issue, but I will be looking into the possibility of working around this.
  - Currently, only the registry value kind of String (REG_SZ) is supported. Other value kinds such as Binary (REG_BINARY) and MultiStrings (REG_MULTI_SZ) will be supported in a future version.
  - Currently, there is no way to edit configuration files other than manually, and a generic "configuration file failed to load" error occurs when there is a syntax error. It would be nice to have a seperate visual editor for configuration files.
  - Generally speaking, more specific error reporting would be nice.
