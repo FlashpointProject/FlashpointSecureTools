@@ -81,6 +81,12 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        public const int S_FALSE = unchecked((int)0x0001);
+        public const int S_OK = unchecked((int)0x0000);
+        public const int E_NOTIMPL = unchecked((int)0x80004001);
+        public const int E_NOINTERFACE = unchecked((int)0x80004002);
+        public const int INET_E_DEFAULT_ACTION = unchecked((int)0x800C0011);
+
         public const int MAX_PATH = 260;
 
         public enum BINARY_TYPE : uint {

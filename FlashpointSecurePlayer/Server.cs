@@ -13,6 +13,7 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 
 namespace FlashpointSecurePlayer {
     public partial class Server : Form {
+        private CustomSecurityManager CustomSecurityManager;
         public Uri WebBrowserURL = null;
 
         public Server(Uri WebBrowserURL) {
@@ -45,6 +46,8 @@ namespace FlashpointSecurePlayer {
                 // popup message box but allow through anyway
                 MessageBox.Show(Properties.Resources.ConnectionNotEstablished, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
+
+            CustomSecurityManager = new CustomSecurityManager(webBrowser1);
 
             if (WebBrowserURL != null) {
                 webBrowser1.Url = WebBrowserURL;
