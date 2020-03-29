@@ -116,6 +116,15 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to create a Custom Security Manager..
+        /// </summary>
+        internal static string FailedCreateCustomSecurityManager {
+            get {
+                return ResourceManager.GetString("FailedCreateCustomSecurityManager", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Flashpoint Secure Player.
         /// </summary>
         internal static string FlashpointSecurePlayer {
