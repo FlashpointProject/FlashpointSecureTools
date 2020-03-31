@@ -62,8 +62,9 @@ namespace FlashpointSecurePlayer {
         }
 
         int InternetInterfaces.IInternetSecurityManager.MapUrlToZone([MarshalAs(UnmanagedType.LPWStr)] string pwszUrl, ref uint pdwZone, uint dwFlags) {
-            pdwZone = 0;
-            return INET_E_DEFAULT_ACTION;
+            // behave like local intranet
+            pdwZone = 1;
+            return S_OK;
         }
 
         int InternetInterfaces.IInternetSecurityManager.GetSecurityId([MarshalAs(UnmanagedType.LPWStr)] string pwszUrl, [MarshalAs(UnmanagedType.LPArray)] byte[] pbSecurityId, ref uint pcbSecurityId, uint dwReserved) {
@@ -77,7 +78,6 @@ namespace FlashpointSecurePlayer {
                 dwAction == URLACTION_HTML_MIXED_CONTENT || // block HTTPS content on HTTP websites for Flashpoint Proxy
                 dwAction == URLACTION_CLIENT_CERT_PROMPT || // don't allow invalid certificates
                 dwAction == URLACTION_AUTOMATIC_ACTIVEX_UI || // do not display the install dialog for ActiveX Controls
-                dwAction == URLACTION_ALLOW_RESTRICTEDPROTOCOLS || // use same settings for every protocol
                 dwAction == URLACTION_ALLOW_APEVALUATION || // the phishing filter is not applicable to this application
                 dwAction == URLACTION_LOWRIGHTS || // turn off Protected Mode
                 dwAction == URLACTION_ALLOW_ACTIVEX_FILTERING) { // don't allow ActiveX filtering
@@ -90,6 +90,12 @@ namespace FlashpointSecurePlayer {
                 return S_OK;
             }
 
+            pPolicy = 0x00010000;
+
+            if (dwAction == 0x00002007) { // undocumented action: permissions for components with manifests
+                return S_OK;
+            }
+
             pPolicy = URLPOLICY_ALLOW;
 
             if ((dwAction >= URLACTION_DOWNLOAD_MIN && dwAction <= URLACTION_DOWNLOAD_MAX) || // allow downloading ActiveX Controls, scripts, etc.
@@ -97,7 +103,7 @@ namespace FlashpointSecurePlayer {
                 (dwAction >= URLACTION_SCRIPT_MIN && dwAction <= URLACTION_SCRIPT_MAX) || // allow scripts
                 (dwAction >= URLACTION_HTML_MIN && dwAction <= URLACTION_HTML_MAX) || // allow forms, fonts, meta elements, etc.
                 (dwAction >= URLACTION_JAVA_MIN && dwAction <= URLACTION_JAVA_MAX) || // allow Java applets
-                dwAction == URLACTION_COOKIES || // allow all cookies, which are not in fact dangerous and are in fact harmless plaintext files that don't have any code in them
+                dwAction == URLACTION_COOKIES || // allow all cookies
                 dwAction == URLACTION_COOKIES_SESSION ||
                 dwAction == URLACTION_COOKIES_THIRD_PARTY ||
                 dwAction == URLACTION_COOKIES_SESSION_THIRD_PARTY ||
@@ -108,6 +114,7 @@ namespace FlashpointSecurePlayer {
                 dwAction == URLACTION_DOTNET_USERCONTROLS || // allow .NET user controls
                 dwAction == URLACTION_FEATURE_DATA_BINDING || // allow databinding
                 dwAction == URLACTION_FEATURE_CROSSDOMAIN_FOCUS_CHANGE || // allow crossdomain
+                dwAction == URLACTION_ALLOW_RESTRICTEDPROTOCOLS || // allow active content regardless of if the protocol is restricted
                 dwAction == URLACTION_ALLOW_AUDIO_VIDEO || // allow audio and video always
                 dwAction == URLACTION_ALLOW_AUDIO_VIDEO_PLUGINS ||
                 dwAction == URLACTION_ALLOW_CROSSDOMAIN_DROP_WITHIN_WINDOW || // allow crossdomain, again
