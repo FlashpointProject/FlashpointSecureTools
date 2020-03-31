@@ -1,4 +1,4 @@
-# Flashpoint Secure Player 1.0.1
+# Flashpoint Secure Player 1.0.2
 This application attempts to solve common compatibility or portability issues posed by browser plugins on Windows for the purpose of playback in BlueMaxima's Flashpoint.
 
 It is compatible with Windows 7, Windows 8, Windows 8.1 and Windows 10, and requires .NET Framework 4.5. If you are on Windows 8.1 or Windows 10, or if you are on Windows 7/8 and have updates enabled, you already have .NET Framework 4.5. Otherwise, you may [download .NET Framework 4.5.](http://www.microsoft.com/en-us/download/details.aspx?id=30653)
@@ -9,7 +9,7 @@ It is driven by a model consisting of two concepts: Modes and Modifications. The
 
 Presently, there are three Modes (ActiveX Mode, Server Mode, and Software Mode) and six Modifications (Run As Administrator, Mode Templates, Environment Variables, Downloads Before, Registry Backups, and Single Instance.)
 
-This application has bugs. Help me find them! See the [Known Issues](#known-issues) below, and if you've found a bug that isn't listed, report anything unusual as an issue.
+This application has bugs. Help me find them! If you've found a bug, report anything unusual as an issue.
 
 # Modes
 The Mode determines what action Flashpoint Secure Player will perform after all of the Modifications are made. For example, the end goal may be to open a browser, or a specific software. The Mode to use is not optional. If it is not set, an error will occur. Modes are exclusive - there may only be one set at a time.
@@ -154,7 +154,7 @@ With the "Miniclip" Modification Name specified, all URLs passed into Server Mod
 
 The Software Mode Template works identically to the Server Mode Template in that it provides the ability to replace the command line passed in with regexes. The Software Mode Template also has an additional attribute, `hideWindow`, which causes the window of the software to be hidden. This is ideal for hiding console windows for softwares that have them.
 
-For example, a practical use of the Software Mode Template would be to create a `modification` element that always ensures the use of important Java options.
+For example, a practical use of the Software Mode Template would be to create a `modification` element that always ensures the use of important Java options. Note that this example is simplified from the real Java configuration file for the purpose of demonstration.
 
 ```
 <modification name="java">
@@ -353,9 +353,6 @@ You may notice that because the Flashpoint Secure Player is effectively capable 
  - Currently, there is no way to edit configuration files other than manually, and a generic "configuration file failed to load" error occurs when there is a syntax error. It would be nice to have a seperate visual editor for configuration files.
  - Generally speaking, more specific error reporting would be nice.
  - Old CPU Simulator integration?
-
-# <a name="known-issues"></a>Known Issues
- - The compatibility layers have no effect when using Server Mode.
 
 # Questions And Answers
 **Is there is Linux version?**
