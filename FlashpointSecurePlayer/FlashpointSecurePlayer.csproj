@@ -92,7 +92,7 @@
     <Compile Include="RunAsAdministrator.cs" />
     <Compile Include="SingleInstance.cs" />
     <Compile Include="ProcessSync.cs" />
-    <Compile Include="RegistryBackup.cs" />
+    <Compile Include="RegistryBackups.cs" />
     <Compile Include="Server.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -23,7 +23,7 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Modific
 using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement.RegistryBackupElementCollection;
 
 namespace FlashpointSecurePlayer {
-    public class RegistryBackup : Modifications {
+    public class RegistryBackups : Modifications {
         // https://social.msdn.microsoft.com/Forums/vstudio/en-US/0f3557ee-16bd-4a36-a4f3-00efbeae9b0d/app-config-multiple-sections-in-sectiongroup-with-same-name?forum=csharpgeneral
 
         private class WOW64Key {
@@ -179,9 +179,9 @@ namespace FlashpointSecurePlayer {
             }
         }
         
-        public RegistryBackup(Form Form) : base(Form) { }
+        public RegistryBackups(Form Form) : base(Form) { }
 
-        ~RegistryBackup() {
+        ~RegistryBackups() {
             if (ImportStarted) {
                 try {
                     StopImport();
@@ -559,7 +559,30 @@ namespace FlashpointSecurePlayer {
 
         // this function deals with this utter trashfire
         // https://docs.microsoft.com/en-us/windows/win32/winprog64/shared-registry-keys#redirected-shared-and-reflected-keys-under-wow64
-        private string GetRedirectedKeyValueName(string keyValueName) {
+        private string GetRedirectedKeyValueName(string keyValueName, BINARY_TYPE binaryType) {
+            // does our OS use WOW64?
+            string windowsVersionName = GetWindowsVersionName(false, false, true);
+
+            if (windowsVersionName != "Windows Vista 64-bit" &&
+                windowsVersionName != "Windows Server 2008 64-bit" &&
+                windowsVersionName != "Windows 7 64-bit" &&
+                windowsVersionName != "Windows Server 2008 R2 64-bit" &&
+                windowsVersionName != "Windows 8 64-bit" &&
+                windowsVersionName != "Windows Server 2012 64-bit" &&
+                windowsVersionName != "Windows 8.1 64-bit" &&
+                windowsVersionName != "Windows Server 2012 R2 64-bit" &&
+                windowsVersionName != "Windows 10 64-bit" &&
+                windowsVersionName != "Windows Server 2016 64-bit") {
+                // no
+                return keyValueName;
+            }
+
+            // is the binary 32-bit?
+            if (binaryType == BINARY_TYPE.SCS_64BIT_BINARY) {
+                // no
+                return keyValueName;
+            }
+
             // can be empty for default value, but not null
             if (keyValueName == null) {
                 return keyValueName;
@@ -578,7 +601,7 @@ namespace FlashpointSecurePlayer {
                 List<WOW64Key> wow64KeyList = WOW64KeyLists[keyValueNameSplit[0]];
                 WOW64Key.EFFECT effect = WOW64Key.EFFECT.SHARED;
                 List<string> effectExceptionValueNames = new List<string>();
-                string windowsVersionName = GetWindowsVersionName(false, false, false);
+                windowsVersionName = GetWindowsVersionName(false, false, false);
                 bool removeWOW64Subkey = false;
 
                 for (int i = 0;i < wow64KeyList.Count;i++) {
@@ -1123,11 +1146,7 @@ namespace FlashpointSecurePlayer {
 
             if (safeKeyHandle == 0) {
                 // we don't need to queue it, we can just add the key right here
-                registryBackupElement.KeyName = GetKeyValueNameFromKernelRegistryString(registryBackupElement.KeyName);
-
-                if (modificationsElement.RegistryBackups.BinaryType != BINARY_TYPE.SCS_64BIT_BINARY) {
-                    registryBackupElement.KeyName = GetRedirectedKeyValueName(registryBackupElement.KeyName);
-                }
+                registryBackupElement.KeyName = GetRedirectedKeyValueName(GetKeyValueNameFromKernelRegistryString(registryBackupElement.KeyName), modificationsElement.RegistryBackups.BinaryType);
                 
                 registryBackupElement.ValueKind = GetValueKindInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView);
                 value = null;
@@ -1167,11 +1186,7 @@ namespace FlashpointSecurePlayer {
             // need to deal with KCB
             // well, we already know the base key name from before, so we can wrap this up now
             if (KCBModificationKeyNames.ContainsKey(safeKeyHandle)) {
-                registryBackupElement.KeyName = GetKeyValueNameFromKernelRegistryString(KCBModificationKeyNames[safeKeyHandle] + "\\" + registryBackupElement.KeyName);
-
-                if (modificationsElement.RegistryBackups.BinaryType != BINARY_TYPE.SCS_64BIT_BINARY) {
-                    registryBackupElement.KeyName = GetRedirectedKeyValueName(registryBackupElement.KeyName);
-                }
+                registryBackupElement.KeyName = GetRedirectedKeyValueName(GetKeyValueNameFromKernelRegistryString(KCBModificationKeyNames[safeKeyHandle] + "\\" + registryBackupElement.KeyName), modificationsElement.RegistryBackups.BinaryType);
 
                 registryBackupElement.ValueKind = GetValueKindInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView);
                 value = null;
@@ -1249,11 +1264,7 @@ namespace FlashpointSecurePlayer {
             ulong safeKeyHandle = registryTraceData.KeyHandle & 0x00000000FFFFFFFF;
 
             if (safeKeyHandle == 0) {
-                registryBackupElement.KeyName = GetKeyValueNameFromKernelRegistryString(registryBackupElement.KeyName);
-
-                if (modificationsElement.RegistryBackups.BinaryType != BINARY_TYPE.SCS_64BIT_BINARY) {
-                    registryBackupElement.KeyName = GetRedirectedKeyValueName(registryBackupElement.KeyName);
-                }
+                registryBackupElement.KeyName = GetRedirectedKeyValueName(GetKeyValueNameFromKernelRegistryString(registryBackupElement.KeyName), modificationsElement.RegistryBackups.BinaryType);
 
                 // key was deleted - don't need to find its value, just enough info for the name
                 modificationsElement.RegistryBackups.Remove(registryBackupElement.Name);
@@ -1263,11 +1274,7 @@ namespace FlashpointSecurePlayer {
 
             if (KCBModificationKeyNames.ContainsKey(safeKeyHandle)) {
                 // we have info from the handle already to get the name
-                registryBackupElement.KeyName = GetKeyValueNameFromKernelRegistryString(KCBModificationKeyNames[safeKeyHandle] + "\\" + registryBackupElement.KeyName);
-
-                if (modificationsElement.RegistryBackups.BinaryType != BINARY_TYPE.SCS_64BIT_BINARY) {
-                    registryBackupElement.KeyName = GetRedirectedKeyValueName(registryBackupElement.KeyName);
-                }
+                registryBackupElement.KeyName = GetRedirectedKeyValueName(GetKeyValueNameFromKernelRegistryString(KCBModificationKeyNames[safeKeyHandle] + "\\" + registryBackupElement.KeyName), modificationsElement.RegistryBackups.BinaryType);
 
                 modificationsElement.RegistryBackups.Remove(registryBackupElement.Name);
                 //SetModificationsElement(modificationsElement, Name);
@@ -1347,12 +1354,7 @@ namespace FlashpointSecurePlayer {
 
                     // add its BaseKeyName
                     registryBackupElement = queuedModification.Value;
-                    registryBackupElement.KeyName = GetKeyValueNameFromKernelRegistryString(registryTraceData.KeyName + "\\" + registryBackupElement.KeyName);
-
-                    if (modificationsElement.RegistryBackups.BinaryType != BINARY_TYPE.SCS_64BIT_BINARY) {
-                        registryBackupElement.KeyName = GetRedirectedKeyValueName(registryBackupElement.KeyName);
-                    }
-
+                    registryBackupElement.KeyName = GetRedirectedKeyValueName(GetKeyValueNameFromKernelRegistryString(registryTraceData.KeyName + "\\" + registryBackupElement.KeyName), modificationsElement.RegistryBackups.BinaryType);
                     registryBackupElement.ValueKind = GetValueKindInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView);
                     value = null;
 
