@@ -546,10 +546,10 @@ namespace FlashpointSecurePlayer {
 
                     public class RegistryBackupElementCollection : ModificationsConfigurationElementCollection {
                         public class RegistryBackupElement : ConfigurationElement {
-                            [ConfigurationProperty("type", DefaultValue = RegistryBackup.TYPE.KEY, IsRequired = false)]
-                            public RegistryBackup.TYPE Type {
+                            [ConfigurationProperty("type", DefaultValue = global::FlashpointSecurePlayer.RegistryBackups.TYPE.KEY, IsRequired = false)]
+                            public RegistryBackups.TYPE Type {
                                 get {
-                                    return (RegistryBackup.TYPE)base["type"];
+                                    return (RegistryBackups.TYPE)base["type"];
                                 }
 
                                 set {

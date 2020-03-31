@@ -25,7 +25,7 @@ namespace FlashpointSecurePlayer {
         private readonly ModeTemplates ModeTemplates;
         private readonly EnvironmentVariables EnvironmentVariables;
         private readonly DownloadsBefore DownloadsBefore;
-        private readonly RegistryBackup RegistryBackup;
+        private readonly RegistryBackups RegistryBackup;
         private readonly SingleInstance SingleInstance;
         string ModificationsName = ACTIVE_EXE_CONFIGURATION_NAME;
         bool RunAsAdministratorModification = false;
@@ -42,7 +42,7 @@ namespace FlashpointSecurePlayer {
             ModeTemplates = new ModeTemplates(this);
             EnvironmentVariables = new EnvironmentVariables(this);
             DownloadsBefore = new DownloadsBefore(this);
-            RegistryBackup = new RegistryBackup(this);
+            RegistryBackup = new RegistryBackups(this);
             SingleInstance = new SingleInstance(this);
         }
 
@@ -181,7 +181,7 @@ namespace FlashpointSecurePlayer {
 
                 if (modificationsElement.EnvironmentVariables.Count > 0) {
                     try {
-                        EnvironmentVariables.Activate(ModificationsName);
+                        EnvironmentVariables.Activate(ModificationsName, Server, APPLICATION_MUTEX_NAME);
                     } catch (EnvironmentVariablesFailedException) {
                         errorDelegate(Properties.Resources.EnvironmentVariablesFailed);
                     } catch (System.Configuration.ConfigurationErrorsException) {

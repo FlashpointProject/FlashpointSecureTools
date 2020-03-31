@@ -13,9 +13,11 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Modific
 
 namespace FlashpointSecurePlayer {
     class EnvironmentVariables : Modifications {
+        const string COMPATIBILITY_LAYER = "__COMPAT_LAYER";
+
         public EnvironmentVariables(Form Form) : base(Form) { }
 
-        new public void Activate(string name) {
+        public void Activate(string name, string server, string applicationMutexName) {
             base.Activate(name);
             ModificationsElement modificationsElement = GetModificationsElement(true, Name);
             EnvironmentVariablesElement environmentVariablesElement = null;
@@ -27,14 +29,27 @@ namespace FlashpointSecurePlayer {
                     throw new EnvironmentVariablesFailedException();
                 }
 
+                string compatibilityLayer = null;
+
                 try {
-                    Environment.SetEnvironmentVariable(environmentVariablesElement.Name, RemoveVariablesFromValue(environmentVariablesElement.Value) as string);
-                } catch (ArgumentNullException) {
-                    throw new EnvironmentVariablesFailedException();
+                    compatibilityLayer = Environment.GetEnvironmentVariable(COMPATIBILITY_LAYER);
                 } catch (ArgumentException) {
                     throw new EnvironmentVariablesFailedException();
                 } catch (SecurityException) {
                     throw new TaskRequiresElevationException();
+                }
+
+                try {
+                    Environment.SetEnvironmentVariable(environmentVariablesElement.Name, RemoveVariablesFromValue(environmentVariablesElement.Value) as string);
+                } catch (ArgumentException) {
+                    throw new EnvironmentVariablesFailedException();
+                } catch (SecurityException) {
+                    throw new TaskRequiresElevationException();
+                }
+
+                if (environmentVariablesElement.Name == COMPATIBILITY_LAYER && String.IsNullOrEmpty(compatibilityLayer) && !String.IsNullOrEmpty(server)) {
+                    RestartApplication(false, Form, applicationMutexName);
+                    throw new InvalidModificationException();
                 }
             }
         }
@@ -58,8 +73,6 @@ namespace FlashpointSecurePlayer {
 
                 try {
                     Environment.SetEnvironmentVariable(environmentVariablesElement.Name, null);
-                } catch (ArgumentNullException) {
-                    throw new EnvironmentVariablesFailedException();
                 } catch (ArgumentException) {
                     throw new EnvironmentVariablesFailedException();
                 } catch (SecurityException) {
