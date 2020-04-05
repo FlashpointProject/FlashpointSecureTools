@@ -219,7 +219,7 @@ namespace FlashpointSecurePlayer {
 
         private string GetUserKeyValueName(string keyValueName) {
             // can be empty, but not null
-            if (TestProcessRunningAsAdministrator() || keyValueName == null) {
+            if (TestLaunchedAsAdministratorUser() || keyValueName == null) {
                 return keyValueName;
             }
 
@@ -674,7 +674,7 @@ namespace FlashpointSecurePlayer {
                 throw new TaskRequiresElevationException();
             }
 
-            if (!TestProcessRunningAsAdministrator()) {
+            if (!TestLaunchedAsAdministratorUser()) {
                 throw new TaskRequiresElevationException();
             }
             

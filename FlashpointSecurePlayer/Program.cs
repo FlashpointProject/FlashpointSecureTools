@@ -26,6 +26,12 @@ namespace FlashpointSecurePlayer {
                 public TaskRequiresElevationException(string message, Exception inner) : base(message, inner) { }
             }
 
+            public class CompatibilityLayersException : InvalidOperationException {
+                public CompatibilityLayersException() : base() { }
+                public CompatibilityLayersException(string message) : base(message) { }
+                public CompatibilityLayersException(string message, Exception inner) : base(message, inner) { }
+            }
+
             public class DownloadFailedException : InvalidOperationException {
                 public DownloadFailedException() : base() { }
                 public DownloadFailedException(string message) : base(message) { }
@@ -81,10 +87,19 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        public const int S_FALSE = unchecked((int)0x0001);
         public const int S_OK = unchecked((int)0x0000);
+        public const int S_FALSE = unchecked((int)0x0001);
         public const int E_NOTIMPL = unchecked((int)0x80004001);
         public const int E_NOINTERFACE = unchecked((int)0x80004002);
+        public const int E_POINTER = unchecked((int)0x80004003);
+        public const int E_ABORT = unchecked((int)0x80004004);
+        public const int E_FAIL = unchecked((int)0x80004005);
+        public const int E_UNEXPECTED = unchecked((int)0x8000FFFF);
+        public const int E_ACCESSDENIED = unchecked((int)0x80070005);
+        public const int E_HANDLE = unchecked((int)0x80070006);
+        public const int E_OUTOFMEMORY = unchecked((int)0x8007000E);
+        public const int E_INVALIDARG = unchecked((int)0x80070057);
+
         public const int INET_E_DEFAULT_ACTION = unchecked((int)0x800C0011);
 
         public const int MAX_PATH = 260;
@@ -797,7 +812,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        public static bool TestProcessRunningAsAdministrator() {
+        public static bool TestLaunchedAsAdministratorUser() {
             AppDomain.CurrentDomain.SetPrincipalPolicy(PrincipalPolicy.WindowsPrincipal);
 
             try {
@@ -1226,8 +1241,7 @@ namespace FlashpointSecurePlayer {
             }
 
             // hide the current form so two windows are not open at once
-            form.ShowInTaskbar = false;
-            form.WindowState = FormWindowState.Minimized;
+            form.Hide();
             form.ControlBox = true;
             // no this is not a race condition
             // https://stackoverflow.com/questions/33042010/in-what-cases-does-the-process-start-method-return-false

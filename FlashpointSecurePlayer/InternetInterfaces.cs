@@ -11,6 +11,37 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 
 namespace FlashpointSecurePlayer {
     public static class InternetInterfaces {
+        public const uint MUTZ_NOSAVEDFILECHECK = 0x00000001;
+        public const uint MUTZ_ISFILE = 0x00000002;
+        public const uint MUTZ_ACCEPT_WILDCARD_SCHEME = 0x00000080;
+        public const uint MUTZ_ENFORCERESTRICTED = 0x00000100;
+        public const uint MUTZ_RESERVED = 0x00000200;
+        public const uint MUTZ_REQUIRESAVEDFILECHECK = 0x00000400;
+        public const uint MUTZ_DONT_UNESCAPE = 0x00000800;
+        public const uint MUTZ_DONT_USE_CACHE = 0x00001000;
+        public const uint MUTZ_FORCE_INTRANET_FLAGS = 0x00002000;
+        public const uint MUTZ_IGNORE_ZONE_MAPPINGS = 0x00004000;
+
+        public const uint PUAF_DEFAULT = 0x00000000;
+        public const uint PUAF_NOUI = 0x00000001;
+        public const uint PUAF_ISFILE = 0x00000002;
+        public const uint PUAF_WARN_IF_DENIED = 0x00000004;
+        public const uint PUAF_FORCEUI_FOREGROUND = 0x00000008;
+        public const uint PUAF_CHECK_TIFS = 0x00000010;
+        public const uint PUAF_DONTCHECKBOXINDIALOG = 0x00000020;
+        public const uint PUAF_TRUSTED = 0x00000040;
+        public const uint PUAF_ACCEPT_WILDCARD_SCHEME = 0x00000080;
+        public const uint PUAF_ENFORCERESTRICTED = 0x00000100;
+        public const uint PUAF_NOSAVEDFILECHECK = 0x00000200;
+        public const uint PUAF_REQUIRESAVEDFILECHECK = 0x00000400;
+        public const uint PUAF_DONT_USE_CACHE = 0x00001000;
+        public const uint PUAF_LMZ_UNLOCKED = 0x00010000;
+        public const uint PUAF_LMZ_LOCKED = 0x00020000;
+        public const uint PUAF_DEFAULTZONEPOL = 0x00040000;
+        public const uint PUAF_NPL_USE_LOCKED_IF_RESTRICTED = 0x00080000;
+        public const uint PUAF_NOUIIFLOCKED = 0x00100000;
+        public const uint PUAF_DRAGPROTOCOLCHECK = 0x00200000;
+
         public const uint URLACTION_MIN = 0x00001000;
 
         public const uint URLACTION_DOWNLOAD_MIN = 0x00001000;

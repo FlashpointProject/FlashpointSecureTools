@@ -75,8 +75,8 @@ namespace FlashpointSecurePlayer {
             this.errorLabel.Text = errorLabelText;
         }
 
-        private void AskLaunchInAdministratorMode() {
-            if (!TestProcessRunningAsAdministrator()) {
+        private void AskLaunchAsAdministratorUser() {
+            if (!TestLaunchedAsAdministratorUser()) {
                 // popup message box and restart program here
                 // https://docs.microsoft.com/en-us/dotnet/api/system.windows.forms.messagebox?view=netframework-4.8
                 /*
@@ -89,7 +89,7 @@ namespace FlashpointSecurePlayer {
                  the program to enter an infinite restart loop
                  */
                 ShowOutput();
-                DialogResult dialogResult = MessageBox.Show(Properties.Resources.LaunchInAdministratorMode, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.YesNo, MessageBoxIcon.None);
+                DialogResult dialogResult = MessageBox.Show(String.Format(Properties.Resources.LaunchGame, Properties.Resources.AsAdministratorUser), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.YesNo, MessageBoxIcon.None);
 
                 if (dialogResult == DialogResult.No) {
                     Application.Exit();
@@ -101,7 +101,20 @@ namespace FlashpointSecurePlayer {
             }
 
             // we're already running as admin?
-            ShowError(Properties.Resources.GameFailedAdministratorMode);
+            ShowError(String.Format(Properties.Resources.GameFailedLaunch, Properties.Resources.AsAdministratorUser));
+            throw new InvalidModificationException();
+        }
+
+        private void AskLaunchWithCompatibilitySettings() {
+            ShowOutput();
+            DialogResult dialogResult = MessageBox.Show(String.Format(Properties.Resources.LaunchGame, Properties.Resources.WithCompatibilitySettings), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.YesNo, MessageBoxIcon.None);
+
+            if (dialogResult == DialogResult.No) {
+                Application.Exit();
+                throw new InvalidModificationException();
+            }
+
+            RestartApplication(false, this, APPLICATION_MUTEX_NAME);
             throw new InvalidModificationException();
         }
 
@@ -164,7 +177,7 @@ namespace FlashpointSecurePlayer {
                 } catch (System.Configuration.ConfigurationErrorsException) {
                     errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                 } catch (TaskRequiresElevationException) {
-                    AskLaunchInAdministratorMode();
+                    AskLaunchAsAdministratorUser();
                 }
 
                 if (modificationsElement.ModeTemplates.ServerModeTemplate.ElementInformation.IsPresent || modificationsElement.ModeTemplates.SoftwareModeTemplate.ElementInformation.IsPresent) {
@@ -175,7 +188,7 @@ namespace FlashpointSecurePlayer {
                     } catch (System.Configuration.ConfigurationErrorsException) {
                         errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                     } catch (TaskRequiresElevationException) {
-                        AskLaunchInAdministratorMode();
+                        AskLaunchAsAdministratorUser();
                     }
                 }
 
@@ -187,7 +200,9 @@ namespace FlashpointSecurePlayer {
                     } catch (System.Configuration.ConfigurationErrorsException) {
                         errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                     } catch (TaskRequiresElevationException) {
-                        AskLaunchInAdministratorMode();
+                        AskLaunchAsAdministratorUser();
+                    } catch (CompatibilityLayersException) {
+                        AskLaunchWithCompatibilitySettings();
                     }
                 }
 
@@ -209,7 +224,7 @@ namespace FlashpointSecurePlayer {
                     } catch (System.Configuration.ConfigurationErrorsException) {
                         errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                     } catch (TaskRequiresElevationException) {
-                        AskLaunchInAdministratorMode();
+                        AskLaunchAsAdministratorUser();
                     }
                 }
 
@@ -219,7 +234,7 @@ namespace FlashpointSecurePlayer {
                     } catch (InvalidModificationException ex) {
                         throw ex;
                     } catch (TaskRequiresElevationException) {
-                        AskLaunchInAdministratorMode();
+                        AskLaunchAsAdministratorUser();
                     } catch {
                         errorDelegate(Properties.Resources.UnknownProcessCompatibilityConflict);
                     }
@@ -242,17 +257,19 @@ namespace FlashpointSecurePlayer {
                 } catch (System.Configuration.ConfigurationErrorsException) {
                     errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                 } catch (TaskRequiresElevationException) {
-                    AskLaunchInAdministratorMode();
+                    AskLaunchAsAdministratorUser();
                 }
 
                 try {
-                    EnvironmentVariables.Deactivate();
+                    EnvironmentVariables.Deactivate(Server);
                 } catch (EnvironmentVariablesFailedException) {
                     errorDelegate(Properties.Resources.EnvironmentVariablesFailed);
                 } catch (System.Configuration.ConfigurationErrorsException) {
                     errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                 } catch (TaskRequiresElevationException) {
-                    AskLaunchInAdministratorMode();
+                    AskLaunchAsAdministratorUser();
+                } catch (CompatibilityLayersException) {
+                    AskLaunchWithCompatibilitySettings();
                 }
 
                 try {
@@ -278,12 +295,9 @@ namespace FlashpointSecurePlayer {
                     throw new InvalidModificationException();
                 }
 
-                //this.ShowInTaskbar = true;
-                //this.WindowState = FormWindowState.Normal;
-
                 // this requires admin
-                if (!TestProcessRunningAsAdministrator()) {
-                    AskLaunchInAdministratorMode();
+                if (!TestLaunchedAsAdministratorUser()) {
+                    AskLaunchAsAdministratorUser();
                 }
 
                 ResetProgressBar();
@@ -341,7 +355,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 } catch (TaskRequiresElevationException) {
                     // we're already running as admin?
-                    ShowError(Properties.Resources.GameFailedAdministratorMode);
+                    ShowError(String.Format(Properties.Resources.GameFailedLaunch, Properties.Resources.AsAdministratorUser));
                     return;
                 } catch (InvalidOperationException) {
                     ShowError(Properties.Resources.RegistryBackupAlreadyRunning);
@@ -535,13 +549,15 @@ namespace FlashpointSecurePlayer {
                 }
             } catch (TaskRequiresElevationException) {
                 try {
-                    AskLaunchInAdministratorMode();
+                    AskLaunchAsAdministratorUser();
                 } catch (InvalidModificationException) {
                     Application.Exit();
                     return;
                 }
             }
 
+            BringToFront();
+            Activate();
             ShowOutput(Properties.Resources.RequiredComponentsAreUnloading);
 
             string arg = null;
