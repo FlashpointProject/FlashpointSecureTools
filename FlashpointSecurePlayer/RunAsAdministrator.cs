@@ -27,7 +27,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            if (!TestProcessRunningAsAdministrator()) {
+            if (!TestLaunchedAsAdministratorUser()) {
                 throw new TaskRequiresElevationException();
             }
         }

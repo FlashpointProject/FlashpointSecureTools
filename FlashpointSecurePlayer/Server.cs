@@ -56,6 +56,11 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
+            BringToFront();
+            Activate();
+        }
+
+        private void Server_Shown(object sender, EventArgs e) {
             if (WebBrowserURL != null) {
                 webBrowser1.Url = WebBrowserURL;
             }

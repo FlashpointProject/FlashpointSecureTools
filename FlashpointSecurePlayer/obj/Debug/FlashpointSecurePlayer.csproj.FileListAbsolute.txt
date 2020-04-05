@@ -1,3 +1,28 @@
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\x86\KernelTraceControl.dll
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\x86\KernelTraceControl.Win61.dll
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\x86\msdia140.dll
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\amd64\KernelTraceControl.dll
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\amd64\msdia140.dll
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\TraceReloggerLib.dll
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\Dia2Lib.dll
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\OSExtensions.dll
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\FlashpointSecurePlayer.exe.config
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\FlashpointSecurePlayer.exe
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\FlashpointSecurePlayer.pdb
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\Microsoft.Diagnostics.FastSerialization.dll
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\Microsoft.Diagnostics.Tracing.TraceEvent.dll
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\Microsoft.Diagnostics.FastSerialization.xml
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\Microsoft.Diagnostics.Tracing.TraceEvent.xml
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.csprojAssemblyReference.cache
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.FlashpointSecurePlayer.resources
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.Server.resources
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.Properties.Resources.resources
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.csproj.GenerateResource.cache
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.csproj.CoreCompileInputs.cache
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.csproj.CopyComplete
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.exe
+C:\Users\Anthony\Documents\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.pdb
+C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\OSExtensions.dll
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\x86\KernelTraceControl.dll
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\x86\KernelTraceControl.Win61.dll
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\x86\msdia140.dll
@@ -5,7 +30,6 @@ C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\Fla
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\amd64\msdia140.dll
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\TraceReloggerLib.dll
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\Dia2Lib.dll
-C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\OSExtensions.dll
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\FlashpointSecurePlayer.exe.config
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\FlashpointSecurePlayer.exe
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\FlashpointSecurePlayer.pdb

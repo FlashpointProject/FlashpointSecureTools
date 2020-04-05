@@ -123,6 +123,9 @@
   <data name="ActiveXControlUninstallFailed" xml:space="preserve">
     <value>The ActiveX Control failed to uninstall.</value>
   </data>
+  <data name="AsAdministratorUser" xml:space="preserve">
+    <value>as Administrator User</value>
+  </data>
   <data name="ConfigurationFailedLoad" xml:space="preserve">
     <value>The configuration failed to load.
 Please ensure Flashpoint is not corrupted, was extracted correctly, and is not running from OneDrive or a network drive.</value>
@@ -142,8 +145,8 @@ Please ensure Flashpoint is not corrupted, was extracted correctly, and is not r
   <data name="FlashpointSecurePlayer" xml:space="preserve">
     <value>Flashpoint Secure Player</value>
   </data>
-  <data name="GameFailedAdministratorMode" xml:space="preserve">
-    <value>This game failed to launch in Administrator Mode.</value>
+  <data name="GameFailedLaunch" xml:space="preserve">
+    <value>This game failed to launch {0}.</value>
   </data>
   <data name="GameIsMissingFiles" xml:space="preserve">
     <value>The game files ({0}) are missing.
@@ -158,8 +161,8 @@ Please ensure Flashpoint is not corrupted, was extracted correctly, and is not r
   <data name="JobObjectNotCreated" xml:space="preserve">
     <value>The Job Object could not be created. Is your Windows Version new enough? Flashpoint only supports Windows 7, Windows 8, Windows 8.1, and Windows 10.</value>
   </data>
-  <data name="LaunchInAdministratorMode" xml:space="preserve">
-    <value>This game will not work unless run in Administrator Mode. Do you want to launch it in Administrator Mode?
+  <data name="LaunchGame" xml:space="preserve">
+    <value>This game will not work unless run {0}. Do you want to launch it {0}?
 If you choose No, the application will exit.</value>
   </data>
   <data name="ModeTemplatesFailed" xml:space="preserve">
@@ -206,5 +209,8 @@ If you choose No, the application will exit.</value>
   </data>
   <data name="WindowsVersionTooOld" xml:space="preserve">
     <value>Your Windows Version is too old for Flashpoint Secure Player. Flashpoint supports Windows 7, Windows 8, Windows 8.1, and Windows 10.</value>
+  </data>
+  <data name="WithCompatibilitySettings" xml:space="preserve">
+    <value>with Compatibility Settings</value>
   </data>
 </root>

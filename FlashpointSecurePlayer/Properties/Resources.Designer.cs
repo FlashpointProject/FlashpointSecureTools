@@ -79,6 +79,15 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to as Administrator User.
+        /// </summary>
+        internal static string AsAdministratorUser {
+            get {
+                return ResourceManager.GetString("AsAdministratorUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The configuration failed to load.
         ///Please ensure Flashpoint is not corrupted, was extracted correctly, and is not running from OneDrive or a network drive..
         /// </summary>
@@ -134,11 +143,11 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This game failed to launch in Administrator Mode..
+        ///   Looks up a localized string similar to This game failed to launch {0}..
         /// </summary>
-        internal static string GameFailedAdministratorMode {
+        internal static string GameFailedLaunch {
             get {
-                return ResourceManager.GetString("GameFailedAdministratorMode", resourceCulture);
+                return ResourceManager.GetString("GameFailedLaunch", resourceCulture);
             }
         }
         
@@ -180,12 +189,12 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This game will not work unless run in Administrator Mode. Do you want to launch it in Administrator Mode?
+        ///   Looks up a localized string similar to This game will not work unless run {0}. Do you want to launch it {0}?
         ///If you choose No, the application will exit..
         /// </summary>
-        internal static string LaunchInAdministratorMode {
+        internal static string LaunchGame {
             get {
-                return ResourceManager.GetString("LaunchInAdministratorMode", resourceCulture);
+                return ResourceManager.GetString("LaunchGame", resourceCulture);
             }
         }
         
@@ -321,6 +330,15 @@ namespace FlashpointSecurePlayer.Properties {
         internal static string WindowsVersionTooOld {
             get {
                 return ResourceManager.GetString("WindowsVersionTooOld", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to with Compatibility Settings.
+        /// </summary>
+        internal static string WithCompatibilitySettings {
+            get {
+                return ResourceManager.GetString("WithCompatibilitySettings", resourceCulture);
             }
         }
     }
