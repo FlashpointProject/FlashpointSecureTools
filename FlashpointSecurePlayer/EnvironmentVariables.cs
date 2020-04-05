@@ -13,13 +13,28 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Modific
 
 namespace FlashpointSecurePlayer {
     class EnvironmentVariables : Modifications {
-        const string COMPATIBILITY_LAYER = "__COMPAT_LAYER";
+        const string COMPATIBILITY_LAYER_NAME = "__COMPAT_LAYER";
 
         public EnvironmentVariables(Form Form) : base(Form) { }
 
         public void Activate(string name, string server, string applicationMutexName) {
             base.Activate(name);
             ModificationsElement modificationsElement = GetModificationsElement(true, Name);
+            string value = null;
+            string compatibilityLayerValue = null;
+
+            try {
+                compatibilityLayerValue = Environment.GetEnvironmentVariable(COMPATIBILITY_LAYER_NAME);
+            } catch (ArgumentException) {
+                throw new EnvironmentVariablesFailedException();
+            } catch (SecurityException) {
+                throw new TaskRequiresElevationException();
+            }
+
+            if (compatibilityLayerValue != null) {
+                compatibilityLayerValue = compatibilityLayerValue.ToUpper();
+            }
+
             EnvironmentVariablesElement environmentVariablesElement = null;
 
             for (int i = 0;i < modificationsElement.EnvironmentVariables.Count;i++) {
@@ -29,39 +44,57 @@ namespace FlashpointSecurePlayer {
                     throw new EnvironmentVariablesFailedException();
                 }
 
-                string compatibilityLayer = null;
+                value = environmentVariablesElement.Value;
 
                 try {
-                    compatibilityLayer = Environment.GetEnvironmentVariable(COMPATIBILITY_LAYER);
+                    Environment.SetEnvironmentVariable(environmentVariablesElement.Name, RemoveVariablesFromValue(value) as string);
                 } catch (ArgumentException) {
                     throw new EnvironmentVariablesFailedException();
                 } catch (SecurityException) {
                     throw new TaskRequiresElevationException();
                 }
 
-                try {
-                    Environment.SetEnvironmentVariable(environmentVariablesElement.Name, RemoveVariablesFromValue(environmentVariablesElement.Value) as string);
-                } catch (ArgumentException) {
-                    throw new EnvironmentVariablesFailedException();
-                } catch (SecurityException) {
-                    throw new TaskRequiresElevationException();
+                if (value != null) {
+                    value = value.ToUpper();
                 }
 
-                if (environmentVariablesElement.Name == COMPATIBILITY_LAYER && String.IsNullOrEmpty(compatibilityLayer) && !String.IsNullOrEmpty(server)) {
-                    RestartApplication(false, Form, applicationMutexName);
-                    throw new InvalidModificationException();
+                // if this is the compatibility layer variable
+                // and the value is not what we want to set it to
+                // and we're in server mode...
+                if (environmentVariablesElement.Name == COMPATIBILITY_LAYER_NAME && value != compatibilityLayerValue && !String.IsNullOrEmpty(server)) {
+                    throw new CompatibilityLayersException();
                 }
             }
         }
 
-        new public void Deactivate() {
+        public void Deactivate(string server) {
             base.Deactivate();
+
+            if (String.IsNullOrEmpty(Name)) {
+                return;
+            }
+
             ModificationsElement modificationsElement = GetModificationsElement(false, Name);
 
             if (modificationsElement == null) {
                 return;
             }
 
+            string value = null;
+            string compatibilityLayerValue = null;
+
+            try {
+                compatibilityLayerValue = Environment.GetEnvironmentVariable(COMPATIBILITY_LAYER_NAME);
+            } catch (ArgumentException) {
+                throw new EnvironmentVariablesFailedException();
+            } catch (SecurityException) {
+                throw new TaskRequiresElevationException();
+            }
+
+            if (compatibilityLayerValue != null) {
+                compatibilityLayerValue = compatibilityLayerValue.ToUpper();
+            }
+
             EnvironmentVariablesElement environmentVariablesElement = null;
 
             for (int i = 0;i < modificationsElement.EnvironmentVariables.Count;i++) {
@@ -71,12 +104,23 @@ namespace FlashpointSecurePlayer {
                     throw new EnvironmentVariablesFailedException();
                 }
 
-                try {
-                    Environment.SetEnvironmentVariable(environmentVariablesElement.Name, null);
-                } catch (ArgumentException) {
-                    throw new EnvironmentVariablesFailedException();
-                } catch (SecurityException) {
-                    throw new TaskRequiresElevationException();
+                value = environmentVariablesElement.Value;
+
+                if (value != null) {
+                    value = value.ToUpper();
+                }
+
+                // if this isn't the compatibility layer variable
+                // or the value isn't what we want to set it to
+                // or we're not in server mode...
+                if (environmentVariablesElement.Name != COMPATIBILITY_LAYER_NAME || value != compatibilityLayerValue && String.IsNullOrEmpty(server)) {
+                    try {
+                        Environment.SetEnvironmentVariable(environmentVariablesElement.Name, null);
+                    } catch (ArgumentException) {
+                        throw new EnvironmentVariablesFailedException();
+                    } catch (SecurityException) {
+                        throw new TaskRequiresElevationException();
+                    }
                 }
             }
         }

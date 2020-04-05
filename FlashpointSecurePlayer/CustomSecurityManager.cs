@@ -64,6 +64,29 @@ namespace FlashpointSecurePlayer {
         int InternetInterfaces.IInternetSecurityManager.MapUrlToZone([MarshalAs(UnmanagedType.LPWStr)] string pwszUrl, ref uint pdwZone, uint dwFlags) {
             // behave like local intranet
             pdwZone = 1;
+
+            if ((dwFlags & MUTZ_ISFILE) == MUTZ_ISFILE) {
+                return INET_E_DEFAULT_ACTION;
+            }
+
+            if (pwszUrl == null) {
+                return E_INVALIDARG;
+            }
+
+            if ((dwFlags & MUTZ_DONT_UNESCAPE) != MUTZ_DONT_UNESCAPE) {
+                try {
+                    pwszUrl = Uri.UnescapeDataString(pwszUrl);
+                } catch (ArgumentNullException) {
+                    return INET_E_DEFAULT_ACTION;
+                }
+            }
+
+            pwszUrl = pwszUrl.ToLower();
+
+            if (pwszUrl.IndexOf("http://") != 0 && pwszUrl.IndexOf("https://") != 0 && pwszUrl.IndexOf("ftp://") != 0) {
+                // we've wandered off from Flashpoint Server, revert to default zone settings
+                return INET_E_DEFAULT_ACTION;
+            }
             return S_OK;
         }
 
@@ -73,6 +96,24 @@ namespace FlashpointSecurePlayer {
 
         int InternetInterfaces.IInternetSecurityManager.ProcessUrlAction([MarshalAs(UnmanagedType.LPWStr)] string pwszUrl, uint dwAction, out uint pPolicy, uint cbPolicy, byte pContext, uint cbContext, uint dwFlags, uint dwReserved) {
             pPolicy = URLPOLICY_DISALLOW;
+
+            if ((dwFlags & PUAF_ISFILE) == PUAF_ISFILE) {
+                return INET_E_DEFAULT_ACTION;
+            }
+
+            if (pwszUrl == null) {
+                return E_INVALIDARG;
+            }
+
+            pwszUrl = pwszUrl.ToLower();
+
+            if (pwszUrl.IndexOf("http://") != 0 && pwszUrl.IndexOf("https://") != 0 && pwszUrl.IndexOf("ftp://") != 0) {
+                // we've wandered off from Flashpoint Server, don't allow zone elevation
+                if (dwAction == URLACTION_FEATURE_ZONE_ELEVATION) {
+                    return S_OK;
+                }
+                return INET_E_DEFAULT_ACTION;
+            }
 
             if (dwAction == URLACTION_ACTIVEX_TREATASUNTRUSTED || // trust ActiveX Controls always
                 dwAction == URLACTION_HTML_MIXED_CONTENT || // block HTTPS content on HTTP websites for Flashpoint Proxy
@@ -112,6 +153,7 @@ namespace FlashpointSecurePlayer {
                 dwAction == URLACTION_MANAGED_SIGNED || // run components regardless of if they're signed or not
                 dwAction == URLACTION_MANAGED_UNSIGNED ||
                 dwAction == URLACTION_DOTNET_USERCONTROLS || // allow .NET user controls
+                dwAction == URLACTION_FEATURE_ZONE_ELEVATION || // allow entering this zone from about:blank
                 dwAction == URLACTION_FEATURE_DATA_BINDING || // allow databinding
                 dwAction == URLACTION_FEATURE_CROSSDOMAIN_FOCUS_CHANGE || // allow crossdomain
                 dwAction == URLACTION_ALLOW_RESTRICTEDPROTOCOLS || // allow active content regardless of if the protocol is restricted
