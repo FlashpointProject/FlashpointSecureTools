@@ -1,15 +1,15 @@
-# Flashpoint Secure Player 1.0.2
-This application attempts to solve common compatibility or portability issues posed by browser plugins on Windows for the purpose of playback in BlueMaxima's Flashpoint.
+# Flashpoint Secure Player 1.0.3
+This player attempts to solve common compatibility or portability issues posed by browser plugins on Windows for the purpose of playback in BlueMaxima's Flashpoint.
 
 It is compatible with Windows 7, Windows 8, Windows 8.1 and Windows 10, and requires .NET Framework 4.5. If you are on Windows 8.1 or Windows 10, or if you are on Windows 7/8 and have updates enabled, you already have .NET Framework 4.5. Otherwise, you may [download .NET Framework 4.5.](http://www.microsoft.com/en-us/download/details.aspx?id=30653)
 
 The Flashpoint Secure Player is an advanced application that makes modifications temporarily for only the duration required. It could be described as a "weak sandbox," in that it makes real changes to the computer the application is running on, but will revert these changes as soon as they are no longer needed.
 
-It is driven by a model consisting of two concepts: Modes and Modifications. The Modes and Modifications are set either via the command line or a configuration file. The configuration files may be hosted on the Flashpoint Server, making it easy to integrate into the existing Flashpoint curation flow. A number of sample configuration files are included alongside the application in the FlashpointSecurePlayerConfigs folder.
+It is driven by a model consisting of two concepts: Modes and Modifications. The Modes and Modifications are set either via the command line or a configuration file. The configuration files may be hosted on the Flashpoint Server, making it easy to integrate into the existing Flashpoint curation flow. A number of sample configuration files are included alongside the player in the FlashpointSecurePlayerConfigs folder.
 
 Presently, there are three Modes (ActiveX Mode, Server Mode, and Software Mode) and six Modifications (Run As Administrator, Mode Templates, Environment Variables, Downloads Before, Registry Backups, and Single Instance.)
 
-This application has bugs. Help me find them! If you've found a bug, report anything unusual as an issue.
+This player has bugs. Help me find them! If you've found a bug, report anything unusual as an issue.
 
 # Modes
 The Mode determines what action Flashpoint Secure Player will perform after all of the Modifications are made. For example, the end goal may be to open a browser, or a specific software. The Mode to use is not optional. If it is not set, an error will occur. Modes are exclusive - there may only be one set at a time.
@@ -76,7 +76,7 @@ The command line below opens an example.swf file in Flash.
 It is possible to modify the Software Mode's behaviour by using the Software Mode Template. For more information, see the section about [Mode Template Modifications](#mode-templates) below.
 
 # Modifications
-The Modifications determine what temporary modifications will be made for the duration of time that the application is open. Modifications are optional, none are required to be set. Modifications are not exclusive - there may be multiple Modifications set at a time.
+The Modifications determine what temporary modifications will be made for the duration of time that the application is running. Modifications are optional, none are required to be set. Modifications are not exclusive - there may be multiple Modifications set at a time.
 
 The Modifications Name is set via the `--name` (or `-n`) command line argument. The Modifications Name is case-insensitive. When this argument is passed, Flashpoint Secure Player will check for a configuration file in the FlashpointSecurePlayerConfigs folder with the same name (with any invalid pathname characters replaced with a period character.) If it fails to find a configuration file in this folder, it will look for the configuration file on the Flashpoint Server at http://flashpointsecureplayerconfig/ using the same pathname rules. If the configuration file is not found in either location, an error occurs.
 
@@ -107,15 +107,15 @@ Set Via:
  - Command Line: `--run-as-administrator` (or `-a`)
  - Configuration File: `runAsAdministrator` attribute
 
-When the Run As Administrator Modification is used either via command line or configuration file, if the application is not running as administrator, it will ask the user if it may launch in Administrator Mode. This is useful for Windows applications that require to be run as administrator.
+When the Run As Administrator Modification is used either via command line or configuration file, if the application is not running as administrator, it will ask the user if it may launch as Administrator User. This is useful for Windows applications that require to be run as administrator.
 
 If the Run As Administrator Modification is not used, it does not test if the application is running as administrator or not. Therefore, it is possible that, even with this Modification not active, the application could be running as administrator. The omission of this Modification simply means that no test occurs.
 
-The command line below launches Flash in Administrator Mode.
+The command line below launches Flash as Administrator User.
 
 `FlashpointSecurePlayer -a --software "Flash\flashplayer_32_sa.exe" "http://www.example.com/example.swf"`
 
-The command line below launches the Astro Avenger II ActiveX Control in Administrator Mode.
+The command line below launches the Astro Avenger II ActiveX Control as Administrator User.
 
 `FlashpointSecurePlayer -a --name "ActiveX\AstroAvenger2Loader\AstroAvenger2Loader.ocx" --server "http://www.shockwave.com/content/astroavenger2/sis/index.html"`
 
@@ -240,7 +240,7 @@ Here is a `modification` element that demonstrates the use of the Downloads Befo
 Set Via:
  - Configuration File: `registryBackups` element
 
-The Registry Backups Modification allows for specifying registry keys and values to be set temporarily and reverted when the application is closed. This allows for registry keys and values to only be set for the duration of time required. The `%FLASHPOINTSECUREPLAYERSTARTUPPATH%` variable may be used in values, which will be substituted with the startup path of Flashpoint Secure Player.
+The Registry Backups Modification allows for specifying registry keys and values to be set temporarily and reverted when the player is exited. This allows for registry keys and values to only be set for the duration of time required. The `%FLASHPOINTSECUREPLAYERSTARTUPPATH%` variable may be used in values, which will be substituted with the startup path of Flashpoint Secure Player.
 
 Here is a `modifications` element which temporarily changes the Unity directory.
 
@@ -256,7 +256,7 @@ Here is a `modifications` element which temporarily changes the Unity directory.
 
 The `type` attribute of the `registryBackup` element specifies whether the element represents a `KEY` or `VALUE`. If not specified, the default is `KEY`. The `keyName` and `valueName` attributes specify the location of the registry key and value. The `valueKind` attribute specifies the kind of value that will be set. Currently, only `String` (REG_SZ) is supported. If the `type` attribute is `KEY`, the `valueName`, `value`, and `valueKind` attributes are ignored.
 
-There is no way to delete a registry key or value, only set them. The application may set a `_deleted` attribute, which is for internal use by the application only, and is ignored outside of the active configuration file (see the section about [Crash Recovery](#crash-recovery) below.)
+There is no way to delete a registry key or value, only set them. The player may set a `_deleted` attribute, which is for internal use by the player only, and is ignored outside of the active configuration file (see the section about [Crash Recovery](#crash-recovery) below.)
 
 **binaryType Attribute and WOW64 Keys**
 
@@ -268,7 +268,7 @@ See the section about [ActiveX Mode](#activex-mode) above.
 
 **<a name="#crash-recovery"></a>Crash Recovery**
 
-The configuration file in the same folder as the executable is the *active configuration file.* This configuration file is maintained by the application and is not meant to be modified by curators or users (unless there is an issue with loading the file.) This file is created so that the registry may be restored in the event of a crash, shutdown or power outage.
+The configuration file in the same folder as the executable is the *active configuration file.* This configuration file is maintained by the player and is not meant to be modified by curators or users (unless there is an issue with loading the file.) This file is created so that the registry may be restored in the event of a crash, shutdown or power outage.
 
 There are four possible scenarios.
 
@@ -277,19 +277,19 @@ There are four possible scenarios.
 3. Flashpoint Secure Player is exited using the close button.
 4. Flashpoint Secure Player crashes, is killed in Task Manager, or a shutdown or power outage occurs.
 
-In scenarios one and two, Flashpoint Secure Player reverts the active Registry Backups Modification because the software is no longer open. In scenario three, Flashpoint Secure Player reverts the active Registry Backups Modification and any software opened using Software Mode is killed. In scenario four, Flashpoint Secure Player will revert the active Registry Backups Modification whenever the application is next opened, regardless of what Modes or Modifications are specified.
+In scenarios one and two, Flashpoint Secure Player reverts the active Registry Backups Modification because the software is no longer open. In scenario three, Flashpoint Secure Player reverts the active Registry Backups Modification and any software opened using Software Mode is killed. In scenario four, Flashpoint Secure Player will revert the active Registry Backups Modification whenever the application is next run, regardless of what Modes or Modifications are specified.
 
-If the Registry Backups Modification cannot be reverted, an error occurs and the application will exit, and not do anything else regardless of what Modes or Modifications are specified until the issue is resolved. If the registry has been modified by a different application outside of Flashpoint Secure Player, the application no longer assumes control of those registry keys and values, and the active Registry Backups Modification is silently discarded.
+If the Registry Backups Modification cannot be reverted, an error occurs and the application will exit, and not do anything else regardless of what Modes or Modifications are specified until the issue is resolved. If the registry has been modified by a different application outside of Flashpoint Secure Player, the player no longer assumes control of those registry keys and values, and the active Registry Backups Modification is silently discarded.
 
 **Administrator Mode**
 
-ActiveX Imports are always created in Administrator Mode, but it is not required during playback. Please note that in some cases, ActiveX Controls may be required to be launched in Administrator Mode. Flashpoint Secure Player will attempt to play the game without running as administrator by default, and in these cases, the ActiveX Control will not work unless the Run As Administrator Modification is used. For more information, see the section about the [Run As Administrator Modification](#run-as-administrator) above.
+ActiveX Imports are always created as Administrator User, but it is not required during playback. Please note that in some cases, ActiveX Controls may be required to be launched as Administrator User. Flashpoint Secure Player will attempt to play the game without running as administrator by default, and in these cases, the ActiveX Control will not work unless the Run As Administrator Modification is used. For more information, see the section about the [Run As Administrator Modification](#run-as-administrator) above.
 
 ## Single Instance
 Set Via:
  - Configuration File: `singleInstance` element
 
-When the Single Instance Modification is used, the application tests that only a single instance of the software specified using Software Mode is open. This is useful for ensuring there aren't multiple instances open of software for which only a single instance may be open at a time before errors occur.
+When the Single Instance Modification is used, the player tests that only a single instance of the software specified using Software Mode is open. This is useful for ensuring there aren't multiple instances open of software for which only a single instance may be open at a time before errors occur.
 
 This command line in combination with this `modification` element uses the Single Instance Modification and Mode Templates Modification to open Basilisk. For more information, see the section about [Mode Template Modifications](#mode-templates) above.
 
@@ -316,7 +316,7 @@ Let's curate the game Zenerchi. The first step is to add the ActiveX Control to 
 
 **Creating a Registry Backup from an ActiveX Control**
 
-The first time an ActiveX Control is added to Flashpoint, a curator must create an ActiveX Import. This is accomplished with the following command line, substituting the ActiveX Control's location. If not run as administrator, the curator will be asked to launch in Administrator Mode. This command line is NOT to be included in the curation metadata, it is only used to create the Registry Backup.
+The first time an ActiveX Control is added to Flashpoint, a curator must create an ActiveX Import. This is accomplished with the following command line, substituting the ActiveX Control's location. If not run as administrator, the curator will be asked to launch as Administrator User. This command line is NOT to be included in the curation metadata, it is only used to create the Registry Backup.
 
 `FlashpointSecurePlayer --name "ActiveX\ZenerchiWeb.1.0.0.10\zenerchi.1.0.0.10.dll" --activex`
 
@@ -357,7 +357,7 @@ You may notice that because the Flashpoint Secure Player is effectively capable 
 # Questions And Answers
 **Is there is Linux version?**
 
-No, but also, what? This application deals mostly in solving Windows specific problems (to do with the registry, or running as administrator, etc.) for Windows specific plugins. The types of programs Flashpoint Secure Player is useful for would not have run natively on Linux in the first place.
+No, but also, what? This player deals mostly in solving Windows specific problems (to do with the registry, or running as administrator, etc.) for Windows specific plugins. The types of programs Flashpoint Secure Player is useful for would not have run natively on Linux in the first place.
 
 **Why does the Modification Name need to be specified in the configuration file if the filename of the configuration file also reflects it?**
 
