@@ -116,9 +116,9 @@ namespace FlashpointSecurePlayer {
                     processesByNameStrict = processesByName;
                 }
 
-                if (processesByNameStrict.Count > 0) {
+                if (processesByNameStrict.Any()) {
                     DialogResult? dialogResult = ShowClosableMessageBox(Task.Run(delegate () {
-                        while (processesByNameStrict.Count > 0) {
+                        while (processesByNameStrict.Any()) {
                             if (!processesByNameStrict[0].HasExited) {
                                 processesByNameStrict[0].WaitForExit();
                             }
@@ -132,7 +132,7 @@ namespace FlashpointSecurePlayer {
                         throw new InvalidModificationException();
                     }
                 }
-            } while (processesByNameStrict.Count > 0);
+            } while (processesByNameStrict.Any());
         }
     }
 }
