@@ -21,7 +21,9 @@ namespace FlashpointSecurePlayer {
             base.Activate(name);
             ModificationsElement modificationsElement = GetModificationsElement(true, Name);
             string value = null;
+            List<string> values = null;
             string compatibilityLayerValue = null;
+            List<string> compatibilityLayerValues = new List<string>();
 
             try {
                 compatibilityLayerValue = Environment.GetEnvironmentVariable(COMPATIBILITY_LAYER_NAME);
@@ -29,10 +31,6 @@ namespace FlashpointSecurePlayer {
                 throw new EnvironmentVariablesFailedException();
             } catch (SecurityException) {
                 throw new TaskRequiresElevationException();
-            }
-
-            if (compatibilityLayerValue != null) {
-                compatibilityLayerValue = compatibilityLayerValue.ToUpper();
             }
 
             EnvironmentVariablesElement environmentVariablesElement = null;
@@ -54,15 +52,23 @@ namespace FlashpointSecurePlayer {
                     throw new TaskRequiresElevationException();
                 }
 
-                if (value != null) {
-                    value = value.ToUpper();
-                }
-
                 // if this is the compatibility layer variable
                 // and the value is not what we want to set it to
                 // and we're in server mode...
-                if (environmentVariablesElement.Name == COMPATIBILITY_LAYER_NAME && value != compatibilityLayerValue && !String.IsNullOrEmpty(server)) {
-                    throw new CompatibilityLayersException();
+                if (environmentVariablesElement.Name == COMPATIBILITY_LAYER_NAME && !String.IsNullOrEmpty(server)) {
+                    values = new List<string>();
+
+                    if (compatibilityLayerValue != null) {
+                        compatibilityLayerValues = compatibilityLayerValue.ToUpper().Split(' ').ToList();
+                    }
+
+                    if (value != null) {
+                        values = value.ToUpper().Split(' ').ToList();
+                    }
+                    
+                    if (values.Except(compatibilityLayerValues).Any()) {
+                        throw new CompatibilityLayersException();
+                    }
                 }
             }
         }
@@ -81,7 +87,9 @@ namespace FlashpointSecurePlayer {
             }
 
             string value = null;
+            List<string> values = null;
             string compatibilityLayerValue = null;
+            List<string> compatibilityLayerValues = new List<string>();
 
             try {
                 compatibilityLayerValue = Environment.GetEnvironmentVariable(COMPATIBILITY_LAYER_NAME);
@@ -92,7 +100,7 @@ namespace FlashpointSecurePlayer {
             }
 
             if (compatibilityLayerValue != null) {
-                compatibilityLayerValue = compatibilityLayerValue.ToUpper();
+                compatibilityLayerValues = compatibilityLayerValue.ToUpper().Split(' ').ToList();
             }
 
             EnvironmentVariablesElement environmentVariablesElement = null;
@@ -105,15 +113,16 @@ namespace FlashpointSecurePlayer {
                 }
 
                 value = environmentVariablesElement.Value;
+                values = new List<string>();
 
                 if (value != null) {
-                    value = value.ToUpper();
+                    values = value.ToUpper().Split(' ').ToList();
                 }
 
                 // if this isn't the compatibility layer variable
                 // or the value isn't what we want to set it to
                 // or we're not in server mode...
-                if (environmentVariablesElement.Name != COMPATIBILITY_LAYER_NAME || value != compatibilityLayerValue && String.IsNullOrEmpty(server)) {
+                if (environmentVariablesElement.Name != COMPATIBILITY_LAYER_NAME || values.Except(compatibilityLayerValues).Any() || String.IsNullOrEmpty(server)) {
                     try {
                         Environment.SetEnvironmentVariable(environmentVariablesElement.Name, null);
                     } catch (ArgumentException) {
