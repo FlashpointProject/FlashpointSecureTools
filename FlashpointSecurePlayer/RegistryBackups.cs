@@ -1348,7 +1348,7 @@ namespace FlashpointSecurePlayer {
             // we want to take care of any queued registry timeline events
             // an event entails the date and time of the registry modification
             if (ModificationsQueue.ContainsKey(safeKeyHandle)) {
-                while (ModificationsQueue[safeKeyHandle].Count > 0) {
+                while (ModificationsQueue[safeKeyHandle].Any()) {
                     // get the first event
                     queuedModification = ModificationsQueue[safeKeyHandle].First();
 
