@@ -876,17 +876,6 @@ namespace FlashpointSecurePlayer {
             return invalidNameCharactersRegex.Replace(name, ".").ToLower();
         }
 
-        public static async Task DownloadEXEConfiguration(string name) {
-            try {
-                name = GetValidEXEConfigurationName(name);
-                await DownloadAsync("http://" + CONFIGURATION_DOWNLOAD_NAME + "/" + name + ".config").ConfigureAwait(false);
-            } catch (Exceptions.DownloadFailedException) {
-                // Fail silently.
-            } catch (ConfigurationErrorsException) {
-                // Fail silently.
-            }
-        }
-
         private static Configuration GetActiveEXEConfiguration() {
             // get cached if exists
             if (ActiveEXEConfiguration != null) {
@@ -991,6 +980,20 @@ namespace FlashpointSecurePlayer {
             EXEConfiguration = exeConfiguration;
             EXEConfigurationName = name;
             return EXEConfiguration;
+        }
+        public static async Task DownloadEXEConfiguration(string name) {
+            try {
+                GetEXEConfiguration(false, name);
+            } catch (ConfigurationErrorsException) {
+                try {
+                    name = GetValidEXEConfigurationName(name);
+                    await DownloadAsync("http://" + CONFIGURATION_DOWNLOAD_NAME + "/" + name + ".config").ConfigureAwait(false);
+                } catch (Exceptions.DownloadFailedException) {
+                    // Fail silently.
+                } catch (ConfigurationErrorsException) {
+                    // Fail silently.
+                }
+            }
         }
 
         public static FlashpointSecurePlayerSection GetFlashpointSecurePlayerSection(bool create, string exeConfigurationName) {
