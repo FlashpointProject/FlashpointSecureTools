@@ -18,6 +18,7 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Modific
 namespace FlashpointSecurePlayer {
     public partial class FlashpointSecurePlayer : Form {
         private const string APPLICATION_MUTEX_NAME = "Flashpoint Secure Player";
+        private const string EMPTY_MODE_NAME = "";
         private const string FLASHPOINT_LAUNCHER_PARENT_PROCESS_EXE_FILE_NAME = "cmd.exe";
         private const string FLASHPOINT_LAUNCHER_PROCESS_NAME = "flashpoint";
         private Mutex ApplicationMutex = null;
@@ -32,8 +33,8 @@ namespace FlashpointSecurePlayer {
         private bool RunAsAdministratorModification = false;
         private List<string> DownloadsBeforeModificationNames = null;
         private bool ActiveX = false;
-        private string Server = null;
-        private string Software = null;
+        private string Server = EMPTY_MODE_NAME;
+        private string Software = EMPTY_MODE_NAME;
         private ProcessStartInfo SoftwareProcessStartInfo = null;
         private delegate void ErrorDelegate(string text);
 
@@ -315,7 +316,7 @@ namespace FlashpointSecurePlayer {
                     ShowError(Properties.Resources.GameNotActiveXControl);
                     return;
                 }
-                
+
                 GetBinaryType(ModificationsName, out BINARY_TYPE binaryType);
 
                 // first, we install the control without a registry backup running
@@ -405,33 +406,7 @@ namespace FlashpointSecurePlayer {
                 securePlaybackProgressBar.Value = 100;
                 ShowOutput(Properties.Resources.RegistryBackupWasSuccessful);
                 return;
-            } else if (!String.IsNullOrEmpty(Server)) {
-                // switch to server form
-                ResetProgressBar();
-                ShowOutput(Properties.Resources.RequiredComponentsAreLoading);
-                
-                try {
-                    await ActivateModificationsAsync(null, delegate (string text) {
-                        if (text.IndexOf("\n") == -1) {
-                            ShowError(text);
-                        } else {
-                            ShowError();
-                            MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-
-                        throw new InvalidModificationException();
-                    }).ConfigureAwait(true);
-                } catch (InvalidModificationException) {
-                    return;
-                }
-
-                Server serverForm = new Server(new Uri(Server));
-
-                securePlaybackProgressBar.Value = 100;
-                Hide();
-                serverForm.Show();
-                return;
-            } else if (!String.IsNullOrEmpty(Software)) {
+            } else {
                 // switch to synced process
                 ResetProgressBar();
                 ShowOutput(Properties.Resources.RequiredComponentsAreLoading);
@@ -451,50 +426,60 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                securePlaybackProgressBar.Value = 50;
-
-                try {
-                    // default to zero in case of error
-                    int argc = 0;
-                    string[] argv = CommandLineToArgv(Software, out argc);
-
-                    if (SoftwareProcessStartInfo == null) {
-                        SoftwareProcessStartInfo = new ProcessStartInfo();
-                    }
-
-                    SoftwareProcessStartInfo.FileName = Path.GetFullPath(argv[0]);
-                    SoftwareProcessStartInfo.Arguments = GetCommandLineArgumentRange(Software, 1, -1);
-                    SoftwareProcessStartInfo.ErrorDialog = false;
-                    SoftwareProcessStartInfo.WorkingDirectory = Path.GetDirectoryName(Path.GetFullPath(argv[0]));
-
-                    Process process = Process.Start(SoftwareProcessStartInfo);
-
-                    try {
-                        ProcessSync.Start(process);
-                    } catch (JobObjectException) {
-                        // popup message box and blow up
-                        ShowError();
-                        MessageBox.Show(Properties.Resources.JobObjectNotCreated, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        process.Kill();
-                        Environment.Exit(-1);
-                        return;
-                    }
+                if (!String.IsNullOrEmpty(Server)) {
+                    securePlaybackProgressBar.Value = 50;
+                    Server serverForm = new Server(new Uri(Server));
 
                     securePlaybackProgressBar.Value = 100;
                     Hide();
+                    serverForm.Show();
+                    return;
+                } else if (!String.IsNullOrEmpty(Software)) {
+                    securePlaybackProgressBar.Value = 50;
 
-                    if (!process.HasExited) {
-                        process.WaitForExit();
+                    try {
+                        // default to zero in case of error
+                        int argc = 0;
+                        string[] argv = CommandLineToArgv(Software, out argc);
+
+                        if (SoftwareProcessStartInfo == null) {
+                            SoftwareProcessStartInfo = new ProcessStartInfo();
+                        }
+
+                        SoftwareProcessStartInfo.FileName = Path.GetFullPath(argv[0]);
+                        SoftwareProcessStartInfo.Arguments = GetCommandLineArgumentRange(Software, 1, -1);
+                        SoftwareProcessStartInfo.ErrorDialog = false;
+                        SoftwareProcessStartInfo.WorkingDirectory = Path.GetDirectoryName(Path.GetFullPath(argv[0]));
+
+                        Process process = Process.Start(SoftwareProcessStartInfo);
+
+                        try {
+                            ProcessSync.Start(process);
+                        } catch (JobObjectException) {
+                            // popup message box and blow up
+                            ShowError();
+                            MessageBox.Show(Properties.Resources.JobObjectNotCreated, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            process.Kill();
+                            Environment.Exit(-1);
+                            return;
+                        }
+
+                        securePlaybackProgressBar.Value = 100;
+                        Hide();
+
+                        if (!process.HasExited) {
+                            process.WaitForExit();
+                        }
+
+                        Application.Exit();
+                    } catch {
+                        Show();
+                        ShowError();
+                        MessageBox.Show(Properties.Resources.ProcessFailedStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        Application.Exit();
                     }
-
-                    Application.Exit();
-                } catch {
-                    Show();
-                    ShowError();
-                    MessageBox.Show(Properties.Resources.ProcessFailedStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    Application.Exit();
+                    return;
                 }
-                return;
             }
             throw new InvalidCurationException();
         }
