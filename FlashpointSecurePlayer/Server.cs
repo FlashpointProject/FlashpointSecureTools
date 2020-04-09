@@ -15,7 +15,7 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 namespace FlashpointSecurePlayer {
     public partial class Server : Form {
         private CustomSecurityManager CustomSecurityManager;
-        public Uri WebBrowserURL = null;
+        private Uri WebBrowserURL = null;
 
         public Server(Uri WebBrowserURL) {
             InitializeComponent();

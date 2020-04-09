@@ -20,6 +20,7 @@ namespace FlashpointSecurePlayer {
         private const string APPLICATION_MUTEX_NAME = "Flashpoint Secure Player";
         private const string FLASHPOINT_LAUNCHER_PARENT_PROCESS_EXE_FILE_NAME = "cmd.exe";
         private const string FLASHPOINT_LAUNCHER_PROCESS_NAME = "flashpoint";
+        private Mutex ApplicationMutex = null;
         private static SemaphoreSlim ModificationsSemaphoreSlim = new SemaphoreSlim(1, 1);
         private readonly RunAsAdministrator RunAsAdministrator;
         private readonly ModeTemplates ModeTemplates;
@@ -27,14 +28,14 @@ namespace FlashpointSecurePlayer {
         private readonly DownloadsBefore DownloadsBefore;
         private readonly RegistryBackups RegistryBackup;
         private readonly SingleInstance SingleInstance;
-        string ModificationsName = ACTIVE_EXE_CONFIGURATION_NAME;
-        bool RunAsAdministratorModification = false;
-        List<string> DownloadsBeforeModificationNames = null;
-        bool ActiveX = false;
-        string Server = null;
-        string Software = null;
-        ProcessStartInfo SoftwareProcessStartInfo = null;
-        public delegate void ErrorDelegate(string text);
+        private string ModificationsName = ACTIVE_EXE_CONFIGURATION_NAME;
+        private bool RunAsAdministratorModification = false;
+        private List<string> DownloadsBeforeModificationNames = null;
+        private bool ActiveX = false;
+        private string Server = null;
+        private string Software = null;
+        private ProcessStartInfo SoftwareProcessStartInfo = null;
+        private delegate void ErrorDelegate(string text);
 
         public FlashpointSecurePlayer() {
             InitializeComponent();
@@ -515,7 +516,7 @@ namespace FlashpointSecurePlayer {
             // default to false in case of error
             bool createdNew = false;
             // signals the Mutex if it has not been
-            Mutex flashpointSecurePlayerMutex = new Mutex(true, APPLICATION_MUTEX_NAME, out createdNew);
+            ApplicationMutex = new Mutex(true, APPLICATION_MUTEX_NAME, out createdNew);
 
             if (!createdNew) {
                 // multiple instances open, blow up immediately
