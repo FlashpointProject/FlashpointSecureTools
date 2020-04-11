@@ -205,18 +205,6 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private string RemoveKeyValueNameTrailingSlash(string keyValueName) {
-            // can be empty, but not null
-            if (keyValueName == null) {
-                return keyValueName;
-            }
-
-            while (keyValueName.Length > 0 && keyValueName.Substring(keyValueName.Length - 1) == "\\") {
-                keyValueName = keyValueName.Substring(0, keyValueName.Length - 1);
-            }
-            return keyValueName;
-        }
-
         private string GetUserKeyValueName(string keyValueName) {
             // can be empty, but not null
             if (TestLaunchedAsAdministratorUser() || keyValueName == null) {
@@ -229,7 +217,7 @@ namespace FlashpointSecurePlayer {
                 keyValueName = "HKEY_CURRENT_USER\\" + keyValueName.Substring(19);
             }
 
-            keyValueName = RemoveKeyValueNameTrailingSlash(keyValueName);
+            keyValueName = RemoveTrailingSlash(keyValueName);
             return keyValueName;
         }
 
@@ -259,7 +247,7 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
-            keyValueName = RemoveKeyValueNameTrailingSlash(keyValueName);
+            keyValueName = RemoveTrailingSlash(keyValueName);
             return keyValueName;
         }
 
@@ -283,7 +271,7 @@ namespace FlashpointSecurePlayer {
                 registryHive = RegistryHive.DynData;
             }
             
-            keyName = RemoveKeyValueNameTrailingSlash(keyName);
+            keyName = RemoveTrailingSlash(keyName);
 
             if (registryHive == null) {
                 return null;
@@ -848,7 +836,7 @@ namespace FlashpointSecurePlayer {
                     break;
                     case TYPE.VALUE:
                     try {
-                        value = AddVariablesToValue(GetValueInRegistryView(keyName, registryBackupElement.ValueName, registryView));
+                        value = AddVariablesToCanonicalizedValue(CanonicalizeValue(GetValueInRegistryView(keyName, registryBackupElement.ValueName, registryView), RemoveTrailingSlash(Application.StartupPath) + "\\" + Name));
                     } catch (ArgumentException) {
                         // value doesn't exist
                         value = null;
@@ -911,7 +899,7 @@ namespace FlashpointSecurePlayer {
                     break;
                     case TYPE.VALUE:
                     try {
-                        SetValueInRegistryView(keyName, registryBackupElement.ValueName, RemoveVariablesFromValue(registryBackupElement.Value), registryBackupElement.ValueKind.GetValueOrDefault(), registryView);
+                        SetValueInRegistryView(keyName, registryBackupElement.ValueName, RemoveVariablesFromCanonicalizedValue(registryBackupElement.Value), registryBackupElement.ValueKind.GetValueOrDefault(), registryView);
                     } catch (InvalidOperationException) {
                         // value marked for deletion
                         Deactivate();
@@ -1011,7 +999,7 @@ namespace FlashpointSecurePlayer {
                             if (value == null) {
                                 clear = true;
                             } else {
-                                if (value.ToString() != RemoveVariablesFromValue(registryBackupElement.Value).ToString()) {
+                                if (value.ToString() != RemoveVariablesFromCanonicalizedValue(registryBackupElement.Value).ToString()) {
                                     clear = true;
                                 }
                             }
@@ -1054,7 +1042,7 @@ namespace FlashpointSecurePlayer {
                         if (String.IsNullOrEmpty(activeRegistryBackupElement._Deleted)) {
                             try {
                                 // value was different before
-                                SetValueInRegistryView(GetUserKeyValueName(activeRegistryBackupElement.KeyName), activeRegistryBackupElement.ValueName, RemoveVariablesFromValue(activeRegistryBackupElement.Value), activeRegistryBackupElement.ValueKind.GetValueOrDefault(), registryView);
+                                SetValueInRegistryView(GetUserKeyValueName(activeRegistryBackupElement.KeyName), activeRegistryBackupElement.ValueName, RemoveVariablesFromCanonicalizedValue(activeRegistryBackupElement.Value), activeRegistryBackupElement.ValueKind.GetValueOrDefault(), registryView);
                             } catch (InvalidOperationException) {
                                 // value doesn't exist and can't be created
                                 throw new RegistryBackupFailedException();
@@ -1152,7 +1140,7 @@ namespace FlashpointSecurePlayer {
                 value = null;
                 
                 try {
-                    value = AddVariablesToValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView));
+                    value = AddVariablesToCanonicalizedValue(CanonicalizeValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView), RemoveTrailingSlash(Application.StartupPath) + "\\" + Name));
                 } catch (ArgumentException) {
                     // value doesn't exist
                     value = null;
@@ -1192,7 +1180,7 @@ namespace FlashpointSecurePlayer {
                 value = null;
 
                 try {
-                    value = AddVariablesToValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView));
+                    value = AddVariablesToCanonicalizedValue(CanonicalizeValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView), RemoveTrailingSlash(Application.StartupPath) + "\\" + Name));
                 } catch (ArgumentException) {
                 } catch (SecurityException) {
                     // we have permission to access the key at this point so this must not be important
@@ -1360,7 +1348,7 @@ namespace FlashpointSecurePlayer {
 
                     // value
                     try {
-                        value = AddVariablesToValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView));
+                        value = AddVariablesToCanonicalizedValue(CanonicalizeValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView), RemoveTrailingSlash(Application.StartupPath) + "\\" + Name));
                     } catch (ArgumentException) {
                         // value doesn't exist
                         value = null;
