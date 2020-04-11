@@ -1103,10 +1103,62 @@ namespace FlashpointSecurePlayer {
             flashpointSecurePlayerSection.Modifications.Set(modificationsElement);
         }
 
+        public static string RemoveTrailingSlash(string path) {
+            // can be empty, but not null
+            if (path == null) {
+                return path;
+            }
+
+            while (path.Length > 0 && path.Substring(path.Length - 1) == "\\") {
+                path = path.Substring(0, path.Length - 1);
+            }
+            return path;
+        }
+
+        public static string RemoveValueStringSlash(string valueString) {
+            // can be empty, but not null
+            if (valueString == null) {
+                return valueString;
+            }
+
+            while (valueString.Length > 0 && valueString.Substring(0, 1) == "\\") {
+                valueString = valueString.Substring(1);
+            }
+            return valueString;
+        }
+
+        public static object CanonicalizeValue(object value, string path) {
+            // since it's a value we'll just check it exists
+            if (!(value is string valueString)) {
+                return value;
+            }
+
+            if (valueString.Length <= MAX_PATH * 2 + 15) {
+                // get the short path
+                StringBuilder shortPathName = new StringBuilder(MAX_PATH);
+                GetShortPathName(path, shortPathName, shortPathName.Capacity);
+
+                if (shortPathName.Length > 0) {
+                    // if the value is a short value...
+                    if (valueString.ToUpper().IndexOf(shortPathName.ToString().ToUpper()) == 0) {
+                        // get the long path
+                        StringBuilder longPathName = new StringBuilder(MAX_PATH);
+                        GetLongPathName(path, longPathName, longPathName.Capacity);
+
+                        if (longPathName.Length > 0) {
+                            // replace the short path with the long path
+                            valueString = longPathName.ToString() + valueString.Substring(shortPathName.Length);
+                        }
+                    }
+                }
+            }
+            return valueString;
+        }
+
         // find path in registry value
         // string must begin with path
         // string cannot exceed MAX_PATH*2+15 characters
-        public static object AddVariablesToValue(object value) {
+        public static object AddVariablesToCanonicalizedValue(object value) {
             // since it's a value we'll just check it exists
             if (!(value is string valueString)) {
                 return value;
@@ -1114,6 +1166,7 @@ namespace FlashpointSecurePlayer {
 
             if (valueString.Length <= MAX_PATH * 2 + 15) {
                 StringBuilder path = new StringBuilder(MAX_PATH);
+                /*
                 GetShortPathName(Application.StartupPath, path, path.Capacity);
 
                 if (path.Length > 0) {
@@ -1123,25 +1176,26 @@ namespace FlashpointSecurePlayer {
                 }
 
                 path = new StringBuilder(MAX_PATH);
+                */
                 GetLongPathName(Application.StartupPath, path, path.Capacity);
 
                 if (path.Length > 0) {
-                    if (valueString.ToUpper().IndexOf(path.ToString().ToUpper()) == 0) {
-                        valueString = "%FLASHPOINTSECUREPLAYERSTARTUPPATH%\\" + valueString.Substring(path.Length);
+                    if (valueString.ToUpper().IndexOf(RemoveTrailingSlash(path.ToString()).ToUpper()) == 0) {
+                        valueString = "%FLASHPOINTSECUREPLAYERSTARTUPPATH%\\" + RemoveValueStringSlash(valueString.Substring(path.Length));
                     }
                 }
             }
             return valueString;
         }
 
-        public static object RemoveVariablesFromValue(object value) {
+        public static object RemoveVariablesFromCanonicalizedValue(object value) {
             // TODO: multistrings?
             if (!(value is string valueString)) {
                 return value;
             }
 
             if (valueString.ToUpper().IndexOf("%FLASHPOINTSECUREPLAYERSTARTUPPATH%") == 0) {
-                valueString = Application.StartupPath + "\\" + valueString.Substring(35);
+                valueString = RemoveTrailingSlash(Application.StartupPath) + "\\" + RemoveValueStringSlash(valueString.Substring(35));
             }
             return valueString;
         }
