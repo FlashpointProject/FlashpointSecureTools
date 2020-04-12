@@ -797,6 +797,17 @@ namespace FlashpointSecurePlayer {
             string keyDeleted = null;
             string keyName = null;
             object value = null;
+            string fullPath = null;
+
+            try {
+                fullPath = Path.GetFullPath(Name);
+            } catch (PathTooLongException) {
+                throw new ArgumentException();
+            } catch (SecurityException) {
+                throw new TaskRequiresElevationException();
+            } catch (NotSupportedException) {
+                throw new ArgumentException();
+            }
 
             RegistryView registryView = RegistryView.Registry32;
 
@@ -836,7 +847,7 @@ namespace FlashpointSecurePlayer {
                     break;
                     case TYPE.VALUE:
                     try {
-                        value = AddVariablesToCanonicalizedValue(CanonicalizeValue(GetValueInRegistryView(keyName, registryBackupElement.ValueName, registryView), RemoveTrailingSlash(Application.StartupPath) + "\\" + Name));
+                        value = AddVariablesToLengthenedValue(LengthenValue(GetValueInRegistryView(keyName, registryBackupElement.ValueName, registryView), fullPath));
                     } catch (ArgumentException) {
                         // value doesn't exist
                         value = null;
@@ -899,7 +910,7 @@ namespace FlashpointSecurePlayer {
                     break;
                     case TYPE.VALUE:
                     try {
-                        SetValueInRegistryView(keyName, registryBackupElement.ValueName, RemoveVariablesFromCanonicalizedValue(registryBackupElement.Value), registryBackupElement.ValueKind.GetValueOrDefault(), registryView);
+                        SetValueInRegistryView(keyName, registryBackupElement.ValueName, RemoveVariablesFromLengthenedValue(registryBackupElement.Value), registryBackupElement.ValueKind.GetValueOrDefault(), registryView);
                     } catch (InvalidOperationException) {
                         // value marked for deletion
                         Deactivate();
@@ -999,7 +1010,7 @@ namespace FlashpointSecurePlayer {
                             if (value == null) {
                                 clear = true;
                             } else {
-                                if (value.ToString() != RemoveVariablesFromCanonicalizedValue(registryBackupElement.Value).ToString()) {
+                                if (value.ToString() != RemoveVariablesFromLengthenedValue(registryBackupElement.Value).ToString()) {
                                     clear = true;
                                 }
                             }
@@ -1042,7 +1053,7 @@ namespace FlashpointSecurePlayer {
                         if (String.IsNullOrEmpty(activeRegistryBackupElement._Deleted)) {
                             try {
                                 // value was different before
-                                SetValueInRegistryView(GetUserKeyValueName(activeRegistryBackupElement.KeyName), activeRegistryBackupElement.ValueName, RemoveVariablesFromCanonicalizedValue(activeRegistryBackupElement.Value), activeRegistryBackupElement.ValueKind.GetValueOrDefault(), registryView);
+                                SetValueInRegistryView(GetUserKeyValueName(activeRegistryBackupElement.KeyName), activeRegistryBackupElement.ValueName, RemoveVariablesFromLengthenedValue(activeRegistryBackupElement.Value), activeRegistryBackupElement.ValueKind.GetValueOrDefault(), registryView);
                             } catch (InvalidOperationException) {
                                 // value doesn't exist and can't be created
                                 throw new RegistryBackupFailedException();
@@ -1125,6 +1136,14 @@ namespace FlashpointSecurePlayer {
 
             ulong safeKeyHandle = registryTraceData.KeyHandle & 0x00000000FFFFFFFF;
             object value = null;
+            string fullPath = null;
+
+            try {
+                fullPath = Path.GetFullPath(Name);
+            }
+            catch (PathTooLongException) { }
+            catch (SecurityException) { }
+            catch (NotSupportedException) { }
 
             RegistryView registryView = RegistryView.Registry32;
 
@@ -1138,9 +1157,9 @@ namespace FlashpointSecurePlayer {
                 
                 registryBackupElement.ValueKind = GetValueKindInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView);
                 value = null;
-                
+
                 try {
-                    value = AddVariablesToCanonicalizedValue(CanonicalizeValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView), RemoveTrailingSlash(Application.StartupPath) + "\\" + Name));
+                    value = AddVariablesToLengthenedValue(LengthenValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView), fullPath));
                 } catch (ArgumentException) {
                     // value doesn't exist
                     value = null;
@@ -1180,7 +1199,7 @@ namespace FlashpointSecurePlayer {
                 value = null;
 
                 try {
-                    value = AddVariablesToCanonicalizedValue(CanonicalizeValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView), RemoveTrailingSlash(Application.StartupPath) + "\\" + Name));
+                    value = AddVariablesToLengthenedValue(LengthenValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView), fullPath));
                 } catch (ArgumentException) {
                 } catch (SecurityException) {
                     // we have permission to access the key at this point so this must not be important
@@ -1326,6 +1345,14 @@ namespace FlashpointSecurePlayer {
             KeyValuePair<DateTime, RegistryBackupElement> queuedModification;
             RegistryBackupElement registryBackupElement;
             object value = null;
+            string fullPath = null;
+
+            try {
+                fullPath = Path.GetFullPath(Name);
+            }
+            catch (PathTooLongException) { }
+            catch (SecurityException) { }
+            catch (NotSupportedException) { }
 
             RegistryView registryView = RegistryView.Registry32;
 
@@ -1348,7 +1375,7 @@ namespace FlashpointSecurePlayer {
 
                     // value
                     try {
-                        value = AddVariablesToCanonicalizedValue(CanonicalizeValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView), RemoveTrailingSlash(Application.StartupPath) + "\\" + Name));
+                        value = AddVariablesToLengthenedValue(LengthenValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView), fullPath));
                     } catch (ArgumentException) {
                         // value doesn't exist
                         value = null;
