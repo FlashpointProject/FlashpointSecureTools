@@ -1127,9 +1127,13 @@ namespace FlashpointSecurePlayer {
             return valueString;
         }
 
-        public static object CanonicalizeValue(object value, string path) {
+        public static object LengthenValue(object value, string path) {
             // since it's a value we'll just check it exists
             if (!(value is string valueString)) {
+                return value;
+            }
+
+            if (String.IsNullOrEmpty(path)) {
                 return value;
             }
 
@@ -1158,7 +1162,7 @@ namespace FlashpointSecurePlayer {
         // find path in registry value
         // string must begin with path
         // string cannot exceed MAX_PATH*2+15 characters
-        public static object AddVariablesToCanonicalizedValue(object value) {
+        public static object AddVariablesToLengthenedValue(object value) {
             // since it's a value we'll just check it exists
             if (!(value is string valueString)) {
                 return value;
@@ -1188,7 +1192,7 @@ namespace FlashpointSecurePlayer {
             return valueString;
         }
 
-        public static object RemoveVariablesFromCanonicalizedValue(object value) {
+        public static object RemoveVariablesFromLengthenedValue(object value) {
             // TODO: multistrings?
             if (!(value is string valueString)) {
                 return value;
