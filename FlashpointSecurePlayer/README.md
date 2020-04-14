@@ -208,7 +208,7 @@ Set Via:
 
 The Downloads Before Modification may be used to download files from the Flashpoint Server. This is useful for software that is only capable of loading files from the computer. The command line argument may be used more than once to download multiple files. For example, this command line, in combination with a Software Mode Template, may be used to download a file for Hypercosm, which can only load files from the computer. For more information, see the section about [Mode Template Modifications](#mode-templates) above.
 
-`FlashpointSecurePlayer --download-before "http://hypercosm/fish.hcvm" --software "http://hypercosm\fish.hcvm"`
+`FlashpointSecurePlayer --download-before "http://hypercosm/fish.hcvm" --software "http://hypercosm/fish.hcvm"`
 
 ```
 <modification name="hypercosm">
