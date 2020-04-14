@@ -40,6 +40,7 @@ namespace FlashpointSecurePlayer {
                 softwareProcessStartInfo.ErrorDialog = false;
             }
 
+            ProgressManager.Goal.Size = modificationsElement.ModeTemplates.ServerModeTemplate.Regexes.Count + modificationsElement.ModeTemplates.SoftwareModeTemplate.Regexes.Count;
             RegexElement regexElement = null;
             Regex regex = null;
 
@@ -47,44 +48,48 @@ namespace FlashpointSecurePlayer {
                 regexElement = modificationsElement.ModeTemplates.ServerModeTemplate.Regexes.Get(i) as RegexElement;
 
                 if (regexElement == null) {
-                    throw new ModeTemplatesFailedException();
+                    throw new System.Configuration.ConfigurationErrorsException("The Regex Element (" + i + ") is null.");
                 }
 
                 try {
                     regex = new Regex(regexElement.Name);
                 } catch (ArgumentException) {
-                    throw new ModeTemplatesFailedException();
+                    throw new ModeTemplatesFailedException("The Regex Name " + regexElement.Name + " is invalid.");
                 }
 
                 try {
                     server = regex.Replace(server, regexElement.Replace);
                 } catch (ArgumentNullException) {
-                    throw new ModeTemplatesFailedException();
+                    throw new ModeTemplatesFailedException("Server cannot be null.");
                 } catch (RegexMatchTimeoutException) {
-                    throw new ModeTemplatesFailedException();
+                    throw new ModeTemplatesFailedException("The Regex Match timed out.");
                 }
+
+                ProgressManager.Goal.Steps++;
             }
 
             for (int i = 0;i < modificationsElement.ModeTemplates.SoftwareModeTemplate.Regexes.Count;i++) {
                 regexElement = modificationsElement.ModeTemplates.SoftwareModeTemplate.Regexes.Get(i) as RegexElement;
 
                 if (regexElement == null) {
-                    throw new ModeTemplatesFailedException();
+                    throw new System.Configuration.ConfigurationErrorsException("The Regex Element (" + i + ") is null.");
                 }
 
                 try {
                     regex = new Regex(regexElement.Name);
                 } catch (ArgumentException) {
-                    throw new ModeTemplatesFailedException();
+                    throw new ModeTemplatesFailedException("The Regex Name " + regexElement.Name + " is invalid.");
                 }
 
                 try {
                     software = regex.Replace(software, regexElement.Replace);
                 } catch (ArgumentNullException) {
-                    throw new ModeTemplatesFailedException();
+                    throw new ModeTemplatesFailedException("Server cannot be null.");
                 } catch (RegexMatchTimeoutException) {
-                    throw new ModeTemplatesFailedException();
+                    throw new ModeTemplatesFailedException("The Regex Match timed out.");
                 }
+
+                ProgressManager.Goal.Steps++;
             }
         }
     }

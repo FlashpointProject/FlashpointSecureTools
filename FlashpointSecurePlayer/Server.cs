@@ -51,6 +51,7 @@ namespace FlashpointSecurePlayer {
             try {
                 CustomSecurityManager = new CustomSecurityManager(webBrowser1);
             } catch (Win32Exception) {
+                ProgressManager.ShowError();
                 MessageBox.Show(Properties.Resources.FailedCreateCustomSecurityManager, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Application.Exit();
                 return;

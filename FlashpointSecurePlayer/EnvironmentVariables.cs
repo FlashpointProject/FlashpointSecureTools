@@ -28,18 +28,19 @@ namespace FlashpointSecurePlayer {
             try {
                 compatibilityLayerValue = Environment.GetEnvironmentVariable(COMPATIBILITY_LAYER_NAME);
             } catch (ArgumentException) {
-                throw new EnvironmentVariablesFailedException();
+                throw new EnvironmentVariablesFailedException("Failed to get the " + COMPATIBILITY_LAYER_NAME + " Environment Variable.");
             } catch (SecurityException) {
-                throw new TaskRequiresElevationException();
+                throw new TaskRequiresElevationException("Getting the " + COMPATIBILITY_LAYER_NAME + " Environment Variable requires elevation.");
             }
 
+            ProgressManager.Goal.Size = modificationsElement.EnvironmentVariables.Count;
             EnvironmentVariablesElement environmentVariablesElement = null;
 
             for (int i = 0;i < modificationsElement.EnvironmentVariables.Count;i++) {
                 environmentVariablesElement = modificationsElement.EnvironmentVariables.Get(i) as EnvironmentVariablesElement;
 
                 if (environmentVariablesElement == null) {
-                    throw new EnvironmentVariablesFailedException();
+                    throw new System.Configuration.ConfigurationErrorsException("The Environment Variables Element (" + i + ") is null.");
                 }
 
                 value = environmentVariablesElement.Value;
@@ -47,9 +48,9 @@ namespace FlashpointSecurePlayer {
                 try {
                     Environment.SetEnvironmentVariable(environmentVariablesElement.Name, RemoveVariablesFromValue(value) as string);
                 } catch (ArgumentException) {
-                    throw new EnvironmentVariablesFailedException();
+                    throw new EnvironmentVariablesFailedException("Failed to set the " + environmentVariablesElement.Name + " Environment Variable.");
                 } catch (SecurityException) {
-                    throw new TaskRequiresElevationException();
+                    throw new TaskRequiresElevationException("Setting the " + environmentVariablesElement.Name + " Environment Variable requires elevation.");
                 }
 
                 // if this is the compatibility layer variable
@@ -67,9 +68,11 @@ namespace FlashpointSecurePlayer {
                     }
                     
                     if (values.Except(compatibilityLayerValues).Any()) {
-                        throw new CompatibilityLayersException();
+                        throw new CompatibilityLayersException("The Compatibility Layers (" + String.Join(", ", compatibilityLayerValues) + ") cannot be set.");
                     }
                 }
+
+                ProgressManager.Goal.Steps++;
             }
         }
 
@@ -94,22 +97,23 @@ namespace FlashpointSecurePlayer {
             try {
                 compatibilityLayerValue = Environment.GetEnvironmentVariable(COMPATIBILITY_LAYER_NAME);
             } catch (ArgumentException) {
-                throw new EnvironmentVariablesFailedException();
+                throw new EnvironmentVariablesFailedException("Failed to get the " + COMPATIBILITY_LAYER_NAME + " Environment Variable.");
             } catch (SecurityException) {
-                throw new TaskRequiresElevationException();
+                throw new TaskRequiresElevationException("Getting the " + COMPATIBILITY_LAYER_NAME + " Environment Variable requires elevation.");
             }
 
             if (compatibilityLayerValue != null) {
                 compatibilityLayerValues = compatibilityLayerValue.ToUpper().Split(' ').ToList();
             }
 
+            ProgressManager.Goal.Size = modificationsElement.EnvironmentVariables.Count;
             EnvironmentVariablesElement environmentVariablesElement = null;
 
             for (int i = 0;i < modificationsElement.EnvironmentVariables.Count;i++) {
                 environmentVariablesElement = modificationsElement.EnvironmentVariables.Get(i) as EnvironmentVariablesElement;
 
                 if (environmentVariablesElement == null) {
-                    throw new EnvironmentVariablesFailedException();
+                    throw new System.Configuration.ConfigurationErrorsException("The Environment Variables Element (" + i + ") is null.");
                 }
 
                 value = environmentVariablesElement.Value;
@@ -126,11 +130,13 @@ namespace FlashpointSecurePlayer {
                     try {
                         Environment.SetEnvironmentVariable(environmentVariablesElement.Name, null);
                     } catch (ArgumentException) {
-                        throw new EnvironmentVariablesFailedException();
+                        throw new EnvironmentVariablesFailedException("Failed to set the " + environmentVariablesElement.Name + " Environment Variable.");
                     } catch (SecurityException) {
-                        throw new TaskRequiresElevationException();
+                        throw new TaskRequiresElevationException("Getting the " + COMPATIBILITY_LAYER_NAME + " Environment Variable requires elevation.");
                     }
                 }
+
+                ProgressManager.Goal.Steps++;
             }
         }
     }

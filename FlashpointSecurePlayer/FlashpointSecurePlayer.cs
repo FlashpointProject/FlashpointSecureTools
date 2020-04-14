@@ -48,32 +48,13 @@ namespace FlashpointSecurePlayer {
             SingleInstance = new SingleInstance(this);
         }
 
-        private void ResetProgressBar() {
-            securePlaybackProgressBar.Style = ProgressBarStyle.Blocks;
-            securePlaybackProgressBar.Value = 0;
-            securePlaybackProgressBar.Style = ProgressBarStyle.Continuous;
-            SetProgressBarState(securePlaybackProgressBar, PBST_NORMAL);
-        }
-
-        private void ShowOutput() {
-            securePlaybackProgressBar.Style = ProgressBarStyle.Continuous;
-            SetProgressBarState(securePlaybackProgressBar, PBST_NORMAL);
-        }
-
         private void ShowOutput(string errorLabelText) {
-            ShowOutput();
+            ProgressManager.ShowOutput();
             this.errorLabel.Text = errorLabelText;
         }
 
-        private void ShowError() {
-            // TODO: why won't the progress bar change colour
-            securePlaybackProgressBar.Style = ProgressBarStyle.Continuous;
-            securePlaybackProgressBar.Value = 100;
-            SetProgressBarState(securePlaybackProgressBar, PBST_ERROR);
-        }
-
         private void ShowError(string errorLabelText) {
-            ShowError();
+            ProgressManager.ShowError();
             this.errorLabel.Text = errorLabelText;
         }
 
@@ -90,34 +71,34 @@ namespace FlashpointSecurePlayer {
                  then there'd be no dialog except this one - and I don't want
                  the program to enter an infinite restart loop
                  */
-                ShowOutput();
+                ProgressManager.ShowOutput();
                 DialogResult dialogResult = MessageBox.Show(String.Format(Properties.Resources.LaunchGame, Properties.Resources.AsAdministratorUser), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.YesNo, MessageBoxIcon.None);
 
                 if (dialogResult == DialogResult.No) {
                     Application.Exit();
-                    throw new InvalidModificationException();
+                    throw new InvalidModificationException("The operation was aborted by the user.");
                 }
 
                 RestartApplication(true, this, APPLICATION_MUTEX_NAME);
-                throw new InvalidModificationException();
+                throw new InvalidModificationException("The Modification does not work unless run as Administrator User.");
             }
 
             // we're already running as admin?
             ShowError(String.Format(Properties.Resources.GameFailedLaunch, Properties.Resources.AsAdministratorUser));
-            throw new InvalidModificationException();
+            throw new InvalidModificationException("The Modification failed to run as Administrator User.");
         }
 
         private void AskLaunchWithCompatibilitySettings() {
-            ShowOutput();
+            ProgressManager.ShowOutput();
             DialogResult dialogResult = MessageBox.Show(String.Format(Properties.Resources.LaunchGame, Properties.Resources.WithCompatibilitySettings), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.YesNo, MessageBoxIcon.None);
 
             if (dialogResult == DialogResult.No) {
                 Application.Exit();
-                throw new InvalidModificationException();
+                throw new InvalidModificationException("The operation was aborted by the user.");
             }
 
             RestartApplication(false, this, APPLICATION_MUTEX_NAME);
-            throw new InvalidModificationException();
+            throw new InvalidModificationException("The Modification does not work unless run with Compatibility Settings.");
         }
 
         private async Task ActivateModificationsAsync(string commandLine, ErrorDelegate errorDelegate) {
@@ -130,6 +111,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
+                ProgressManager.Goal.Size = 7;
                 await DownloadEXEConfiguration(ModificationsName).ConfigureAwait(true);
                 ModificationsElement modificationsElement = null;
 
@@ -138,12 +120,12 @@ namespace FlashpointSecurePlayer {
                 } catch (System.Configuration.ConfigurationErrorsException) {
                     errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                     // we really need modificationsElement to exist
-                    throw new InvalidModificationException();
+                    throw new InvalidModificationException("The Modifications Element " + ModificationsName + " does not exist.");
                 }
 
                 if (modificationsElement == null) {
                     errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                    throw new InvalidModificationException();
+                    throw new InvalidModificationException("The Modifications Element " + ModificationsName + " is null.");
                 }
 
                 if (DownloadsBeforeModificationNames == null) {
@@ -162,7 +144,7 @@ namespace FlashpointSecurePlayer {
                             downloadsBeforeElement = modificationsElement.DownloadsBefore.Get(i) as ModificationsElement.DownloadBeforeElementCollection.DownloadBeforeElement;
 
                             if (downloadsBeforeElement == null) {
-                                throw new System.Configuration.ConfigurationErrorsException();
+                                throw new System.Configuration.ConfigurationErrorsException("The Downloads Before Element (" + i + ") is null.");
                             }
 
                             DownloadsBeforeModificationNames.Add(downloadsBeforeElement.Name);
@@ -173,7 +155,9 @@ namespace FlashpointSecurePlayer {
                 } catch (System.Configuration.ConfigurationErrorsException) {
                     errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                 }
-                
+
+                ProgressManager.Goal.Steps++;
+
                 try {
                     RunAsAdministrator.Activate(ModificationsName, RunAsAdministratorModification);
                 } catch (System.Configuration.ConfigurationErrorsException) {
@@ -181,6 +165,8 @@ namespace FlashpointSecurePlayer {
                 } catch (TaskRequiresElevationException) {
                     AskLaunchAsAdministratorUser();
                 }
+
+                ProgressManager.Goal.Steps++;
 
                 if (modificationsElement.ModeTemplates.ServerModeTemplate.ElementInformation.IsPresent || modificationsElement.ModeTemplates.SoftwareModeTemplate.ElementInformation.IsPresent) {
                     try {
@@ -193,6 +179,8 @@ namespace FlashpointSecurePlayer {
                         AskLaunchAsAdministratorUser();
                     }
                 }
+
+                ProgressManager.Goal.Steps++;
 
                 if (modificationsElement.EnvironmentVariables.Count > 0) {
                     try {
@@ -208,6 +196,8 @@ namespace FlashpointSecurePlayer {
                     }
                 }
 
+                ProgressManager.Goal.Steps++;
+
                 if (DownloadsBeforeModificationNames.Count > 0) {
                     try {
                         await DownloadsBefore.ActivateAsync(ModificationsName, DownloadsBeforeModificationNames).ConfigureAwait(true);
@@ -217,6 +207,8 @@ namespace FlashpointSecurePlayer {
                         errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                     }
                 }
+
+                ProgressManager.Goal.Steps++;
 
                 if (modificationsElement.RegistryBackups.Count > 0) {
                     try {
@@ -230,6 +222,8 @@ namespace FlashpointSecurePlayer {
                     }
                 }
 
+                ProgressManager.Goal.Steps++;
+
                 if (modificationsElement.SingleInstance.ElementInformation.IsPresent) {
                     try {
                         SingleInstance.Activate(ModificationsName, commandLine);
@@ -241,6 +235,8 @@ namespace FlashpointSecurePlayer {
                         errorDelegate(Properties.Resources.UnknownProcessCompatibilityConflict);
                     }
                 }
+
+                ProgressManager.Goal.Steps++;
             } finally {
                 ModificationsSemaphoreSlim.Release();
             }
@@ -250,6 +246,8 @@ namespace FlashpointSecurePlayer {
             await ModificationsSemaphoreSlim.WaitAsync().ConfigureAwait(true);
 
             try {
+                ProgressManager.Goal.Size = 3;
+
                 try {
                     // this one really needs to work
                     // we can't continue if it does not
@@ -261,6 +259,8 @@ namespace FlashpointSecurePlayer {
                 } catch (TaskRequiresElevationException) {
                     AskLaunchAsAdministratorUser();
                 }
+
+                ProgressManager.Goal.Steps++;
 
                 try {
                     EnvironmentVariables.Deactivate(Server);
@@ -274,6 +274,8 @@ namespace FlashpointSecurePlayer {
                     AskLaunchWithCompatibilitySettings();
                 }
 
+                ProgressManager.Goal.Steps++;
+
                 try {
                     ModificationsElement activeModificationsElement = GetActiveModificationsElement(false);
                 
@@ -284,6 +286,8 @@ namespace FlashpointSecurePlayer {
                 } catch (System.Configuration.ConfigurationErrorsException) {
                     errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                 }
+
+                ProgressManager.Goal.Steps++;
             } finally {
                 ModificationsSemaphoreSlim.Release();
             }
@@ -294,7 +298,7 @@ namespace FlashpointSecurePlayer {
                 // ActiveX Mode
                 if (String.IsNullOrEmpty(ModificationsName)) {
                     ShowError(Properties.Resources.CurationMissingModificationName);
-                    throw new InvalidModificationException();
+                    throw new InvalidModificationException("The Modification Name may not be the Active Modification Name.");
                 }
 
                 // this requires admin
@@ -302,13 +306,15 @@ namespace FlashpointSecurePlayer {
                     AskLaunchAsAdministratorUser();
                 }
 
-                ResetProgressBar();
+                ProgressManager.Reset();
                 ShowOutput(Properties.Resources.RegistryBackupInProgress);
+                ProgressManager.Goal.Size = 6;
                 ActiveXControl activeXControl;
 
                 try {
                     activeXControl = new ActiveXControl(ModificationsName);
                 } catch (DllNotFoundException) {
+                    ProgressManager.ShowError();
                     MessageBox.Show(String.Format(Properties.Resources.GameIsMissingFiles, ModificationsName), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Application.Exit();
                     return;
@@ -328,7 +334,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                securePlaybackProgressBar.Value = 17;
+                ProgressManager.Goal.Steps++;
 
                 // next, uninstall the control
                 // in case it was already installed before this whole process
@@ -341,7 +347,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                securePlaybackProgressBar.Value = 33;
+                ProgressManager.Goal.Steps++;
 
                 try {
                     await RegistryBackup.StartImportAsync(ModificationsName, binaryType).ConfigureAwait(true);
@@ -349,6 +355,7 @@ namespace FlashpointSecurePlayer {
                     ShowError(Properties.Resources.RegistryBackupFailed);
                     return;
                 } catch (System.Configuration.ConfigurationErrorsException) {
+                    ProgressManager.ShowError();
                     MessageBox.Show(Properties.Resources.ConfigurationFailedLoad, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Application.Exit();
                     return;
@@ -364,7 +371,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                securePlaybackProgressBar.Value = 50;
+                ProgressManager.Goal.Steps++;
 
                 // a registry backup is running, install the control
                 try {
@@ -374,7 +381,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                securePlaybackProgressBar.Value = 67;
+                ProgressManager.Goal.Steps++;
 
                 try {
                     await RegistryBackup.StopImportAsync().ConfigureAwait(true);
@@ -382,6 +389,7 @@ namespace FlashpointSecurePlayer {
                     ShowError(Properties.Resources.RegistryBackupFailed);
                     return;
                 } catch (System.Configuration.ConfigurationErrorsException) {
+                    ProgressManager.ShowError();
                     MessageBox.Show(Properties.Resources.ConfigurationFailedLoad, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Application.Exit();
                     return;
@@ -390,7 +398,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                securePlaybackProgressBar.Value = 83;
+                ProgressManager.Goal.Steps++;
 
                 // the registry backup is stopped, uninstall the control
                 // this will leave the control uninstalled on the system
@@ -403,39 +411,40 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                securePlaybackProgressBar.Value = 100;
+                ProgressManager.Goal.Steps++;
                 ShowOutput(Properties.Resources.RegistryBackupWasSuccessful);
                 return;
             } else {
                 // switch to synced process
-                ResetProgressBar();
+                ProgressManager.Reset();
                 ShowOutput(Properties.Resources.RequiredComponentsAreLoading);
+                ProgressManager.Goal.Size = 2;
 
                 try {
                     await ActivateModificationsAsync(Software, delegate (string text) {
                         if (text.IndexOf("\n") == -1) {
                             ShowError(text);
                         } else {
-                            ShowError();
+                            ProgressManager.ShowError();
                             MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
 
-                        throw new InvalidModificationException();
+                        throw new InvalidModificationException("An error occured while activating.");
                     }).ConfigureAwait(true);
                 } catch (InvalidModificationException) {
                     return;
                 }
 
                 if (!String.IsNullOrEmpty(Server)) {
-                    securePlaybackProgressBar.Value = 50;
+                    ProgressManager.Goal.Steps++;
                     Server serverForm = new Server(new Uri(Server));
 
-                    securePlaybackProgressBar.Value = 100;
+                    ProgressManager.Goal.Steps++;
                     Hide();
                     serverForm.Show();
                     return;
                 } else if (!String.IsNullOrEmpty(Software)) {
-                    securePlaybackProgressBar.Value = 50;
+                    ProgressManager.Goal.Steps++;
 
                     try {
                         // default to zero in case of error
@@ -457,14 +466,14 @@ namespace FlashpointSecurePlayer {
                             ProcessSync.Start(process);
                         } catch (JobObjectException) {
                             // popup message box and blow up
-                            ShowError();
+                            ProgressManager.ShowError();
                             MessageBox.Show(Properties.Resources.JobObjectNotCreated, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                             process.Kill();
                             Environment.Exit(-1);
                             return;
                         }
 
-                        securePlaybackProgressBar.Value = 100;
+                        ProgressManager.Goal.Steps++;
                         Hide();
 
                         if (!process.HasExited) {
@@ -474,14 +483,14 @@ namespace FlashpointSecurePlayer {
                         Application.Exit();
                     } catch {
                         Show();
-                        ShowError();
+                        ProgressManager.ShowError();
                         MessageBox.Show(Properties.Resources.ProcessFailedStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         Application.Exit();
                     }
                     return;
                 }
             }
-            throw new InvalidCurationException();
+            throw new InvalidCurationException("No Mode was used.");
         }
 
         private async Task StopSecurePlayback(FormClosingEventArgs e) {
@@ -509,6 +518,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
+            ProgressManager.ProgressBar = securePlaybackProgressBar;
             string windowsVersionName = GetWindowsVersionName(false, false, false);
 
             if (windowsVersionName != "Windows 7" &&
@@ -519,7 +529,7 @@ namespace FlashpointSecurePlayer {
                 windowsVersionName != "Windows Server 2012 R2" &&
                 windowsVersionName != "Windows 10" &&
                 windowsVersionName != "Windows Server 2016") {
-                ShowError();
+                ProgressManager.ShowError();
                 MessageBox.Show(Properties.Resources.WindowsVersionTooOld, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Application.Exit();
                 return;
@@ -529,7 +539,7 @@ namespace FlashpointSecurePlayer {
                 try {
                     Directory.SetCurrentDirectory(Application.StartupPath);
                 } catch (System.Security.SecurityException) {
-                    throw new TaskRequiresElevationException();
+                    throw new TaskRequiresElevationException("Setting the Current Directory requires elevation.");
                 } catch {
                     // Fail silently.
                 }
@@ -582,9 +592,9 @@ namespace FlashpointSecurePlayer {
 
             try {
                 await DeactivateModificationsAsync(delegate (string text) {
-                    ShowError();
+                    ProgressManager.ShowError();
                     MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    throw new InvalidModificationException();
+                    throw new InvalidModificationException("An error occured while deactivating.");
                 }).ConfigureAwait(false);
             } catch (InvalidModificationException) {
                 // can't proceed since we can't activate without deactivating first
@@ -594,7 +604,7 @@ namespace FlashpointSecurePlayer {
         }
 
         private async void FlashpointSecurePlayer_Shown(object sender, EventArgs e) {
-            ShowOutput();
+            ProgressManager.ShowOutput();
 
             try {
                 await StartSecurePlayback().ConfigureAwait(false);
@@ -631,6 +641,7 @@ namespace FlashpointSecurePlayer {
                         processesByName = Process.GetProcessesByName(FLASHPOINT_LAUNCHER_PROCESS_NAME);
                     } catch (InvalidOperationException) {
                         // only occurs Windows XP which is unsupported
+                        ProgressManager.ShowError();
                         MessageBox.Show(Properties.Resources.WindowsVersionTooOld, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         Application.Exit();
                         return;
@@ -641,7 +652,7 @@ namespace FlashpointSecurePlayer {
                     }
                 }
 
-                ShowError();
+                ProgressManager.ShowError();
                 MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Application.Exit();
                 return;

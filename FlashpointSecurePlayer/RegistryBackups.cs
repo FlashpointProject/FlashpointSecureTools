@@ -54,6 +54,7 @@ namespace FlashpointSecurePlayer {
         private const string IMPORT_RESUME = "FLASHPOINTSECUREPLAYERREGISTRYBACKUPIMPORTRESUME";
         private const string IMPORT_PAUSE = "FLASHPOINTSECUREPLAYERREGISTRYBACKUPIMPORTPAUSE";
         private const string KEY_DELETED = "";
+        private string FullPath = null;
         private EventWaitHandle ResumeEventWaitHandle = new ManualResetEvent(false);
         private Dictionary<ulong, SortedList<DateTime, RegistryBackupElement>> ModificationsQueue = null;
         private Dictionary<ulong, string> KCBModificationKeyNames = null;
@@ -205,18 +206,6 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private string RemoveKeyValueNameTrailingSlash(string keyValueName) {
-            // can be empty, but not null
-            if (keyValueName == null) {
-                return keyValueName;
-            }
-
-            while (keyValueName.Length > 0 && keyValueName.Substring(keyValueName.Length - 1) == "\\") {
-                keyValueName = keyValueName.Substring(0, keyValueName.Length - 1);
-            }
-            return keyValueName;
-        }
-
         private string GetUserKeyValueName(string keyValueName) {
             // can be empty, but not null
             if (TestLaunchedAsAdministratorUser() || keyValueName == null) {
@@ -229,7 +218,7 @@ namespace FlashpointSecurePlayer {
                 keyValueName = "HKEY_CURRENT_USER\\" + keyValueName.Substring(19);
             }
 
-            keyValueName = RemoveKeyValueNameTrailingSlash(keyValueName);
+            keyValueName = RemoveTrailingSlash(keyValueName);
             return keyValueName;
         }
 
@@ -259,7 +248,7 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
-            keyValueName = RemoveKeyValueNameTrailingSlash(keyValueName);
+            keyValueName = RemoveTrailingSlash(keyValueName);
             return keyValueName;
         }
 
@@ -283,7 +272,7 @@ namespace FlashpointSecurePlayer {
                 registryHive = RegistryHive.DynData;
             }
             
-            keyName = RemoveKeyValueNameTrailingSlash(keyName);
+            keyName = RemoveTrailingSlash(keyName);
 
             if (registryHive == null) {
                 return null;
@@ -294,7 +283,7 @@ namespace FlashpointSecurePlayer {
             } catch (ArgumentException) {
                 return null;
             } catch (UnauthorizedAccessException) {
-                throw new SecurityException();
+                throw new SecurityException("Access to the base key " + keyName + " is denied.");
             }
         }
 
@@ -387,13 +376,13 @@ namespace FlashpointSecurePlayer {
                     return null;
                 } catch (ObjectDisposedException) {
                     // key is closed (could not be opened)
-                    throw new ArgumentException();
+                    throw new ArgumentException("The key " + keyName + " is closed.");
                 } catch (IOException) {
                     // the key is marked for deletion
                     return null;
                 } catch (UnauthorizedAccessException) {
                     // we don't have write rights to the key
-                    throw new SecurityException();
+                    throw new SecurityException("The user cannot write to the key " + keyName + ".");
                 }
             }
             return registryKey;
@@ -424,7 +413,7 @@ namespace FlashpointSecurePlayer {
                         return;
                     } catch (UnauthorizedAccessException) {
                         // we don't have write rights to the key
-                        throw new SecurityException();
+                        throw new SecurityException("The user cannot write to the key " + keyName + ".");
                     }
                 }
             } finally {
@@ -440,7 +429,7 @@ namespace FlashpointSecurePlayer {
             try {
                 if (registryKey == null) {
                     // key is invalid
-                    throw new ArgumentException();
+                    throw new ArgumentException("The key " + keyName + " is invalid.");
                 }
             } finally {
                 if (registryKey != null) {
@@ -474,7 +463,7 @@ namespace FlashpointSecurePlayer {
                     return null;
                 } catch (UnauthorizedAccessException) {
                     // we don't have read rights to the key
-                    throw new SecurityException();
+                    throw new SecurityException("The user cannot read from the value " + valueName + ".");
                 }
             } finally {
                 if (registryKey != null) {
@@ -491,16 +480,15 @@ namespace FlashpointSecurePlayer {
                     registryKey.SetValue(valueName, value, valueKind);
                 } catch (NullReferenceException) {
                     // registry key is null
-                    throw new ArgumentException();
+                    throw new ArgumentException("The key " + keyName + " is null.");
                 } catch (ObjectDisposedException) {
                     // key is closed (could not be opened)
-                    throw new ArgumentException();
+                    throw new ArgumentException("The key " + keyName + " is closed.");
                 } catch (IOException) {
                     // key represents a root node
-                    throw new ArgumentException();
+                    throw new ArgumentException("The key " + keyName + " represents a root node.");
                 } catch (UnauthorizedAccessException) {
-                    // key is closed (could not be opened)
-                    throw new SecurityException();
+                    throw new SecurityException("The key " + keyName + " cannot be accessed by the user.");
                 }
             } finally {
                 if (registryKey != null) {
@@ -660,24 +648,35 @@ namespace FlashpointSecurePlayer {
 
         public async Task StartImportAsync(string name, BINARY_TYPE binaryType) {
             base.StartImport(name);
+
             ModificationsElement modificationsElement = GetModificationsElement(true, Name);
 
             // this happens here since this check doesn't need to occur to activate
             if (modificationsElement.RegistryBackups.Get(Name) != null) {
                 // preset already exists with this name
                 // prevent a registry backup from running for a non-curator
-                throw new InvalidModificationException();
+                throw new InvalidModificationException("A Modification with the name " + Name + " exists.");
+            }
+
+            try {
+                FullPath = Path.GetFullPath(Name);
+            } catch (PathTooLongException) {
+                throw new ArgumentException("The path is too long to " + Name + ".");
+            } catch (SecurityException) {
+                throw new TaskRequiresElevationException("Getting the Full Path to " + Name + " requires elevation.");
+            } catch (NotSupportedException) {
+                throw new ArgumentException("The path to " + Name + " is not supported.");
             }
 
             // check permission to run
             if (!TraceEventSession.IsElevated().GetValueOrDefault()) {
-                throw new TaskRequiresElevationException();
+                throw new TaskRequiresElevationException("The Trace Event Session requires elevation.");
             }
 
             if (!TestLaunchedAsAdministratorUser()) {
-                throw new TaskRequiresElevationException();
+                throw new TaskRequiresElevationException("The Import requires elevation.");
             }
-            
+
             // lock close button
             ImportStarted = true;
 
@@ -734,60 +733,63 @@ namespace FlashpointSecurePlayer {
             }
 
             if (ImportPaused) {
-                throw new RegistryBackupFailedException();
+                throw new RegistryBackupFailedException("A timeout occured while starting the Import.");
             }
         }
 
         private async Task StopImportAsync(bool sync) {
-            base.StopImport();
-            ResumeEventWaitHandle.Set();
+            try {
+                base.StopImport();
+                ResumeEventWaitHandle.Set();
 
-            // stop this.kernelSession
-            // we give the registry backup a ten second
-            // timeout, which should be enough
-            for (int i = 0;i < IMPORT_TIMEOUT;i++) {
-                Registry.GetValue("HKEY_LOCAL_MACHINE", IMPORT_PAUSE, null);
+                // stop this.kernelSession
+                // we give the registry backup a ten second
+                // timeout, which should be enough
+                for (int i = 0;i < IMPORT_TIMEOUT;i++) {
+                    Registry.GetValue("HKEY_LOCAL_MACHINE", IMPORT_PAUSE, null);
 
-                if (ImportPaused) {
-                    break;
+                    if (ImportPaused) {
+                        break;
+                    }
+
+                    if (sync) {
+                        Thread.Sleep(1000);
+                    } else {
+                        await Task.Delay(1000).ConfigureAwait(true);
+                    }
                 }
 
-                if (sync) {
-                    Thread.Sleep(1000);
-                } else {
-                    await Task.Delay(1000).ConfigureAwait(true);
+                if (!ImportPaused) {
+                    throw new RegistryBackupFailedException("A timeout occured while stopping the Import.");
                 }
-            }
 
-            if (!ImportPaused) {
-                throw new RegistryBackupFailedException();
-            }
+                this.KernelSession.Source.Kernel.RegistryQueryValue -= GotValue;
 
-            this.KernelSession.Source.Kernel.RegistryQueryValue -= GotValue;
+                this.KernelSession.Source.Kernel.RegistryCreate -= ModificationAdded;
+                this.KernelSession.Source.Kernel.RegistrySetValue -= ModificationAdded;
+                this.KernelSession.Source.Kernel.RegistrySetInformation -= ModificationAdded;
 
-            this.KernelSession.Source.Kernel.RegistryCreate -= ModificationAdded;
-            this.KernelSession.Source.Kernel.RegistrySetValue -= ModificationAdded;
-            this.KernelSession.Source.Kernel.RegistrySetInformation -= ModificationAdded;
+                this.KernelSession.Source.Kernel.RegistryDelete -= ModificationRemoved;
+                this.KernelSession.Source.Kernel.RegistryDeleteValue -= ModificationRemoved;
 
-            this.KernelSession.Source.Kernel.RegistryDelete -= ModificationRemoved;
-            this.KernelSession.Source.Kernel.RegistryDeleteValue -= ModificationRemoved;
+                //this.KernelSession.Source.Kernel.RegistryFlush -= RegistryModified;
 
-            //this.KernelSession.Source.Kernel.RegistryFlush -= RegistryModified;
+                this.KernelSession.Source.Kernel.RegistryKCBCreate -= KCBStarted;
+                this.KernelSession.Source.Kernel.RegistryKCBRundownBegin -= KCBStarted;
 
-            this.KernelSession.Source.Kernel.RegistryKCBCreate -= KCBStarted;
-            this.KernelSession.Source.Kernel.RegistryKCBRundownBegin -= KCBStarted;
+                this.KernelSession.Source.Kernel.RegistryKCBDelete -= KCBStopped;
+                this.KernelSession.Source.Kernel.RegistryKCBRundownEnd -= KCBStopped;
 
-            this.KernelSession.Source.Kernel.RegistryKCBDelete -= KCBStopped;
-            this.KernelSession.Source.Kernel.RegistryKCBRundownEnd -= KCBStopped;
+                this.KernelSession.Source.Dispose();
+                this.KernelSession.Dispose();
 
-            this.KernelSession.Source.Dispose();
-            this.KernelSession.Dispose();
+                SetFlashpointSecurePlayerSection(Name);
+            } finally {
+                ImportStarted = false;
 
-            SetFlashpointSecurePlayerSection(Name);
-            ImportStarted = false;
-
-            if (Form != null) {
-                Form.ControlBox = !ImportStarted;
+                if (Form != null) {
+                    Form.ControlBox = !ImportStarted;
+                }
             }
         }
 
@@ -810,11 +812,23 @@ namespace FlashpointSecurePlayer {
             string keyName = null;
             object value = null;
 
+            try {
+                FullPath = Path.GetFullPath(Name);
+            } catch (PathTooLongException) {
+                throw new ArgumentException("The path is too long to " + Name + ".");
+            } catch (SecurityException) {
+                throw new TaskRequiresElevationException("Getting the Full Path to " + Name + " requires elevation.");
+            } catch (NotSupportedException) {
+                throw new ArgumentException("The path to " + Name + " is not supported.");
+            }
+
             RegistryView registryView = RegistryView.Registry32;
 
             if (modificationsElement.RegistryBackups.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) {
                 registryView = RegistryView.Registry64;
             }
+
+            ProgressManager.Goal.Size = modificationsElement.RegistryBackups.Count * 2;
 
             // populate active modifications
             for (int i = 0;i < modificationsElement.RegistryBackups.Count;i++) {
@@ -823,7 +837,7 @@ namespace FlashpointSecurePlayer {
 
                 if (registryBackupElement == null) {
                     Deactivate();
-                    throw new RegistryBackupFailedException();
+                    throw new System.Configuration.ConfigurationErrorsException("The Registry Backup Element (" + i + ") is null.");
                 }
 
                 // GOAL: find the CURRENT value in the REAL REGISTRY
@@ -848,13 +862,13 @@ namespace FlashpointSecurePlayer {
                     break;
                     case TYPE.VALUE:
                     try {
-                        value = AddVariablesToValue(GetValueInRegistryView(keyName, registryBackupElement.ValueName, registryView));
+                        value = AddVariablesToLengthenedValue(LengthenValue(GetValueInRegistryView(keyName, registryBackupElement.ValueName, registryView), FullPath));
                     } catch (ArgumentException) {
                         // value doesn't exist
                         value = null;
                     } catch (SecurityException) {
                         // value exists but we can't get it
-                        throw new TaskRequiresElevationException();
+                        throw new TaskRequiresElevationException("The value " + registryBackupElement.ValueName + " cannot be accessed by the user.");
                     }
 
                     if (value == null) {
@@ -878,6 +892,7 @@ namespace FlashpointSecurePlayer {
                 // we do this and save in the loop so we can safely deactivate if needed partway through the process
                 activeModificationsElement.RegistryBackups.Set(activeRegistryBackupElement);
                 SetFlashpointSecurePlayerSection(Name);
+                ProgressManager.Goal.Steps++;
             }
 
             for (int i = 0;i < modificationsElement.RegistryBackups.Count;i++) {
@@ -886,7 +901,7 @@ namespace FlashpointSecurePlayer {
 
                 if (registryBackupElement == null) {
                     Deactivate();
-                    throw new RegistryBackupFailedException();
+                    throw new System.Configuration.ConfigurationErrorsException("The Registry Backup Element (" + i + ") is null.");
                 }
 
                 keyName = GetUserKeyValueName(registryBackupElement.KeyName);
@@ -900,33 +915,35 @@ namespace FlashpointSecurePlayer {
                     } catch (InvalidOperationException) {
                         // key marked for deletion
                         Deactivate();
-                        throw new RegistryBackupFailedException();
+                        throw new RegistryBackupFailedException("The key " + keyName + " is marked for deletion.");
                     } catch (ArgumentException) {
                         // key doesn't exist and can't be created
                         Deactivate();
-                        throw new TaskRequiresElevationException();
+                        throw new TaskRequiresElevationException("Creating the key " + keyName + " requires elevation.");
                     } catch (SecurityException) {
                         // key exists and we can't modify it
                     }
                     break;
                     case TYPE.VALUE:
                     try {
-                        SetValueInRegistryView(keyName, registryBackupElement.ValueName, RemoveVariablesFromValue(registryBackupElement.Value), registryBackupElement.ValueKind.GetValueOrDefault(), registryView);
+                        SetValueInRegistryView(keyName, registryBackupElement.ValueName, RemoveVariablesFromLengthenedValue(registryBackupElement.Value), registryBackupElement.ValueKind.GetValueOrDefault(), registryView);
                     } catch (InvalidOperationException) {
                         // value marked for deletion
                         Deactivate();
-                        throw new RegistryBackupFailedException();
+                        throw new RegistryBackupFailedException("The value " + registryBackupElement.ValueName + " is marked for deletion.");
                     } catch (ArgumentException) {
                         // value doesn't exist and can't be created
                         Deactivate();
-                        throw new TaskRequiresElevationException();
+                        throw new TaskRequiresElevationException("Creating the value " + registryBackupElement.ValueName + " requires elevation.");
                     } catch (SecurityException) {
                         // value exists and we can't modify it
                         Deactivate();
-                        throw new TaskRequiresElevationException();
+                        throw new TaskRequiresElevationException("Modifying the value " + registryBackupElement.ValueName + " requires elevation.");
                     }
                     break;
                 }
+
+                ProgressManager.Goal.Steps++;
             }
         }
 
@@ -973,6 +990,8 @@ namespace FlashpointSecurePlayer {
                 registryView = RegistryView.Registry64;
             }
 
+            ProgressManager.Goal.Size = activeModificationsElement.RegistryBackups.Count * 2;
+
             // check if any key has been modified from the modification element
             for (int i = 0;i < activeModificationsElement.RegistryBackups.Count;i++) {
                 // the "active" one is the one that doesn't have a name (it has the "active" attribute)
@@ -1004,14 +1023,14 @@ namespace FlashpointSecurePlayer {
                                 value = null;
                             } catch (SecurityException) {
                                 // value exists but we can't get it
-                                throw new TaskRequiresElevationException();
+                                throw new TaskRequiresElevationException("Getting the value " + registryBackupElement.ValueName + " requires elevation.");
                             }
                             
                             // check the value is the same as in registryBackupElement (can't be deleted, only active deletes)
                             if (value == null) {
                                 clear = true;
                             } else {
-                                if (value.ToString() != RemoveVariablesFromValue(registryBackupElement.Value).ToString()) {
+                                if (value.ToString() != RemoveVariablesFromLengthenedValue(registryBackupElement.Value).ToString()) {
                                     clear = true;
                                 }
                             }
@@ -1026,10 +1045,13 @@ namespace FlashpointSecurePlayer {
                         if (clear) {
                             activeModificationsElement.RegistryBackups.Clear();
                             SetFlashpointSecurePlayerSection(Name);
+                            ProgressManager.Goal.Steps = ProgressManager.Goal.Size;
                             return;
                         }
                     }
                 }
+
+                ProgressManager.Goal.Steps++;
             }
 
             // our records match, revert keys
@@ -1046,7 +1068,7 @@ namespace FlashpointSecurePlayer {
                                 DeleteKeyInRegistryView(GetUserKeyValueName(activeRegistryBackupElement._Deleted), registryView);
                             } catch (SecurityException) {
                                 // value exists and we can't modify it
-                                throw new TaskRequiresElevationException();
+                                throw new TaskRequiresElevationException("Deleting the key " + activeRegistryBackupElement._Deleted + " requires elevation.");
                             }
                         }
                         break;
@@ -1054,16 +1076,16 @@ namespace FlashpointSecurePlayer {
                         if (String.IsNullOrEmpty(activeRegistryBackupElement._Deleted)) {
                             try {
                                 // value was different before
-                                SetValueInRegistryView(GetUserKeyValueName(activeRegistryBackupElement.KeyName), activeRegistryBackupElement.ValueName, RemoveVariablesFromValue(activeRegistryBackupElement.Value), activeRegistryBackupElement.ValueKind.GetValueOrDefault(), registryView);
+                                SetValueInRegistryView(GetUserKeyValueName(activeRegistryBackupElement.KeyName), activeRegistryBackupElement.ValueName, RemoveVariablesFromLengthenedValue(activeRegistryBackupElement.Value), activeRegistryBackupElement.ValueKind.GetValueOrDefault(), registryView);
                             } catch (InvalidOperationException) {
                                 // value doesn't exist and can't be created
-                                throw new RegistryBackupFailedException();
+                                throw new RegistryBackupFailedException("The value " + activeRegistryBackupElement.ValueName + " cannot be created.");
                             } catch (ArgumentException) {
                                 // value doesn't exist and can't be created
-                                throw new RegistryBackupFailedException();
+                                throw new RegistryBackupFailedException("The value " + activeRegistryBackupElement.ValueName + " cannot be created.");
                             } catch (SecurityException) {
                                 // value exists and we can't modify it
-                                throw new TaskRequiresElevationException();
+                                throw new TaskRequiresElevationException("Modifying the value " + activeRegistryBackupElement.ValueName + " requires elevation.");
                             }
                         } else {
                             try {
@@ -1071,7 +1093,7 @@ namespace FlashpointSecurePlayer {
                                 DeleteValueInRegistryView(GetUserKeyValueName(activeRegistryBackupElement.KeyName), activeRegistryBackupElement.ValueName, registryView);
                             } catch (SecurityException) {
                                 // value exists and we can't modify it
-                                throw new TaskRequiresElevationException();
+                                throw new TaskRequiresElevationException("Modifying the value " + activeRegistryBackupElement.ValueName + " requires elevation.");
                             }
                         }
                         break;
@@ -1081,6 +1103,8 @@ namespace FlashpointSecurePlayer {
                     activeModificationsElement.RegistryBackups.RemoveAt(0);
                     SetFlashpointSecurePlayerSection(Name);
                 }
+
+                ProgressManager.Goal.Steps++;
             }
         }
 
@@ -1137,7 +1161,6 @@ namespace FlashpointSecurePlayer {
 
             ulong safeKeyHandle = registryTraceData.KeyHandle & 0x00000000FFFFFFFF;
             object value = null;
-
             RegistryView registryView = RegistryView.Registry32;
 
             if (modificationsElement.RegistryBackups.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) {
@@ -1150,9 +1173,9 @@ namespace FlashpointSecurePlayer {
                 
                 registryBackupElement.ValueKind = GetValueKindInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView);
                 value = null;
-                
+
                 try {
-                    value = AddVariablesToValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView));
+                    value = AddVariablesToLengthenedValue(LengthenValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView), FullPath));
                 } catch (ArgumentException) {
                     // value doesn't exist
                     value = null;
@@ -1192,7 +1215,7 @@ namespace FlashpointSecurePlayer {
                 value = null;
 
                 try {
-                    value = AddVariablesToValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView));
+                    value = AddVariablesToLengthenedValue(LengthenValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView), FullPath));
                 } catch (ArgumentException) {
                 } catch (SecurityException) {
                     // we have permission to access the key at this point so this must not be important
@@ -1360,7 +1383,7 @@ namespace FlashpointSecurePlayer {
 
                     // value
                     try {
-                        value = AddVariablesToValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView));
+                        value = AddVariablesToLengthenedValue(LengthenValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView), FullPath));
                     } catch (ArgumentException) {
                         // value doesn't exist
                         value = null;

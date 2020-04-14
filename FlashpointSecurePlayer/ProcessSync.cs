@@ -96,7 +96,7 @@ namespace FlashpointSecurePlayer {
                     JobHandle = CreateJobObject(IntPtr.Zero, null);
 
                     if (JobHandle == IntPtr.Zero) {
-                        throw new JobObjectException();
+                        throw new JobObjectException("Could not create the Job Object.");
                     }
                 }
 
@@ -120,7 +120,7 @@ namespace FlashpointSecurePlayer {
                 }
 
                 if (!result || !AssignProcessToJobObject(JobHandle, process.Handle)) {
-                    throw new JobObjectException();
+                    throw new JobObjectException("Could not set the Job Object Information or assign the Process to the Job Object.");
                 }
 
                 Started = true;
