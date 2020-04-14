@@ -28,13 +28,16 @@ namespace FlashpointSecurePlayer {
             // we know the file downloaded all the way before the
             // server/software starts
             //DownloadBeforeElement downloadBeforeElement = null;
-            List<Task> downloadTasks = new List<Task>();
+            ProgressManager.Goal.Size = downloadsBeforeNames.Count;
+            Task[] downloadTasks = new Task[downloadsBeforeNames.Count];
 
             for (int i = 0;i < downloadsBeforeNames.Count;i++) {
-                downloadTasks.Add(DownloadAsync(downloadsBeforeNames[i]));
+                downloadTasks[i] = DownloadAsync(downloadsBeforeNames[i]).ContinueWith(delegate(Task task) {
+                    ProgressManager.Goal.Steps++;
+                }, TaskScheduler.FromCurrentSynchronizationContext());
             }
 
-            await Task.WhenAll(downloadTasks.ToArray()).ConfigureAwait(false);
+            await Task.WhenAll(downloadTasks).ConfigureAwait(false);
         }
     }
 }

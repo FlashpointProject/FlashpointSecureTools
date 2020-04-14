@@ -117,11 +117,6 @@ namespace FlashpointSecurePlayer {
         [DllImport("KERNEL32.DLL")]
         public static extern bool GetBinaryType(string applicationNamePointer, out BINARY_TYPE binaryTypePointer);
 
-        public const uint PBM_SETSTATE = 0x0410;
-        public static readonly IntPtr PBST_NORMAL = (IntPtr)1;
-        public static readonly IntPtr PBST_ERROR = (IntPtr)2;
-        public static readonly IntPtr PBST_PAUSED = (IntPtr)3;
-
         [DllImport("USER32.DLL", CharSet = CharSet.Auto, SetLastError = false)]
         public static extern IntPtr SendMessage(IntPtr windowHandle, uint message, IntPtr wParam, IntPtr lParam);
 
@@ -250,6 +245,8 @@ namespace FlashpointSecurePlayer {
         private const string CONFIGURATION_DOWNLOAD_NAME = "flashpointsecureplayerconfigs";
         private static FlashpointSecurePlayerSection flashpointSecurePlayerSection = null;
         private static FlashpointSecurePlayerSection activeFlashpointSecurePlayerSection = null;
+
+        private const string FLASHPOINT_SECURE_PLAYER_STARTUP_PATH = "FLASHPOINTSECUREPLAYERSTARTUPPATH";
 
         public abstract class ModificationsConfigurationElementCollection : ConfigurationElementCollection {
             public override ConfigurationElementCollectionType CollectionType {
@@ -823,11 +820,15 @@ namespace FlashpointSecurePlayer {
         }
 
         public static async Task DownloadAsync(string name) {
-            await DownloadSemaphoreSlim.WaitAsync().ConfigureAwait(false);
+            await DownloadSemaphoreSlim.WaitAsync().ConfigureAwait(true);
 
             try {
-                using (HttpResponseMessage httpResponseMessage = await HTTPClient.GetAsync(name, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false))
-                using (Stream stream = await httpResponseMessage.Content.ReadAsStreamAsync().ConfigureAwait(false)) {
+                using (HttpResponseMessage httpResponseMessage = await HTTPClient.GetAsync(name, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(true))
+                using (Stream stream = await httpResponseMessage.Content.ReadAsStreamAsync().ConfigureAwait(true)) {
+                    if (httpResponseMessage.Content.Headers.ContentLength != null) {
+                        ProgressManager.Goal.Size = (int)Math.Ceiling((double)httpResponseMessage.Content.Headers.ContentLength.GetValueOrDefault() / STREAM_READ_LENGTH);
+                    }
+
                     // now we loop through the stream and read it
                     // to the end in chunks
                     // we can't use StreamReader.ReadToEnd because
@@ -836,12 +837,13 @@ namespace FlashpointSecurePlayer {
                     // temporary buffer so we don't always reallocate this
                     byte[] streamReadBuffer = new byte[STREAM_READ_LENGTH];
                     int characterNumber = 0;
+                    int steps = ProgressManager.Goal.Steps;
 
                     do {
                         // if for whatever reason there's a problem
                         // just ignore this download
                         try {
-                            characterNumber = await stream.ReadAsync(streamReadBuffer, 0, STREAM_READ_LENGTH).ConfigureAwait(false);
+                            characterNumber = await stream.ReadAsync(streamReadBuffer, 0, STREAM_READ_LENGTH).ConfigureAwait(true);
                         } catch (ArgumentNullException) {
                             break;
                         } catch (ArgumentOutOfRangeException) {
@@ -855,12 +857,24 @@ namespace FlashpointSecurePlayer {
                         } catch (InvalidOperationException) {
                             break;
                         }
+
+                        if (httpResponseMessage.Content.Headers.ContentLength != null) {
+                            steps++;
+
+                            if (steps < ProgressManager.Goal.Size) {
+                                ProgressManager.Goal.Steps = steps;
+                            }
+                        }
                     } while (characterNumber > 0);
+
+                    if (httpResponseMessage.Content.Headers.ContentLength != null) {
+                        ProgressManager.Goal.Steps = ProgressManager.Goal.Size;
+                    }
                 }
             } catch (ArgumentNullException) {
-                throw new Exceptions.DownloadFailedException();
+                throw new Exceptions.DownloadFailedException("The download name is invalid.");
             } catch (HttpRequestException) {
-                throw new Exceptions.DownloadFailedException();
+                throw new Exceptions.DownloadFailedException("The HTTP Request is invalid.");
             } finally {
                 DownloadSemaphoreSlim.Release();
             }
@@ -868,7 +882,7 @@ namespace FlashpointSecurePlayer {
 
         private static string GetValidEXEConfigurationName(string name) {
             if (String.IsNullOrEmpty(name)) {
-                throw new ConfigurationErrorsException();
+                throw new ConfigurationErrorsException("Cannot get Valid EXE Configuration Name.");
             }
 
             string invalidNameCharacters = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
@@ -887,11 +901,11 @@ namespace FlashpointSecurePlayer {
                 ActiveEXEConfiguration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
                 if (ActiveEXEConfiguration == null) {
-                    throw new ConfigurationErrorsException();
+                    throw new ConfigurationErrorsException("The Active EXE Configuration is null.");
                 }
 
                 if (!ActiveEXEConfiguration.HasFile) {
-                    throw new ConfigurationErrorsException();
+                    throw new ConfigurationErrorsException("The Active EXE Configuration has no file.");
                 }
                 // success!
                 return ActiveEXEConfiguration;
@@ -900,13 +914,13 @@ namespace FlashpointSecurePlayer {
             }
 
             if (ActiveEXEConfiguration == null) {
-                throw new ConfigurationErrorsException();
+                throw new ConfigurationErrorsException("The Active EXE Configuration is null.");
             }
 
             // create anew
             ActiveEXEConfiguration.Save(ConfigurationSaveMode.Modified);
             // open the new one
-            ActiveEXEConfiguration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None) ?? throw new ConfigurationErrorsException();
+            ActiveEXEConfiguration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None) ?? throw new ConfigurationErrorsException("The Active EXE Configuration is null.");
             return ActiveEXEConfiguration;
         }
         
@@ -936,11 +950,11 @@ namespace FlashpointSecurePlayer {
                 exeConfiguration = ConfigurationManager.OpenMappedExeConfiguration(exeConfigurationFileMap, ConfigurationUserLevel.None);
 
                 if (exeConfiguration == null) {
-                    throw new ConfigurationErrorsException();
+                    throw new ConfigurationErrorsException("The EXE Configuration is null.");
                 }
 
                 if (!exeConfiguration.HasFile) {
-                    throw new ConfigurationErrorsException();
+                    throw new ConfigurationErrorsException("The EXE Configuration has no file.");
                 }
             } catch (ConfigurationErrorsException) {
                 try {
@@ -950,11 +964,11 @@ namespace FlashpointSecurePlayer {
                     }, ConfigurationUserLevel.None);
 
                     if (EXEConfiguration == null) {
-                        throw new ConfigurationErrorsException();
+                        throw new ConfigurationErrorsException("The downloaded EXE Configuration is null.");
                     }
 
                     if (!EXEConfiguration.HasFile) {
-                        throw new ConfigurationErrorsException();
+                        throw new ConfigurationErrorsException("The downloaded EXE Configuration has no file.");
                     }
 
                     // we got here so success
@@ -968,12 +982,12 @@ namespace FlashpointSecurePlayer {
             }
 
             if (exeConfiguration == null) {
-                throw new ConfigurationErrorsException();
+                throw new ConfigurationErrorsException("The EXE Configuration is null.");
             }
 
             if (!create) {
                 if (!exeConfiguration.HasFile) {
-                    throw new ConfigurationErrorsException();
+                    throw new ConfigurationErrorsException("The EXE Configuration has no file.");
                 }
             }
 
@@ -1026,7 +1040,7 @@ namespace FlashpointSecurePlayer {
                 try {
                     exeConfiguration.Sections.Add("flashpointSecurePlayer", new FlashpointSecurePlayerSection());
                 } catch (ArgumentException) {
-                    throw new ConfigurationErrorsException();
+                    throw new ConfigurationErrorsException("The flashpointSecurePlayer Section is invalid.");
                 }
 
                 // reload it into the configuration
@@ -1039,7 +1053,7 @@ namespace FlashpointSecurePlayer {
 
             if (flashpointSecurePlayerSection == null) {
                 // section was not created?
-                throw new ConfigurationErrorsException();
+                throw new ConfigurationErrorsException("The flashpointSecurePlayer Section is null.");
             }
 
             if (String.IsNullOrEmpty(exeConfigurationName)) {
@@ -1103,10 +1117,66 @@ namespace FlashpointSecurePlayer {
             flashpointSecurePlayerSection.Modifications.Set(modificationsElement);
         }
 
+        public static string RemoveTrailingSlash(string path) {
+            // can be empty, but not null
+            if (path == null) {
+                return path;
+            }
+
+            while (path.Length > 0 && path.Substring(path.Length - 1) == "\\") {
+                path = path.Substring(0, path.Length - 1);
+            }
+            return path;
+        }
+
+        public static string RemoveValueStringSlash(string valueString) {
+            // can be empty, but not null
+            if (valueString == null) {
+                return valueString;
+            }
+
+            while (valueString.Length > 0 && valueString.Substring(0, 1) == "\\") {
+                valueString = valueString.Substring(1);
+            }
+            return valueString;
+        }
+
+        public static object LengthenValue(object value, string path) {
+            // since it's a value we'll just check it exists
+            if (!(value is string valueString)) {
+                return value;
+            }
+
+            if (String.IsNullOrEmpty(path)) {
+                return value;
+            }
+
+            if (valueString.Length <= MAX_PATH * 2 + 15) {
+                // get the short path
+                StringBuilder shortPathName = new StringBuilder(MAX_PATH);
+                GetShortPathName(path, shortPathName, shortPathName.Capacity);
+
+                if (shortPathName.Length > 0) {
+                    // if the value is a short value...
+                    if (valueString.ToUpper().IndexOf(shortPathName.ToString().ToUpper()) == 0) {
+                        // get the long path
+                        StringBuilder longPathName = new StringBuilder(MAX_PATH);
+                        GetLongPathName(path, longPathName, longPathName.Capacity);
+
+                        if (longPathName.Length > 0) {
+                            // replace the short path with the long path
+                            valueString = longPathName.ToString() + valueString.Substring(shortPathName.Length);
+                        }
+                    }
+                }
+            }
+            return valueString;
+        }
+
         // find path in registry value
         // string must begin with path
         // string cannot exceed MAX_PATH*2+15 characters
-        public static object AddVariablesToValue(object value) {
+        public static object AddVariablesToLengthenedValue(object value) {
             // since it's a value we'll just check it exists
             if (!(value is string valueString)) {
                 return value;
@@ -1114,40 +1184,38 @@ namespace FlashpointSecurePlayer {
 
             if (valueString.Length <= MAX_PATH * 2 + 15) {
                 StringBuilder path = new StringBuilder(MAX_PATH);
+                /*
                 GetShortPathName(Application.StartupPath, path, path.Capacity);
 
                 if (path.Length > 0) {
                     if (valueString.ToUpper().IndexOf(path.ToString().ToUpper()) == 0) {
-                        valueString = "%FLASHPOINTSECUREPLAYERSTARTUPPATH%\\" + valueString.Substring(path.Length);
+                        valueString = "%" + FLASHPOINT_SECURE_PLAYER_STARTUP_PATH + "%\\" + valueString.Substring(path.Length);
                     }
                 }
 
                 path = new StringBuilder(MAX_PATH);
+                */
                 GetLongPathName(Application.StartupPath, path, path.Capacity);
 
                 if (path.Length > 0) {
-                    if (valueString.ToUpper().IndexOf(path.ToString().ToUpper()) == 0) {
-                        valueString = "%FLASHPOINTSECUREPLAYERSTARTUPPATH%\\" + valueString.Substring(path.Length);
+                    if (valueString.ToUpper().IndexOf(RemoveTrailingSlash(path.ToString()).ToUpper()) == 0) {
+                        valueString = "%" + FLASHPOINT_SECURE_PLAYER_STARTUP_PATH + "%\\" + RemoveValueStringSlash(valueString.Substring(path.Length));
                     }
                 }
             }
             return valueString;
         }
 
-        public static object RemoveVariablesFromValue(object value) {
+        public static object RemoveVariablesFromLengthenedValue(object value) {
             // TODO: multistrings?
             if (!(value is string valueString)) {
                 return value;
             }
 
-            if (valueString.ToUpper().IndexOf("%FLASHPOINTSECUREPLAYERSTARTUPPATH%") == 0) {
-                valueString = Application.StartupPath + "\\" + valueString.Substring(35);
+            if (valueString.ToUpper().IndexOf("%" + FLASHPOINT_SECURE_PLAYER_STARTUP_PATH + "%") == 0) {
+                valueString = RemoveTrailingSlash(Application.StartupPath) + "\\" + RemoveValueStringSlash(valueString.Substring(35));
             }
             return valueString;
-        }
-
-        public static void SetProgressBarState(ProgressBar progessBar, IntPtr progressBarState) {
-            SendMessage(progessBar.Handle, PBM_SETSTATE, (IntPtr)progressBarState, IntPtr.Zero);
         }
 
         public static bool GetCommandLineArgument(string commandLine, out string commandLineArgument) {
@@ -1203,7 +1271,7 @@ namespace FlashpointSecurePlayer {
             argvPointer = CommandLineToArgvW(commandLine, out argc);
 
             if (argvPointer == IntPtr.Zero) {
-                throw new Win32Exception();
+                throw new Win32Exception("Failed to get the argv pointer.");
             }
 
             try {
@@ -1426,7 +1494,7 @@ namespace FlashpointSecurePlayer {
             }
 
             if (!queryResult) {
-                throw new Win32Exception();
+                throw new Win32Exception("Failed to query the Full Process Image Name.");
             }
 
             return processEXEName.ToString();

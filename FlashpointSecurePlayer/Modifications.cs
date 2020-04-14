@@ -54,11 +54,11 @@ namespace FlashpointSecurePlayer {
 
         protected void StartImport(string name) {
             if (ImportStarted) {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Cannot Start Import when the Import has started.");
             }
 
             if (String.IsNullOrEmpty(name)) {
-                throw new FormatException();
+                throw new FormatException("name cannot be null or empty.");
             }
 
             Name = name;
@@ -78,7 +78,7 @@ namespace FlashpointSecurePlayer {
         // async for inheritence reasons
         protected void StopImport() {
             if (!ImportStarted) {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Cannot Stop Import when the Import has not started.");
             }
 
             /*
@@ -95,11 +95,11 @@ namespace FlashpointSecurePlayer {
 
         public void Activate(string name) {
             if (ImportStarted) {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Cannot Activate when the Import has started.");
             }
 
             if (String.IsNullOrEmpty(name)) {
-                throw new FormatException();
+                throw new FormatException("name cannot be null or empty.");
             }
 
             Name = name;
@@ -110,7 +110,7 @@ namespace FlashpointSecurePlayer {
 
         public void Deactivate() {
             if (ImportStarted) {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Cannot Deactivate when the Import has started.");
             }
 
             //SetConfigurationSection();
