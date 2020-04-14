@@ -46,7 +46,7 @@ namespace FlashpointSecurePlayer {
                 value = environmentVariablesElement.Value;
 
                 try {
-                    Environment.SetEnvironmentVariable(environmentVariablesElement.Name, RemoveVariablesFromValue(value) as string);
+                    Environment.SetEnvironmentVariable(environmentVariablesElement.Name, RemoveVariablesFromLengthenedValue(value) as string);
                 } catch (ArgumentException) {
                     throw new EnvironmentVariablesFailedException("Failed to set the " + environmentVariablesElement.Name + " Environment Variable.");
                 } catch (SecurityException) {
