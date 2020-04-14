@@ -33,6 +33,7 @@ mono_crash.*
 #[Ll]ogs/
 Debug.zip
 Release.zip
+FlashpointSecurePlayerConfigs.zip
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/

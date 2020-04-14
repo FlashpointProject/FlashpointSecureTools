@@ -219,6 +219,8 @@ namespace FlashpointSecurePlayer {
                         errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                     } catch (TaskRequiresElevationException) {
                         AskLaunchAsAdministratorUser();
+                    } catch (ArgumentException) {
+                        errorDelegate(Properties.Resources.GameIsMissingFiles);
                     }
                 }
 
@@ -258,6 +260,8 @@ namespace FlashpointSecurePlayer {
                     errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                 } catch (TaskRequiresElevationException) {
                     AskLaunchAsAdministratorUser();
+                } catch (ArgumentException) {
+                    errorDelegate(Properties.Resources.GameIsMissingFiles);
                 }
 
                 ProgressManager.Goal.Steps++;
@@ -455,10 +459,11 @@ namespace FlashpointSecurePlayer {
                             SoftwareProcessStartInfo = new ProcessStartInfo();
                         }
 
-                        SoftwareProcessStartInfo.FileName = Path.GetFullPath(argv[0]);
+                        string fullPath = Path.GetFullPath(argv[0]);
+                        SoftwareProcessStartInfo.FileName = fullPath;
                         SoftwareProcessStartInfo.Arguments = GetCommandLineArgumentRange(Software, 1, -1);
                         SoftwareProcessStartInfo.ErrorDialog = false;
-                        SoftwareProcessStartInfo.WorkingDirectory = Path.GetDirectoryName(Path.GetFullPath(argv[0]));
+                        SoftwareProcessStartInfo.WorkingDirectory = Path.GetDirectoryName(fullPath);
 
                         Process process = Process.Start(SoftwareProcessStartInfo);
 
