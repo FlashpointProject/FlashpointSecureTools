@@ -12,7 +12,7 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Modific
 
 namespace FlashpointSecurePlayer {
     class DownloadsBefore : Modifications {
-        public DownloadsBefore(Form Form) : base(Form) { }
+        public DownloadsBefore(Form form) : base(form) { }
 
         private void Activate() { }
 
@@ -28,13 +28,21 @@ namespace FlashpointSecurePlayer {
             // we know the file downloaded all the way before the
             // server/software starts
             //DownloadBeforeElement downloadBeforeElement = null;
-            List<Task> downloadTasks = new List<Task>();
+            ProgressManager.CurrentGoal.Start(downloadsBeforeNames.Count);
 
-            for (int i = 0;i < downloadsBeforeNames.Count;i++) {
-                downloadTasks.Add(DownloadAsync(downloadsBeforeNames[i]));
+            try {
+                Task[] downloadTasks = new Task[downloadsBeforeNames.Count];
+
+                for (int i = 0;i < downloadsBeforeNames.Count;i++) {
+                    downloadTasks[i] = DownloadAsync(downloadsBeforeNames[i]).ContinueWith(delegate (Task task) {
+                        ProgressManager.CurrentGoal.Steps++;
+                    }, TaskScheduler.FromCurrentSynchronizationContext());
+                }
+
+                await Task.WhenAll(downloadTasks).ConfigureAwait(false);
+            } finally {
+                ProgressManager.CurrentGoal.Stop();
             }
-
-            await Task.WhenAll(downloadTasks.ToArray()).ConfigureAwait(false);
         }
     }
 }

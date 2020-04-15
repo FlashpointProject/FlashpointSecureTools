@@ -16,7 +16,7 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Modific
 
 namespace FlashpointSecurePlayer {
     class SingleInstance : Modifications {
-        public SingleInstance(Form Form) : base(Form) { }
+        public SingleInstance(Form form) : base(form) { }
 
         private DialogResult? ShowClosableMessageBox(Task[] tasks, string text, string caption, MessageBoxButtons messageBoxButtons, MessageBoxIcon messageBoxIcon) {
             Form closableForm = new Form() {
@@ -71,21 +71,21 @@ namespace FlashpointSecurePlayer {
             try {
                 activeComparablePath = Path.GetFullPath(argv[0]);
             } catch (PathTooLongException) {
-                throw new ArgumentException();
+                throw new ArgumentException("The path is too long to " + argv[0] + ".");
             } catch (SecurityException) {
-                throw new TaskRequiresElevationException();
+                throw new TaskRequiresElevationException("Getting the Full Path to " + argv[0] + " requires elevation.");
             } catch (NotSupportedException) {
-                throw new ArgumentException();
+                throw new ArgumentException("The path " + argv[0] + " is not supported.");
             }
 
             try {
                 activeComparablePath = new Uri(activeComparablePath).LocalPath.ToLower();
             } catch (UriFormatException) {
-                throw new ArgumentException();
+                throw new ArgumentException("The path " + activeComparablePath + " is malformed.");
             } catch (NullReferenceException) {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("The path is null.");
             } catch (InvalidOperationException) {
-                throw new ArgumentException();
+                throw new ArgumentException("The path " + activeComparablePath + " is invalid.");
             }
 
             List<Process> processesByName;
@@ -129,7 +129,7 @@ namespace FlashpointSecurePlayer {
 
                     if (dialogResult == DialogResult.Cancel) {
                         Application.Exit();
-                        throw new InvalidModificationException();
+                        throw new InvalidModificationException("The operation was aborted by the user.");
                     }
                 }
             } while (processesByNameStrict.Any());

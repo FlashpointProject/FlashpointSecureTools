@@ -117,7 +117,7 @@ namespace FlashpointSecurePlayer {
             int internetPerConnOptionListSize = Marshal.SizeOf(internetPerConnOptionList);
 
             if (internetPerConnOptionListOptions.Length < 2) {
-                throw new ArgumentException();
+                throw new ArgumentException("The Internet Per Connection Option List Options cannot have a Length of less than two.");
             }
 
             // set flags
@@ -152,7 +152,7 @@ namespace FlashpointSecurePlayer {
             bool result = InternetQueryOption(IntPtr.Zero, INTERNET_OPTION.INTERNET_OPTION_PER_CONNECTION_OPTION, ref internetPerConnOptionList, ref internetPerConnOptionListSize);
 
             if (!result) {
-                throw new FlashpointProxyException();
+                throw new FlashpointProxyException("Could not query the Internet Options.");
             }
         }
 
@@ -213,12 +213,12 @@ namespace FlashpointSecurePlayer {
             Marshal.FreeCoTaskMem(internetPerConnOptionListPointer);
 
             if (!InternetCloseHandle(internetHandle)) {
-                throw new FlashpointProxyException();
+                throw new FlashpointProxyException("Could not close the Internet Handle.");
             }
 
             // throw an exception if this operation failed
             if (!result) {
-                throw new FlashpointProxyException();
+                throw new FlashpointProxyException("Could not set the Internet Options.");
             }
         }
 
@@ -263,11 +263,11 @@ namespace FlashpointSecurePlayer {
             }
 
             if (!InternetCloseHandle(internetHandle)) {
-                throw new FlashpointProxyException();
+                throw new FlashpointProxyException("Could not close the Internet Handle.");
             }
 
             if (!result) {
-                throw new FlashpointProxyException();
+                throw new FlashpointProxyException("Could not set the Internet Options.");
             }
         }
     }
