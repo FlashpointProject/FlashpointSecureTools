@@ -1,4 +1,4 @@
-# Flashpoint Secure Player 1.0.7
+# Flashpoint Secure Player 1.0.8
 This player attempts to solve common compatibility or portability issues posed by browser plugins on Windows for the purpose of playback in BlueMaxima's Flashpoint.
 
 It is compatible with Windows 7, Windows 8, Windows 8.1 and Windows 10, and requires .NET Framework 4.5. If you are on Windows 8.1 or Windows 10, or if you are on Windows 7/8 and have updates enabled, you already have .NET Framework 4.5. Otherwise, you may [download .NET Framework 4.5.](http://www.microsoft.com/en-us/download/details.aspx?id=30653)
@@ -119,7 +119,7 @@ The command line below launches the Astro Avenger II ActiveX Control as Administ
 
 `FlashpointSecurePlayer -a --name "ActiveX\AstroAvenger2Loader\AstroAvenger2Loader.ocx" --server "http://www.shockwave.com/content/astroavenger2/sis/index.html"`
 
-The `modification` element below also causes Administrator Mode to be used.
+The `modification` element below also causes the application to be run as Administrator User.
 
 ```
 <modification name="example" runAsAdministrator="true" />
@@ -208,14 +208,14 @@ Set Via:
 
 The Downloads Before Modification may be used to download files from the Flashpoint Server. This is useful for software that is only capable of loading files from the computer. The command line argument may be used more than once to download multiple files. For example, this command line, in combination with a Software Mode Template, may be used to download a file for Hypercosm, which can only load files from the computer. For more information, see the section about [Mode Template Modifications](#mode-templates) above.
 
-`FlashpointSecurePlayer --download-before "http://hypercosm/fish.hcvm" --software "hypercosm\fish.hcvm"`
+`FlashpointSecurePlayer --download-before "http://hypercosm/fish.hcvm" --software "http://hypercosm/fish.hcvm"`
 
 ```
 <modification name="hypercosm">
   <modeTemplates>
     <softwareModeTemplate>
 	  <regexes>
-	    <regex name="^(\s*&quot;?)(.+)$" replace="$1..\..\..\Server\htdocs\$2" />
+	    <regex name="^(\s*&quot;?)http://(.+)$" replace="$1..\..\..\Server\htdocs\$2" />
 	    <regex name="(.+)" replace="Hypercosm\components\Hypercosm3D5E449320.exe $1" />
 	  </regexes>
     </softwareModeTemplate>
@@ -281,7 +281,7 @@ In scenarios one and two, Flashpoint Secure Player reverts the active Registry B
 
 If the Registry Backups Modification cannot be reverted, an error occurs and the application will exit, and not do anything else regardless of what Modes or Modifications are specified until the issue is resolved. If the registry has been modified by a different application outside of Flashpoint Secure Player, the player no longer assumes control of those registry keys and values, and the active Registry Backups Modification is silently discarded.
 
-**Administrator Mode**
+**Administrator User**
 
 ActiveX Imports are always created as Administrator User, but it is not required during playback. Please note that in some cases, ActiveX Controls may be required to be launched as Administrator User. Flashpoint Secure Player will attempt to play the game without running as administrator by default, and in these cases, the ActiveX Control will not work unless the Run As Administrator Modification is used. For more information, see the section about the [Run As Administrator Modification](#run-as-administrator) above.
 
@@ -339,7 +339,6 @@ You may notice that because the Flashpoint Secure Player is effectively capable 
 - startActiveX_compat.bat
 - startBasilisk.bat
 - startBasilisk_compat.bat
-- startGroove.bat
 - startJava.bat
 - startShiVa.bat
 - startUnity.bat

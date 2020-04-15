@@ -21,59 +21,42 @@ namespace FlashpointSecurePlayer {
         private const string EMPTY_MODE_NAME = "";
         private const string FLASHPOINT_LAUNCHER_PARENT_PROCESS_EXE_FILE_NAME = "cmd.exe";
         private const string FLASHPOINT_LAUNCHER_PROCESS_NAME = "flashpoint";
-        private Mutex ApplicationMutex = null;
-        private static SemaphoreSlim ModificationsSemaphoreSlim = new SemaphoreSlim(1, 1);
-        private readonly RunAsAdministrator RunAsAdministrator;
-        private readonly ModeTemplates ModeTemplates;
-        private readonly EnvironmentVariables EnvironmentVariables;
-        private readonly DownloadsBefore DownloadsBefore;
-        private readonly RegistryBackups RegistryBackup;
-        private readonly SingleInstance SingleInstance;
-        private string ModificationsName = ACTIVE_EXE_CONFIGURATION_NAME;
-        private bool RunAsAdministratorModification = false;
-        private List<string> DownloadsBeforeModificationNames = null;
-        private bool ActiveX = false;
-        private string Server = EMPTY_MODE_NAME;
-        private string Software = EMPTY_MODE_NAME;
-        private ProcessStartInfo SoftwareProcessStartInfo = null;
+        private Mutex applicationMutex = null;
+        private static SemaphoreSlim modificationsSemaphoreSlim = new SemaphoreSlim(1, 1);
+        private readonly RunAsAdministrator runAsAdministrator;
+        private readonly ModeTemplates modeTemplates;
+        private readonly EnvironmentVariables environmentVariables;
+        private readonly DownloadsBefore downloadsBefore;
+        private readonly RegistryBackups registryBackup;
+        private readonly SingleInstance singleInstance;
+        private bool activeX = false;
+        private string server = EMPTY_MODE_NAME;
+        private string software = EMPTY_MODE_NAME;
+        private ProcessStartInfo softwareProcessStartInfo = null;
+
+        private string ModificationsName { get; set; } = ACTIVE_EXE_CONFIGURATION_NAME;
+        private bool RunAsAdministratorModification { get; set; } = false;
+        private List<string> DownloadsBeforeModificationNames { get; set; } = null;
+
         private delegate void ErrorDelegate(string text);
 
         public FlashpointSecurePlayer() {
             InitializeComponent();
-            RunAsAdministrator = new RunAsAdministrator(this);
-            ModeTemplates = new ModeTemplates(this);
-            EnvironmentVariables = new EnvironmentVariables(this);
-            DownloadsBefore = new DownloadsBefore(this);
-            RegistryBackup = new RegistryBackups(this);
-            SingleInstance = new SingleInstance(this);
-        }
-
-        private void ResetProgressBar() {
-            securePlaybackProgressBar.Style = ProgressBarStyle.Blocks;
-            securePlaybackProgressBar.Value = 0;
-            securePlaybackProgressBar.Style = ProgressBarStyle.Continuous;
-            SetProgressBarState(securePlaybackProgressBar, PBST_NORMAL);
-        }
-
-        private void ShowOutput() {
-            securePlaybackProgressBar.Style = ProgressBarStyle.Continuous;
-            SetProgressBarState(securePlaybackProgressBar, PBST_NORMAL);
+            runAsAdministrator = new RunAsAdministrator(this);
+            modeTemplates = new ModeTemplates(this);
+            environmentVariables = new EnvironmentVariables(this);
+            downloadsBefore = new DownloadsBefore(this);
+            registryBackup = new RegistryBackups(this);
+            singleInstance = new SingleInstance(this);
         }
 
         private void ShowOutput(string errorLabelText) {
-            ShowOutput();
+            ProgressManager.ShowOutput();
             this.errorLabel.Text = errorLabelText;
         }
 
-        private void ShowError() {
-            // TODO: why won't the progress bar change colour
-            securePlaybackProgressBar.Style = ProgressBarStyle.Continuous;
-            securePlaybackProgressBar.Value = 100;
-            SetProgressBarState(securePlaybackProgressBar, PBST_ERROR);
-        }
-
         private void ShowError(string errorLabelText) {
-            ShowError();
+            ProgressManager.ShowError();
             this.errorLabel.Text = errorLabelText;
         }
 
@@ -90,38 +73,38 @@ namespace FlashpointSecurePlayer {
                  then there'd be no dialog except this one - and I don't want
                  the program to enter an infinite restart loop
                  */
-                ShowOutput();
+                ProgressManager.ShowOutput();
                 DialogResult dialogResult = MessageBox.Show(String.Format(Properties.Resources.LaunchGame, Properties.Resources.AsAdministratorUser), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.YesNo, MessageBoxIcon.None);
 
                 if (dialogResult == DialogResult.No) {
                     Application.Exit();
-                    throw new InvalidModificationException();
+                    throw new InvalidModificationException("The operation was aborted by the user.");
                 }
 
                 RestartApplication(true, this, APPLICATION_MUTEX_NAME);
-                throw new InvalidModificationException();
+                throw new InvalidModificationException("The Modification does not work unless run as Administrator User.");
             }
 
             // we're already running as admin?
             ShowError(String.Format(Properties.Resources.GameFailedLaunch, Properties.Resources.AsAdministratorUser));
-            throw new InvalidModificationException();
+            throw new InvalidModificationException("The Modification failed to run as Administrator User.");
         }
 
         private void AskLaunchWithCompatibilitySettings() {
-            ShowOutput();
+            ProgressManager.ShowOutput();
             DialogResult dialogResult = MessageBox.Show(String.Format(Properties.Resources.LaunchGame, Properties.Resources.WithCompatibilitySettings), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.YesNo, MessageBoxIcon.None);
 
             if (dialogResult == DialogResult.No) {
                 Application.Exit();
-                throw new InvalidModificationException();
+                throw new InvalidModificationException("The operation was aborted by the user.");
             }
 
             RestartApplication(false, this, APPLICATION_MUTEX_NAME);
-            throw new InvalidModificationException();
+            throw new InvalidModificationException("The Modification does not work unless run with Compatibility Settings.");
         }
 
         private async Task ActivateModificationsAsync(string commandLine, ErrorDelegate errorDelegate) {
-            await ModificationsSemaphoreSlim.WaitAsync().ConfigureAwait(true);
+            await modificationsSemaphoreSlim.WaitAsync().ConfigureAwait(true);
 
             try {
                 if (String.IsNullOrEmpty(ModificationsName)) {
@@ -130,97 +113,155 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                await DownloadEXEConfiguration(ModificationsName).ConfigureAwait(true);
-                ModificationsElement modificationsElement = null;
+                ProgressManager.CurrentGoal.Start(7);
 
                 try {
-                    modificationsElement = GetModificationsElement(false, ModificationsName);
-                } catch (System.Configuration.ConfigurationErrorsException) {
-                    errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                    // we really need modificationsElement to exist
-                    throw new InvalidModificationException();
-                }
+                    await DownloadEXEConfiguration(ModificationsName).ConfigureAwait(true);
+                    ModificationsElement modificationsElement = null;
 
-                if (modificationsElement == null) {
-                    errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                    throw new InvalidModificationException();
-                }
-
-                if (DownloadsBeforeModificationNames == null) {
-                    DownloadsBeforeModificationNames = new List<string>();
-                }
-
-                try {
-                    if (modificationsElement.RunAsAdministrator) {
-                        RunAsAdministratorModification = true;
+                    try {
+                        modificationsElement = GetModificationsElement(false, ModificationsName);
+                    } catch (System.Configuration.ConfigurationErrorsException) {
+                        errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                        // we really need modificationsElement to exist
+                        throw new InvalidModificationException("The Modifications Element " + ModificationsName + " does not exist.");
                     }
 
-                    if (modificationsElement.DownloadsBefore.Count > 0) {
-                        ModificationsElement.DownloadBeforeElementCollection.DownloadBeforeElement downloadsBeforeElement = null;
+                    if (modificationsElement == null) {
+                        errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                        throw new InvalidModificationException("The Modifications Element " + ModificationsName + " is null.");
+                    }
 
-                        for (int i = 0;i < modificationsElement.DownloadsBefore.Count;i++) {
-                            downloadsBeforeElement = modificationsElement.DownloadsBefore.Get(i) as ModificationsElement.DownloadBeforeElementCollection.DownloadBeforeElement;
+                    if (DownloadsBeforeModificationNames == null) {
+                        DownloadsBeforeModificationNames = new List<string>();
+                    }
 
-                            if (downloadsBeforeElement == null) {
-                                throw new System.Configuration.ConfigurationErrorsException();
-                            }
-
-                            DownloadsBeforeModificationNames.Add(downloadsBeforeElement.Name);
+                    try {
+                        if (modificationsElement.RunAsAdministrator) {
+                            RunAsAdministratorModification = true;
                         }
 
-                        //SetModificationsElement(modificationsElement, Name);
+                        if (modificationsElement.DownloadsBefore.Count > 0) {
+                            ModificationsElement.DownloadBeforeElementCollection.DownloadBeforeElement downloadsBeforeElement = null;
+
+                            for (int i = 0;i < modificationsElement.DownloadsBefore.Count;i++) {
+                                downloadsBeforeElement = modificationsElement.DownloadsBefore.Get(i) as ModificationsElement.DownloadBeforeElementCollection.DownloadBeforeElement;
+
+                                if (downloadsBeforeElement == null) {
+                                    throw new System.Configuration.ConfigurationErrorsException("The Downloads Before Element (" + i + ") is null.");
+                                }
+
+                                DownloadsBeforeModificationNames.Add(downloadsBeforeElement.Name);
+                            }
+
+                            //SetModificationsElement(modificationsElement, Name);
+                        }
+                    } catch (System.Configuration.ConfigurationErrorsException) {
+                        errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                     }
-                } catch (System.Configuration.ConfigurationErrorsException) {
-                    errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+
+                    ProgressManager.CurrentGoal.Steps++;
+
+                    try {
+                        runAsAdministrator.Activate(ModificationsName, RunAsAdministratorModification);
+                    } catch (System.Configuration.ConfigurationErrorsException) {
+                        errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                    } catch (TaskRequiresElevationException) {
+                        AskLaunchAsAdministratorUser();
+                    }
+
+                    ProgressManager.CurrentGoal.Steps++;
+
+                    if (modificationsElement.ModeTemplates.ServerModeTemplate.ElementInformation.IsPresent || modificationsElement.ModeTemplates.SoftwareModeTemplate.ElementInformation.IsPresent) {
+                        try {
+                            modeTemplates.Activate(ModificationsName, ref server, ref software, ref softwareProcessStartInfo);
+                        } catch (ModeTemplatesFailedException) {
+                            errorDelegate(Properties.Resources.ModeTemplatesFailed);
+                        } catch (System.Configuration.ConfigurationErrorsException) {
+                            errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                        } catch (TaskRequiresElevationException) {
+                            AskLaunchAsAdministratorUser();
+                        }
+                    }
+
+                    ProgressManager.CurrentGoal.Steps++;
+
+                    if (modificationsElement.EnvironmentVariables.Count > 0) {
+                        try {
+                            environmentVariables.Activate(ModificationsName, server, APPLICATION_MUTEX_NAME);
+                        } catch (EnvironmentVariablesFailedException) {
+                            errorDelegate(Properties.Resources.EnvironmentVariablesFailed);
+                        } catch (System.Configuration.ConfigurationErrorsException) {
+                            errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                        } catch (TaskRequiresElevationException) {
+                            AskLaunchAsAdministratorUser();
+                        } catch (CompatibilityLayersException) {
+                            AskLaunchWithCompatibilitySettings();
+                        }
+                    }
+
+                    ProgressManager.CurrentGoal.Steps++;
+
+                    if (DownloadsBeforeModificationNames.Count > 0) {
+                        try {
+                            await downloadsBefore.ActivateAsync(ModificationsName, DownloadsBeforeModificationNames).ConfigureAwait(true);
+                        } catch (DownloadFailedException) {
+                            errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, String.Join(", ", DownloadsBeforeModificationNames)));
+                        } catch (System.Configuration.ConfigurationErrorsException) {
+                            errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                        }
+                    }
+
+                    ProgressManager.CurrentGoal.Steps++;
+
+                    if (modificationsElement.RegistryBackups.Count > 0) {
+                        try {
+                            registryBackup.Activate(ModificationsName);
+                        } catch (RegistryBackupFailedException) {
+                            errorDelegate(Properties.Resources.RegistryBackupFailed);
+                        } catch (System.Configuration.ConfigurationErrorsException) {
+                            errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                        } catch (TaskRequiresElevationException) {
+                            AskLaunchAsAdministratorUser();
+                        } catch (ArgumentException) {
+                            errorDelegate(Properties.Resources.GameIsMissingFiles);
+                        }
+                    }
+
+                    ProgressManager.CurrentGoal.Steps++;
+
+                    if (modificationsElement.SingleInstance.ElementInformation.IsPresent) {
+                        try {
+                            singleInstance.Activate(ModificationsName, commandLine);
+                        } catch (InvalidModificationException ex) {
+                            throw ex;
+                        } catch (TaskRequiresElevationException) {
+                            AskLaunchAsAdministratorUser();
+                        } catch {
+                            errorDelegate(Properties.Resources.UnknownProcessCompatibilityConflict);
+                        }
+                    }
+
+                    ProgressManager.CurrentGoal.Steps++;
+                } finally {
+                    ProgressManager.CurrentGoal.Stop();
                 }
-                
+            } finally {
+                modificationsSemaphoreSlim.Release();
+            }
+        }
+
+        private async Task DeactivateModificationsAsync(ErrorDelegate errorDelegate) {
+            await modificationsSemaphoreSlim.WaitAsync().ConfigureAwait(true);
+
+            try {
+                ProgressManager.CurrentGoal.Start(3);
+
                 try {
-                    RunAsAdministrator.Activate(ModificationsName, RunAsAdministratorModification);
-                } catch (System.Configuration.ConfigurationErrorsException) {
-                    errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                } catch (TaskRequiresElevationException) {
-                    AskLaunchAsAdministratorUser();
-                }
-
-                if (modificationsElement.ModeTemplates.ServerModeTemplate.ElementInformation.IsPresent || modificationsElement.ModeTemplates.SoftwareModeTemplate.ElementInformation.IsPresent) {
                     try {
-                        ModeTemplates.Activate(ModificationsName, ref Server, ref Software, ref SoftwareProcessStartInfo);
-                    } catch (ModeTemplatesFailedException) {
-                        errorDelegate(Properties.Resources.ModeTemplatesFailed);
-                    } catch (System.Configuration.ConfigurationErrorsException) {
-                        errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                    } catch (TaskRequiresElevationException) {
-                        AskLaunchAsAdministratorUser();
-                    }
-                }
-
-                if (modificationsElement.EnvironmentVariables.Count > 0) {
-                    try {
-                        EnvironmentVariables.Activate(ModificationsName, Server, APPLICATION_MUTEX_NAME);
-                    } catch (EnvironmentVariablesFailedException) {
-                        errorDelegate(Properties.Resources.EnvironmentVariablesFailed);
-                    } catch (System.Configuration.ConfigurationErrorsException) {
-                        errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                    } catch (TaskRequiresElevationException) {
-                        AskLaunchAsAdministratorUser();
-                    } catch (CompatibilityLayersException) {
-                        AskLaunchWithCompatibilitySettings();
-                    }
-                }
-
-                if (DownloadsBeforeModificationNames.Count > 0) {
-                    try {
-                        await DownloadsBefore.ActivateAsync(ModificationsName, DownloadsBeforeModificationNames).ConfigureAwait(true);
-                    } catch (DownloadFailedException) {
-                        errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, String.Join(", ", DownloadsBeforeModificationNames)));
-                    } catch (System.Configuration.ConfigurationErrorsException) {
-                        errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                    }
-                }
-
-                if (modificationsElement.RegistryBackups.Count > 0) {
-                    try {
-                        RegistryBackup.Activate(ModificationsName);
+                        // this one really needs to work
+                        // we can't continue if it does not
+                        registryBackup.Deactivate();
                     } catch (RegistryBackupFailedException) {
                         errorDelegate(Properties.Resources.RegistryBackupFailed);
                     } catch (System.Configuration.ConfigurationErrorsException) {
@@ -230,75 +271,49 @@ namespace FlashpointSecurePlayer {
                     } catch (ArgumentException) {
                         errorDelegate(Properties.Resources.GameIsMissingFiles);
                     }
-                }
 
-                if (modificationsElement.SingleInstance.ElementInformation.IsPresent) {
+                    ProgressManager.CurrentGoal.Steps++;
+
                     try {
-                        SingleInstance.Activate(ModificationsName, commandLine);
-                    } catch (InvalidModificationException ex) {
-                        throw ex;
+                        environmentVariables.Deactivate(server);
+                    } catch (EnvironmentVariablesFailedException) {
+                        errorDelegate(Properties.Resources.EnvironmentVariablesFailed);
+                    } catch (System.Configuration.ConfigurationErrorsException) {
+                        errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                     } catch (TaskRequiresElevationException) {
                         AskLaunchAsAdministratorUser();
-                    } catch {
-                        errorDelegate(Properties.Resources.UnknownProcessCompatibilityConflict);
+                    } catch (CompatibilityLayersException) {
+                        AskLaunchWithCompatibilitySettings();
                     }
+
+                    ProgressManager.CurrentGoal.Steps++;
+
+                    try {
+                        ModificationsElement activeModificationsElement = GetActiveModificationsElement(false);
+
+                        if (activeModificationsElement != null) {
+                            activeModificationsElement.Active = ACTIVE_EXE_CONFIGURATION_NAME;
+                            SetFlashpointSecurePlayerSection(ACTIVE_EXE_CONFIGURATION_NAME);
+                        }
+                    } catch (System.Configuration.ConfigurationErrorsException) {
+                        errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                    }
+
+                    ProgressManager.CurrentGoal.Steps++;
+                } finally {
+                    ProgressManager.CurrentGoal.Stop();
                 }
             } finally {
-                ModificationsSemaphoreSlim.Release();
-            }
-        }
-
-        private async Task DeactivateModificationsAsync(ErrorDelegate errorDelegate) {
-            await ModificationsSemaphoreSlim.WaitAsync().ConfigureAwait(true);
-
-            try {
-                try {
-                    // this one really needs to work
-                    // we can't continue if it does not
-                    RegistryBackup.Deactivate();
-                } catch (RegistryBackupFailedException) {
-                    errorDelegate(Properties.Resources.RegistryBackupFailed);
-                } catch (System.Configuration.ConfigurationErrorsException) {
-                    errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                } catch (TaskRequiresElevationException) {
-                    AskLaunchAsAdministratorUser();
-                } catch (ArgumentException) {
-                    errorDelegate(Properties.Resources.GameIsMissingFiles);
-                }
-
-                try {
-                    EnvironmentVariables.Deactivate(Server);
-                } catch (EnvironmentVariablesFailedException) {
-                    errorDelegate(Properties.Resources.EnvironmentVariablesFailed);
-                } catch (System.Configuration.ConfigurationErrorsException) {
-                    errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                } catch (TaskRequiresElevationException) {
-                    AskLaunchAsAdministratorUser();
-                } catch (CompatibilityLayersException) {
-                    AskLaunchWithCompatibilitySettings();
-                }
-
-                try {
-                    ModificationsElement activeModificationsElement = GetActiveModificationsElement(false);
-                
-                    if (activeModificationsElement != null) {
-                        activeModificationsElement.Active = ACTIVE_EXE_CONFIGURATION_NAME;
-                        SetFlashpointSecurePlayerSection(ACTIVE_EXE_CONFIGURATION_NAME);
-                    }
-                } catch (System.Configuration.ConfigurationErrorsException) {
-                    errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                }
-            } finally {
-                ModificationsSemaphoreSlim.Release();
+                modificationsSemaphoreSlim.Release();
             }
         }
 
         private async Task StartSecurePlayback() {
-            if (ActiveX) {
+            if (activeX) {
                 // ActiveX Mode
                 if (String.IsNullOrEmpty(ModificationsName)) {
                     ShowError(Properties.Resources.CurationMissingModificationName);
-                    throw new InvalidModificationException();
+                    throw new InvalidModificationException("The Modification Name may not be the Active Modification Name.");
                 }
 
                 // this requires admin
@@ -306,187 +321,206 @@ namespace FlashpointSecurePlayer {
                     AskLaunchAsAdministratorUser();
                 }
 
-                ResetProgressBar();
+                ProgressManager.Reset();
                 ShowOutput(Properties.Resources.RegistryBackupInProgress);
-                ActiveXControl activeXControl;
+                ProgressManager.CurrentGoal.Start(6);
 
                 try {
-                    activeXControl = new ActiveXControl(ModificationsName);
-                } catch (DllNotFoundException) {
-                    MessageBox.Show(String.Format(Properties.Resources.GameIsMissingFiles, ModificationsName), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    Application.Exit();
-                    return;
-                } catch (InvalidActiveXControlException) {
-                    ShowError(Properties.Resources.GameNotActiveXControl);
-                    return;
+                    ActiveXControl activeXControl;
+
+                    try {
+                        activeXControl = new ActiveXControl(ModificationsName);
+                    } catch (DllNotFoundException) {
+                        ProgressManager.ShowError();
+                        MessageBox.Show(String.Format(Properties.Resources.GameIsMissingFiles, ModificationsName), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        Application.Exit();
+                        return;
+                    } catch (InvalidActiveXControlException) {
+                        ShowError(Properties.Resources.GameNotActiveXControl);
+                        return;
+                    }
+
+                    GetBinaryType(ModificationsName, out BINARY_TYPE binaryType);
+
+                    // first, we install the control without a registry backup running
+                    // this is so we can be sure we can uninstall the control
+                    try {
+                        activeXControl.Install();
+                    } catch (Win32Exception) {
+                        ShowError(Properties.Resources.ActiveXControlInstallFailed);
+                        return;
+                    }
+
+                    ProgressManager.CurrentGoal.Steps++;
+
+                    // next, uninstall the control
+                    // in case it was already installed before this whole process
+                    // this is to ensure an existing install
+                    // doesn't interfere with our registry backup results
+                    try {
+                        activeXControl.Uninstall();
+                    } catch (Win32Exception) {
+                        ShowError(Properties.Resources.ActiveXControlUninstallFailed);
+                        return;
+                    }
+
+                    ProgressManager.CurrentGoal.Steps++;
+
+                    try {
+                        try {
+                            await registryBackup.StartImportAsync(ModificationsName, binaryType).ConfigureAwait(true);
+                        } catch (RegistryBackupFailedException) {
+                            ShowError(Properties.Resources.RegistryBackupFailed);
+                            return;
+                        } catch (System.Configuration.ConfigurationErrorsException) {
+                            ProgressManager.ShowError();
+                            MessageBox.Show(Properties.Resources.ConfigurationFailedLoad, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            Application.Exit();
+                            return;
+                        } catch (InvalidModificationException) {
+                            ShowError(Properties.Resources.GameNotCuratedCorrectly);
+                            return;
+                        } catch (TaskRequiresElevationException) {
+                            // we're already running as admin?
+                            ShowError(String.Format(Properties.Resources.GameFailedLaunch, Properties.Resources.AsAdministratorUser));
+                            return;
+                        } catch (InvalidOperationException) {
+                            ShowError(Properties.Resources.RegistryBackupAlreadyRunning);
+                            return;
+                        }
+
+                        ProgressManager.CurrentGoal.Steps++;
+
+                        // a registry backup is running, install the control
+                        try {
+                            activeXControl.Install();
+                        } catch (Win32Exception) {
+                            ShowError(Properties.Resources.ActiveXControlInstallFailed);
+                            return;
+                        }
+
+                        ProgressManager.CurrentGoal.Steps++;
+
+                        try {
+                            await registryBackup.StopImportAsync().ConfigureAwait(true);
+                        } catch (RegistryBackupFailedException) {
+                            ShowError(Properties.Resources.RegistryBackupFailed);
+                            return;
+                        } catch (System.Configuration.ConfigurationErrorsException) {
+                            ProgressManager.ShowError();
+                            MessageBox.Show(Properties.Resources.ConfigurationFailedLoad, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            Application.Exit();
+                            return;
+                        } catch (InvalidOperationException) {
+                            ShowError(Properties.Resources.RegistryBackupNotRunning);
+                            return;
+                        }
+                    } finally {
+                        ControlBox = true;
+                    }
+
+                    ProgressManager.CurrentGoal.Steps++;
+
+                    // the registry backup is stopped, uninstall the control
+                    // this will leave the control uninstalled on the system
+                    // there is no way to tell if it was installed before
+                    // (which is the point of creating the backup so we can)
+                    try {
+                        activeXControl.Uninstall();
+                    } catch (Win32Exception) {
+                        ShowError(Properties.Resources.ActiveXControlUninstallFailed);
+                        return;
+                    }
+
+                    ProgressManager.CurrentGoal.Steps++;
+                } finally {
+                    ProgressManager.CurrentGoal.Stop();
                 }
 
-                GetBinaryType(ModificationsName, out BINARY_TYPE binaryType);
-
-                // first, we install the control without a registry backup running
-                // this is so we can be sure we can uninstall the control
-                try {
-                    activeXControl.Install();
-                } catch (Win32Exception) {
-                    ShowError(Properties.Resources.ActiveXControlInstallFailed);
-                    return;
-                }
-
-                securePlaybackProgressBar.Value = 17;
-
-                // next, uninstall the control
-                // in case it was already installed before this whole process
-                // this is to ensure an existing install
-                // doesn't interfere with our registry backup results
-                try {
-                    activeXControl.Uninstall();
-                } catch (Win32Exception) {
-                    ShowError(Properties.Resources.ActiveXControlUninstallFailed);
-                    return;
-                }
-
-                securePlaybackProgressBar.Value = 33;
-
-                try {
-                    await RegistryBackup.StartImportAsync(ModificationsName, binaryType).ConfigureAwait(true);
-                } catch (RegistryBackupFailedException) {
-                    ShowError(Properties.Resources.RegistryBackupFailed);
-                    return;
-                } catch (System.Configuration.ConfigurationErrorsException) {
-                    MessageBox.Show(Properties.Resources.ConfigurationFailedLoad, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    Application.Exit();
-                    return;
-                } catch (InvalidModificationException) {
-                    ShowError(Properties.Resources.GameNotCuratedCorrectly);
-                    return;
-                } catch (TaskRequiresElevationException) {
-                    // we're already running as admin?
-                    ShowError(String.Format(Properties.Resources.GameFailedLaunch, Properties.Resources.AsAdministratorUser));
-                    return;
-                } catch (InvalidOperationException) {
-                    ShowError(Properties.Resources.RegistryBackupAlreadyRunning);
-                    return;
-                }
-
-                securePlaybackProgressBar.Value = 50;
-
-                // a registry backup is running, install the control
-                try {
-                    activeXControl.Install();
-                } catch (Win32Exception) {
-                    ShowError(Properties.Resources.ActiveXControlInstallFailed);
-                    return;
-                }
-
-                securePlaybackProgressBar.Value = 67;
-
-                try {
-                    await RegistryBackup.StopImportAsync().ConfigureAwait(true);
-                } catch (RegistryBackupFailedException) {
-                    ShowError(Properties.Resources.RegistryBackupFailed);
-                    return;
-                } catch (System.Configuration.ConfigurationErrorsException) {
-                    MessageBox.Show(Properties.Resources.ConfigurationFailedLoad, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    Application.Exit();
-                    return;
-                } catch (InvalidOperationException) {
-                    ShowError(Properties.Resources.RegistryBackupNotRunning);
-                    return;
-                }
-
-                securePlaybackProgressBar.Value = 83;
-
-                // the registry backup is stopped, uninstall the control
-                // this will leave the control uninstalled on the system
-                // there is no way to tell if it was installed before
-                // (which is the point of creating the backup so we can)
-                try {
-                    activeXControl.Uninstall();
-                } catch (Win32Exception) {
-                    ShowError(Properties.Resources.ActiveXControlUninstallFailed);
-                    return;
-                }
-
-                securePlaybackProgressBar.Value = 100;
                 ShowOutput(Properties.Resources.RegistryBackupWasSuccessful);
                 return;
             } else {
                 // switch to synced process
-                ResetProgressBar();
+                ProgressManager.Reset();
                 ShowOutput(Properties.Resources.RequiredComponentsAreLoading);
+                ProgressManager.CurrentGoal.Start(2);
 
                 try {
-                    await ActivateModificationsAsync(Software, delegate (string text) {
-                        if (text.IndexOf("\n") == -1) {
-                            ShowError(text);
-                        } else {
-                            ShowError();
-                            MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-
-                        throw new InvalidModificationException();
-                    }).ConfigureAwait(true);
-                } catch (InvalidModificationException) {
-                    return;
-                }
-
-                if (!String.IsNullOrEmpty(Server)) {
-                    securePlaybackProgressBar.Value = 50;
-                    Server serverForm = new Server(new Uri(Server));
-
-                    securePlaybackProgressBar.Value = 100;
-                    Hide();
-                    serverForm.Show();
-                    return;
-                } else if (!String.IsNullOrEmpty(Software)) {
-                    securePlaybackProgressBar.Value = 50;
-
                     try {
-                        // default to zero in case of error
-                        int argc = 0;
-                        string[] argv = CommandLineToArgv(Software, out argc);
+                        await ActivateModificationsAsync(software, delegate (string text) {
+                            if (text.IndexOf("\n") == -1) {
+                                ShowError(text);
+                            } else {
+                                ProgressManager.ShowError();
+                                MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }
 
-                        if (SoftwareProcessStartInfo == null) {
-                            SoftwareProcessStartInfo = new ProcessStartInfo();
-                        }
+                            throw new InvalidModificationException("An error occured while activating.");
+                        }).ConfigureAwait(true);
+                    } catch (InvalidModificationException) {
+                        return;
+                    }
 
-                        string fullPath = Path.GetFullPath(argv[0]);
-                        SoftwareProcessStartInfo.FileName = fullPath;
-                        SoftwareProcessStartInfo.Arguments = GetCommandLineArgumentRange(Software, 1, -1);
-                        SoftwareProcessStartInfo.ErrorDialog = false;
-                        SoftwareProcessStartInfo.WorkingDirectory = Path.GetDirectoryName(fullPath);
+                    if (!String.IsNullOrEmpty(server)) {
+                        ProgressManager.CurrentGoal.Steps++;
+                        Server serverForm = new Server(new Uri(server));
 
-                        Process process = Process.Start(SoftwareProcessStartInfo);
+                        ProgressManager.CurrentGoal.Steps++;
+                        Hide();
+                        serverForm.Show();
+                        return;
+                    } else if (!String.IsNullOrEmpty(software)) {
+                        ProgressManager.CurrentGoal.Steps++;
 
                         try {
-                            ProcessSync.Start(process);
-                        } catch (JobObjectException) {
-                            // popup message box and blow up
-                            ShowError();
-                            MessageBox.Show(Properties.Resources.JobObjectNotCreated, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            process.Kill();
-                            Environment.Exit(-1);
-                            return;
+                            // default to zero in case of error
+                            int argc = 0;
+                            string[] argv = CommandLineToArgv(software, out argc);
+
+                            if (softwareProcessStartInfo == null) {
+                                softwareProcessStartInfo = new ProcessStartInfo();
+                            }
+
+                            string fullPath = Path.GetFullPath(argv[0]);
+                            softwareProcessStartInfo.FileName = fullPath;
+                            softwareProcessStartInfo.Arguments = GetCommandLineArgumentRange(software, 1, -1);
+                            softwareProcessStartInfo.ErrorDialog = false;
+                            softwareProcessStartInfo.WorkingDirectory = Path.GetDirectoryName(fullPath);
+
+                            Process process = Process.Start(softwareProcessStartInfo);
+
+                            try {
+                                ProcessSync.Start(process);
+                            } catch (JobObjectException) {
+                                // popup message box and blow up
+                                ProgressManager.ShowError();
+                                MessageBox.Show(Properties.Resources.JobObjectNotCreated, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                process.Kill();
+                                Environment.Exit(-1);
+                                return;
+                            }
+
+                            ProgressManager.CurrentGoal.Steps++;
+                            Hide();
+
+                            if (!process.HasExited) {
+                                process.WaitForExit();
+                            }
+
+                            Application.Exit();
+                        } catch {
+                            Show();
+                            ProgressManager.ShowError();
+                            MessageBox.Show(Properties.Resources.ProcessFailedStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            Application.Exit();
                         }
-
-                        securePlaybackProgressBar.Value = 100;
-                        Hide();
-
-                        if (!process.HasExited) {
-                            process.WaitForExit();
-                        }
-
-                        Application.Exit();
-                    } catch {
-                        Show();
-                        ShowError();
-                        MessageBox.Show(Properties.Resources.ProcessFailedStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        Application.Exit();
+                        return;
                     }
-                    return;
+                } finally {
+                    ProgressManager.CurrentGoal.Stop();
                 }
             }
-            throw new InvalidCurationException();
+            throw new InvalidCurationException("No Mode was used.");
         }
 
         private async Task StopSecurePlayback(FormClosingEventArgs e) {
@@ -506,7 +540,7 @@ namespace FlashpointSecurePlayer {
             // default to false in case of error
             bool createdNew = false;
             // signals the Mutex if it has not been
-            ApplicationMutex = new Mutex(true, APPLICATION_MUTEX_NAME, out createdNew);
+            applicationMutex = new Mutex(true, APPLICATION_MUTEX_NAME, out createdNew);
 
             if (!createdNew) {
                 // multiple instances open, blow up immediately
@@ -514,6 +548,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
+            ProgressManager.ProgressBar = securePlaybackProgressBar;
             string windowsVersionName = GetWindowsVersionName(false, false, false);
 
             if (windowsVersionName != "Windows 7" &&
@@ -524,7 +559,7 @@ namespace FlashpointSecurePlayer {
                 windowsVersionName != "Windows Server 2012 R2" &&
                 windowsVersionName != "Windows 10" &&
                 windowsVersionName != "Windows Server 2016") {
-                ShowError();
+                ProgressManager.ShowError();
                 MessageBox.Show(Properties.Resources.WindowsVersionTooOld, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Application.Exit();
                 return;
@@ -534,7 +569,7 @@ namespace FlashpointSecurePlayer {
                 try {
                     Directory.SetCurrentDirectory(Application.StartupPath);
                 } catch (System.Security.SecurityException) {
-                    throw new TaskRequiresElevationException();
+                    throw new TaskRequiresElevationException("Setting the Current Directory requires elevation.");
                 } catch {
                     // Fail silently.
                 }
@@ -561,7 +596,7 @@ namespace FlashpointSecurePlayer {
                 if (arg == "--run-as-administrator" || arg == "-a") {
                     RunAsAdministratorModification = true;
                 } else if (arg == "--activex" || arg == "-ax") {
-                    ActiveX = true;
+                    activeX = true;
                 } else {
                     if (i < args.Length - 1) {
                         if (arg == "--name" || arg == "-n") {
@@ -575,10 +610,10 @@ namespace FlashpointSecurePlayer {
                             DownloadsBeforeModificationNames.Add(args[i + 1]);
                             i++;
                         } else if (arg == "--server" || arg == "-sv") {
-                            Server = args[i + 1];
+                            server = args[i + 1];
                             i++;
                         } else if (arg == "--software" || arg == "-sw") {
-                            Software = GetCommandLineArgumentRange(Environment.CommandLine, i + 1, -1);
+                            software = GetCommandLineArgumentRange(Environment.CommandLine, i + 1, -1);
                             break;
                         }
                     }
@@ -587,9 +622,9 @@ namespace FlashpointSecurePlayer {
 
             try {
                 await DeactivateModificationsAsync(delegate (string text) {
-                    ShowError();
+                    ProgressManager.ShowError();
                     MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    throw new InvalidModificationException();
+                    throw new InvalidModificationException("An error occured while deactivating.");
                 }).ConfigureAwait(false);
             } catch (InvalidModificationException) {
                 // can't proceed since we can't activate without deactivating first
@@ -599,7 +634,7 @@ namespace FlashpointSecurePlayer {
         }
 
         private async void FlashpointSecurePlayer_Shown(object sender, EventArgs e) {
-            ShowOutput();
+            ProgressManager.ShowOutput();
 
             try {
                 await StartSecurePlayback().ConfigureAwait(false);
@@ -636,6 +671,7 @@ namespace FlashpointSecurePlayer {
                         processesByName = Process.GetProcessesByName(FLASHPOINT_LAUNCHER_PROCESS_NAME);
                     } catch (InvalidOperationException) {
                         // only occurs Windows XP which is unsupported
+                        ProgressManager.ShowError();
                         MessageBox.Show(Properties.Resources.WindowsVersionTooOld, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         Application.Exit();
                         return;
@@ -646,7 +682,7 @@ namespace FlashpointSecurePlayer {
                     }
                 }
 
-                ShowError();
+                ProgressManager.ShowError();
                 MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Application.Exit();
                 return;
