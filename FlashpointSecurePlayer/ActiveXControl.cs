@@ -26,26 +26,27 @@ namespace FlashpointSecurePlayer {
         [DllImport("KERNEL32.DLL", CallingConvention = CallingConvention.StdCall)]
         private static extern IntPtr GetProcAddress(IntPtr moduleHandle, [MarshalAs(UnmanagedType.LPStr)] string procName);
 
-        private IntPtr ModuleHandle = IntPtr.Zero;
+        private IntPtr moduleHandle = IntPtr.Zero;
+
         private readonly DllRegisterServerDelegate DllRegisterServer;
         private readonly DllRegisterServerDelegate DllUnregisterServer;
 
         public ActiveXControl(string libFileName) {
-            ModuleHandle = LoadLibrary(libFileName);
+            moduleHandle = LoadLibrary(libFileName);
 
-            if (ModuleHandle == IntPtr.Zero) {
+            if (moduleHandle == IntPtr.Zero) {
                 throw new DllNotFoundException("The library " + libFileName + " could not be found.");
             }
 
             IntPtr dllRegisterServerProcAddress = IntPtr.Zero;
-            dllRegisterServerProcAddress = GetProcAddress(ModuleHandle, "DllRegisterServer");
+            dllRegisterServerProcAddress = GetProcAddress(moduleHandle, "DllRegisterServer");
 
             if (dllRegisterServerProcAddress == IntPtr.Zero) {
                 throw new InvalidActiveXControlException("The library does not have a DllRegisterServer export.");
             }
 
             IntPtr dllUnregisterServerProcAddress = IntPtr.Zero;
-            dllUnregisterServerProcAddress = GetProcAddress(ModuleHandle, "DllUnregisterServer");
+            dllUnregisterServerProcAddress = GetProcAddress(moduleHandle, "DllUnregisterServer");
 
             if (dllUnregisterServerProcAddress == IntPtr.Zero) {
                 throw new InvalidActiveXControlException("The library does not have a DllUnregisterServer export.");
@@ -56,9 +57,9 @@ namespace FlashpointSecurePlayer {
         }
 
         ~ActiveXControl() {
-            if (ModuleHandle != IntPtr.Zero) {
-                FreeLibrary(ModuleHandle);
-                ModuleHandle = IntPtr.Zero;
+            if (moduleHandle != IntPtr.Zero) {
+                FreeLibrary(moduleHandle);
+                moduleHandle = IntPtr.Zero;
             }
         }
 

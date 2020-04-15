@@ -24,10 +24,8 @@ namespace FlashpointSecurePlayer {
                 if (err != S_OK) {
                     throw new Win32Exception("Failed to query the Web Browser Service.");
                 }
-
-                InternetInterfaces.IProfferService profferServiceInterface = Marshal.GetObjectForIUnknown(profferServiceInterfacePointer) as InternetInterfaces.IProfferService;
-
-                if (profferServiceInterface == null) {
+                
+                if (!(Marshal.GetObjectForIUnknown(profferServiceInterfacePointer) is InternetInterfaces.IProfferService profferServiceInterface)) {
                     throw new Win32Exception("Failed to get the Proffer Service Interface.");
                 }
 

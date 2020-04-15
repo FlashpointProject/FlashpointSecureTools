@@ -16,7 +16,7 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Modific
 
 namespace FlashpointSecurePlayer {
     class SingleInstance : Modifications {
-        public SingleInstance(Form Form) : base(Form) { }
+        public SingleInstance(Form form) : base(form) { }
 
         private DialogResult? ShowClosableMessageBox(Task[] tasks, string text, string caption, MessageBoxButtons messageBoxButtons, MessageBoxIcon messageBoxIcon) {
             Form closableForm = new Form() {

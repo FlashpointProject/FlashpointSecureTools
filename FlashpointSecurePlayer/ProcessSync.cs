@@ -87,31 +87,34 @@ namespace FlashpointSecurePlayer {
         [DllImport("KERNEL32.DLL", SetLastError = true)]
         private static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
 
-        private static bool Started = false;
-        private static IntPtr JobHandle = IntPtr.Zero;
+        private static IntPtr jobHandle = IntPtr.Zero;
+
+        private static bool Started { get; set; } = false;
 
         public static void Start(Process process = null) {
             if (!Started) {
-                if (JobHandle == IntPtr.Zero) {
-                    JobHandle = CreateJobObject(IntPtr.Zero, null);
+                if (jobHandle == IntPtr.Zero) {
+                    jobHandle = CreateJobObject(IntPtr.Zero, null);
 
-                    if (JobHandle == IntPtr.Zero) {
+                    if (jobHandle == IntPtr.Zero) {
                         throw new JobObjectException("Could not create the Job Object.");
                     }
                 }
 
-                JOBOBJECT_BASIC_LIMIT_INFORMATION jobobjectBasicLimitInformation = new JOBOBJECT_BASIC_LIMIT_INFORMATION();
-                jobobjectBasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+                JOBOBJECT_BASIC_LIMIT_INFORMATION jobobjectBasicLimitInformation = new JOBOBJECT_BASIC_LIMIT_INFORMATION {
+                    LimitFlags = JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+                };
 
-                JOBOBJECT_EXTENDED_LIMIT_INFORMATION jobobjectExtendedLimitInformation = new JOBOBJECT_EXTENDED_LIMIT_INFORMATION();
-                jobobjectExtendedLimitInformation.BasicLimitInformation = jobobjectBasicLimitInformation;
+                JOBOBJECT_EXTENDED_LIMIT_INFORMATION jobobjectExtendedLimitInformation = new JOBOBJECT_EXTENDED_LIMIT_INFORMATION {
+                    BasicLimitInformation = jobobjectBasicLimitInformation
+                };
 
                 int jobobjectExtendedLimitInformationSize = Marshal.SizeOf(typeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION));
                 IntPtr jobobjectExtendedLimitInformationPointer = Marshal.AllocHGlobal(jobobjectExtendedLimitInformationSize);
 
                 Marshal.StructureToPtr(jobobjectExtendedLimitInformation, jobobjectExtendedLimitInformationPointer, false);
 
-                bool result = SetInformationJobObject(JobHandle, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, jobobjectExtendedLimitInformationPointer, (uint)jobobjectExtendedLimitInformationSize);
+                bool result = SetInformationJobObject(jobHandle, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, jobobjectExtendedLimitInformationPointer, (uint)jobobjectExtendedLimitInformationSize);
 
                 Marshal.FreeHGlobal(jobobjectExtendedLimitInformationPointer);
 
@@ -119,7 +122,7 @@ namespace FlashpointSecurePlayer {
                     process = Process.GetCurrentProcess();
                 }
 
-                if (!result || !AssignProcessToJobObject(JobHandle, process.Handle)) {
+                if (!result || !AssignProcessToJobObject(jobHandle, process.Handle)) {
                     throw new JobObjectException("Could not set the Job Object Information or assign the Process to the Job Object.");
                 }
 

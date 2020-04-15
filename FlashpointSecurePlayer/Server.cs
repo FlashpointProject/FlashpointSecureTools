@@ -14,12 +14,12 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 
 namespace FlashpointSecurePlayer {
     public partial class Server : Form {
-        private CustomSecurityManager CustomSecurityManager;
-        private Uri WebBrowserURL = null;
+        private CustomSecurityManager customSecurityManager;
+        private Uri webBrowserURL = null;
 
         public Server(Uri WebBrowserURL) {
             InitializeComponent();
-            this.WebBrowserURL = WebBrowserURL;
+            this.webBrowserURL = WebBrowserURL;
         }
 
         private void Server_Load(object sender, EventArgs e) {
@@ -49,7 +49,7 @@ namespace FlashpointSecurePlayer {
             }
 
             try {
-                CustomSecurityManager = new CustomSecurityManager(webBrowser1);
+                customSecurityManager = new CustomSecurityManager(webBrowser1);
             } catch (Win32Exception) {
                 ProgressManager.ShowError();
                 MessageBox.Show(Properties.Resources.FailedCreateCustomSecurityManager, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -62,8 +62,8 @@ namespace FlashpointSecurePlayer {
         }
 
         private void Server_Shown(object sender, EventArgs e) {
-            if (WebBrowserURL != null) {
-                webBrowser1.Url = WebBrowserURL;
+            if (webBrowserURL != null) {
+                webBrowser1.Url = webBrowserURL;
             }
         }
 

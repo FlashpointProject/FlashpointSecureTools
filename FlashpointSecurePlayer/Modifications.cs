@@ -12,11 +12,12 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 namespace FlashpointSecurePlayer {
     public abstract class Modifications {
         // virtual class for modifications
-        protected string Name = "";
-        protected readonly Form Form = null;
-        protected bool ImportStarted = false;
+        protected readonly Form form = null;
         private readonly object importPausedLock = new object();
         private bool importPaused = true;
+
+        protected string Name { get; set; } = "";
+        protected bool ImportStarted { get; set; } = false;
 
         protected bool ImportPaused {
             get {
@@ -32,8 +33,8 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        public Modifications(Form Form) {
-            this.Form = Form;
+        public Modifications(Form form) {
+            this.form = form;
         }
 
         ~Modifications() {
