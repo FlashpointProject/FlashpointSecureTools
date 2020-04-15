@@ -1002,7 +1002,8 @@ namespace FlashpointSecurePlayer {
         }
         public static async Task DownloadEXEConfiguration(string name) {
             try {
-                GetEXEConfiguration(false, name);
+                // important to use this function particularly - GetEXEConfiguration is for internal use by GetModificationsElement only
+                GetModificationsElement(false, name);
             } catch (ConfigurationErrorsException) {
                 try {
                     name = GetValidEXEConfigurationName(name);
