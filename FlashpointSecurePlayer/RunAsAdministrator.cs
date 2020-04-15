@@ -11,7 +11,7 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Modific
 
 namespace FlashpointSecurePlayer {
     class RunAsAdministrator : Modifications {
-        public RunAsAdministrator(Form Form) : base(Form) { }
+        public RunAsAdministrator(Form form) : base(form) { }
 
         public void Activate(string name, bool runAsAdministrator) {
             base.Activate(name);

@@ -19,8 +19,8 @@ namespace FlashpointSecurePlayer {
         private static int value = 0;
         private static IntPtr state = PBST_NORMAL;
 
-        public static class Goal {
-            private class SmallGoal {
+        public static class CurrentGoal {
+            private class Goal {
                 private int size = 1;
                 private int steps = 0;
 
@@ -30,8 +30,14 @@ namespace FlashpointSecurePlayer {
                     }
 
                     set {
+                        // new size cannot be less than old size
                         if (value < size) {
                             value = size;
+                        }
+
+                        // new size cannot be less than steps
+                        if (value < Steps) {
+                            value = Steps;
                         }
 
                         size = value;
@@ -44,10 +50,12 @@ namespace FlashpointSecurePlayer {
                     }
 
                     set {
+                        // new steps cannot be less than old steps
                         if (value < steps) {
                             value = steps;
                         }
 
+                        // new steps cannot be greater than size
                         if (value > Size) {
                             value = Size;
                         }
@@ -56,63 +64,97 @@ namespace FlashpointSecurePlayer {
                     }
                 }
 
-                public SmallGoal(int size = 1) {
+                public Goal(int size = 1) {
                     Size = size;
                 }
             }
 
-            private static Stack<SmallGoal> SmallGoals = new Stack<SmallGoal>();
+            private static Stack<Goal> Goals = new Stack<Goal>();
 
             public static int Size {
                 get {
-                    if (!SmallGoals.Any()) {
+                    if (!Goals.Any()) {
                         return 1;
                     }
 
-                    return SmallGoals.Peek().Size;
+                    return Goals.Peek().Size;
                 }
 
                 set {
-                    if (value > 0) {
-                        SmallGoals.Push(new SmallGoal(value));
+                    if (!Goals.Any()) {
+                        return;
                     }
+
+                    Goals.Peek().Size = value;
                 }
             }
 
             public static int Steps {
                 get {
-                    if (!SmallGoals.Any()) {
+                    if (!Goals.Any()) {
                         return 0;
                     }
                     
-                    return SmallGoals.Peek().Steps;
+                    return Goals.Peek().Steps;
                 }
 
                 set {
-                    if (!SmallGoals.Any()) {
+                    if (!Goals.Any()) {
                         return;
                     }
 
-                    SmallGoal smallGoal = SmallGoals.Peek();
-                    smallGoal.Steps = value;
-                    SmallGoal[] smallGoalsArray = SmallGoals.ToArray();
-                    double multiplier = (double)smallGoal.Steps / smallGoal.Size;
+                    Goal goal = Goals.Peek();
 
-                    for (int i = 1;i < smallGoalsArray.Length;i++) {
-                        multiplier *= (double)(smallGoalsArray[i].Steps + 1) / smallGoalsArray[i].Size;
-                    }
-
-                    int progressManagerValue = (int)(multiplier * 100.0);
-
-                    if (smallGoal.Steps >= smallGoal.Size) {
-                        SmallGoals.Pop();
-                    }
-
-                    if (progressManagerValue < ProgressManager.Value) {
+                    if (value == goal.Size) {
+                        // can't be true unless calling Stop
                         return;
                     }
 
-                    ProgressManager.Value = progressManagerValue;
+                    goal.Steps = value;
+                    Show();
+                }
+            }
+
+            private static void Show() {
+                Goal[] goalsArray = Goals.ToArray();
+
+                if (goalsArray.ElementAtOrDefault(0) == null) {
+                    return;
+                }
+
+                double multiplier = (double)goalsArray[0].Steps / goalsArray[0].Size;
+
+                for (int i = 1;i < goalsArray.Length;i++) {
+                    multiplier *= (double)(goalsArray[i].Steps + 1) / goalsArray[i].Size;
+                }
+
+                int progressManagerValue = (int)(multiplier * 100.0);
+
+                if (progressManagerValue < ProgressManager.Value) {
+                    return;
+                }
+
+                ProgressManager.Value = progressManagerValue;
+            }
+
+            public static void Start(int size = 1) {
+                if (size > 0) {
+                    Goals.Push(new Goal(size));
+                }
+            }
+
+            public static void Stop() {
+                if (!Goals.Any()) {
+                    return;
+                }
+
+                Goal goal = Goals.Peek();
+                goal.Steps = goal.Size;
+
+                try {
+                    Show();
+                } finally {
+                    Goals.Pop();
                 }
             }
         }

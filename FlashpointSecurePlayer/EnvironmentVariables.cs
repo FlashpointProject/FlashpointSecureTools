@@ -15,7 +15,7 @@ namespace FlashpointSecurePlayer {
     class EnvironmentVariables : Modifications {
         const string COMPATIBILITY_LAYER_NAME = "__COMPAT_LAYER";
 
-        public EnvironmentVariables(Form Form) : base(Form) { }
+        public EnvironmentVariables(Form form) : base(form) { }
 
         public void Activate(string name, string server, string applicationMutexName) {
             base.Activate(name);
@@ -33,46 +33,51 @@ namespace FlashpointSecurePlayer {
                 throw new TaskRequiresElevationException("Getting the " + COMPATIBILITY_LAYER_NAME + " Environment Variable requires elevation.");
             }
 
-            ProgressManager.Goal.Size = modificationsElement.EnvironmentVariables.Count;
-            EnvironmentVariablesElement environmentVariablesElement = null;
+            ProgressManager.CurrentGoal.Start(modificationsElement.EnvironmentVariables.Count);
 
-            for (int i = 0;i < modificationsElement.EnvironmentVariables.Count;i++) {
-                environmentVariablesElement = modificationsElement.EnvironmentVariables.Get(i) as EnvironmentVariablesElement;
+            try {
+                EnvironmentVariablesElement environmentVariablesElement = null;
 
-                if (environmentVariablesElement == null) {
-                    throw new System.Configuration.ConfigurationErrorsException("The Environment Variables Element (" + i + ") is null.");
-                }
+                for (int i = 0;i < modificationsElement.EnvironmentVariables.Count;i++) {
+                    environmentVariablesElement = modificationsElement.EnvironmentVariables.Get(i) as EnvironmentVariablesElement;
 
-                value = environmentVariablesElement.Value;
-
-                try {
-                    Environment.SetEnvironmentVariable(environmentVariablesElement.Name, RemoveVariablesFromLengthenedValue(value) as string);
-                } catch (ArgumentException) {
-                    throw new EnvironmentVariablesFailedException("Failed to set the " + environmentVariablesElement.Name + " Environment Variable.");
-                } catch (SecurityException) {
-                    throw new TaskRequiresElevationException("Setting the " + environmentVariablesElement.Name + " Environment Variable requires elevation.");
-                }
-
-                // if this is the compatibility layer variable
-                // and the value is not what we want to set it to
-                // and we're in server mode...
-                if (environmentVariablesElement.Name == COMPATIBILITY_LAYER_NAME && !String.IsNullOrEmpty(server)) {
-                    values = new List<string>();
-
-                    if (compatibilityLayerValue != null) {
-                        compatibilityLayerValues = compatibilityLayerValue.ToUpper().Split(' ').ToList();
+                    if (environmentVariablesElement == null) {
+                        throw new System.Configuration.ConfigurationErrorsException("The Environment Variables Element (" + i + ") is null.");
                     }
 
-                    if (value != null) {
-                        values = value.ToUpper().Split(' ').ToList();
-                    }
-                    
-                    if (values.Except(compatibilityLayerValues).Any()) {
-                        throw new CompatibilityLayersException("The Compatibility Layers (" + String.Join(", ", compatibilityLayerValues) + ") cannot be set.");
-                    }
-                }
+                    value = environmentVariablesElement.Value;
 
-                ProgressManager.Goal.Steps++;
+                    try {
+                        Environment.SetEnvironmentVariable(environmentVariablesElement.Name, RemoveVariablesFromLengthenedValue(value) as string);
+                    } catch (ArgumentException) {
+                        throw new EnvironmentVariablesFailedException("Failed to set the " + environmentVariablesElement.Name + " Environment Variable.");
+                    } catch (SecurityException) {
+                        throw new TaskRequiresElevationException("Setting the " + environmentVariablesElement.Name + " Environment Variable requires elevation.");
+                    }
+
+                    // if this is the compatibility layer variable
+                    // and the value is not what we want to set it to
+                    // and we're in server mode...
+                    if (environmentVariablesElement.Name == COMPATIBILITY_LAYER_NAME && !String.IsNullOrEmpty(server)) {
+                        values = new List<string>();
+
+                        if (compatibilityLayerValue != null) {
+                            compatibilityLayerValues = compatibilityLayerValue.ToUpper().Split(' ').ToList();
+                        }
+
+                        if (value != null) {
+                            values = value.ToUpper().Split(' ').ToList();
+                        }
+
+                        if (values.Except(compatibilityLayerValues).Any()) {
+                            throw new CompatibilityLayersException("The Compatibility Layers (" + String.Join(", ", compatibilityLayerValues) + ") cannot be set.");
+                        }
+                    }
+
+                    ProgressManager.CurrentGoal.Steps++;
+                }
+            } finally {
+                ProgressManager.CurrentGoal.Stop();
             }
         }
 
@@ -106,37 +111,42 @@ namespace FlashpointSecurePlayer {
                 compatibilityLayerValues = compatibilityLayerValue.ToUpper().Split(' ').ToList();
             }
 
-            ProgressManager.Goal.Size = modificationsElement.EnvironmentVariables.Count;
-            EnvironmentVariablesElement environmentVariablesElement = null;
+            ProgressManager.CurrentGoal.Start(modificationsElement.EnvironmentVariables.Count);
 
-            for (int i = 0;i < modificationsElement.EnvironmentVariables.Count;i++) {
-                environmentVariablesElement = modificationsElement.EnvironmentVariables.Get(i) as EnvironmentVariablesElement;
+            try {
+                EnvironmentVariablesElement environmentVariablesElement = null;
 
-                if (environmentVariablesElement == null) {
-                    throw new System.Configuration.ConfigurationErrorsException("The Environment Variables Element (" + i + ") is null.");
-                }
+                for (int i = 0;i < modificationsElement.EnvironmentVariables.Count;i++) {
+                    environmentVariablesElement = modificationsElement.EnvironmentVariables.Get(i) as EnvironmentVariablesElement;
 
-                value = environmentVariablesElement.Value;
-                values = new List<string>();
-
-                if (value != null) {
-                    values = value.ToUpper().Split(' ').ToList();
-                }
-
-                // if this isn't the compatibility layer variable
-                // or the value isn't what we want to set it to
-                // or we're not in server mode...
-                if (environmentVariablesElement.Name != COMPATIBILITY_LAYER_NAME || values.Except(compatibilityLayerValues).Any() || String.IsNullOrEmpty(server)) {
-                    try {
-                        Environment.SetEnvironmentVariable(environmentVariablesElement.Name, null);
-                    } catch (ArgumentException) {
-                        throw new EnvironmentVariablesFailedException("Failed to set the " + environmentVariablesElement.Name + " Environment Variable.");
-                    } catch (SecurityException) {
-                        throw new TaskRequiresElevationException("Getting the " + COMPATIBILITY_LAYER_NAME + " Environment Variable requires elevation.");
+                    if (environmentVariablesElement == null) {
+                        throw new System.Configuration.ConfigurationErrorsException("The Environment Variables Element (" + i + ") is null.");
                     }
-                }
 
-                ProgressManager.Goal.Steps++;
+                    value = environmentVariablesElement.Value;
+                    values = new List<string>();
+
+                    if (value != null) {
+                        values = value.ToUpper().Split(' ').ToList();
+                    }
+
+                    // if this isn't the compatibility layer variable
+                    // or the value isn't what we want to set it to
+                    // or we're not in server mode...
+                    if (environmentVariablesElement.Name != COMPATIBILITY_LAYER_NAME || values.Except(compatibilityLayerValues).Any() || String.IsNullOrEmpty(server)) {
+                        try {
+                            Environment.SetEnvironmentVariable(environmentVariablesElement.Name, null);
+                        } catch (ArgumentException) {
+                            throw new EnvironmentVariablesFailedException("Failed to set the " + environmentVariablesElement.Name + " Environment Variable.");
+                        } catch (SecurityException) {
+                            throw new TaskRequiresElevationException("Getting the " + COMPATIBILITY_LAYER_NAME + " Environment Variable requires elevation.");
+                        }
+                    }
+
+                    ProgressManager.CurrentGoal.Steps++;
+                }
+            } finally {
+                ProgressManager.CurrentGoal.Stop();
             }
         }
     }

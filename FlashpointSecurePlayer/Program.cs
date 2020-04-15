@@ -225,12 +225,12 @@ namespace FlashpointSecurePlayer {
         public const string HTDOCS = "..\\Server\\htdocs";
         // there should be only one HTTP Client per application
         // (as of right now though this is exclusively used by DownloadsBefore class)
-        private static readonly HttpClientHandler HTTPClientHandler = new HttpClientHandler {
+        private static readonly HttpClientHandler httpClientHandler = new HttpClientHandler {
             Proxy = new WebProxy("127.0.0.1", 22500),
             UseProxy = true
         };
 
-        public static readonly HttpClient HTTPClient = new HttpClient(HTTPClientHandler);
+        public static readonly HttpClient httpClient = new HttpClient(httpClientHandler);
         // for best results, this should match
         // the value of FILE_READ_LENGTH constant
         // in the Flashpoint Router
@@ -239,7 +239,7 @@ namespace FlashpointSecurePlayer {
         // if parallel downloads are ever supported, the max value should
         // be changed to the maximum number of parallel downloads allowed
         // (preferably, no more than eight at a time)
-        private static SemaphoreSlim DownloadSemaphoreSlim = new SemaphoreSlim(1, 1);
+        private static SemaphoreSlim downloadSemaphoreSlim = new SemaphoreSlim(1, 1);
 
         private const string CONFIGURATION_FOLDER_NAME = "FlashpointSecurePlayerConfigs";
         private const string CONFIGURATION_DOWNLOAD_NAME = "flashpointsecureplayerconfigs";
@@ -809,6 +809,11 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        private static class PathNames {
+            public static Dictionary<string, StringBuilder> Short { get; set; } = new Dictionary<string, StringBuilder>();
+            public static Dictionary<string, StringBuilder> Long { get; set; } = new Dictionary<string, StringBuilder>();
+        }
+
         public static bool TestLaunchedAsAdministratorUser() {
             AppDomain.CurrentDomain.SetPrincipalPolicy(PrincipalPolicy.WindowsPrincipal);
 
@@ -820,55 +825,55 @@ namespace FlashpointSecurePlayer {
         }
 
         public static async Task DownloadAsync(string name) {
-            await DownloadSemaphoreSlim.WaitAsync().ConfigureAwait(true);
+            await downloadSemaphoreSlim.WaitAsync().ConfigureAwait(true);
 
             try {
-                using (HttpResponseMessage httpResponseMessage = await HTTPClient.GetAsync(name, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(true))
+                using (HttpResponseMessage httpResponseMessage = await httpClient.GetAsync(name, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(true))
                 using (Stream stream = await httpResponseMessage.Content.ReadAsStreamAsync().ConfigureAwait(true)) {
+                    bool currentGoalStarted = false;
+
                     if (httpResponseMessage.Content.Headers.ContentLength != null) {
-                        ProgressManager.Goal.Size = (int)Math.Ceiling((double)httpResponseMessage.Content.Headers.ContentLength.GetValueOrDefault() / STREAM_READ_LENGTH);
+                        currentGoalStarted = true;
+                        ProgressManager.CurrentGoal.Start((int)Math.Ceiling((double)httpResponseMessage.Content.Headers.ContentLength.GetValueOrDefault() / STREAM_READ_LENGTH));
                     }
 
-                    // now we loop through the stream and read it
-                    // to the end in chunks
-                    // we can't use StreamReader.ReadToEnd because
-                    // the result of the function could use too much memory
-                    // for large files
-                    // temporary buffer so we don't always reallocate this
-                    byte[] streamReadBuffer = new byte[STREAM_READ_LENGTH];
-                    int characterNumber = 0;
-                    int steps = ProgressManager.Goal.Steps;
+                    try {
+                        // now we loop through the stream and read it
+                        // to the end in chunks
+                        // we can't use StreamReader.ReadToEnd because
+                        // the result of the function could use too much memory
+                        // for large files
+                        // temporary buffer so we don't always reallocate this
+                        byte[] streamReadBuffer = new byte[STREAM_READ_LENGTH];
+                        int characterNumber = 0;
 
-                    do {
-                        // if for whatever reason there's a problem
-                        // just ignore this download
-                        try {
-                            characterNumber = await stream.ReadAsync(streamReadBuffer, 0, STREAM_READ_LENGTH).ConfigureAwait(true);
-                        } catch (ArgumentNullException) {
-                            break;
-                        } catch (ArgumentOutOfRangeException) {
-                            break;
-                        } catch (ArgumentException) {
-                            break;
-                        } catch (NotSupportedException) {
-                            break;
-                        } catch (ObjectDisposedException) {
-                            break;
-                        } catch (InvalidOperationException) {
-                            break;
-                        }
-
-                        if (httpResponseMessage.Content.Headers.ContentLength != null) {
-                            steps++;
-
-                            if (steps < ProgressManager.Goal.Size) {
-                                ProgressManager.Goal.Steps = steps;
+                        do {
+                            // if for whatever reason there's a problem
+                            // just ignore this download
+                            try {
+                                characterNumber = await stream.ReadAsync(streamReadBuffer, 0, STREAM_READ_LENGTH).ConfigureAwait(true);
+                            } catch (ArgumentNullException) {
+                                break;
+                            } catch (ArgumentOutOfRangeException) {
+                                break;
+                            } catch (ArgumentException) {
+                                break;
+                            } catch (NotSupportedException) {
+                                break;
+                            } catch (ObjectDisposedException) {
+                                break;
+                            } catch (InvalidOperationException) {
+                                break;
                             }
-                        }
-                    } while (characterNumber > 0);
 
-                    if (httpResponseMessage.Content.Headers.ContentLength != null) {
-                        ProgressManager.Goal.Steps = ProgressManager.Goal.Size;
+                            if (currentGoalStarted) {
+                                ProgressManager.CurrentGoal.Steps++;
+                            }
+                        } while (characterNumber > 0);
+                    } finally {
+                        if (currentGoalStarted) {
+                            ProgressManager.CurrentGoal.Stop();
+                        }
                     }
                 }
             } catch (ArgumentNullException) {
@@ -876,7 +881,7 @@ namespace FlashpointSecurePlayer {
             } catch (HttpRequestException) {
                 throw new Exceptions.DownloadFailedException("The HTTP Request is invalid.");
             } finally {
-                DownloadSemaphoreSlim.Release();
+                downloadSemaphoreSlim.Release();
             }
         }
 
@@ -1153,19 +1158,33 @@ namespace FlashpointSecurePlayer {
 
             if (valueString.Length <= MAX_PATH * 2 + 15) {
                 // get the short path
-                StringBuilder shortPathName = new StringBuilder(MAX_PATH);
-                GetShortPathName(path, shortPathName, shortPathName.Capacity);
+                StringBuilder shortPathName = null;
 
-                if (shortPathName.Length > 0) {
-                    // if the value is a short value...
-                    if (valueString.ToUpper().IndexOf(shortPathName.ToString().ToUpper()) == 0) {
-                        // get the long path
-                        StringBuilder longPathName = new StringBuilder(MAX_PATH);
-                        GetLongPathName(path, longPathName, longPathName.Capacity);
+                if (!PathNames.Short.TryGetValue(path, out shortPathName) || shortPathName == null) {
+                    shortPathName = new StringBuilder(MAX_PATH);
+                    GetShortPathName(path, shortPathName, shortPathName.Capacity);
+                    PathNames.Short[path] = shortPathName;
+                }
 
-                        if (longPathName.Length > 0) {
-                            // replace the short path with the long path
-                            valueString = longPathName.ToString() + valueString.Substring(shortPathName.Length);
+                if (shortPathName != null) {
+                    if (shortPathName.Length > 0) {
+                        // if the value is a short value...
+                        if (valueString.ToUpper().IndexOf(shortPathName.ToString().ToUpper()) == 0) {
+                            // get the long path
+                            StringBuilder longPathName = null;
+
+                            if (!PathNames.Long.TryGetValue(path, out longPathName) || longPathName == null) {
+                                longPathName = new StringBuilder(MAX_PATH);
+                                GetLongPathName(path, longPathName, longPathName.Capacity);
+                                PathNames.Long[path] = shortPathName;
+                            }
+
+                            if (longPathName != null) {
+                                if (longPathName.Length > 0) {
+                                    // replace the short path with the long path
+                                    valueString = longPathName.ToString() + valueString.Substring(shortPathName.Length);
+                                }
+                            }
                         }
                     }
                 }
@@ -1183,23 +1202,19 @@ namespace FlashpointSecurePlayer {
             }
 
             if (valueString.Length <= MAX_PATH * 2 + 15) {
-                StringBuilder path = new StringBuilder(MAX_PATH);
-                /*
-                GetShortPathName(Application.StartupPath, path, path.Capacity);
+                StringBuilder pathName = null;
 
-                if (path.Length > 0) {
-                    if (valueString.ToUpper().IndexOf(path.ToString().ToUpper()) == 0) {
-                        valueString = "%" + FLASHPOINT_SECURE_PLAYER_STARTUP_PATH + "%\\" + valueString.Substring(path.Length);
-                    }
+                if (!PathNames.Long.TryGetValue(Application.StartupPath, out pathName) || pathName == null) {
+                    pathName = new StringBuilder(MAX_PATH);
+                    GetLongPathName(Application.StartupPath, pathName, pathName.Capacity);
+                    PathNames.Long[Application.StartupPath] = pathName;
                 }
 
-                path = new StringBuilder(MAX_PATH);
-                */
-                GetLongPathName(Application.StartupPath, path, path.Capacity);
-
-                if (path.Length > 0) {
-                    if (valueString.ToUpper().IndexOf(RemoveTrailingSlash(path.ToString()).ToUpper()) == 0) {
-                        valueString = "%" + FLASHPOINT_SECURE_PLAYER_STARTUP_PATH + "%\\" + RemoveValueStringSlash(valueString.Substring(path.Length));
+                if (pathName != null) {
+                    if (pathName.Length > 0) {
+                        if (valueString.ToUpper().IndexOf(RemoveTrailingSlash(pathName.ToString()).ToUpper()) == 0) {
+                            valueString = "%" + FLASHPOINT_SECURE_PLAYER_STARTUP_PATH + "%\\" + RemoveValueStringSlash(valueString.Substring(pathName.Length));
+                        }
                     }
                 }
             }
