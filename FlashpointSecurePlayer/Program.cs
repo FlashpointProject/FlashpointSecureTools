@@ -417,6 +417,17 @@ namespace FlashpointSecurePlayer {
                                     base["hideWindow"] = value;
                                 }
                             }
+
+                            [ConfigurationProperty("workingDirectory", IsRequired = false)]
+                            public string WorkingDirectory {
+                                get {
+                                    return base["workingDirectory"] as string;
+                                }
+
+                                set {
+                                    base["workingDirectory"] = value;
+                                }
+                            }
                         }
 
 
@@ -1003,7 +1014,7 @@ namespace FlashpointSecurePlayer {
         public static async Task DownloadEXEConfiguration(string name) {
             try {
                 // important to use this function particularly - GetEXEConfiguration is for internal use by GetModificationsElement only
-                GetModificationsElement(false, name);
+                GetFlashpointSecurePlayerSection(false, name);
             } catch (ConfigurationErrorsException) {
                 try {
                     name = GetValidEXEConfigurationName(name);

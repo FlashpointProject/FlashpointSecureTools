@@ -1,4 +1,4 @@
-# Flashpoint Secure Player 1.0.8
+# Flashpoint Secure Player 1.0.9
 This player attempts to solve common compatibility or portability issues posed by browser plugins on Windows for the purpose of playback in BlueMaxima's Flashpoint.
 
 It is compatible with Windows 7, Windows 8, Windows 8.1 and Windows 10, and requires .NET Framework 4.5. If you are on Windows 8.1 or Windows 10, or if you are on Windows 7/8 and have updates enabled, you already have .NET Framework 4.5. Otherwise, you may [download .NET Framework 4.5.](http://www.microsoft.com/en-us/download/details.aspx?id=30653)
@@ -150,9 +150,13 @@ With the "Miniclip" Modification Name specified, all URLs passed into Server Mod
 
 `FlashpointSecurePlayer --name "Miniclip" --server "games/save-the-sheriff/en/"`
 
-**Software Mode Template and hideWindow Attribute**
+**Software Mode Template, hideWindow and workingDirectory Attribute**
 
-The Software Mode Template works identically to the Server Mode Template in that it provides the ability to replace the command line passed in with regexes. The Software Mode Template also has an additional attribute, `hideWindow`, which causes the window of the software to be hidden. This is ideal for hiding console windows for softwares that have them.
+The Software Mode Template works identically to the Server Mode Template in that it provides the ability to replace the command line passed in with regexes. The Software Mode Template also has additional attributes.
+
+The first attribute is `hideWindow`, which causes the window of the software to be hidden. This is ideal for hiding console windows for softwares that have them.
+
+The second attribute is `workingDirectory`, which sets the working directory for the process.
 
 For example, a practical use of the Software Mode Template would be to create a `modification` element that always ensures the use of important Java options. Note that this example is simplified from the real Java configuration file for the purpose of demonstration.
 
@@ -206,24 +210,7 @@ Set Via:
  - Command Line: `--download-before` (or `-dlb`)
  - Configuration File: `downloadsBefore` element
 
-The Downloads Before Modification may be used to download files from the Flashpoint Server. This is useful for software that is only capable of loading files from the computer. The command line argument may be used more than once to download multiple files. For example, this command line, in combination with a Software Mode Template, may be used to download a file for Hypercosm, which can only load files from the computer. For more information, see the section about [Mode Template Modifications](#mode-templates) above.
-
-`FlashpointSecurePlayer --download-before "http://hypercosm/fish.hcvm" --software "http://hypercosm/fish.hcvm"`
-
-```
-<modification name="hypercosm">
-  <modeTemplates>
-    <softwareModeTemplate>
-	  <regexes>
-	    <regex name="^(\s*&quot;?)http://(.+)$" replace="$1..\..\..\Server\htdocs\$2" />
-	    <regex name="(.+)" replace="Hypercosm\components\Hypercosm3D5E449320.exe $1" />
-	  </regexes>
-    </softwareModeTemplate>
-  </modeTemplates>
-</modification>
-```
-
-Here is a `modification` element that demonstrates the use of the Downloads Before Modification.
+The Downloads Before Modification may be used to download files from the Flashpoint Server. This is useful for software that is only capable of loading files from the computer. The command line argument may be used more than once to download multiple files. Here is a `modification` element that demonstrates the use of the Downloads Before Modification.
 
 ```
 <modification name="downloadsbeforeexample">
