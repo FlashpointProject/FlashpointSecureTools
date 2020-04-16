@@ -485,7 +485,10 @@ namespace FlashpointSecurePlayer {
                             softwareProcessStartInfo.FileName = fullPath;
                             softwareProcessStartInfo.Arguments = GetCommandLineArgumentRange(software, 1, -1);
                             softwareProcessStartInfo.ErrorDialog = false;
-                            softwareProcessStartInfo.WorkingDirectory = Path.GetDirectoryName(fullPath);
+
+                            if (String.IsNullOrEmpty(softwareProcessStartInfo.WorkingDirectory)) {
+                                softwareProcessStartInfo.WorkingDirectory = Path.GetDirectoryName(fullPath);
+                            }
 
                             Process process = Process.Start(softwareProcessStartInfo);
 

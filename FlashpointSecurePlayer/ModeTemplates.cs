@@ -40,6 +40,14 @@ namespace FlashpointSecurePlayer {
                 softwareProcessStartInfo.ErrorDialog = false;
             }
 
+            if (!String.IsNullOrEmpty(modificationsElement.ModeTemplates.SoftwareModeTemplate.WorkingDirectory)) {
+                if (softwareProcessStartInfo == null) {
+                    softwareProcessStartInfo = new ProcessStartInfo();
+                }
+
+                softwareProcessStartInfo.WorkingDirectory = RemoveVariablesFromLengthenedValue(modificationsElement.ModeTemplates.SoftwareModeTemplate.WorkingDirectory) as string;
+            }
+
             ProgressManager.CurrentGoal.Start(modificationsElement.ModeTemplates.ServerModeTemplate.Regexes.Count + modificationsElement.ModeTemplates.SoftwareModeTemplate.Regexes.Count);
 
             try {
