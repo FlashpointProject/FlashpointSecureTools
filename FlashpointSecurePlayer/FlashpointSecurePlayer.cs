@@ -116,7 +116,7 @@ namespace FlashpointSecurePlayer {
                 ProgressManager.CurrentGoal.Start(7);
 
                 try {
-                    await DownloadEXEConfiguration(ModificationsName).ConfigureAwait(true);
+                    await DownloadFlashpointSecurePlayerSection(ModificationsName).ConfigureAwait(true);
                     ModificationsElement modificationsElement = null;
 
                     try {
