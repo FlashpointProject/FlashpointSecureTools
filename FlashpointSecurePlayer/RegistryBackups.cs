@@ -446,9 +446,11 @@ namespace FlashpointSecurePlayer {
                 return null;
             }
 
+            object value = null;
+
             try {
                 try {
-                    return registryKey.GetValue(valueName, null, RegistryValueOptions.DoNotExpandEnvironmentNames);
+                    value = registryKey.GetValue(valueName, null, RegistryValueOptions.DoNotExpandEnvironmentNames);
                 } catch (ArgumentNullException) {
                     // value name is null
                     return null;
@@ -465,6 +467,19 @@ namespace FlashpointSecurePlayer {
                     // we don't have read rights to the key
                     throw new SecurityException("The user cannot read from the value " + valueName + ".");
                 }
+
+                RegistryValueKind? valueKind = GetValueKindInRegistryView(keyName, valueName, registryView);
+
+                switch (valueKind) {
+                    case RegistryValueKind.Binary:
+                    value = Convert.ToBase64String(value as byte[]);
+                    break;
+                    case RegistryValueKind.MultiString:
+                    value = String.Join("\0", value as string[]);
+                    break;
+                }
+
+                return value;
             } finally {
                 if (registryKey != null) {
                     registryKey.Close();
@@ -476,19 +491,33 @@ namespace FlashpointSecurePlayer {
             RegistryKey registryKey = CreateKeyInRegistryView(keyName, RegistryKeyPermissionCheck.ReadWriteSubTree, registryView);
 
             try {
+                switch (valueKind) {
+                    case RegistryValueKind.Binary:
+                    value = Convert.FromBase64String(value as string);
+                    break;
+                    case RegistryValueKind.MultiString:
+                    try {
+                        value = (value as string).Split('\0');
+                    } catch (NullReferenceException) {
+                        // value is not a string
+                        throw new ArgumentException("The value " + valueName + " is not a string.");
+                    }
+                    break;
+                }
+
                 try {
                     registryKey.SetValue(valueName, value, valueKind);
                 } catch (NullReferenceException) {
                     // registry key is null
-                    throw new ArgumentException("The key " + keyName + " is null.");
+                    throw new ArgumentException("The value " + valueName + " is null.");
                 } catch (ObjectDisposedException) {
                     // key is closed (could not be opened)
-                    throw new ArgumentException("The key " + keyName + " is closed.");
+                    throw new ArgumentException("The value " + valueName + " is closed.");
                 } catch (IOException) {
                     // key represents a root node
-                    throw new ArgumentException("The key " + keyName + " represents a root node.");
+                    throw new ArgumentException("The value " + valueName + " represents a root node.");
                 } catch (UnauthorizedAccessException) {
-                    throw new SecurityException("The key " + keyName + " cannot be accessed by the user.");
+                    throw new SecurityException("The value " + valueName + " cannot be accessed by the user.");
                 }
             } finally {
                 if (registryKey != null) {
@@ -925,6 +954,10 @@ namespace FlashpointSecurePlayer {
                         case TYPE.VALUE:
                         try {
                             SetValueInRegistryView(keyName, registryBackupElement.ValueName, RemoveVariablesFromLengthenedValue(registryBackupElement.Value), registryBackupElement.ValueKind.GetValueOrDefault(), registryView);
+                        } catch (FormatException) {
+                            // value marked for deletion
+                            Deactivate();
+                            throw new RegistryBackupFailedException("The value " + registryBackupElement.ValueName + " must be Base64.");
                         } catch (InvalidOperationException) {
                             // value marked for deletion
                             Deactivate();

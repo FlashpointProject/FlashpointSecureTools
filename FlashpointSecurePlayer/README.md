@@ -1,4 +1,4 @@
-# Flashpoint Secure Player 1.0.9
+# Flashpoint Secure Player 1.1.0
 This player attempts to solve common compatibility or portability issues posed by browser plugins on Windows for the purpose of playback in BlueMaxima's Flashpoint.
 
 It is compatible with Windows 7, Windows 8, Windows 8.1 and Windows 10, and requires .NET Framework 4.5. If you are on Windows 8.1 or Windows 10, or if you are on Windows 7/8 and have updates enabled, you already have .NET Framework 4.5. Otherwise, you may [download .NET Framework 4.5.](http://www.microsoft.com/en-us/download/details.aspx?id=30653)
@@ -241,7 +241,7 @@ Here is a `modifications` element which temporarily changes the Unity directory.
 </modification>
 ```
 
-The `type` attribute of the `registryBackup` element specifies whether the element represents a `KEY` or `VALUE`. If not specified, the default is `KEY`. The `keyName` and `valueName` attributes specify the location of the registry key and value. The `valueKind` attribute specifies the kind of value that will be set. Currently, only `String` (REG_SZ) is supported. If the `type` attribute is `KEY`, the `valueName`, `value`, and `valueKind` attributes are ignored.
+The `type` attribute of the `registryBackup` element specifies whether the element represents a `KEY` or `VALUE`. If not specified, the default is `KEY`. The `keyName` and `valueName` attributes specify the location of the registry key and value. The `valueKind` attribute specifies the kind of value that will be set. If the `type` attribute is `KEY`, the `valueName`, `value`, and `valueKind` attributes are ignored.
 
 There is no way to delete a registry key or value, only set them. The player may set a `_deleted` attribute, which is for internal use by the player only, and is ignored outside of the active configuration file (see the section about [Crash Recovery](#crash-recovery) below.)
 
@@ -335,9 +335,7 @@ You may notice that because the Flashpoint Secure Player is effectively capable 
 - ActiveX/unregisterAll.bat
 
 # Planned Features
- - Currently, only the registry value kind of String (REG_SZ) is supported. Other value kinds such as Binary (REG_BINARY) and MultiStrings (REG_MULTI_SZ) will be supported in a future version.
  - Currently, there is no way to edit configuration files other than manually, and a generic "configuration file failed to load" error occurs when there is a syntax error. It would be nice to have a seperate visual editor for configuration files.
- - Generally speaking, more specific error reporting would be nice.
  - Old CPU Simulator integration?
 
 # Questions And Answers
