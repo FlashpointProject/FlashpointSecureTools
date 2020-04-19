@@ -687,6 +687,17 @@ namespace FlashpointSecurePlayer {
                                 base["binaryType"] = value;
                             }
                         }
+
+                        [ConfigurationProperty("_administrator", DefaultValue = false, IsRequired = false)]
+                        public bool _Administrator {
+                            get {
+                                return (bool)base["_administrator"];
+                            }
+
+                            set {
+                                base["_administrator"] = value;
+                            }
+                        }
                     }
 
                     [ConfigurationProperty("registryBackups", IsRequired = false)]
