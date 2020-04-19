@@ -848,6 +848,7 @@ namespace FlashpointSecurePlayer {
                 throw new ArgumentException("The path to " + Name + " is not supported.");
             }
 
+            activeModificationsElement.RegistryBackups._Administrator = TestLaunchedAsAdministratorUser();
             RegistryView registryView = RegistryView.Registry32;
 
             if (modificationsElement.RegistryBackups.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) {
@@ -1016,6 +1017,11 @@ namespace FlashpointSecurePlayer {
             RegistryBackupElement activeRegistryBackupElement = null;
             object value = null;
             bool clear = false;
+
+            if (activeModificationsElement.RegistryBackups._Administrator != TestLaunchedAsAdministratorUser()) {
+                // TODO: lame
+                throw new TaskRequiresElevationException("Deactivating the Registry Backup requires elevation.");
+            }
 
             RegistryView registryView = RegistryView.Registry32;
 
