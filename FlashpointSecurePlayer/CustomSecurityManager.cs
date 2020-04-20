@@ -14,6 +14,7 @@ using static FlashpointSecurePlayer.InternetInterfaces;
 
 namespace FlashpointSecurePlayer {
     public class CustomSecurityManager : InternetInterfaces.IServiceProvider, InternetInterfaces.IInternetSecurityManager {
+        // https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/platform-apis/ms537182(v=vs.85)?redirectedfrom=MSDN
         public CustomSecurityManager(WebBrowser _WebBrowser) {
             InternetInterfaces.IServiceProvider webBrowserServiceProviderInterface = _WebBrowser.ActiveXInstance as InternetInterfaces.IServiceProvider;
             IntPtr profferServiceInterfacePointer = IntPtr.Zero;
@@ -63,19 +64,23 @@ namespace FlashpointSecurePlayer {
             // behave like local intranet
             pdwZone = 1;
 
+            // don't map zone for file:// URLs, that's outside the proxy
             if ((dwFlags & MUTZ_ISFILE) == MUTZ_ISFILE) {
                 return INET_E_DEFAULT_ACTION;
             }
 
+            // error if URL is null
             if (pwszUrl == null) {
                 return E_INVALIDARG;
             }
 
+            // unescape URL if needed
             if ((dwFlags & MUTZ_DONT_UNESCAPE) != MUTZ_DONT_UNESCAPE) {
                 try {
                     pwszUrl = Uri.UnescapeDataString(pwszUrl);
                 } catch (ArgumentNullException) {
-                    return INET_E_DEFAULT_ACTION;
+                    // error if URL is null
+                    return E_INVALIDARG;
                 }
             }
 
@@ -95,10 +100,12 @@ namespace FlashpointSecurePlayer {
         int InternetInterfaces.IInternetSecurityManager.ProcessUrlAction([MarshalAs(UnmanagedType.LPWStr)] string pwszUrl, uint dwAction, out uint pPolicy, uint cbPolicy, byte pContext, uint cbContext, uint dwFlags, uint dwReserved) {
             pPolicy = URLPOLICY_DISALLOW;
 
+            // don't process file:// URLS, they are outside the proxy
             if ((dwFlags & PUAF_ISFILE) == PUAF_ISFILE) {
                 return INET_E_DEFAULT_ACTION;
             }
 
+            // error if URL is null
             if (pwszUrl == null) {
                 return E_INVALIDARG;
             }

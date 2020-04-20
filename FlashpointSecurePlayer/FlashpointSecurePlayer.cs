@@ -416,6 +416,7 @@ namespace FlashpointSecurePlayer {
                             return;
                         }
                     } finally {
+                        // we do this to ensure the user can exit in the case of an error
                         ControlBox = true;
                     }
 
@@ -586,6 +587,7 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
+            // needed upon application restart to focus the new window
             BringToFront();
             Activate();
             ShowOutput(Properties.Resources.RequiredComponentsAreUnloading);
@@ -624,6 +626,9 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
+            // this is where we do crash recovery
+            // we attempt to deactivate whatever was in the config file first
+            // it's important this succeeds
             try {
                 await DeactivateModificationsAsync(delegate (string text) {
                     ProgressManager.ShowError();

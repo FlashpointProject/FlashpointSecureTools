@@ -18,28 +18,35 @@ namespace FlashpointSecurePlayer {
     class SingleInstance : Modifications {
         public SingleInstance(Form form) : base(form) { }
 
+        // function to create a real MessageBox which
+        // automatically closes upon completion of tasks
         private DialogResult? ShowClosableMessageBox(Task[] tasks, string text, string caption, MessageBoxButtons messageBoxButtons, MessageBoxIcon messageBoxIcon) {
             Form closableForm = new Form() {
                 Size = new Size(0, 0)
             };
 
             closableForm.BringToFront();
+            // need this because dialogResult defaults to Cancel when
+            // we want it to default to null
             bool dialogResultSet = true;
 
             Task.WhenAll(tasks).ContinueWith(delegate (Task task) {
+                // this closes the form hosting the Message Box and
+                // causes it to stop blocking
                 closableForm.Close();
                 dialogResultSet = false;
             }, TaskScheduler.FromCurrentSynchronizationContext());
 
+            // this line blocks execution, but the task above causes it to stop blocking
             DialogResult dialogResult = MessageBox.Show(closableForm, text, caption, messageBoxButtons, messageBoxIcon);
 
             if (!dialogResultSet) {
                 return null;
             }
-
             return dialogResult;
         }
 
+        // single task version
         private DialogResult? ShowClosableMessageBox(Task task, string text, string caption, MessageBoxButtons messageBoxButtons, MessageBoxIcon messageBoxIcon) {
             return ShowClosableMessageBox(new Task[] { task }, text, caption, messageBoxButtons, messageBoxIcon);
         }
@@ -65,6 +72,7 @@ namespace FlashpointSecurePlayer {
             int argc = 0;
             string[] argv = CommandLineToArgv(commandLine, out argc);
 
+            // the paths we'll be comparing to test if the executable is strictly the same
             string comparablePath = "";
             string activeComparablePath = "";
 
@@ -78,8 +86,10 @@ namespace FlashpointSecurePlayer {
                 throw new ArgumentException("The path " + argv[0] + " is not supported.");
             }
 
+            // converting to a Uri canonicalizes the path
+            // making them possible to compare
             try {
-                activeComparablePath = new Uri(activeComparablePath).LocalPath.ToLower();
+                activeComparablePath = new Uri(activeComparablePath).LocalPath.ToUpper();
             } catch (UriFormatException) {
                 throw new ArgumentException("The path " + activeComparablePath + " is malformed.");
             } catch (NullReferenceException) {
@@ -91,9 +101,11 @@ namespace FlashpointSecurePlayer {
             List<Process> processesByName;
             List<Process> processesByNameStrict;
             string processEXEName = null;
+            // GetProcessesByName can't have extension (stupidly)
             string activeProcessEXEName = Path.GetFileNameWithoutExtension(argv[0]);
 
             do {
+                // the strict list is the one which will be checked against for real
                 processesByName = Process.GetProcessesByName(activeProcessEXEName).ToList();
                 processesByNameStrict = new List<Process>();
 
@@ -102,7 +114,7 @@ namespace FlashpointSecurePlayer {
                         processEXEName = GetProcessEXEName(processesByName[i]);
 
                         try {
-                            comparablePath = new Uri(processEXEName.ToString()).LocalPath.ToLower();
+                            comparablePath = new Uri(processEXEName.ToString()).LocalPath.ToUpper();
 
                             if (comparablePath == activeComparablePath) {
                                 processesByNameStrict.Add(processesByName[i]);
@@ -116,6 +128,8 @@ namespace FlashpointSecurePlayer {
                     processesByNameStrict = processesByName;
                 }
 
+                // don't allow preceding further until
+                // all processes with the same name have been killed
                 if (processesByNameStrict.Any()) {
                     DialogResult? dialogResult = ShowClosableMessageBox(Task.Run(delegate () {
                         while (processesByNameStrict.Any()) {
@@ -132,6 +146,7 @@ namespace FlashpointSecurePlayer {
                         throw new InvalidModificationException("The operation was aborted by the user.");
                     }
                 }
+                // continue this process until the problem is resolved
             } while (processesByNameStrict.Any());
         }
     }

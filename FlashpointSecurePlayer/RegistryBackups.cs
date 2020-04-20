@@ -472,10 +472,14 @@ namespace FlashpointSecurePlayer {
 
                 switch (valueKind) {
                     case RegistryValueKind.Binary:
-                    value = Convert.ToBase64String(value as byte[]);
+                    if (value as byte[] is byte[]) {
+                        value = Convert.ToBase64String(value as byte[]);
+                    }
                     break;
                     case RegistryValueKind.MultiString:
-                    value = String.Join("\0", value as string[]);
+                    if (value as string[] is string[]) {
+                        value = String.Join("\0", value as string[]);
+                    }
                     break;
                 }
 
@@ -493,14 +497,13 @@ namespace FlashpointSecurePlayer {
             try {
                 switch (valueKind) {
                     case RegistryValueKind.Binary:
-                    value = Convert.FromBase64String(value as string);
+                    if (value as string is string) {
+                        value = Convert.FromBase64String(value as string);
+                    }
                     break;
                     case RegistryValueKind.MultiString:
-                    try {
+                    if (value as string is string) {
                         value = (value as string).Split('\0');
-                    } catch (NullReferenceException) {
-                        // value is not a string
-                        throw new ArgumentException("The value " + valueName + " is not a string.");
                     }
                     break;
                 }
@@ -849,6 +852,7 @@ namespace FlashpointSecurePlayer {
                 throw new ArgumentException("The path to " + Name + " is not supported.");
             }
 
+            // to prevent issues with HKEY_LOCAL_MACHINE and crash recovery
             activeModificationsElement.RegistryBackups._Administrator = TestLaunchedAsAdministratorUser();
             RegistryView registryView = RegistryView.Registry32;
 
@@ -1126,7 +1130,7 @@ namespace FlashpointSecurePlayer {
                                     throw new RegistryBackupFailedException("The value " + activeRegistryBackupElement.ValueName + " cannot be created.");
                                 } catch (SecurityException) {
                                     // value exists and we can't modify it
-                                    throw new TaskRequiresElevationException("Modifying the value " + activeRegistryBackupElement.ValueName + " requires elevation.");
+                                    throw new TaskRequiresElevationException("Setting the value " + activeRegistryBackupElement.ValueName + " requires elevation.");
                                 }
                             } else {
                                 try {
@@ -1134,7 +1138,7 @@ namespace FlashpointSecurePlayer {
                                     DeleteValueInRegistryView(GetUserKeyValueName(activeRegistryBackupElement.KeyName), activeRegistryBackupElement.ValueName, registryView);
                                 } catch (SecurityException) {
                                     // value exists and we can't modify it
-                                    throw new TaskRequiresElevationException("Modifying the value " + activeRegistryBackupElement.ValueName + " requires elevation.");
+                                    throw new TaskRequiresElevationException("Deleting the value " + activeRegistryBackupElement.ValueName + " requires elevation.");
                                 }
                             }
                             break;
