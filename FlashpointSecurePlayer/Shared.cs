@@ -972,6 +972,7 @@ namespace FlashpointSecurePlayer {
 
             Configuration exeConfiguration = null;
 
+            // be careful if modifying this
             try {
                 // open from configuration folder
                 exeConfiguration = ConfigurationManager.OpenMappedExeConfiguration(exeConfigurationFileMap, ConfigurationUserLevel.None);
@@ -1027,6 +1028,8 @@ namespace FlashpointSecurePlayer {
             FlashpointSecurePlayerSection flashpointSecurePlayerSection = null;
             Configuration exeConfiguration = null;
 
+            // again, be careful if modifying this
+            // get the appropriate cached section if it exists
             if (String.IsNullOrEmpty(exeConfigurationName)) {
                 if (Shared.activeFlashpointSecurePlayerSection != null) {
                     return Shared.activeFlashpointSecurePlayerSection;
@@ -1069,6 +1072,7 @@ namespace FlashpointSecurePlayer {
                 throw new ConfigurationErrorsException("The flashpointSecurePlayer Section is null.");
             }
 
+            // caching...
             if (String.IsNullOrEmpty(exeConfigurationName)) {
                 Shared.activeFlashpointSecurePlayerSection = flashpointSecurePlayerSection;
             } else {
@@ -1078,6 +1082,7 @@ namespace FlashpointSecurePlayer {
         }
 
         public static void SetFlashpointSecurePlayerSection(string exeConfigurationName) {
+            // effectively saving
             Configuration activeEXEConfiguration = GetActiveEXEConfiguration();
             activeEXEConfiguration.Save(ConfigurationSaveMode.Modified);
 
@@ -1184,6 +1189,7 @@ namespace FlashpointSecurePlayer {
                 // get the short path
                 StringBuilder shortPathName = null;
 
+                // get cached SHORT path if available, less File IO
                 if (!PathNames.Short.TryGetValue(path, out shortPathName) || shortPathName == null) {
                     shortPathName = new StringBuilder(MAX_PATH);
                     GetShortPathName(path, shortPathName, shortPathName.Capacity);
@@ -1197,6 +1203,7 @@ namespace FlashpointSecurePlayer {
                             // get the long path
                             StringBuilder longPathName = null;
 
+                            // get cached LONG path if available, less File IO
                             if (!PathNames.Long.TryGetValue(path, out longPathName) || longPathName == null) {
                                 longPathName = new StringBuilder(MAX_PATH);
                                 GetLongPathName(path, longPathName, longPathName.Capacity);
@@ -1246,7 +1253,6 @@ namespace FlashpointSecurePlayer {
         }
 
         public static object RemoveVariablesFromLengthenedValue(object value) {
-            // TODO: multistrings?
             if (!(value is string valueString)) {
                 return value;
             }

@@ -15,10 +15,20 @@ namespace FlashpointSecurePlayer {
         public static readonly IntPtr PBST_ERROR = (IntPtr)2;
         public static readonly IntPtr PBST_PAUSED = (IntPtr)3;
 
+        private static ProgressBar progressBar = null;
         private static ProgressBarStyle style = ProgressBarStyle.Marquee;
         private static int value = 0;
         private static IntPtr state = PBST_NORMAL;
 
+        // class to update the progress bar automatically
+        // the idea is that you call Start when you
+        // start a new goal (be it downloading a file,
+        // backing up the registry, etc.) and call Stop when
+        // you're stopping, with the Steps variable keeping
+        // track of how close you are to done. Truthfully,
+        // this could be implemented without starting/stopping,
+        // but implementing it this way allows correcting
+        // for errors where not all the steps were done
         public static class CurrentGoal {
             private class Goal {
                 private int size = 1;
@@ -159,7 +169,23 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        public static ProgressBar ProgressBar { get; set; } = null;
+        public static ProgressBar ProgressBar {
+            get {
+                return progressBar;
+            }
+
+            set {
+                progressBar = value;
+
+                if (progressBar == null) {
+                    return;
+                }
+
+                Style = ProgressManager.style;
+                Value = ProgressManager.value;
+                State = ProgressManager.state;
+            }
+        }
 
         private static ProgressBarStyle Style {
             get {
