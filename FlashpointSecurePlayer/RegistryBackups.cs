@@ -512,13 +512,13 @@ namespace FlashpointSecurePlayer {
                     registryKey.SetValue(valueName, value, valueKind);
                 } catch (NullReferenceException) {
                     // registry key is null
-                    throw new ArgumentException("The value " + valueName + " is null.");
+                    throw new ArgumentException("The key " + keyName + " is null.");
                 } catch (ObjectDisposedException) {
                     // key is closed (could not be opened)
-                    throw new ArgumentException("The value " + valueName + " is closed.");
+                    throw new ArgumentException("The key " + keyName + " is closed.");
                 } catch (IOException) {
                     // key represents a root node
-                    throw new ArgumentException("The value " + valueName + " represents a root node.");
+                    throw new ArgumentException("The key " + keyName + " represents a root node.");
                 } catch (UnauthorizedAccessException) {
                     throw new SecurityException("The value " + valueName + " cannot be accessed by the user.");
                 }
