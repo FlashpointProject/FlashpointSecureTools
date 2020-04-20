@@ -1089,7 +1089,7 @@ namespace FlashpointSecurePlayer {
             ConfigurationManager.RefreshSection("flashpointSecurePlayer");
         }
 
-        public static async Task DownloadFlashpointSecurePlayerSection(string name) {
+        public static async Task DownloadFlashpointSecurePlayerSectionAsync(string name) {
             try {
                 // important to use this function particularly - GetEXEConfiguration is for internal use by GetModificationsElement only
                 GetFlashpointSecurePlayerSection(false, name);
@@ -1434,7 +1434,11 @@ namespace FlashpointSecurePlayer {
                     default:
                     // Windows 10 will be the last version of Windows
                     if (IsOS(OS_TYPE.OS_ANYSERVER)) {
-                        versionName += "Server 2016";
+                        if (operatingSystem.Version.Build == 14393) {
+                            versionName += "Server 2016";
+                        } else {
+                            versionName += "Server 2019";
+                        }
                     } else {
                         versionName += "10";
                     }
