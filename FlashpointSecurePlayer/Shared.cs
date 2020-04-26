@@ -20,28 +20,28 @@ using System.Windows.Forms;
 namespace FlashpointSecurePlayer {
     public static class Shared {
         public class Exceptions {
-            public class RestartRequiredException : InvalidOperationException {
-                public RestartRequiredException() : base() { }
-                public RestartRequiredException(string message) : base(message) { }
-                public RestartRequiredException(string message, Exception inner) : base(message, inner) { }
+            public class ApplicationRestartRequiredException : InvalidOperationException {
+                public ApplicationRestartRequiredException() : base() { }
+                public ApplicationRestartRequiredException(string message) : base(message) { }
+                public ApplicationRestartRequiredException(string message, Exception inner) : base(message, inner) { }
             }
 
-            public class TaskRequiresElevationException : RestartRequiredException {
+            public class TaskRequiresElevationException : ApplicationRestartRequiredException {
                 public TaskRequiresElevationException() : base() { }
                 public TaskRequiresElevationException(string message) : base(message) { }
                 public TaskRequiresElevationException(string message, Exception inner) : base(message, inner) { }
             }
 
-            public class CompatibilityLayersException : RestartRequiredException {
+            public class CompatibilityLayersException : ApplicationRestartRequiredException {
                 public CompatibilityLayersException() : base() { }
                 public CompatibilityLayersException(string message) : base(message) { }
                 public CompatibilityLayersException(string message, Exception inner) : base(message, inner) { }
             }
 
-            public class OldCPUSimulatorRequiresRestartException : RestartRequiredException {
-                public OldCPUSimulatorRequiresRestartException() { }
-                public OldCPUSimulatorRequiresRestartException(string message) : base(message) { }
-                public OldCPUSimulatorRequiresRestartException(string message, Exception inner) : base(message, inner) { }
+            public class OldCPUSimulatorRequiresApplicationRestartException : ApplicationRestartRequiredException {
+                public OldCPUSimulatorRequiresApplicationRestartException() { }
+                public OldCPUSimulatorRequiresApplicationRestartException(string message) : base(message) { }
+                public OldCPUSimulatorRequiresApplicationRestartException(string message, Exception inner) : base(message, inner) { }
             }
 
             public class DownloadFailedException : InvalidOperationException {
@@ -265,7 +265,7 @@ namespace FlashpointSecurePlayer {
         private static FlashpointSecurePlayerSection activeFlashpointSecurePlayerSection = null;
 
         private const string FLASHPOINT_SECURE_PLAYER_STARTUP_PATH = "FLASHPOINTSECUREPLAYERSTARTUPPATH";
-        public const string OLD_CPU_SIMULATOR_PATH = "OldCPUSimulator/OldCPUSimulator.exe";
+        public const string OLD_CPU_SIMULATOR_PATH = "OldCPUSimulator\\OldCPUSimulator.exe";
         public const string OLD_CPU_SIMULATOR_PARENT_PROCESS_EXE_FILE_NAME = "oldcpusimulator.exe";
 
         public abstract class ModificationsConfigurationElementCollection : ConfigurationElementCollection {
