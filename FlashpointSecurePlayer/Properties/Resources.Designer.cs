@@ -217,6 +217,15 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The Old CPU Simulator failed. The Target Rate may be invalid..
+        /// </summary>
+        internal static string OldCPUSimulatorFailed {
+            get {
+                return ResourceManager.GetString("OldCPUSimulatorFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Open the Flashpoint Launcher by opening the Start Flashpoint shortcut in the Flashpoint folder..
         /// </summary>
         internal static string OpenFlashpointLauncher {

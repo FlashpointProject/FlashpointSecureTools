@@ -19,7 +19,12 @@ namespace FlashpointSecurePlayer {
 
         public void Activate(string name, string server, string applicationMutexName) {
             base.Activate(name);
-            ModificationsElement modificationsElement = GetModificationsElement(true, Name);
+            ModificationsElement modificationsElement = GetModificationsElement(false, Name);
+
+            if (modificationsElement == null) {
+                return;
+            }
+
             string value = null;
             List<string> values = null;
             string compatibilityLayerValue = null;
@@ -95,6 +100,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
+            // don't need to get active name, we're only deactivating for this process
             ModificationsElement modificationsElement = GetModificationsElement(false, Name);
 
             if (modificationsElement == null) {

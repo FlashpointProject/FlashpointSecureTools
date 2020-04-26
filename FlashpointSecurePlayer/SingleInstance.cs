@@ -53,7 +53,12 @@ namespace FlashpointSecurePlayer {
 
         public void Activate(string name, string commandLine) {
             base.Activate(name);
-            ModificationsElement modificationsElement = GetModificationsElement(true, Name);
+            ModificationsElement modificationsElement = GetModificationsElement(false, Name);
+
+            if (modificationsElement == null) {
+                return;
+            }
+
             SingleInstanceElement singleInstanceElement = modificationsElement.SingleInstance;
 
             if (!singleInstanceElement.ElementInformation.IsPresent) {
@@ -67,10 +72,8 @@ namespace FlashpointSecurePlayer {
             if (String.IsNullOrEmpty(commandLine)) {
                 return;
             }
-
-            // default to zero in case of error
-            int argc = 0;
-            string[] argv = CommandLineToArgv(commandLine, out argc);
+            
+            string[] argv = CommandLineToArgv(commandLine, out int argc);
 
             // the paths we'll be comparing to test if the executable is strictly the same
             string comparablePath = "";

@@ -25,6 +25,7 @@ namespace FlashpointSecurePlayer {
         private static SemaphoreSlim modificationsSemaphoreSlim = new SemaphoreSlim(1, 1);
         private readonly RunAsAdministrator runAsAdministrator;
         private readonly ModeTemplates modeTemplates;
+        private readonly OldCPUSimulator oldCPUSimulator;
         private readonly EnvironmentVariables environmentVariables;
         private readonly DownloadsBefore downloadsBefore;
         private readonly RegistryBackups registryBackup;
@@ -44,6 +45,7 @@ namespace FlashpointSecurePlayer {
             InitializeComponent();
             runAsAdministrator = new RunAsAdministrator(this);
             modeTemplates = new ModeTemplates(this);
+            oldCPUSimulator = new OldCPUSimulator(this);
             environmentVariables = new EnvironmentVariables(this);
             downloadsBefore = new DownloadsBefore(this);
             registryBackup = new RegistryBackups(this);
@@ -113,9 +115,26 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                ProgressManager.CurrentGoal.Start(7);
+                ProgressManager.CurrentGoal.Start(9);
 
                 try {
+                    //try {
+                    ModificationsElement activeModificationsElement = null;
+
+                    try {
+                        activeModificationsElement = GetActiveModificationsElement(false);
+                    } catch (System.Configuration.ConfigurationErrorsException) {
+                        // Fail silently.
+                    }
+
+                    if (activeModificationsElement != null) {
+                        if (!String.IsNullOrEmpty(activeModificationsElement.Active)) {
+                            throw new InvalidModificationException("The Modifications Element (" + activeModificationsElement.Active + ") is active.");
+                        }
+                    }
+
+                    ProgressManager.CurrentGoal.Steps++;
+
                     await DownloadFlashpointSecurePlayerSectionAsync(ModificationsName).ConfigureAwait(true);
                     ModificationsElement modificationsElement = null;
 
@@ -172,11 +191,25 @@ namespace FlashpointSecurePlayer {
 
                     ProgressManager.CurrentGoal.Steps++;
 
-                    if (modificationsElement.ModeTemplates.ServerModeTemplate.ElementInformation.IsPresent || modificationsElement.ModeTemplates.SoftwareModeTemplate.ElementInformation.IsPresent) {
+                    if (modificationsElement.ModeTemplates.ElementInformation.IsPresent) {
                         try {
                             modeTemplates.Activate(ModificationsName, ref server, ref software, ref softwareProcessStartInfo);
                         } catch (ModeTemplatesFailedException) {
                             errorDelegate(Properties.Resources.ModeTemplatesFailed);
+                        } catch (System.Configuration.ConfigurationErrorsException) {
+                            errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                        } catch (TaskRequiresElevationException) {
+                            AskLaunchAsAdministratorUser();
+                        }
+                    }
+
+                    ProgressManager.CurrentGoal.Steps++;
+
+                    if (modificationsElement.OldCPUSimulator.ElementInformation.IsPresent) {
+                        try {
+                            oldCPUSimulator.Activate(ModificationsName, ref software, ref softwareProcessStartInfo);
+                        } catch (OldCPUSimulatorFailedException) {
+                            errorDelegate(Properties.Resources.OldCPUSimulatorFailed);
                         } catch (System.Configuration.ConfigurationErrorsException) {
                             errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                         } catch (TaskRequiresElevationException) {
@@ -243,6 +276,17 @@ namespace FlashpointSecurePlayer {
                     }
 
                     ProgressManager.CurrentGoal.Steps++;
+                    /*
+                    } finally {
+                        try {
+                            LockActiveModificationsElement();
+                        } catch (System.Configuration.ConfigurationErrorsException) {
+                            errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                        }
+
+                        ProgressManager.CurrentGoal.Steps++;
+                    }
+                    */
                 } finally {
                     ProgressManager.CurrentGoal.Stop();
                 }
@@ -255,9 +299,19 @@ namespace FlashpointSecurePlayer {
             await modificationsSemaphoreSlim.WaitAsync().ConfigureAwait(true);
 
             try {
-                ProgressManager.CurrentGoal.Start(3);
+                ProgressManager.CurrentGoal.Start(4);
 
                 try {
+                    /*
+                    try {
+                        UnlockActiveModificationsElement();
+                    } catch (System.Configuration.ConfigurationErrorsException) {
+                        errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                    }
+                    */
+
+                    ProgressManager.CurrentGoal.Steps++;
+
                     try {
                         // this one really needs to work
                         // we can't continue if it does not
@@ -474,9 +528,7 @@ namespace FlashpointSecurePlayer {
                         ProgressManager.CurrentGoal.Steps++;
 
                         try {
-                            // default to zero in case of error
-                            int argc = 0;
-                            string[] argv = CommandLineToArgv(software, out argc);
+                            string[] argv = CommandLineToArgv(software, out int argc);
 
                             if (softwareProcessStartInfo == null) {
                                 softwareProcessStartInfo = new ProcessStartInfo();

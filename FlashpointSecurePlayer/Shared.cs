@@ -74,6 +74,12 @@ namespace FlashpointSecurePlayer {
                 public ModeTemplatesFailedException(string message, Exception inner) : base(message, inner) { }
             }
 
+            public class OldCPUSimulatorFailedException : InvalidModificationException {
+                public OldCPUSimulatorFailedException() { }
+                public OldCPUSimulatorFailedException(string message) : base(message) { }
+                public OldCPUSimulatorFailedException(string message, Exception inner) : base(message, inner) { }
+            }
+
             public class EnvironmentVariablesFailedException : InvalidModificationException {
                 public EnvironmentVariablesFailedException() { }
                 public EnvironmentVariablesFailedException(string message) : base(message) { }
@@ -307,7 +313,7 @@ namespace FlashpointSecurePlayer {
         public class FlashpointSecurePlayerSection : ConfigurationSection {
             public class ModificationsElementCollection : ModificationsConfigurationElementCollection {
                 public class ModificationsElement : ConfigurationElement {
-                    [ConfigurationProperty("name", IsRequired = true)]
+                    [ConfigurationProperty("name", IsKey = true, IsRequired = true)]
                     public string Name {
                         get {
                             if (String.IsNullOrEmpty(base["name"] as string)) {
@@ -360,7 +366,7 @@ namespace FlashpointSecurePlayer {
                         public class ModeTemplateElement : ConfigurationElement {
                             public class RegexElementCollection : ModificationsConfigurationElementCollection {
                                 public class RegexElement : ConfigurationElement {
-                                    [ConfigurationProperty("name", IsRequired = true)]
+                                    [ConfigurationProperty("name", IsKey = true, IsRequired = true)]
                                     public string Name {
                                         get {
                                             return base["name"] as string;
@@ -407,6 +413,17 @@ namespace FlashpointSecurePlayer {
                         }
 
                         public class SoftwareModeTemplateElement : ModeTemplateElement {
+                            [ConfigurationProperty("format", IsRequired = false)]
+                            public string Format {
+                                get {
+                                    return base["format"] as string;
+                                }
+
+                                set {
+                                    base["format"] = value;
+                                }
+                            }
+
                             [ConfigurationProperty("hideWindow", DefaultValue = false, IsRequired = false)]
                             public bool HideWindow {
                                 get {
@@ -466,9 +483,88 @@ namespace FlashpointSecurePlayer {
                         }
                     }
 
+                    public class OldCPUSimulatorElement : ConfigurationElement {
+                        [ConfigurationProperty("targetRate", DefaultValue = null, IsRequired = false)]
+                        public int? TargetRate {
+                            get {
+                                return (int?)base["targetRate"];
+                            }
+
+                            set {
+                                base["targetRate"] = value;
+                            }
+                        }
+
+                        [ConfigurationProperty("refreshRate", DefaultValue = null, IsRequired = false)]
+                        public int? RefreshRate {
+                            get {
+                                return (int?)base["refreshRate"];
+                            }
+
+                            set {
+                                base["refreshRate"] = value;
+                            }
+                        }
+
+                        [ConfigurationProperty("setProcessPriorityHigh", DefaultValue = false, IsRequired = false)]
+                        public bool SetProcessPriorityHigh {
+                            get {
+                                return (bool)base["setProcessPriorityHigh"];
+                            }
+
+                            set {
+                                base["setProcessPriorityHigh"] = value;
+                            }
+                        }
+
+                        [ConfigurationProperty("setSyncedProcessAffinityOne", DefaultValue = true, IsRequired = false)]
+                        public bool SetSyncedProcessAffinityOne {
+                            get {
+                                return (bool)base["setSyncedProcessAffinityOne"];
+                            }
+
+                            set {
+                                base["setSyncedProcessAffinityOne"] = value;
+                            }
+                        }
+
+                        [ConfigurationProperty("syncedProcessMainThreadOnly", DefaultValue = true, IsRequired = false)]
+                        public bool SyncedProcessMainThreadOnly {
+                            get {
+                                return (bool)base["syncedProcessMainThreadOnly"];
+                            }
+
+                            set {
+                                base["syncedProcessMainThreadOnly"] = value;
+                            }
+                        }
+
+                        [ConfigurationProperty("refreshRateFloorFifteen", DefaultValue = true, IsRequired = false)]
+                        public bool RefreshRateFloorFifteen {
+                            get {
+                                return (bool)base["refreshRateFloorFifteen"];
+                            }
+
+                            set {
+                                base["refreshRateFloorFifteen"] = value;
+                            }
+                        }
+                    }
+
+                    [ConfigurationProperty("oldCPUSimulator", IsRequired = false)]
+                    public OldCPUSimulatorElement OldCPUSimulator {
+                        get {
+                            return (OldCPUSimulatorElement)base["oldCPUSimulator"];
+                        }
+
+                        set {
+                            base["oldCPUSimulator"] = value;
+                        }
+                    }
+
                     public class EnvironmentVariablesElementCollection : ModificationsConfigurationElementCollection {
                         public class EnvironmentVariablesElement : ConfigurationElement {
-                            [ConfigurationProperty("name", IsRequired = true)]
+                            [ConfigurationProperty("name", IsKey = true, IsRequired = true)]
                             public string Name {
                                 get {
                                     if (String.IsNullOrEmpty(base["name"] as string)) {
@@ -533,7 +629,7 @@ namespace FlashpointSecurePlayer {
 
                     public class DownloadBeforeElementCollection : ModificationsConfigurationElementCollection {
                         public class DownloadBeforeElement : ConfigurationElement {
-                            [ConfigurationProperty("name", IsRequired = true)]
+                            [ConfigurationProperty("name", IsKey = true, IsRequired = true)]
                             public string Name {
                                 get {
                                     return base["name"] as string;
@@ -768,7 +864,7 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
-            [ConfigurationProperty("modifications", IsRequired = true)]
+            [ConfigurationProperty("modifications", IsDefaultCollection = true, IsRequired = true)]
             [ConfigurationCollection(typeof(ModificationsElementCollection), AddItemName = "modification")]
             public ModificationsElementCollection Modifications {
                 get {
@@ -1151,6 +1247,27 @@ namespace FlashpointSecurePlayer {
             flashpointSecurePlayerSection.Modifications.Set(modificationsElement);
         }
 
+        public static void LockActiveModificationsElement() {
+            FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement activeModificationsElement = GetActiveModificationsElement(false);
+
+            if (activeModificationsElement == null) {
+                return;
+            }
+
+            activeModificationsElement.LockItem = true;
+        }
+
+        public static void UnlockActiveModificationsElement() {
+            FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement activeModificationsElement = GetActiveModificationsElement(false);
+
+            if (activeModificationsElement == null) {
+                return;
+            }
+
+            activeModificationsElement.LockItem = false;
+            //activeModificationsElement.RegistryBackups.LockItem = false;
+        }
+
         public static string RemoveTrailingSlash(string path) {
             // can be empty, but not null
             if (path == null) {
@@ -1485,6 +1602,28 @@ namespace FlashpointSecurePlayer {
                 versionName += " " + (Environment.Is64BitOperatingSystem ? "64" : "32") + "-bit";
             }
             return versionName;
+        }
+
+        public static void HideWindow(ref ProcessStartInfo processStartInfo) {
+            if (processStartInfo == null) {
+                processStartInfo = new ProcessStartInfo();
+            }
+
+            processStartInfo.UseShellExecute = false;
+            processStartInfo.RedirectStandardError = false;
+            processStartInfo.RedirectStandardOutput = false;
+            processStartInfo.RedirectStandardInput = false;
+            processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            processStartInfo.CreateNoWindow = true;
+            processStartInfo.ErrorDialog = false;
+        }
+
+        public static void SetWorkingDirectory(ref ProcessStartInfo processStartInfo, string workingDirectory) {
+            if (processStartInfo == null) {
+                processStartInfo = new ProcessStartInfo();
+            }
+
+            processStartInfo.WorkingDirectory = RemoveVariablesFromLengthenedValue(workingDirectory) as string;
         }
 
         public static Process GetParentProcess() {

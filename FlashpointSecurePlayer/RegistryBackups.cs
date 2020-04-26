@@ -834,7 +834,12 @@ namespace FlashpointSecurePlayer {
 
         new public void Activate(string name) {
             base.Activate(name);
-            ModificationsElement modificationsElement = GetModificationsElement(true, Name);
+            ModificationsElement modificationsElement = GetModificationsElement(false, Name);
+
+            if (modificationsElement == null) {
+                return;
+            }
+
             ModificationsElement activeModificationsElement = GetActiveModificationsElement(true, Name);
             RegistryBackupElement registryBackupElement = null;
             RegistryBackupElement activeRegistryBackupElement = null;
