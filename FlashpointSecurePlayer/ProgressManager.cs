@@ -138,7 +138,7 @@ namespace FlashpointSecurePlayer {
                     multiplier *= (double)(goalsArray[i].Steps + 1) / goalsArray[i].Size;
                 }
 
-                int progressManagerValue = (int)(multiplier * 100.0);
+                int progressManagerValue = (int)Math.Floor(multiplier * 100.0);
 
                 if (progressManagerValue < ProgressManager.Value) {
                     return;

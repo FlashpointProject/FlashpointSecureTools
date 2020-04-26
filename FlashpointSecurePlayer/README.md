@@ -7,7 +7,7 @@ The Flashpoint Secure Player is an advanced application that makes modifications
 
 It is driven by a model consisting of two concepts: Modes and Modifications. The Modes and Modifications are set either via the command line or a configuration file. The configuration files may be hosted on the Flashpoint Server, making it easy to integrate into the existing Flashpoint curation flow. A number of sample configuration files are included alongside the player in the FlashpointSecurePlayerConfigs folder.
 
-Presently, there are three Modes (ActiveX Mode, Server Mode, and Software Mode) and six Modifications (Run As Administrator, Mode Templates, Environment Variables, Downloads Before, Registry Backups, and Single Instance.)
+Presently, there are three Modes (ActiveX Mode, Server Mode, and Software Mode) and seven Modifications (Run As Administrator, Mode Templates, Old CPU Simulator, Environment Variables, Downloads Before, Registry Backups, and Single Instance.)
 
 This player has bugs. Help me find them! If you've found a bug, report anything unusual as an issue.
 
@@ -150,13 +150,15 @@ With the "Miniclip" Modification Name specified, all URLs passed into Server Mod
 
 `FlashpointSecurePlayer --name "Miniclip" --server "games/save-the-sheriff/en/"`
 
-**Software Mode Template, hideWindow and workingDirectory Attribute**
+**Software Mode Template**
 
 The Software Mode Template works identically to the Server Mode Template in that it provides the ability to replace the command line passed in with regexes. The Software Mode Template also has additional attributes.
 
-The first attribute is `hideWindow`, which causes the window of the software to be hidden. This is ideal for hiding console windows for softwares that have them.
+The first attribute is `format`, which [formats](https://docs.microsoft.com/en-us/dotnet/api/system.string.format?view=netcore-3.1#Starting) the command line arguments as a string.
 
-The second attribute is `workingDirectory`, which sets the working directory for the process.
+The second attribute is `hideWindow`, which causes the window of the software to be hidden. This is ideal for hiding console windows for softwares that have them.
+
+The third attribute is `workingDirectory`, which sets the working directory for the process.
 
 For example, a practical use of the Software Mode Template would be to create a `modification` element that always ensures the use of important Java options. Note that this example is simplified from the real Java configuration file for the purpose of demonstration.
 
@@ -176,13 +178,23 @@ With the "Java" Modification Name specified, the URL is factored into the regex,
 
 `FlashpointSecurePlayer --name "Java" --software "http://www.example.com/example.jar"`
 
+## Old CPU Simulator
+Set Via:
+ - Configuration File: `oldCPUSimulator` element
+
+The Old CPU Simulator simulates running a process on a CPU with a slower clock speed in order to make old games run at the correct speed or underclock CPU intensive processes like video encoding. For more information on how to use Old CPU Simulator, [read the README.](https://github.com/tomysshadow/OldCPUSimulator)
+
+The Old CPU Simulator Modification has six attributes. The only required attribute is `targetRate` which behaves as described in the Old CPU Simulator README. The second attribute is `refreshRate` which is optional, and behaves as described in the Old CPU Simulator README. The other attributes are `setProcessPriorityHigh`, `setSyncedProcessAffinityOne`, `syncedProcessMainThreadOnly`, and `refreshRateFloorFifteen` behave as described in the Old CPU Simulator README and default to false, true, true, and true respectively.
+
+If the current rate is slower than the target rate, the Old CPU Simulator Modification is ignored.
+
 ## Environment Variables
 Set Via:
  - Configuration File: `environmentVariables` element
 
 The Environment Variables Modification may be used to set environment variables for the current process and any software it launches only. The envrionment variables are not set for the entire system. The `%FLASHPOINTSECUREPLAYERSTARTUPPATH%` variable may be used in the value, which will be substituted with the startup path of Flashpoint Secure Player.
 
-Here is a modification `element` that sets the FP_UNITY_PATH variable to the location of the Unity Web Player plugin.
+Here is a modification `element` that sets the `FP_UNITY_PATH` variable to the location of the Unity Web Player plugin.
 
 ```
 <modification name="unitywebplayer2">
@@ -195,7 +207,7 @@ Here is a modification `element` that sets the FP_UNITY_PATH variable to the loc
 **Compatibility Layers**
 
 
-It is possible to use the Environment Variables Modification to set compatibility layers by setting the __COMPAT_LAYERS environment variable to a [compatibility fix.](http://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-7/cc765984(v=ws.10)) Here is a `modification` element that starts the software in 640 x 480 resolution.
+It is possible to use the Environment Variables Modification to set compatibility layers by setting the `__COMPAT_LAYERS` environment variable to a [compatibility fix.](http://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-7/cc765984(v=ws.10)) Here is a `modification` element that starts the software in 640 x 480 resolution.
 
 ```
 <modification name="lowresolution">
@@ -235,7 +247,7 @@ Here is a `modifications` element which temporarily changes the Unity directory.
 <modification name="unitywebplayer2">
   <registryBackups binaryType="SCS_32BIT_BINARY">
 	<registryBackup type="VALUE" keyName="HKEY_CURRENT_USER\Software\Unity\WebPlayer"
-		valueName="un.Directory" value="%FLASHPOINTSECUREPLAYERSTARTUPPATH%\BrowserPlugins\UnityWebPlayer\Unity3d2.x"
+		valueName="Directory" value="%FLASHPOINTSECUREPLAYERSTARTUPPATH%\BrowserPlugins\UnityWebPlayer\Unity3d2.x"
 		valueKind="String" />
   </registryBackups>
 </modification>
@@ -244,6 +256,8 @@ Here is a `modifications` element which temporarily changes the Unity directory.
 The `type` attribute of the `registryBackup` element specifies whether the element represents a `KEY` or `VALUE`. If not specified, the default is `KEY`. The `keyName` and `valueName` attributes specify the location of the registry key and value. The `valueKind` attribute specifies the kind of value that will be set. If the `type` attribute is `KEY`, the `valueName`, `value`, and `valueKind` attributes are ignored.
 
 There is no way to delete a registry key or value, only set them. The player may set a `_deleted` attribute, which is for internal use by the player only, and is ignored outside of the active configuration file (see the section about [Crash Recovery](#crash-recovery) below.)
+
+Furthermore, the player may set an `_administrator` attribute, for internal use by the player only. The Run As Administrator Modification should be used to run the application as Administrator User. For more information, see the section about the [Run As Administrator Modification](#run-as-administrator) above.
 
 **binaryType Attribute and WOW64 Keys**
 

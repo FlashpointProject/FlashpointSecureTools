@@ -171,6 +171,9 @@ If you choose No, the application will exit.</value>
   <data name="NoGameSelected" xml:space="preserve">
     <value>No game was selected to start, so the application is exiting.</value>
   </data>
+  <data name="OldCPUSimulatorFailed" xml:space="preserve">
+    <value>The Old CPU Simulator failed. The Target Rate may be invalid.</value>
+  </data>
   <data name="OpenFlashpointLauncher" xml:space="preserve">
     <value>Open the Flashpoint Launcher by opening the Start Flashpoint shortcut in the Flashpoint folder.</value>
   </data>
