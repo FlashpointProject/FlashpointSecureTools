@@ -24,12 +24,12 @@ namespace FlashpointSecurePlayer {
         private Mutex applicationMutex = null;
         private static SemaphoreSlim modificationsSemaphoreSlim = new SemaphoreSlim(1, 1);
         private readonly RunAsAdministrator runAsAdministrator;
-        private readonly ModeTemplates modeTemplates;
-        private readonly OldCPUSimulator oldCPUSimulator;
         private readonly EnvironmentVariables environmentVariables;
+        private readonly ModeTemplates modeTemplates;
         private readonly DownloadsBefore downloadsBefore;
         private readonly RegistryBackups registryBackup;
         private readonly SingleInstance singleInstance;
+        private readonly OldCPUSimulator oldCPUSimulator;
         private bool activeX = false;
         private string server = EMPTY_MODE_NAME;
         private string software = EMPTY_MODE_NAME;
@@ -44,12 +44,12 @@ namespace FlashpointSecurePlayer {
         public FlashpointSecurePlayer() {
             InitializeComponent();
             runAsAdministrator = new RunAsAdministrator(this);
-            modeTemplates = new ModeTemplates(this);
-            oldCPUSimulator = new OldCPUSimulator(this);
             environmentVariables = new EnvironmentVariables(this);
+            modeTemplates = new ModeTemplates(this);
             downloadsBefore = new DownloadsBefore(this);
             registryBackup = new RegistryBackups(this);
             singleInstance = new SingleInstance(this);
+            oldCPUSimulator = new OldCPUSimulator(this);
         }
 
         private void ShowOutput(string errorLabelText) {
@@ -362,7 +362,7 @@ namespace FlashpointSecurePlayer {
             await modificationsSemaphoreSlim.WaitAsync().ConfigureAwait(true);
 
             try {
-                ProgressManager.CurrentGoal.Start(4);
+                ProgressManager.CurrentGoal.Start(3);
 
                 try {
                     /*
@@ -371,10 +371,11 @@ namespace FlashpointSecurePlayer {
                     } catch (System.Configuration.ConfigurationErrorsException) {
                         errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                     }
-                    */
 
                     ProgressManager.CurrentGoal.Steps++;
+                    */
 
+                    // the modifications are deactivated in reverse order of how they're activated
                     try {
                         // this one really needs to work
                         // we can't continue if it does not
