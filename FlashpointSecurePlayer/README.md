@@ -156,7 +156,7 @@ The Software Mode Template works identically to the Server Mode Template in that
 
 The first attribute is `format`, which [formats](https://docs.microsoft.com/en-us/dotnet/api/system.string.format?view=netcore-3.1#Starting) the command line arguments as a string.
 
-The second attribute is `hideWindow`, which causes the window of the software to be hidden. This is ideal for hiding console windows for softwares that have them.
+The second attribute is `hideWindow`, which causes the window of the software to be hidden. This is ideal for hiding console windows for softwares that have them. Please note that the `hideWindow` attribute is not supported when using the Old CPU Simulator Modification. For more information, see the section about [Old CPU Simulator](#old-cpu-simulator) below.
 
 The third attribute is `workingDirectory`, which sets the working directory for the process.
 
@@ -178,7 +178,7 @@ With the "Java" Modification Name specified, the URL is factored into the regex,
 
 `FlashpointSecurePlayer --name "Java" --software "http://www.example.com/example.jar"`
 
-## Old CPU Simulator
+## <a name="old-cpu-simulator"></a>Old CPU Simulator
 Set Via:
  - Configuration File: `oldCPUSimulator` element
 
@@ -188,7 +188,7 @@ The Old CPU Simulator Modification has six attributes. The only required attribu
 
 If the current rate is slower than the target rate, the Old CPU Simulator Modification is ignored.
 
-The player will look for Old CPU Simulator in the OldCPUSimulator folder. Must be Old CPU Simulator 1.6.3 or newer.
+The player will look for Old CPU Simulator in the OldCPUSimulator folder. It must be Old CPU Simulator 1.6.3 or newer.
 
 ## Environment Variables
 Set Via:
