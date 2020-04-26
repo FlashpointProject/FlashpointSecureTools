@@ -62,6 +62,16 @@ namespace FlashpointSecurePlayer {
             this.errorLabel.Text = errorLabelText;
         }
 
+        private void AskLaunch(string error) {
+            ProgressManager.ShowOutput();
+            DialogResult dialogResult = MessageBox.Show(String.Format(Properties.Resources.LaunchGame, error), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.YesNo, MessageBoxIcon.None);
+
+            if (dialogResult == DialogResult.No) {
+                Application.Exit();
+                throw new InvalidModificationException("The operation was aborted by the user.");
+            }
+        }
+
         private void AskLaunchAsAdministratorUser() {
             if (!TestLaunchedAsAdministratorUser()) {
                 // popup message box and restart program here
@@ -75,14 +85,7 @@ namespace FlashpointSecurePlayer {
                  then there'd be no dialog except this one - and I don't want
                  the program to enter an infinite restart loop
                  */
-                ProgressManager.ShowOutput();
-                DialogResult dialogResult = MessageBox.Show(String.Format(Properties.Resources.LaunchGame, Properties.Resources.AsAdministratorUser), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.YesNo, MessageBoxIcon.None);
-
-                if (dialogResult == DialogResult.No) {
-                    Application.Exit();
-                    throw new InvalidModificationException("The operation was aborted by the user.");
-                }
-
+                AskLaunch(Properties.Resources.AsAdministratorUser);
                 RestartApplication(true, this, APPLICATION_MUTEX_NAME);
                 throw new InvalidModificationException("The Modification does not work unless run as Administrator User.");
             }
@@ -94,15 +97,75 @@ namespace FlashpointSecurePlayer {
 
         private void AskLaunchWithCompatibilitySettings() {
             ProgressManager.ShowOutput();
-            DialogResult dialogResult = MessageBox.Show(String.Format(Properties.Resources.LaunchGame, Properties.Resources.WithCompatibilitySettings), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.YesNo, MessageBoxIcon.None);
-
-            if (dialogResult == DialogResult.No) {
-                Application.Exit();
-                throw new InvalidModificationException("The operation was aborted by the user.");
-            }
-
+            AskLaunch(Properties.Resources.WithCompatibilitySettings);
             RestartApplication(false, this, APPLICATION_MUTEX_NAME);
             throw new InvalidModificationException("The Modification does not work unless run with Compatibility Settings.");
+        }
+
+        private void AskLaunchWithOldCPUSimulator() {
+            ModificationsElement modificationsElement = GetModificationsElement(false, ModificationsName);
+
+            if (modificationsElement == null) {
+                return;
+            }
+
+            Process parentProcess = GetParentProcess();
+            string parentProcessEXEFileName = null;
+
+            if (parentProcess != null) {
+                try {
+                    parentProcessEXEFileName = Path.GetFileName(GetProcessEXEName(parentProcess)).ToLower();
+                } catch {
+                    ProgressManager.ShowError();
+                    MessageBox.Show(Properties.Resources.ProcessFailedStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Application.Exit();
+                    throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator which failed to get the parent process EXE name.");
+                }
+            }
+
+            if (parentProcessEXEFileName == OLD_CPU_SIMULATOR_PARENT_PROCESS_EXE_FILE_NAME) {
+                return;
+            }
+
+            AskLaunch(Properties.Resources.WithOldCPUSimulator);
+
+            // Old CPU Simulator needs to be on top, not us
+            try {
+                string fullPath = Path.GetFullPath(OLD_CPU_SIMULATOR_PATH);
+
+                ProcessStartInfo processStartInfo = new ProcessStartInfo {
+                    FileName = fullPath,
+                    Arguments = GetOldCPUSimulatorProcessStartInfoArguments(modificationsElement.OldCPUSimulator, Environment.CommandLine),
+                    WorkingDirectory = Environment.CurrentDirectory
+                };
+
+                HideWindow(ref processStartInfo);
+
+                if (!String.IsNullOrEmpty(APPLICATION_MUTEX_NAME)) {
+                    // default to false in case of error
+                    bool createdNew = false;
+                    // will not signal the Mutex if it has not already been
+                    Mutex applicationMutex = new Mutex(false, APPLICATION_MUTEX_NAME, out createdNew);
+
+                    if (!createdNew) {
+                        applicationMutex.ReleaseMutex();
+                    }
+                }
+
+                Hide();
+                ControlBox = true;
+                Process.Start(processStartInfo);
+                Application.Exit();
+                throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator.");
+            } catch (InvalidModificationException ex) {
+                throw ex;
+            } catch {
+                Show();
+                ProgressManager.ShowError();
+                MessageBox.Show(Properties.Resources.ProcessFailedStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Application.Exit();
+                throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator which failed to start.");
+            }
         }
 
         private async Task ActivateModificationsAsync(string commandLine, ErrorDelegate errorDelegate) {
@@ -190,35 +253,7 @@ namespace FlashpointSecurePlayer {
                     }
 
                     ProgressManager.CurrentGoal.Steps++;
-
-                    if (modificationsElement.ModeTemplates.ElementInformation.IsPresent) {
-                        try {
-                            modeTemplates.Activate(ModificationsName, ref server, ref software, ref softwareProcessStartInfo);
-                        } catch (ModeTemplatesFailedException) {
-                            errorDelegate(Properties.Resources.ModeTemplatesFailed);
-                        } catch (System.Configuration.ConfigurationErrorsException) {
-                            errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                        } catch (TaskRequiresElevationException) {
-                            AskLaunchAsAdministratorUser();
-                        }
-                    }
-
-                    ProgressManager.CurrentGoal.Steps++;
-
-                    if (modificationsElement.OldCPUSimulator.ElementInformation.IsPresent) {
-                        try {
-                            oldCPUSimulator.Activate(ModificationsName, ref software, ref softwareProcessStartInfo);
-                        } catch (OldCPUSimulatorFailedException) {
-                            errorDelegate(Properties.Resources.OldCPUSimulatorFailed);
-                        } catch (System.Configuration.ConfigurationErrorsException) {
-                            errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                        } catch (TaskRequiresElevationException) {
-                            AskLaunchAsAdministratorUser();
-                        }
-                    }
-
-                    ProgressManager.CurrentGoal.Steps++;
-
+                    
                     if (modificationsElement.EnvironmentVariables.Count > 0) {
                         try {
                             environmentVariables.Activate(ModificationsName, server, APPLICATION_MUTEX_NAME);
@@ -230,6 +265,20 @@ namespace FlashpointSecurePlayer {
                             AskLaunchAsAdministratorUser();
                         } catch (CompatibilityLayersException) {
                             AskLaunchWithCompatibilitySettings();
+                        }
+                    }
+
+                    ProgressManager.CurrentGoal.Steps++;
+
+                    if (modificationsElement.ModeTemplates.ElementInformation.IsPresent) {
+                        try {
+                            modeTemplates.Activate(ModificationsName, ref server, ref software, ref softwareProcessStartInfo);
+                        } catch (ModeTemplatesFailedException) {
+                            errorDelegate(Properties.Resources.ModeTemplatesFailed);
+                        } catch (System.Configuration.ConfigurationErrorsException) {
+                            errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                        } catch (TaskRequiresElevationException) {
+                            AskLaunchAsAdministratorUser();
                         }
                     }
 
@@ -272,6 +321,20 @@ namespace FlashpointSecurePlayer {
                             AskLaunchAsAdministratorUser();
                         } catch {
                             errorDelegate(Properties.Resources.UnknownProcessCompatibilityConflict);
+                        }
+                    }
+
+                    ProgressManager.CurrentGoal.Steps++;
+
+                    if (modificationsElement.OldCPUSimulator.ElementInformation.IsPresent) {
+                        try {
+                            oldCPUSimulator.Activate(ModificationsName, ref server, ref software, ref softwareProcessStartInfo);
+                        } catch (OldCPUSimulatorFailedException) {
+                            errorDelegate(Properties.Resources.OldCPUSimulatorFailed);
+                        } catch (System.Configuration.ConfigurationErrorsException) {
+                            errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                        } catch (TaskRequiresElevationException) {
+                            AskLaunchAsAdministratorUser();
                         }
                     }
 
@@ -514,6 +577,14 @@ namespace FlashpointSecurePlayer {
                         }).ConfigureAwait(true);
                     } catch (InvalidModificationException) {
                         return;
+                    } catch (OldCPUSimulatorRequiresRestartException) {
+                        // do this after all other modifications
+                        // Old CPU Simulator can't handle restarts
+                        try {
+                            AskLaunchWithOldCPUSimulator();
+                        } catch (InvalidModificationException) {
+                            return;
+                        }
                     }
 
                     if (!String.IsNullOrEmpty(server)) {
