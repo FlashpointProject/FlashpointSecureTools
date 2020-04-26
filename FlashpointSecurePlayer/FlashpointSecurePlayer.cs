@@ -62,9 +62,9 @@ namespace FlashpointSecurePlayer {
             this.errorLabel.Text = errorLabelText;
         }
 
-        private void AskLaunch(string error) {
+        private void AskLaunch(string applicationRestartMessage) {
             ProgressManager.ShowOutput();
-            DialogResult dialogResult = MessageBox.Show(String.Format(Properties.Resources.LaunchGame, error), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.YesNo, MessageBoxIcon.None);
+            DialogResult dialogResult = MessageBox.Show(String.Format(Properties.Resources.LaunchGame, applicationRestartMessage), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.YesNo, MessageBoxIcon.None);
 
             if (dialogResult == DialogResult.No) {
                 Application.Exit();
@@ -578,7 +578,7 @@ namespace FlashpointSecurePlayer {
                         }).ConfigureAwait(true);
                     } catch (InvalidModificationException) {
                         return;
-                    } catch (OldCPUSimulatorRequiresRestartException) {
+                    } catch (OldCPUSimulatorRequiresApplicationRestartException) {
                         // do this after all other modifications
                         // Old CPU Simulator can't handle restarts
                         try {

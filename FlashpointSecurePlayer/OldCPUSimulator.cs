@@ -37,7 +37,7 @@ namespace FlashpointSecurePlayer {
             // first, we check the target rate
 
             if (oldCPUSimulatorElement.TargetRate == null) {
-                throw new OldCPUSimulatorFailedException("The Target Rate is required.");
+                throw new OldCPUSimulatorFailedException("The target rate is required.");
             }
 
             // now, we might already be running under Old CPU Simulator
@@ -95,7 +95,7 @@ namespace FlashpointSecurePlayer {
             if (!String.IsNullOrEmpty(server)) {
                 // server mode, need to restart the whole app
                 // handled in the GUI side of things
-                throw new OldCPUSimulatorRequiresRestartException("The Old CPU Simulator in Server Mode requires a restart.");
+                throw new OldCPUSimulatorRequiresApplicationRestartException("The Old CPU Simulator in Server Mode requires a restart.");
             } else if (!String.IsNullOrEmpty(software)) {
                 // USB the HDMI to .exe the database
                 StringBuilder oldCPUSimulatorSoftware = new StringBuilder("\"");
