@@ -7,7 +7,7 @@ The Flashpoint Secure Player is an advanced application that makes modifications
 
 It is driven by a model consisting of two concepts: Modes and Modifications. The Modes and Modifications are set either via the command line or a configuration file. The configuration files may be hosted on the Flashpoint Server, making it easy to integrate into the existing Flashpoint curation flow. A number of sample configuration files are included alongside the player in the FlashpointSecurePlayerConfigs folder.
 
-Presently, there are three Modes (ActiveX Mode, Server Mode, and Software Mode) and seven Modifications (Run As Administrator, Mode Templates, Old CPU Simulator, Environment Variables, Downloads Before, Registry Backups, and Single Instance.)
+Presently, there are three Modes (ActiveX Mode, Server Mode, and Software Mode) and seven Modifications (Run As Administrator, Mode Templates, Environment Variables, Downloads Before, Registry Backups, Single Instance, and Old CPU Simulator.)
 
 This player has bugs. Help me find them! If you've found a bug, report anything unusual as an issue.
 
@@ -124,6 +124,35 @@ The `modification` element below also causes the application to be run as Admini
 ```
 <modification name="example" runAsAdministrator="true" />
 ```
+
+## Environment Variables
+Set Via:
+ - Configuration File: `environmentVariables` element
+
+The Environment Variables Modification may be used to set environment variables for the current process and any software it launches only. The envrionment variables are not set for the entire system. The `%FLASHPOINTSECUREPLAYERSTARTUPPATH%` variable may be used in the value, which will be substituted with the startup path of Flashpoint Secure Player.
+
+Here is a modification `element` that sets the `FP_UNITY_PATH` variable to the location of the Unity Web Player plugin.
+
+```
+<modification name="unitywebplayer2">
+  <environmentVariables>
+    <environmentVariable name="FP_UNITY_PATH" value="%FLASHPOINTSECUREPLAYERSTARTUPPATH%\BrowserPlugins\UnityWebPlayer\Unity3d2.x\loader" />
+  </environmentVariables>
+</modification>
+```
+
+**Compatibility Layers**
+
+It is possible to use the Environment Variables Modification to set compatibility layers by setting the `__COMPAT_LAYERS` environment variable to a [compatibility fix.](http://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-7/cc765984(v=ws.10)) Here is a `modification` element that starts the software in 640 x 480 resolution.
+
+```
+<modification name="lowresolution">
+  <environmentVariables>
+    <environmentVariable name="__COMPAT_LAYERS" value="640x480" />
+  </environmentVariables>
+</modification>
+```
+
 ## <a name="mode-templates"></a>Mode Templates
 Set Via:
  - Configuration File: `modeTemplates` element
@@ -177,47 +206,6 @@ For example, a practical use of the Software Mode Template would be to create a 
 With the "Java" Modification Name specified, the URL is factored into the regex, such that only the URL needs to be given when specifying the Software Mode argument. The command line below could be interpreted as passing the URL to the software.
 
 `FlashpointSecurePlayer --name "Java" --software "http://www.example.com/example.jar"`
-
-## <a name="old-cpu-simulator"></a>Old CPU Simulator
-Set Via:
- - Configuration File: `oldCPUSimulator` element
-
-The Old CPU Simulator simulates running a process on a CPU with a slower clock speed in order to make old games run at the correct speed or underclock CPU intensive processes like video encoding. For more information on how to use Old CPU Simulator, [read the README.](https://github.com/tomysshadow/OldCPUSimulator)
-
-The Old CPU Simulator Modification has six attributes. The only required attribute is `targetRate` which behaves as described in the Old CPU Simulator README. The second attribute is `refreshRate` which is optional, and behaves as described in the Old CPU Simulator README. The other attributes are `setProcessPriorityHigh`, `setSyncedProcessAffinityOne`, `syncedProcessMainThreadOnly`, and `refreshRateFloorFifteen` behave as described in the Old CPU Simulator README and default to false, true, true, and true respectively.
-
-If the current rate is slower than the target rate, the Old CPU Simulator Modification is ignored.
-
-The player will look for Old CPU Simulator in the OldCPUSimulator folder. It must be Old CPU Simulator 1.6.3 or newer.
-
-## Environment Variables
-Set Via:
- - Configuration File: `environmentVariables` element
-
-The Environment Variables Modification may be used to set environment variables for the current process and any software it launches only. The envrionment variables are not set for the entire system. The `%FLASHPOINTSECUREPLAYERSTARTUPPATH%` variable may be used in the value, which will be substituted with the startup path of Flashpoint Secure Player.
-
-Here is a modification `element` that sets the `FP_UNITY_PATH` variable to the location of the Unity Web Player plugin.
-
-```
-<modification name="unitywebplayer2">
-  <environmentVariables>
-    <environmentVariable name="FP_UNITY_PATH" value="%FLASHPOINTSECUREPLAYERSTARTUPPATH%\BrowserPlugins\UnityWebPlayer\Unity3d2.x\loader" />
-  </environmentVariables>
-</modification>
-```
-
-**Compatibility Layers**
-
-
-It is possible to use the Environment Variables Modification to set compatibility layers by setting the `__COMPAT_LAYERS` environment variable to a [compatibility fix.](http://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-7/cc765984(v=ws.10)) Here is a `modification` element that starts the software in 640 x 480 resolution.
-
-```
-<modification name="lowresolution">
-  <environmentVariables>
-    <environmentVariable name="__COMPAT_LAYERS" value="640x480" />
-  </environmentVariables>
-</modification>
-```
 
 ## Downloads Before
 Set Via:
@@ -312,6 +300,18 @@ This command line in combination with this `modification` element uses the Singl
 ```
 
 The Single Instance Modification has two attributes: `strict` and `commandLine`. The `strict` attribute specifies whether the test only looks for the process with the exact same pathname or any process on the machine with a matching name. The default is `false`. The `commandLine` attribute specifies an alternate command line to test for. For example, in this instance, if the `commandLine` attribute were empty, it would instead look for `Basilisk-Portable.exe`.
+
+## <a name="old-cpu-simulator"></a>Old CPU Simulator
+Set Via:
+ - Configuration File: `oldCPUSimulator` element
+
+The Old CPU Simulator simulates running a process on a CPU with a slower clock speed in order to make old games run at the correct speed or underclock CPU intensive processes like video encoding. For more information on how to use Old CPU Simulator, [read the README.](https://github.com/tomysshadow/OldCPUSimulator)
+
+The Old CPU Simulator Modification has six attributes. The only required attribute is `targetRate` which behaves as described in the Old CPU Simulator README. The second attribute is `refreshRate` which is optional, and behaves as described in the Old CPU Simulator README. The other attributes are `setProcessPriorityHigh`, `setSyncedProcessAffinityOne`, `syncedProcessMainThreadOnly`, and `refreshRateFloorFifteen` behave as described in the Old CPU Simulator README and default to false, true, true, and true respectively.
+
+If the current rate is slower than the target rate, the Old CPU Simulator Modification is ignored.
+
+The player will look for Old CPU Simulator in the OldCPUSimulator folder. It must be Old CPU Simulator 1.6.3 or newer.
 
 # Curation Flow
 Let's curate the game Zenerchi. The first step is to add the ActiveX Control to the ActiveX folder in FPSoftware. Here is the location we'll use for Zenerchi:

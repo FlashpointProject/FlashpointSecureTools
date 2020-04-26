@@ -134,6 +134,15 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to get the Parent Process EXE File Name..
+        /// </summary>
+        internal static string FailedGetParentProcessEXEFileName {
+            get {
+                return ResourceManager.GetString("FailedGetParentProcessEXEFileName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Flashpoint Secure Player.
         /// </summary>
         internal static string FlashpointSecurePlayer {
@@ -348,6 +357,15 @@ namespace FlashpointSecurePlayer.Properties {
         internal static string WithCompatibilitySettings {
             get {
                 return ResourceManager.GetString("WithCompatibilitySettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to with Old CPU Simulator.
+        /// </summary>
+        internal static string WithOldCPUSimulator {
+            get {
+                return ResourceManager.GetString("WithOldCPUSimulator", resourceCulture);
             }
         }
     }

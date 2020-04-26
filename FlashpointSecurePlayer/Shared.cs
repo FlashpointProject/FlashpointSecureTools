@@ -20,16 +20,28 @@ using System.Windows.Forms;
 namespace FlashpointSecurePlayer {
     public static class Shared {
         public class Exceptions {
-            public class TaskRequiresElevationException : InvalidOperationException {
+            public class RestartRequiredException : InvalidOperationException {
+                public RestartRequiredException() : base() { }
+                public RestartRequiredException(string message) : base(message) { }
+                public RestartRequiredException(string message, Exception inner) : base(message, inner) { }
+            }
+
+            public class TaskRequiresElevationException : RestartRequiredException {
                 public TaskRequiresElevationException() : base() { }
                 public TaskRequiresElevationException(string message) : base(message) { }
                 public TaskRequiresElevationException(string message, Exception inner) : base(message, inner) { }
             }
 
-            public class CompatibilityLayersException : InvalidOperationException {
+            public class CompatibilityLayersException : RestartRequiredException {
                 public CompatibilityLayersException() : base() { }
                 public CompatibilityLayersException(string message) : base(message) { }
                 public CompatibilityLayersException(string message, Exception inner) : base(message, inner) { }
+            }
+
+            public class OldCPUSimulatorRequiresRestartException : RestartRequiredException {
+                public OldCPUSimulatorRequiresRestartException() { }
+                public OldCPUSimulatorRequiresRestartException(string message) : base(message) { }
+                public OldCPUSimulatorRequiresRestartException(string message, Exception inner) : base(message, inner) { }
             }
 
             public class DownloadFailedException : InvalidOperationException {
@@ -253,6 +265,8 @@ namespace FlashpointSecurePlayer {
         private static FlashpointSecurePlayerSection activeFlashpointSecurePlayerSection = null;
 
         private const string FLASHPOINT_SECURE_PLAYER_STARTUP_PATH = "FLASHPOINTSECUREPLAYERSTARTUPPATH";
+        public const string OLD_CPU_SIMULATOR_PATH = "OldCPUSimulator/OldCPUSimulator.exe";
+        public const string OLD_CPU_SIMULATOR_PARENT_PROCESS_EXE_FILE_NAME = "oldcpusimulator.exe";
 
         public abstract class ModificationsConfigurationElementCollection : ConfigurationElementCollection {
             public override ConfigurationElementCollectionType CollectionType {
@@ -359,6 +373,71 @@ namespace FlashpointSecurePlayer {
 
                         set {
                             base["runAsAdministrator"] = value;
+                        }
+                    }
+
+                    public class EnvironmentVariablesElementCollection : ModificationsConfigurationElementCollection {
+                        public class EnvironmentVariablesElement : ConfigurationElement {
+                            [ConfigurationProperty("name", IsKey = true, IsRequired = true)]
+                            public string Name {
+                                get {
+                                    if (String.IsNullOrEmpty(base["name"] as string)) {
+                                        return base["name"] as string;
+                                    }
+                                    return (base["name"] as string).ToUpper();
+                                }
+
+                                set {
+                                    if (String.IsNullOrEmpty(value)) {
+                                        base["name"] = value;
+                                        return;
+                                    }
+
+                                    base["name"] = value.ToUpper();
+                                }
+                            }
+
+                            [ConfigurationProperty("value", IsRequired = true)]
+                            public string Value {
+                                get {
+                                    return base["value"] as string;
+                                }
+
+                                set {
+                                    base["value"] = value;
+                                }
+                            }
+                        }
+
+                        protected override object GetElementKey(ConfigurationElement configurationElement) {
+                            EnvironmentVariablesElement environmentVariablesElement = configurationElement as EnvironmentVariablesElement;
+                            return environmentVariablesElement.Name;
+                        }
+
+                        protected override ConfigurationElement CreateNewElement() {
+                            return new EnvironmentVariablesElement();
+                        }
+
+                        new public ConfigurationElement Get(string name) {
+                            name = name.ToUpper();
+                            return base.Get(name);
+                        }
+
+                        new public void Remove(string name) {
+                            name = name.ToUpper();
+                            base.Remove(name);
+                        }
+                    }
+
+                    [ConfigurationProperty("environmentVariables", IsRequired = false)]
+                    [ConfigurationCollection(typeof(EnvironmentVariablesElementCollection), AddItemName = "environmentVariable")]
+                    public EnvironmentVariablesElementCollection EnvironmentVariables {
+                        get {
+                            return (EnvironmentVariablesElementCollection)base["environmentVariables"];
+                        }
+
+                        set {
+                            base["environmentVariables"] = value;
                         }
                     }
 
@@ -559,71 +638,6 @@ namespace FlashpointSecurePlayer {
 
                         set {
                             base["oldCPUSimulator"] = value;
-                        }
-                    }
-
-                    public class EnvironmentVariablesElementCollection : ModificationsConfigurationElementCollection {
-                        public class EnvironmentVariablesElement : ConfigurationElement {
-                            [ConfigurationProperty("name", IsKey = true, IsRequired = true)]
-                            public string Name {
-                                get {
-                                    if (String.IsNullOrEmpty(base["name"] as string)) {
-                                        return base["name"] as string;
-                                    }
-                                    return (base["name"] as string).ToUpper();
-                                }
-
-                                set {
-                                    if (String.IsNullOrEmpty(value)) {
-                                        base["name"] = value;
-                                        return;
-                                    }
-
-                                    base["name"] = value.ToUpper();
-                                }
-                            }
-
-                            [ConfigurationProperty("value", IsRequired = true)]
-                            public string Value {
-                                get {
-                                    return base["value"] as string;
-                                }
-
-                                set {
-                                    base["value"] = value;
-                                }
-                            }
-                        }
-
-                        protected override object GetElementKey(ConfigurationElement configurationElement) {
-                            EnvironmentVariablesElement environmentVariablesElement = configurationElement as EnvironmentVariablesElement;
-                            return environmentVariablesElement.Name;
-                        }
-
-                        protected override ConfigurationElement CreateNewElement() {
-                            return new EnvironmentVariablesElement();
-                        }
-
-                        new public ConfigurationElement Get(string name) {
-                            name = name.ToUpper();
-                            return base.Get(name);
-                        }
-
-                        new public void Remove(string name) {
-                            name = name.ToUpper();
-                            base.Remove(name);
-                        }
-                    }
-
-                    [ConfigurationProperty("environmentVariables", IsRequired = false)]
-                    [ConfigurationCollection(typeof(EnvironmentVariablesElementCollection), AddItemName = "environmentVariable")]
-                    public EnvironmentVariablesElementCollection EnvironmentVariables {
-                        get {
-                            return (EnvironmentVariablesElementCollection)base["environmentVariables"];
-                        }
-
-                        set {
-                            base["environmentVariables"] = value;
                         }
                     }
 
@@ -1448,12 +1462,41 @@ namespace FlashpointSecurePlayer {
             return argv;
         }
 
+        public static string GetOldCPUSimulatorProcessStartInfoArguments(FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement.OldCPUSimulatorElement oldCPUSimulatorElement, string software) {
+            StringBuilder oldCPUSimulatorProcessStartInfoArguments = new StringBuilder("-t ");
+            oldCPUSimulatorProcessStartInfoArguments.Append(oldCPUSimulatorElement.TargetRate.GetValueOrDefault());
+
+            if (oldCPUSimulatorElement.RefreshRate != null) {
+                oldCPUSimulatorProcessStartInfoArguments.Append(" -r ");
+                oldCPUSimulatorProcessStartInfoArguments.Append(oldCPUSimulatorElement.RefreshRate.GetValueOrDefault());
+            }
+
+            if (oldCPUSimulatorElement.SetProcessPriorityHigh) {
+                oldCPUSimulatorProcessStartInfoArguments.Append(" --set-process-priority-high");
+            }
+
+            if (oldCPUSimulatorElement.SetSyncedProcessAffinityOne) {
+                oldCPUSimulatorProcessStartInfoArguments.Append(" --set-synced-process-affinity-one");
+            }
+
+            if (oldCPUSimulatorElement.SyncedProcessMainThreadOnly) {
+                oldCPUSimulatorProcessStartInfoArguments.Append(" --synced-process-main-thread-only");
+            }
+
+            if (oldCPUSimulatorElement.RefreshRateFloorFifteen) {
+                oldCPUSimulatorProcessStartInfoArguments.Append(" --refresh-rate-floor-fifteen");
+            }
+
+            oldCPUSimulatorProcessStartInfoArguments.Append(" -sw ");
+            oldCPUSimulatorProcessStartInfoArguments.Append(software);
+            return oldCPUSimulatorProcessStartInfoArguments.ToString();
+        }
+
         public static void RestartApplication(bool runAsAdministrator, Form form, string applicationMutexName = null) {
             ProcessStartInfo processStartInfo = new ProcessStartInfo {
                 FileName = Application.ExecutablePath,
                 // can't use GetCommandLineArgs() and String.Join because arguments that were in quotes will lose their quotes
                 // need to use Environment.CommandLine and find arguments
-
                 Arguments = GetCommandLineArgumentRange(Environment.CommandLine, 1, -1)
             };
 
