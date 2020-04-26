@@ -60,7 +60,7 @@ namespace FlashpointSecurePlayer {
                 throw new OldCPUSimulatorFailedException("Failed to get current rate.");
             }
 
-            if (currentMhz < modificationsElement.OldCPUSimulator.TargetRate) {
+            if (currentMhz <= modificationsElement.OldCPUSimulator.TargetRate) {
                 return;
             }
 
