@@ -188,6 +188,8 @@ The Old CPU Simulator Modification has six attributes. The only required attribu
 
 If the current rate is slower than the target rate, the Old CPU Simulator Modification is ignored.
 
+The player will look for Old CPU Simulator in the OldCPUSimulator folder.
+
 ## Environment Variables
 Set Via:
  - Configuration File: `environmentVariables` element

@@ -773,7 +773,7 @@ namespace FlashpointSecurePlayer {
                             base.Remove(name);
                         }
 
-                        [ConfigurationProperty("binaryType", IsRequired = true)]
+                        [ConfigurationProperty("binaryType", DefaultValue = BINARY_TYPE.SCS_64BIT_BINARY, IsRequired = true)]
                         public BINARY_TYPE BinaryType {
                             get {
                                 return (BINARY_TYPE)base["binaryType"];
