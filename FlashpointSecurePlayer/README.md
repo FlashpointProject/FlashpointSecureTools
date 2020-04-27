@@ -64,6 +64,8 @@ Here are some examples of meta elements that may be used to change the Internet 
  
 `<meta http-equiv="X-UA-Compatible" content="IE=edge" />`
 
+The Server Mode should not be used for Flash curations, as Internet Explorer is [removing Flash support](https://support.microsoft.com/en-ca/help/4520411/adobe-flash-end-of-support) December 31, 2020.
+
 ## Software Mode
 **Command Line:** `--software` (or `-sw`)
 
@@ -349,6 +351,8 @@ You may notice that because the Flashpoint Secure Player is effectively capable 
 - elevate.exe
 - TWPFP
 - ActiveX/unregisterAll.bat
+
+Additionally, in order to support the Old CPU Simulator Modification, Old CPU Simulator is required. For more information, see the [Old CPU Simulator](#old-cpu-simulator) section above.
 
 # Planned Features
  - Currently, there is no way to edit configuration files other than manually, and a generic "configuration file failed to load" error occurs when there is a syntax error. It would be nice to have a seperate visual editor for configuration files.
