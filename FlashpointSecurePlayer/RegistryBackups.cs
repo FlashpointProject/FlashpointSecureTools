@@ -53,7 +53,6 @@ namespace FlashpointSecurePlayer {
         private const int IMPORT_TIMEOUT = 5;
         private const string IMPORT_RESUME = "FLASHPOINTSECUREPLAYERREGISTRYBACKUPIMPORTRESUME";
         private const string IMPORT_PAUSE = "FLASHPOINTSECUREPLAYERREGISTRYBACKUPIMPORTPAUSE";
-        private const string KEY_DELETED = "";
         private string fullPath = null;
         private EventWaitHandle resumeEventWaitHandle = new ManualResetEvent(false);
         private Dictionary<ulong, SortedList<DateTime, RegistryBackupElement>> modificationsQueue = null;
@@ -229,7 +228,7 @@ namespace FlashpointSecurePlayer {
             }
 
             kernelRegistryString = kernelRegistryString.ToUpper() + "\\";
-            string keyValueName = "";
+            string keyValueName = String.Empty;
 
             if (kernelRegistryString.IndexOf("\\REGISTRY\\MACHINE\\") == 0) {
                 keyValueName = "HKEY_LOCAL_MACHINE\\" + kernelRegistryString.Substring(18);
@@ -350,7 +349,7 @@ namespace FlashpointSecurePlayer {
                 if (registryKey == null) {
                     return keyName;
                 }
-                return KEY_DELETED;
+                return String.Empty;
             } finally {
                 if (registryKey != null) {
                     registryKey.Close();
@@ -472,10 +471,14 @@ namespace FlashpointSecurePlayer {
 
                 switch (valueKind) {
                     case RegistryValueKind.Binary:
-                    value = Convert.ToBase64String(value as byte[]);
+                    if (value as byte[] is byte[]) {
+                        value = Convert.ToBase64String(value as byte[]);
+                    }
                     break;
                     case RegistryValueKind.MultiString:
-                    value = String.Join("\0", value as string[]);
+                    if (value as string[] is string[]) {
+                        value = String.Join("\0", value as string[]);
+                    }
                     break;
                 }
 
@@ -493,14 +496,13 @@ namespace FlashpointSecurePlayer {
             try {
                 switch (valueKind) {
                     case RegistryValueKind.Binary:
-                    value = Convert.FromBase64String(value as string);
+                    if (value as string is string) {
+                        value = Convert.FromBase64String(value as string);
+                    }
                     break;
                     case RegistryValueKind.MultiString:
-                    try {
+                    if (value as string is string) {
                         value = (value as string).Split('\0');
-                    } catch (NullReferenceException) {
-                        // value is not a string
-                        throw new ArgumentException("The value " + valueName + " is not a string.");
                     }
                     break;
                 }
@@ -509,13 +511,13 @@ namespace FlashpointSecurePlayer {
                     registryKey.SetValue(valueName, value, valueKind);
                 } catch (NullReferenceException) {
                     // registry key is null
-                    throw new ArgumentException("The value " + valueName + " is null.");
+                    throw new ArgumentException("The key " + keyName + " is null.");
                 } catch (ObjectDisposedException) {
                     // key is closed (could not be opened)
-                    throw new ArgumentException("The value " + valueName + " is closed.");
+                    throw new ArgumentException("The key " + keyName + " is closed.");
                 } catch (IOException) {
                     // key represents a root node
-                    throw new ArgumentException("The value " + valueName + " represents a root node.");
+                    throw new ArgumentException("The key " + keyName + " represents a root node.");
                 } catch (UnauthorizedAccessException) {
                     throw new SecurityException("The value " + valueName + " cannot be accessed by the user.");
                 }
@@ -589,7 +591,8 @@ namespace FlashpointSecurePlayer {
                 windowsVersionName != "Windows 8.1 64-bit" &&
                 windowsVersionName != "Windows Server 2012 R2 64-bit" &&
                 windowsVersionName != "Windows 10 64-bit" &&
-                windowsVersionName != "Windows Server 2016 64-bit") {
+                windowsVersionName != "Windows Server 2016 64-bit" &&
+                windowsVersionName != "Windows Server 2019 64-bit") {
                 // no
                 return keyValueName;
             }
@@ -830,7 +833,12 @@ namespace FlashpointSecurePlayer {
 
         new public void Activate(string name) {
             base.Activate(name);
-            ModificationsElement modificationsElement = GetModificationsElement(true, Name);
+            ModificationsElement modificationsElement = GetModificationsElement(false, Name);
+
+            if (modificationsElement == null) {
+                return;
+            }
+
             ModificationsElement activeModificationsElement = GetActiveModificationsElement(true, Name);
             RegistryBackupElement registryBackupElement = null;
             RegistryBackupElement activeRegistryBackupElement = null;
@@ -848,6 +856,7 @@ namespace FlashpointSecurePlayer {
                 throw new ArgumentException("The path to " + Name + " is not supported.");
             }
 
+            // to prevent issues with HKEY_LOCAL_MACHINE and crash recovery
             activeModificationsElement.RegistryBackups._Administrator = TestLaunchedAsAdministratorUser();
             RegistryView registryView = RegistryView.Registry32;
 
@@ -881,7 +890,7 @@ namespace FlashpointSecurePlayer {
                         KeyName = registryBackupElement.KeyName,
                         ValueName = registryBackupElement.ValueName,
                         ValueKind = GetValueKindInRegistryView(keyName, registryBackupElement.ValueName, registryView),
-                        _Deleted = KEY_DELETED
+                        _Deleted = String.Empty
                     };
 
                     switch (activeRegistryBackupElement.Type) {
@@ -1125,7 +1134,7 @@ namespace FlashpointSecurePlayer {
                                     throw new RegistryBackupFailedException("The value " + activeRegistryBackupElement.ValueName + " cannot be created.");
                                 } catch (SecurityException) {
                                     // value exists and we can't modify it
-                                    throw new TaskRequiresElevationException("Modifying the value " + activeRegistryBackupElement.ValueName + " requires elevation.");
+                                    throw new TaskRequiresElevationException("Setting the value " + activeRegistryBackupElement.ValueName + " requires elevation.");
                                 }
                             } else {
                                 try {
@@ -1133,7 +1142,7 @@ namespace FlashpointSecurePlayer {
                                     DeleteValueInRegistryView(GetUserKeyValueName(activeRegistryBackupElement.KeyName), activeRegistryBackupElement.ValueName, registryView);
                                 } catch (SecurityException) {
                                     // value exists and we can't modify it
-                                    throw new TaskRequiresElevationException("Modifying the value " + activeRegistryBackupElement.ValueName + " requires elevation.");
+                                    throw new TaskRequiresElevationException("Deleting the value " + activeRegistryBackupElement.ValueName + " requires elevation.");
                                 }
                             }
                             break;
@@ -1225,7 +1234,7 @@ namespace FlashpointSecurePlayer {
                 } catch (SecurityException) {
                     // value exists but we can't get it
                     // this shouldn't happen because this task requires elevation
-                    value = "";
+                    value = String.Empty;
                 }
                 
                 if (value == null) {
@@ -1432,7 +1441,7 @@ namespace FlashpointSecurePlayer {
                         value = null;
                     } catch (SecurityException) {
                         // value exists but we can't get it
-                        value = "";
+                        value = String.Empty;
                     }
 
                     // TODO: is this the best way to handle deletion?

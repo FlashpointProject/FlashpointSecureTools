@@ -10,6 +10,7 @@ using static FlashpointSecurePlayer.Shared;
 using static FlashpointSecurePlayer.Shared.Exceptions;
 
 namespace FlashpointSecurePlayer {
+    // this class used by the Custom Security Manager
     public static class InternetInterfaces {
         public const uint MUTZ_NOSAVEDFILECHECK = 0x00000001;
         public const uint MUTZ_ISFILE = 0x00000002;

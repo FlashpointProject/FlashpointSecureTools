@@ -10,13 +10,13 @@ using static FlashpointSecurePlayer.Shared;
 using static FlashpointSecurePlayer.Shared.Exceptions;
 
 namespace FlashpointSecurePlayer {
+    // virtual class for modifications
     public abstract class Modifications {
-        // virtual class for modifications
         protected readonly Form form = null;
         private readonly object importPausedLock = new object();
         private bool importPaused = true;
 
-        protected string Name { get; set; } = "";
+        protected string Name { get; set; } = String.Empty;
         protected bool ImportStarted { get; set; } = false;
 
         protected bool ImportPaused {
@@ -85,7 +85,7 @@ namespace FlashpointSecurePlayer {
             /*
             Suspend();
 
-            SetConfigurationSection();
+            SetFlashpointSecurePlayerSection();
             Running = false;
 
             if (Form != null) {
@@ -106,7 +106,7 @@ namespace FlashpointSecurePlayer {
             Name = name;
             Deactivate();
 
-            //SetConfigurationSection();
+            //SetFlashpointSecurePlayerSection();
         }
 
         public void Deactivate() {
@@ -114,7 +114,7 @@ namespace FlashpointSecurePlayer {
                 throw new InvalidOperationException("Cannot Deactivate when the Import has started.");
             }
 
-            //SetConfigurationSection();
+            //SetFlashpointSecurePlayerSection();
         }
     }
 }

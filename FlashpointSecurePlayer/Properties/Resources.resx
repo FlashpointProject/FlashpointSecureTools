@@ -142,6 +142,9 @@ Please ensure Flashpoint is not corrupted, was extracted correctly, and is not r
   <data name="FailedCreateCustomSecurityManager" xml:space="preserve">
     <value>Failed to create a Custom Security Manager.</value>
   </data>
+  <data name="FailedGetParentProcessEXEFileName" xml:space="preserve">
+    <value>Failed to get the Parent Process EXE File Name.</value>
+  </data>
   <data name="FlashpointSecurePlayer" xml:space="preserve">
     <value>Flashpoint Secure Player</value>
   </data>
@@ -170,6 +173,9 @@ If you choose No, the application will exit.</value>
   </data>
   <data name="NoGameSelected" xml:space="preserve">
     <value>No game was selected to start, so the application is exiting.</value>
+  </data>
+  <data name="OldCPUSimulatorFailed" xml:space="preserve">
+    <value>The Old CPU Simulator failed. The Target Rate may be invalid.</value>
   </data>
   <data name="OpenFlashpointLauncher" xml:space="preserve">
     <value>Open the Flashpoint Launcher by opening the Start Flashpoint shortcut in the Flashpoint folder.</value>
@@ -212,5 +218,8 @@ If you choose No, the application will exit.</value>
   </data>
   <data name="WithCompatibilitySettings" xml:space="preserve">
     <value>with Compatibility Settings</value>
+  </data>
+  <data name="WithOldCPUSimulator" xml:space="preserve">
+    <value>with Old CPU Simulator</value>
   </data>
 </root>
