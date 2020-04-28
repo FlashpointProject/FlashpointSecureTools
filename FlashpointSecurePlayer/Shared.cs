@@ -266,7 +266,7 @@ namespace FlashpointSecurePlayer {
 
         private const string FLASHPOINT_SECURE_PLAYER_STARTUP_PATH = "FLASHPOINTSECUREPLAYERSTARTUPPATH";
         public const string OLD_CPU_SIMULATOR_PATH = "OldCPUSimulator\\OldCPUSimulator.exe";
-        public const string OLD_CPU_SIMULATOR_PARENT_PROCESS_EXE_FILE_NAME = "oldcpusimulator.exe";
+        public const string OLD_CPU_SIMULATOR_PARENT_PROCESS_EXE_FILE_NAME = "OLDCPUSIMULATOR.EXE";
 
         public abstract class ModificationsConfigurationElementCollection : ConfigurationElementCollection {
             public override ConfigurationElementCollectionType CollectionType {

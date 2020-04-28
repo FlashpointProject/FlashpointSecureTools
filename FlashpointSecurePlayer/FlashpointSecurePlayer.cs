@@ -19,8 +19,8 @@ namespace FlashpointSecurePlayer {
     public partial class FlashpointSecurePlayer : Form {
         private const string APPLICATION_MUTEX_NAME = "Flashpoint Secure Player";
         private const string EMPTY_MODE_NAME = "";
-        private const string FLASHPOINT_LAUNCHER_PARENT_PROCESS_EXE_FILE_NAME = "cmd.exe";
-        private const string FLASHPOINT_LAUNCHER_PROCESS_NAME = "flashpoint";
+        private const string FLASHPOINT_LAUNCHER_PARENT_PROCESS_EXE_FILE_NAME = "CMD.EXE";
+        private const string FLASHPOINT_LAUNCHER_PROCESS_NAME = "FLASHPOINT";
         private Mutex applicationMutex = null;
         private static SemaphoreSlim modificationsSemaphoreSlim = new SemaphoreSlim(1, 1);
         private readonly RunAsAdministrator runAsAdministrator;
@@ -124,7 +124,7 @@ namespace FlashpointSecurePlayer {
 
             if (parentProcess != null) {
                 try {
-                    parentProcessEXEFileName = Path.GetFileName(GetProcessEXEName(parentProcess)).ToLower();
+                    parentProcessEXEFileName = Path.GetFileName(GetProcessEXEName(parentProcess)).ToUpper();
                 } catch {
                     ProgressManager.ShowError();
                     MessageBox.Show(Properties.Resources.ProcessFailedStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -776,7 +776,7 @@ namespace FlashpointSecurePlayer {
 
                 if (parentProcess != null) {
                     try {
-                        parentProcessEXEFileName = Path.GetFileName(GetProcessEXEName(parentProcess)).ToLower();
+                        parentProcessEXEFileName = Path.GetFileName(GetProcessEXEName(parentProcess)).ToUpper();
                     } catch {
                         // Fail silently.
                     }
