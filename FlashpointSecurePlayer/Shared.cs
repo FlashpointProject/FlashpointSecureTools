@@ -106,7 +106,7 @@ namespace FlashpointSecurePlayer {
 
             public static void LogExceptionToLauncher(Exception ex) {
                 try {
-                    Console.WriteLine(ex.Message);
+                    Console.Error.WriteLine(ex.Message);
                 } catch {
                     // Fail silently.
                 }
