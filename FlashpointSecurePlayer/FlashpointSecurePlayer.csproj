@@ -89,6 +89,7 @@
       <DependentUpon>FlashpointSecurePlayer.cs</DependentUpon>
     </Compile>
     <Compile Include="Modifications.cs" />
+    <Compile Include="OldCPUSimulator.cs" />
     <Compile Include="ProgressManager.cs" />
     <Compile Include="RunAsAdministrator.cs" />
     <Compile Include="Shared.cs" />

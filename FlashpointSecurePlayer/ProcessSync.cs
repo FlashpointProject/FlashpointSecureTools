@@ -92,6 +92,8 @@ namespace FlashpointSecurePlayer {
         private static bool Started { get; set; } = false;
 
         public static void Start(Process process = null) {
+            // this is here to make it so if the player crashes
+            // the process it started is killed along with it
             if (!Started) {
                 if (jobHandle == IntPtr.Zero) {
                     jobHandle = CreateJobObject(IntPtr.Zero, null);

@@ -19,13 +19,19 @@ namespace FlashpointSecurePlayer {
 
         public void Activate(string name, string server, string applicationMutexName) {
             base.Activate(name);
-            ModificationsElement modificationsElement = GetModificationsElement(true, Name);
+            ModificationsElement modificationsElement = GetModificationsElement(false, Name);
+
+            if (modificationsElement == null) {
+                return;
+            }
+
             string value = null;
             List<string> values = null;
             string compatibilityLayerValue = null;
             List<string> compatibilityLayerValues = new List<string>();
 
             try {
+                // we need to find the compatibility layers so we can check later if the ones we want are already set
                 compatibilityLayerValue = Environment.GetEnvironmentVariable(COMPATIBILITY_LAYER_NAME);
             } catch (ArgumentException) {
                 throw new EnvironmentVariablesFailedException("Failed to get the " + COMPATIBILITY_LAYER_NAME + " Environment Variable.");
@@ -61,6 +67,8 @@ namespace FlashpointSecurePlayer {
                     if (environmentVariablesElement.Name == COMPATIBILITY_LAYER_NAME && !String.IsNullOrEmpty(server)) {
                         values = new List<string>();
 
+                        // the compatibility layers may contain more values
+                        // but we're only concerned if it contains the values we want
                         if (compatibilityLayerValue != null) {
                             compatibilityLayerValues = compatibilityLayerValue.ToUpper().Split(' ').ToList();
                         }
@@ -69,8 +77,11 @@ namespace FlashpointSecurePlayer {
                             values = value.ToUpper().Split(' ').ToList();
                         }
 
+                        // we have to restart in this case in server mode
+                        // because the compatibility layers only take effect
+                        // on process start
                         if (values.Except(compatibilityLayerValues).Any()) {
-                            throw new CompatibilityLayersException("The Compatibility Layers (" + String.Join(", ", compatibilityLayerValues) + ") cannot be set.");
+                            throw new CompatibilityLayersException("The Compatibility Layers (" + value + ") cannot be set.");
                         }
                     }
 
@@ -82,12 +93,14 @@ namespace FlashpointSecurePlayer {
         }
 
         public void Deactivate(string server) {
+            // do the reverse of activation because we can
             base.Deactivate();
 
             if (String.IsNullOrEmpty(Name)) {
                 return;
             }
 
+            // don't need to get active name, we're only deactivating for this process
             ModificationsElement modificationsElement = GetModificationsElement(false, Name);
 
             if (modificationsElement == null) {

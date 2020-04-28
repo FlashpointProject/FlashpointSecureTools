@@ -1,4 +1,4 @@
-# Flashpoint Secure Player 1.1.1
+# Flashpoint Secure Player 1.1.2
 This player attempts to solve common compatibility or portability issues posed by browser plugins on Windows for the purpose of playback in BlueMaxima's Flashpoint.
 
 It is compatible with Windows 7, Windows 8, Windows 8.1 and Windows 10, and requires .NET Framework 4.5. If you are on Windows 8.1 or Windows 10, or if you are on Windows 7/8 and have updates enabled, you already have .NET Framework 4.5. Otherwise, you may [download .NET Framework 4.5.](http://www.microsoft.com/en-us/download/details.aspx?id=30653)
@@ -7,7 +7,7 @@ The Flashpoint Secure Player is an advanced application that makes modifications
 
 It is driven by a model consisting of two concepts: Modes and Modifications. The Modes and Modifications are set either via the command line or a configuration file. The configuration files may be hosted on the Flashpoint Server, making it easy to integrate into the existing Flashpoint curation flow. A number of sample configuration files are included alongside the player in the FlashpointSecurePlayerConfigs folder.
 
-Presently, there are three Modes (ActiveX Mode, Server Mode, and Software Mode) and six Modifications (Run As Administrator, Mode Templates, Environment Variables, Downloads Before, Registry Backups, and Single Instance.)
+Presently, there are three Modes (ActiveX Mode, Server Mode, and Software Mode) and seven Modifications (Run As Administrator, Mode Templates, Environment Variables, Downloads Before, Registry Backups, Single Instance, and Old CPU Simulator.)
 
 This player has bugs. Help me find them! If you've found a bug, report anything unusual as an issue.
 
@@ -63,6 +63,8 @@ Here are some examples of meta elements that may be used to change the Internet 
  - The highest supported version of the browser (this may disable ActiveX Controls)
  
 `<meta http-equiv="X-UA-Compatible" content="IE=edge" />`
+
+The Server Mode should not be used for Flash curations, as Internet Explorer is [removing Flash support](https://support.microsoft.com/en-ca/help/4520411/adobe-flash-end-of-support) December 31, 2020.
 
 ## Software Mode
 **Command Line:** `--software` (or `-sw`)
@@ -124,6 +126,35 @@ The `modification` element below also causes the application to be run as Admini
 ```
 <modification name="example" runAsAdministrator="true" />
 ```
+
+## Environment Variables
+Set Via:
+ - Configuration File: `environmentVariables` element
+
+The Environment Variables Modification may be used to set environment variables for the current process and any software it launches only. The envrionment variables are not set for the entire system. The `%FLASHPOINTSECUREPLAYERSTARTUPPATH%` variable may be used in the value, which will be substituted with the startup path of Flashpoint Secure Player.
+
+Here is a modification `element` that sets the `FP_UNITY_PATH` variable to the location of the Unity Web Player plugin.
+
+```
+<modification name="unitywebplayer2">
+  <environmentVariables>
+    <environmentVariable name="FP_UNITY_PATH" value="%FLASHPOINTSECUREPLAYERSTARTUPPATH%\BrowserPlugins\UnityWebPlayer\Unity3d2.x\loader" />
+  </environmentVariables>
+</modification>
+```
+
+**Compatibility Layers**
+
+It is possible to use the Environment Variables Modification to set compatibility layers by setting the `__COMPAT_LAYERS` environment variable to a [compatibility fix.](http://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-7/cc765984(v=ws.10)) Here is a `modification` element that starts the software in 640 x 480 resolution.
+
+```
+<modification name="lowresolution">
+  <environmentVariables>
+    <environmentVariable name="__COMPAT_LAYERS" value="640x480" />
+  </environmentVariables>
+</modification>
+```
+
 ## <a name="mode-templates"></a>Mode Templates
 Set Via:
  - Configuration File: `modeTemplates` element
@@ -150,13 +181,15 @@ With the "Miniclip" Modification Name specified, all URLs passed into Server Mod
 
 `FlashpointSecurePlayer --name "Miniclip" --server "games/save-the-sheriff/en/"`
 
-**Software Mode Template, hideWindow and workingDirectory Attribute**
+**Software Mode Template**
 
 The Software Mode Template works identically to the Server Mode Template in that it provides the ability to replace the command line passed in with regexes. The Software Mode Template also has additional attributes.
 
-The first attribute is `hideWindow`, which causes the window of the software to be hidden. This is ideal for hiding console windows for softwares that have them.
+The first attribute is `format`, which [formats](https://docs.microsoft.com/en-us/dotnet/api/system.string.format?view=netcore-3.1#Starting) the command line arguments as a string.
 
-The second attribute is `workingDirectory`, which sets the working directory for the process.
+The second attribute is `hideWindow`, which causes the window of the software to be hidden. This is ideal for hiding console windows for softwares that have them. Please note that the `hideWindow` attribute is not supported when using the Old CPU Simulator Modification. For more information, see the section about [Old CPU Simulator](#old-cpu-simulator) below.
+
+The third attribute is `workingDirectory`, which sets the working directory for the process.
 
 For example, a practical use of the Software Mode Template would be to create a `modification` element that always ensures the use of important Java options. Note that this example is simplified from the real Java configuration file for the purpose of demonstration.
 
@@ -175,35 +208,6 @@ For example, a practical use of the Software Mode Template would be to create a 
 With the "Java" Modification Name specified, the URL is factored into the regex, such that only the URL needs to be given when specifying the Software Mode argument. The command line below could be interpreted as passing the URL to the software.
 
 `FlashpointSecurePlayer --name "Java" --software "http://www.example.com/example.jar"`
-
-## Environment Variables
-Set Via:
- - Configuration File: `environmentVariables` element
-
-The Environment Variables Modification may be used to set environment variables for the current process and any software it launches only. The envrionment variables are not set for the entire system. The `%FLASHPOINTSECUREPLAYERSTARTUPPATH%` variable may be used in the value, which will be substituted with the startup path of Flashpoint Secure Player.
-
-Here is a modification `element` that sets the FP_UNITY_PATH variable to the location of the Unity Web Player plugin.
-
-```
-<modification name="unitywebplayer2">
-  <environmentVariables>
-    <environmentVariable name="FP_UNITY_PATH" value="%FLASHPOINTSECUREPLAYERSTARTUPPATH%\BrowserPlugins\UnityWebPlayer\Unity3d2.x\loader" />
-  </environmentVariables>
-</modification>
-```
-
-**Compatibility Layers**
-
-
-It is possible to use the Environment Variables Modification to set compatibility layers by setting the __COMPAT_LAYERS environment variable to a [compatibility fix.](http://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-7/cc765984(v=ws.10)) Here is a `modification` element that starts the software in 640 x 480 resolution.
-
-```
-<modification name="lowresolution">
-  <environmentVariables>
-    <environmentVariable name="__COMPAT_LAYERS" value="640x480" />
-  </environmentVariables>
-</modification>
-```
 
 ## Downloads Before
 Set Via:
@@ -235,7 +239,7 @@ Here is a `modifications` element which temporarily changes the Unity directory.
 <modification name="unitywebplayer2">
   <registryBackups binaryType="SCS_32BIT_BINARY">
 	<registryBackup type="VALUE" keyName="HKEY_CURRENT_USER\Software\Unity\WebPlayer"
-		valueName="un.Directory" value="%FLASHPOINTSECUREPLAYERSTARTUPPATH%\BrowserPlugins\UnityWebPlayer\Unity3d2.x"
+		valueName="Directory" value="%FLASHPOINTSECUREPLAYERSTARTUPPATH%\BrowserPlugins\UnityWebPlayer\Unity3d2.x"
 		valueKind="String" />
   </registryBackups>
 </modification>
@@ -244,6 +248,8 @@ Here is a `modifications` element which temporarily changes the Unity directory.
 The `type` attribute of the `registryBackup` element specifies whether the element represents a `KEY` or `VALUE`. If not specified, the default is `KEY`. The `keyName` and `valueName` attributes specify the location of the registry key and value. The `valueKind` attribute specifies the kind of value that will be set. If the `type` attribute is `KEY`, the `valueName`, `value`, and `valueKind` attributes are ignored.
 
 There is no way to delete a registry key or value, only set them. The player may set a `_deleted` attribute, which is for internal use by the player only, and is ignored outside of the active configuration file (see the section about [Crash Recovery](#crash-recovery) below.)
+
+Furthermore, the player may set an `_administrator` attribute, for internal use by the player only. The Run As Administrator Modification should be used to run the application as Administrator User. For more information, see the section about the [Run As Administrator Modification](#run-as-administrator) above.
 
 **binaryType Attribute and WOW64 Keys**
 
@@ -297,6 +303,18 @@ This command line in combination with this `modification` element uses the Singl
 
 The Single Instance Modification has two attributes: `strict` and `commandLine`. The `strict` attribute specifies whether the test only looks for the process with the exact same pathname or any process on the machine with a matching name. The default is `false`. The `commandLine` attribute specifies an alternate command line to test for. For example, in this instance, if the `commandLine` attribute were empty, it would instead look for `Basilisk-Portable.exe`.
 
+## <a name="old-cpu-simulator"></a>Old CPU Simulator
+Set Via:
+ - Configuration File: `oldCPUSimulator` element
+
+The Old CPU Simulator simulates running a process on a CPU with a slower clock speed in order to make old games run at the correct speed or underclock CPU intensive processes like video encoding. For more information on how to use Old CPU Simulator, [read the README.](https://github.com/tomysshadow/OldCPUSimulator)
+
+The Old CPU Simulator Modification has six attributes. The only required attribute is `targetRate` which behaves as described in the Old CPU Simulator README. The second attribute is `refreshRate` which is optional, and behaves as described in the Old CPU Simulator README. The other attributes are `setProcessPriorityHigh`, `setSyncedProcessAffinityOne`, `syncedProcessMainThreadOnly`, and `refreshRateFloorFifteen` behave as described in the Old CPU Simulator README and default to false, true, true, and true respectively.
+
+If the current rate is slower than the target rate, the Old CPU Simulator Modification is ignored.
+
+The player will look for Old CPU Simulator in the OldCPUSimulator folder. It must be Old CPU Simulator 1.6.4 or newer.
+
 # Curation Flow
 Let's curate the game Zenerchi. The first step is to add the ActiveX Control to the ActiveX folder in FPSoftware. Here is the location we'll use for Zenerchi:
 `ActiveX\ZenerchiWeb.1.0.0.10\zenerchi.1.0.0.10.dll`
@@ -333,6 +351,8 @@ You may notice that because the Flashpoint Secure Player is effectively capable 
 - elevate.exe
 - TWPFP
 - ActiveX/unregisterAll.bat
+
+Additionally, in order to support the Old CPU Simulator Modification, Old CPU Simulator is required. For more information, see the [Old CPU Simulator](#old-cpu-simulator) section above.
 
 # Planned Features
  - Currently, there is no way to edit configuration files other than manually, and a generic "configuration file failed to load" error occurs when there is a syntax error. It would be nice to have a seperate visual editor for configuration files.
