@@ -86,8 +86,13 @@ namespace FlashpointSecurePlayer {
                  the program to enter an infinite restart loop
                  */
                 AskLaunch(Properties.Resources.AsAdministratorUser);
-                RestartApplication(true, this, APPLICATION_MUTEX_NAME);
-                throw new InvalidModificationException("The Modification does not work unless run as Administrator User.");
+
+                try {
+                    RestartApplication(true, this, APPLICATION_MUTEX_NAME);
+                    throw new InvalidModificationException("The Modification does not work unless run as Administrator User.");
+                } catch (ApplicationRestartRequiredException) {
+                    throw new InvalidModificationException("The Modification does not work unless run as Administrator User and the application failed to restart.");
+                }
             }
 
             // we're already running as admin?
@@ -98,8 +103,13 @@ namespace FlashpointSecurePlayer {
         private void AskLaunchWithCompatibilitySettings() {
             ProgressManager.ShowOutput();
             AskLaunch(Properties.Resources.WithCompatibilitySettings);
-            RestartApplication(false, this, APPLICATION_MUTEX_NAME);
-            throw new InvalidModificationException("The Modification does not work unless run with Compatibility Settings.");
+
+            try {
+                RestartApplication(false, this, APPLICATION_MUTEX_NAME);
+                throw new InvalidModificationException("The Modification does not work unless run with Compatibility Settings.");
+            } catch (ApplicationRestartRequiredException) {
+                throw new InvalidModificationException("The Modification does not work unless run with Compatibility Settings and the application failed to restart.");
+            }
         }
 
         private void AskLaunchWithOldCPUSimulator() {
@@ -130,41 +140,21 @@ namespace FlashpointSecurePlayer {
             AskLaunch(Properties.Resources.WithOldCPUSimulator);
 
             // Old CPU Simulator needs to be on top, not us
+            string fullPath = Path.GetFullPath(OLD_CPU_SIMULATOR_PATH);
+
+            ProcessStartInfo processStartInfo = new ProcessStartInfo {
+                FileName = fullPath,
+                Arguments = GetOldCPUSimulatorProcessStartInfoArguments(modificationsElement.OldCPUSimulator, Environment.CommandLine),
+                WorkingDirectory = Environment.CurrentDirectory
+            };
+
+            HideWindow(ref processStartInfo);
+
             try {
-                string fullPath = Path.GetFullPath(OLD_CPU_SIMULATOR_PATH);
-
-                ProcessStartInfo processStartInfo = new ProcessStartInfo {
-                    FileName = fullPath,
-                    Arguments = GetOldCPUSimulatorProcessStartInfoArguments(modificationsElement.OldCPUSimulator, Environment.CommandLine),
-                    WorkingDirectory = Environment.CurrentDirectory
-                };
-
-                HideWindow(ref processStartInfo);
-
-                if (!String.IsNullOrEmpty(APPLICATION_MUTEX_NAME)) {
-                    // default to false in case of error
-                    bool createdNew = false;
-                    // will not signal the Mutex if it has not already been
-                    Mutex applicationMutex = new Mutex(false, APPLICATION_MUTEX_NAME, out createdNew);
-
-                    if (!createdNew) {
-                        applicationMutex.ReleaseMutex();
-                    }
-                }
-
-                Hide();
-                ControlBox = true;
-                Process.Start(processStartInfo);
-                Application.Exit();
+                RestartApplication(false, this, APPLICATION_MUTEX_NAME, processStartInfo);
                 throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator.");
-            } catch (InvalidModificationException ex) {
-                throw ex;
-            } catch {
-                Show();
-                ProgressManager.ShowError();
-                MessageBox.Show(Properties.Resources.ProcessFailedStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Application.Exit();
-                throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator which failed to start.");
+            } catch (ApplicationRestartRequiredException) {
+                throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator and the application failed to restart.");
             }
         }
 

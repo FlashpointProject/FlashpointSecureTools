@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
@@ -14,6 +15,8 @@ using static FlashpointSecurePlayer.InternetInterfaces;
 
 namespace FlashpointSecurePlayer {
     public class CustomSecurityManager : InternetInterfaces.IServiceProvider, InternetInterfaces.IInternetSecurityManager {
+        private const string FLASH_EXTENSION = ".SWF";
+
         // https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/platform-apis/ms537182(v=vs.85)?redirectedfrom=MSDN
         public CustomSecurityManager(WebBrowser _WebBrowser) {
             InternetInterfaces.IServiceProvider webBrowserServiceProviderInterface = _WebBrowser.ActiveXInstance as InternetInterfaces.IServiceProvider;
@@ -100,6 +103,10 @@ namespace FlashpointSecurePlayer {
         int InternetInterfaces.IInternetSecurityManager.ProcessUrlAction([MarshalAs(UnmanagedType.LPWStr)] string pwszUrl, uint dwAction, out uint pPolicy, uint cbPolicy, byte pContext, uint cbContext, uint dwFlags, uint dwReserved) {
             pPolicy = URLPOLICY_DISALLOW;
 
+            if (cbPolicy < Marshal.SizeOf(pPolicy.GetType())) {
+                return S_FALSE;
+            }
+
             // don't process file:// URLS, they are outside the proxy
             if ((dwFlags & PUAF_ISFILE) == PUAF_ISFILE) {
                 return INET_E_DEFAULT_ACTION;
@@ -108,6 +115,17 @@ namespace FlashpointSecurePlayer {
             // error if URL is null
             if (pwszUrl == null) {
                 return E_INVALIDARG;
+            }
+
+            try {
+                if (Path.GetExtension(new Uri(pwszUrl).LocalPath).ToUpper() == FLASH_EXTENSION) {
+                    if (dwAction == URLACTION_ACTIVEX_TREATASUNTRUSTED) { // don't trust Flash ActiveX Controls
+                        pPolicy = URLPOLICY_ALLOW;
+                    }
+                    return S_OK;
+                }
+            } catch {
+                return S_FALSE;
             }
 
             pwszUrl = pwszUrl.ToLower();
@@ -120,7 +138,7 @@ namespace FlashpointSecurePlayer {
                 return INET_E_DEFAULT_ACTION;
             }
 
-            if (dwAction == URLACTION_ACTIVEX_TREATASUNTRUSTED || // trust ActiveX Controls always
+            if (dwAction == URLACTION_ACTIVEX_TREATASUNTRUSTED || // trust other ActiveX Controls
                 dwAction == URLACTION_HTML_MIXED_CONTENT || // block HTTPS content on HTTP websites for Flashpoint Proxy
                 dwAction == URLACTION_CLIENT_CERT_PROMPT || // don't allow invalid certificates
                 dwAction == URLACTION_AUTOMATIC_ACTIVEX_UI || // do not display the install dialog for ActiveX Controls
