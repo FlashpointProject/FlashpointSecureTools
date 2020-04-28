@@ -1492,13 +1492,15 @@ namespace FlashpointSecurePlayer {
             return oldCPUSimulatorProcessStartInfoArguments.ToString();
         }
 
-        public static void RestartApplication(bool runAsAdministrator, Form form, string applicationMutexName = null) {
-            ProcessStartInfo processStartInfo = new ProcessStartInfo {
-                FileName = Application.ExecutablePath,
-                // can't use GetCommandLineArgs() and String.Join because arguments that were in quotes will lose their quotes
-                // need to use Environment.CommandLine and find arguments
-                Arguments = GetCommandLineArgumentRange(Environment.CommandLine, 1, -1)
-            };
+        public static void RestartApplication(bool runAsAdministrator, Form form, string applicationMutexName = null, ProcessStartInfo processStartInfo = null) {
+            if (processStartInfo == null) {
+                processStartInfo = new ProcessStartInfo {
+                    FileName = Application.ExecutablePath,
+                    // can't use GetCommandLineArgs() and String.Join because arguments that were in quotes will lose their quotes
+                    // need to use Environment.CommandLine and find arguments
+                    Arguments = GetCommandLineArgumentRange(Environment.CommandLine, 1, -1)
+                };
+            }
 
             if (runAsAdministrator) {
                 processStartInfo.UseShellExecute = true;
@@ -1517,12 +1519,20 @@ namespace FlashpointSecurePlayer {
             }
 
             // hide the current form so two windows are not open at once
-            form.Hide();
-            form.ControlBox = true;
-            // no this is not a race condition
-            // https://stackoverflow.com/questions/33042010/in-what-cases-does-the-process-start-method-return-false
-            Process.Start(processStartInfo);
-            Application.Exit();
+            try {
+                form.Hide();
+                form.ControlBox = true;
+                // no this is not a race condition
+                // https://stackoverflow.com/questions/33042010/in-what-cases-does-the-process-start-method-return-false
+                Process.Start(processStartInfo);
+                Application.Exit();
+            } catch {
+                form.Show();
+                ProgressManager.ShowError();
+                MessageBox.Show(Properties.Resources.ProcessFailedStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Application.Exit();
+                throw new Exceptions.ApplicationRestartRequiredException("The application failed to restart.");
+            }
         }
 
         public static string GetWindowsVersionName(bool edition, bool servicePack, bool architecture) {
