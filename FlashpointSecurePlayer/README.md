@@ -313,7 +313,7 @@ The Old CPU Simulator Modification has six attributes. The only required attribu
 
 If the current rate is slower than the target rate, the Old CPU Simulator Modification is ignored.
 
-The player will look for Old CPU Simulator in the OldCPUSimulator folder. It must be Old CPU Simulator 1.6.3 or newer.
+The player will look for Old CPU Simulator in the OldCPUSimulator folder. It must be Old CPU Simulator 1.6.4 or newer.
 
 # Curation Flow
 Let's curate the game Zenerchi. The first step is to add the ActiveX Control to the ActiveX folder in FPSoftware. Here is the location we'll use for Zenerchi:

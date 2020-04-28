@@ -17,8 +17,9 @@ namespace FlashpointSecurePlayer {
     class OldCPUSimulator : Modifications {
         public OldCPUSimulator(Form form) : base(form) { }
 
-        public void Activate(string name, ref string server, ref string software, ref ProcessStartInfo softwareProcessStartInfo) {
+        public void Activate(string name, ref string server, ref string software, ref ProcessStartInfo softwareProcessStartInfo, out bool softwareIsOldCPUSimulator) {
             OldCPUSimulatorElement oldCPUSimulatorElement = null;
+            softwareIsOldCPUSimulator = false;
 
             base.Activate(name);
             ModificationsElement modificationsElement = GetModificationsElement(false, Name);
@@ -74,10 +75,20 @@ namespace FlashpointSecurePlayer {
 
             try {
                 Process oldCPUSimulatorProcess = Process.Start(oldCPUSimulatorProcessStartInfo);
-                string oldCPUSimulatorProcessStandardOutput = oldCPUSimulatorProcess.StandardOutput.ReadToEnd();
 
                 if (!oldCPUSimulatorProcess.HasExited) {
                     oldCPUSimulatorProcess.WaitForExit();
+                }
+
+                string oldCPUSimulatorProcessStandardError = null;
+                string oldCPUSimulatorProcessStandardOutput = null;
+
+                if (oldCPUSimulatorProcessStartInfo.RedirectStandardError) {
+                    oldCPUSimulatorProcessStandardError = oldCPUSimulatorProcess.StandardError.ReadToEnd();
+                }
+
+                if (oldCPUSimulatorProcessStartInfo.RedirectStandardOutput) {
+                    oldCPUSimulatorProcessStandardOutput = oldCPUSimulatorProcess.StandardOutput.ReadToEnd();
                 }
 
                 if (oldCPUSimulatorProcess.ExitCode != 0 || !long.TryParse(oldCPUSimulatorProcessStandardOutput.Split('\n').Last(), out currentMhz)) {
@@ -119,10 +130,15 @@ namespace FlashpointSecurePlayer {
                 // this becomes effectively the new thing passed as --software
                 // the shared function is used both here and GUI side for restarts
                 software = OLD_CPU_SIMULATOR_PATH + " " + GetOldCPUSimulatorProcessStartInfoArguments(oldCPUSimulatorElement, oldCPUSimulatorSoftware.ToString());
+                softwareIsOldCPUSimulator = true;
 
                 if (softwareProcessStartInfo == null) {
                     softwareProcessStartInfo = new ProcessStartInfo();
                 }
+
+                softwareProcessStartInfo.RedirectStandardError = true;
+                softwareProcessStartInfo.RedirectStandardOutput = false;
+                softwareProcessStartInfo.RedirectStandardInput = false;
 
                 // hide the Old CPU Simulator window... we always do this
                 HideWindow(ref softwareProcessStartInfo);

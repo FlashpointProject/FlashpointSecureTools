@@ -1502,6 +1502,10 @@ namespace FlashpointSecurePlayer {
                 };
             }
 
+            processStartInfo.RedirectStandardError = false;
+            processStartInfo.RedirectStandardOutput = false;
+            processStartInfo.RedirectStandardInput = false;
+
             if (runAsAdministrator) {
                 processStartInfo.UseShellExecute = true;
                 processStartInfo.Verb = "runas";
@@ -1663,9 +1667,6 @@ namespace FlashpointSecurePlayer {
             }
 
             processStartInfo.UseShellExecute = false;
-            processStartInfo.RedirectStandardError = false;
-            processStartInfo.RedirectStandardOutput = false;
-            processStartInfo.RedirectStandardInput = false;
             processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             processStartInfo.CreateNoWindow = true;
             processStartInfo.ErrorDialog = false;
