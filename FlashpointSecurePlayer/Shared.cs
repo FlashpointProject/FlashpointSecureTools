@@ -19,7 +19,7 @@ using System.Windows.Forms;
 
 namespace FlashpointSecurePlayer {
     public static class Shared {
-        public class Exceptions {
+        public static class Exceptions {
             public class ApplicationRestartRequiredException : InvalidOperationException {
                 public ApplicationRestartRequiredException() : base() { }
                 public ApplicationRestartRequiredException(string message) : base(message) { }
@@ -102,6 +102,14 @@ namespace FlashpointSecurePlayer {
                 public RegistryBackupFailedException() { }
                 public RegistryBackupFailedException(string message) : base(message) { }
                 public RegistryBackupFailedException(string message, Exception inner) : base(message, inner) { }
+            }
+
+            public static void LogExceptionToLauncher(Exception ex) {
+                try {
+                    Console.WriteLine(ex.Message);
+                } catch {
+                    // Fail silently.
+                }
             }
         }
 
@@ -1154,11 +1162,13 @@ namespace FlashpointSecurePlayer {
                 exeConfiguration = GetEXEConfiguration(create, exeConfigurationName);
             }
 
+            ConfigurationErrorsException configurationErrorsException = new ConfigurationErrorsException("The flashpointSecurePlayer Section is null.");
+
             try {
                 // initial attempt
                 flashpointSecurePlayerSection = exeConfiguration.GetSection("flashpointSecurePlayer") as FlashpointSecurePlayerSection;
             } catch (ConfigurationErrorsException ex) {
-                // Fail silently.
+                configurationErrorsException = ex;
             }
 
             if (flashpointSecurePlayerSection == null) {
@@ -1179,7 +1189,7 @@ namespace FlashpointSecurePlayer {
 
             if (flashpointSecurePlayerSection == null) {
                 // section was not created?
-                throw new ConfigurationErrorsException("The flashpointSecurePlayer Section is null.");
+                throw configurationErrorsException;
             }
 
             // caching...
@@ -1395,7 +1405,7 @@ namespace FlashpointSecurePlayer {
         }
 
         public static bool GetCommandLineArgument(string commandLine, out string commandLineArgument) {
-            commandLineArgument = "";
+            commandLineArgument = String.Empty;
             Regex commandLineQuotes = new Regex("^\\s*\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*\"? ?");
             Regex commandLineWords = new Regex("^\\s*\\S+ ?");
             MatchCollection matchResults = commandLineQuotes.Matches(commandLine);
@@ -1416,8 +1426,8 @@ namespace FlashpointSecurePlayer {
 
         public static string GetCommandLineArgumentRange(string commandLine, int begin, int end) {
             List<string> commandLineArguments = new List<string>();
-            string commandLineArgument = "";
-            string commandLineArgumentRange = "";
+            string commandLineArgument = String.Empty;
+            string commandLineArgumentRange = String.Empty;
 
             while (GetCommandLineArgument(commandLine, out commandLineArgument)) {
                 commandLineArguments.Add(commandLineArgument);
@@ -1633,7 +1643,7 @@ namespace FlashpointSecurePlayer {
                     editionID = Microsoft.Win32.Registry.GetValue("HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/Windows NT/CurrentVersion", "EditionID", null) as string;
                 } catch (SecurityException) {
                     // value exists but we can't get it
-                    editionID = "";
+                    editionID = String.Empty;
                 } catch (IOException) {
                     // value marked for deletion
                     editionID = null;
