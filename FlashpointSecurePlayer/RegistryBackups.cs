@@ -53,7 +53,6 @@ namespace FlashpointSecurePlayer {
         private const int IMPORT_TIMEOUT = 5;
         private const string IMPORT_RESUME = "FLASHPOINTSECUREPLAYERREGISTRYBACKUPIMPORTRESUME";
         private const string IMPORT_PAUSE = "FLASHPOINTSECUREPLAYERREGISTRYBACKUPIMPORTPAUSE";
-        private const string KEY_DELETED = "";
         private string fullPath = null;
         private EventWaitHandle resumeEventWaitHandle = new ManualResetEvent(false);
         private Dictionary<ulong, SortedList<DateTime, RegistryBackupElement>> modificationsQueue = null;
@@ -229,7 +228,7 @@ namespace FlashpointSecurePlayer {
             }
 
             kernelRegistryString = kernelRegistryString.ToUpper() + "\\";
-            string keyValueName = "";
+            string keyValueName = String.Empty;
 
             if (kernelRegistryString.IndexOf("\\REGISTRY\\MACHINE\\") == 0) {
                 keyValueName = "HKEY_LOCAL_MACHINE\\" + kernelRegistryString.Substring(18);
@@ -350,7 +349,7 @@ namespace FlashpointSecurePlayer {
                 if (registryKey == null) {
                     return keyName;
                 }
-                return KEY_DELETED;
+                return String.Empty;
             } finally {
                 if (registryKey != null) {
                     registryKey.Close();
@@ -891,7 +890,7 @@ namespace FlashpointSecurePlayer {
                         KeyName = registryBackupElement.KeyName,
                         ValueName = registryBackupElement.ValueName,
                         ValueKind = GetValueKindInRegistryView(keyName, registryBackupElement.ValueName, registryView),
-                        _Deleted = KEY_DELETED
+                        _Deleted = String.Empty
                     };
 
                     switch (activeRegistryBackupElement.Type) {
@@ -1235,7 +1234,7 @@ namespace FlashpointSecurePlayer {
                 } catch (SecurityException) {
                     // value exists but we can't get it
                     // this shouldn't happen because this task requires elevation
-                    value = "";
+                    value = String.Empty;
                 }
                 
                 if (value == null) {
@@ -1442,7 +1441,7 @@ namespace FlashpointSecurePlayer {
                         value = null;
                     } catch (SecurityException) {
                         // value exists but we can't get it
-                        value = "";
+                        value = String.Empty;
                     }
 
                     // TODO: is this the best way to handle deletion?

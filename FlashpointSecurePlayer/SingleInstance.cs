@@ -76,8 +76,8 @@ namespace FlashpointSecurePlayer {
             string[] argv = CommandLineToArgv(commandLine, out int argc);
 
             // the paths we'll be comparing to test if the executable is strictly the same
-            string comparablePath = "";
-            string activeComparablePath = "";
+            string comparablePath = String.Empty;
+            string activeComparablePath = String.Empty;
 
             try {
                 activeComparablePath = Path.GetFullPath(argv[0]);

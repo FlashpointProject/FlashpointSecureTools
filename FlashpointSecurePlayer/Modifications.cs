@@ -16,7 +16,7 @@ namespace FlashpointSecurePlayer {
         private readonly object importPausedLock = new object();
         private bool importPaused = true;
 
-        protected string Name { get; set; } = "";
+        protected string Name { get; set; } = String.Empty;
         protected bool ImportStarted { get; set; } = false;
 
         protected bool ImportPaused {
