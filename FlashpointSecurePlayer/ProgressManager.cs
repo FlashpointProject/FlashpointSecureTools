@@ -148,9 +148,15 @@ namespace FlashpointSecurePlayer {
             }
 
             public static void Start(int size = 1) {
-                if (size > 0) {
-                    Goals.Push(new Goal(size));
+                if (size <= 0) {
+                    return;
                 }
+
+                if (!Goals.Any()) {
+                    ProgressManager.Reset();
+                }
+
+                Goals.Push(new Goal(size));
             }
 
             public static void Stop() {

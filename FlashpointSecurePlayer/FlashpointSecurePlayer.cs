@@ -803,6 +803,7 @@ namespace FlashpointSecurePlayer {
         }
 
         private async void FlashpointSecurePlayer_Shown(object sender, EventArgs e) {
+            //Show();
             ProgressManager.ShowOutput();
 
             try {
@@ -864,14 +865,19 @@ namespace FlashpointSecurePlayer {
 
             // do stuff, but not if restarting
             // not too important for this to work, we can reset it on restart
-            if (!e.Cancel) {
-                try {
-                    await StopSecurePlayback(e).ConfigureAwait(false);
-                } catch (InvalidModificationException) {
-                    // Fail silently.
-                } catch (InvalidCurationException) {
-                    // Fail silently.
-                }
+            if (e.Cancel) {
+                return;
+            }
+
+            Show();
+            ProgressManager.ShowOutput();
+
+            try {
+                await StopSecurePlayback(e).ConfigureAwait(false);
+            } catch (InvalidModificationException) {
+                // Fail silently.
+            } catch (InvalidCurationException) {
+                // Fail silently.
             }
         }
     }
