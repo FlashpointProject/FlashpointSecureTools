@@ -34,6 +34,7 @@ namespace FlashpointSecurePlayer {
         private string server = EMPTY_MODE_NAME;
         private string software = EMPTY_MODE_NAME;
         private ProcessStartInfo softwareProcessStartInfo = null;
+        private bool softwareIsOldCPUSimulator = false;
 
         private string ModificationsName { get; set; } = ACTIVE_EXE_CONFIGURATION_NAME;
         private bool RunAsAdministratorModification { get; set; } = false;
@@ -318,7 +319,7 @@ namespace FlashpointSecurePlayer {
 
                     if (modificationsElement.OldCPUSimulator.ElementInformation.IsPresent) {
                         try {
-                            oldCPUSimulator.Activate(ModificationsName, ref server, ref software, ref softwareProcessStartInfo);
+                            oldCPUSimulator.Activate(ModificationsName, ref server, ref software, ref softwareProcessStartInfo, out softwareIsOldCPUSimulator);
                         } catch (OldCPUSimulatorFailedException) {
                             errorDelegate(Properties.Resources.OldCPUSimulatorFailed);
                         } catch (System.Configuration.ConfigurationErrorsException) {
@@ -605,15 +606,15 @@ namespace FlashpointSecurePlayer {
                                 softwareProcessStartInfo.WorkingDirectory = Path.GetDirectoryName(fullPath);
                             }
 
-                            Process process = Process.Start(softwareProcessStartInfo);
+                            Process softwareProcess = Process.Start(softwareProcessStartInfo);
 
                             try {
-                                ProcessSync.Start(process);
+                                ProcessSync.Start(softwareProcess);
                             } catch (JobObjectException) {
                                 // popup message box and blow up
                                 ProgressManager.ShowError();
                                 MessageBox.Show(Properties.Resources.JobObjectNotCreated, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                process.Kill();
+                                softwareProcess.Kill();
                                 Environment.Exit(-1);
                                 return;
                             }
@@ -621,17 +622,62 @@ namespace FlashpointSecurePlayer {
                             ProgressManager.CurrentGoal.Steps++;
                             Hide();
 
-                            if (!process.HasExited) {
-                                process.WaitForExit();
+                            if (!softwareProcess.HasExited) {
+                                softwareProcess.WaitForExit();
                             }
 
-                            Application.Exit();
+                            Show();
+
+                            string softwareProcessStandardError = null;
+                            string softwareProcessStandardOutput = null;
+
+                            if (softwareProcessStartInfo.RedirectStandardError) {
+                                softwareProcessStandardError = softwareProcess.StandardError.ReadToEnd();
+                            }
+
+                            if (softwareProcessStartInfo.RedirectStandardOutput) {
+                                softwareProcessStandardOutput = softwareProcess.StandardOutput.ReadToEnd();
+                            }
+
+                            if (softwareIsOldCPUSimulator) {
+                                switch (softwareProcess.ExitCode) {
+                                    case 0:
+                                    break;
+                                    case -1:
+                                    if (!String.IsNullOrEmpty(softwareProcessStandardError)) {
+                                        string[] lastSoftwareProcessStandardErrors = softwareProcessStandardError.Split('\n');
+                                        string lastSoftwareProcessStandardError = null;
+
+                                        if (lastSoftwareProcessStandardErrors.Length > 1) {
+                                            lastSoftwareProcessStandardError = lastSoftwareProcessStandardErrors[lastSoftwareProcessStandardErrors.Length - 2];
+                                        }
+
+                                        if (!String.IsNullOrEmpty(lastSoftwareProcessStandardError)) {
+                                            MessageBox.Show(lastSoftwareProcessStandardError);
+                                        }
+                                    }
+                                    break;
+                                    case -2:
+                                    MessageBox.Show("You cannot run multiple instances of Old CPU Simulator.");
+                                    break;
+                                    case -3:
+                                    MessageBox.Show("Failed to Create New String");
+                                    break;
+                                    case -4:
+                                    MessageBox.Show("Failed to Set String");
+                                    break;
+                                    default:
+                                    MessageBox.Show("Failed to Simulate Old CPU");
+                                    break;
+                                }
+                            }
                         } catch {
                             Show();
                             ProgressManager.ShowError();
                             MessageBox.Show(Properties.Resources.ProcessFailedStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            Application.Exit();
                         }
+
+                        Application.Exit();
                         return;
                     }
                 } finally {
