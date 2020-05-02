@@ -98,15 +98,6 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Connection could not be established with the remote host..
-        /// </summary>
-        internal static string ConnectionNotEstablished {
-            get {
-                return ResourceManager.GetString("ConnectionNotEstablished", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to This curation is missing a modification name..
         /// </summary>
         internal static string CurationMissingModificationName {
@@ -139,6 +130,15 @@ namespace FlashpointSecurePlayer.Properties {
         internal static string FailedGetParentProcessEXEFileName {
             get {
                 return ResourceManager.GetString("FailedGetParentProcessEXEFileName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Flashpoint Proxy could not be enabled..
+        /// </summary>
+        internal static string FlashpointProxyNotEnabled {
+            get {
+                return ResourceManager.GetString("FlashpointProxyNotEnabled", resourceCulture);
             }
         }
         
