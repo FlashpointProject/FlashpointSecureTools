@@ -160,7 +160,12 @@ namespace FlashpointSecurePlayer {
         /// Set the proxy server for LAN connection.
         /// </summary>
         public static void Enable(string proxyServer) {
-            IntPtr internetHandle = InternetOpen(AGENT, INTERNET_OPEN_TYPE_DIRECT, null, null, 0);
+            IntPtr internetHandle = IntPtr.Zero;
+            internetHandle = InternetOpen(AGENT, INTERNET_OPEN_TYPE_DIRECT, null, null, 0);
+
+            if (internetHandle == IntPtr.Zero) {
+                throw new FlashpointProxyException("Could not open the Internet Handle.");
+            }
 
             // initialize a INTERNET_PER_CONN_OPTION_LIST instance
             INTERNET_PER_CONN_OPTION_LIST internetPerConnOptionList = new INTERNET_PER_CONN_OPTION_LIST();
@@ -228,7 +233,12 @@ namespace FlashpointSecurePlayer {
         /// <param name="request"></param>
         /// <returns></returns>
         public static void Disable() {
-            IntPtr internetHandle = InternetOpen(AGENT, INTERNET_OPEN_TYPE_DIRECT, null, null, 0);
+            IntPtr internetHandle = IntPtr.Zero;
+            internetHandle = InternetOpen(AGENT, INTERNET_OPEN_TYPE_DIRECT, null, null, 0);
+
+            if (internetHandle == IntPtr.Zero) {
+                throw new FlashpointProxyException("Could not open the Internet Handle.");
+            }
 
             // initialize a INTERNET_PER_CONN_OPTION_LIST instance
             INTERNET_PER_CONN_OPTION_LIST internetPerConnOptionList = new INTERNET_PER_CONN_OPTION_LIST();
