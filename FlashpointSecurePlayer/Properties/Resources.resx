@@ -130,9 +130,6 @@
     <value>The configuration failed to load.
 Please ensure Flashpoint is not corrupted, was extracted correctly, and is not running from OneDrive or a network drive.</value>
   </data>
-  <data name="ConnectionNotEstablished" xml:space="preserve">
-    <value>Connection could not be established with the remote host.</value>
-  </data>
   <data name="CurationMissingModificationName" xml:space="preserve">
     <value>This curation is missing a modification name.</value>
   </data>
@@ -144,6 +141,9 @@ Please ensure Flashpoint is not corrupted, was extracted correctly, and is not r
   </data>
   <data name="FailedGetParentProcessEXEFileName" xml:space="preserve">
     <value>Failed to get the Parent Process EXE File Name.</value>
+  </data>
+  <data name="FlashpointProxyNotEnabled" xml:space="preserve">
+    <value>The Flashpoint Proxy could not be enabled.</value>
   </data>
   <data name="FlashpointSecurePlayer" xml:space="preserve">
     <value>Flashpoint Secure Player</value>
