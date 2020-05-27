@@ -130,6 +130,9 @@ namespace FlashpointSecurePlayer {
 
         public const int MAX_PATH = 260;
 
+        public const int WM_PARENTNOTIFY = 0x210;
+        public const int WM_DESTROY = 2;
+
         public enum BINARY_TYPE : uint {
             SCS_32BIT_BINARY = 0, // A 32-bit Windows-based application
             SCS_64BIT_BINARY = 6, // A 64-bit Windows-based application.
@@ -1502,7 +1505,7 @@ namespace FlashpointSecurePlayer {
             return oldCPUSimulatorProcessStartInfoArguments.ToString();
         }
 
-        public static void RestartApplication(bool runAsAdministrator, Form form, string applicationMutexName = null, ProcessStartInfo processStartInfo = null) {
+        public static void RestartApplication(bool runAsAdministrator, Form form, ref Mutex applicationMutex, ProcessStartInfo processStartInfo = null) {
             if (processStartInfo == null) {
                 processStartInfo = new ProcessStartInfo {
                     FileName = Application.ExecutablePath,
@@ -1520,16 +1523,10 @@ namespace FlashpointSecurePlayer {
                 processStartInfo.UseShellExecute = true;
                 processStartInfo.Verb = "runas";
             }
-
-            if (!String.IsNullOrEmpty(applicationMutexName)) {
-                // default to false in case of error
-                bool createdNew = false;
-                // will not signal the Mutex if it has not already been
-                Mutex applicationMutex = new Mutex(false, applicationMutexName, out createdNew);
-
-                if (!createdNew) {
-                    applicationMutex.ReleaseMutex();
-                }
+            
+            if (applicationMutex != null) {
+                applicationMutex.ReleaseMutex();
+                applicationMutex = null;
             }
 
             // hide the current form so two windows are not open at once

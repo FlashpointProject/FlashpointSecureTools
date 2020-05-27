@@ -12,10 +12,22 @@ using System.Windows.Forms;
 using static FlashpointSecurePlayer.Shared;
 using static FlashpointSecurePlayer.Shared.Exceptions;
 
+using SHDocVw;
+
 namespace FlashpointSecurePlayer {
     public partial class Server : Form {
         private CustomSecurityManager customSecurityManager;
         private Uri webBrowserURL = null;
+
+        public object PPDisp {
+            get {
+                return webBrowser1.ActiveXInstance;
+            }
+        }
+
+        public Server() {
+            InitializeComponent();
+        }
 
         public Server(Uri WebBrowserURL) {
             InitializeComponent();
@@ -57,6 +69,15 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
+            SHDocVw.WebBrowser shDocVwWebBrowser = webBrowser1 as SHDocVw.WebBrowser;
+
+            if (shDocVwWebBrowser != null) {
+                // IE5
+                shDocVwWebBrowser.NewWindow2 += dWebBrowserEvents2_NewWindow2;
+                // IE6
+                shDocVwWebBrowser.NewWindow3 += dWebBrowserEvents2_NewWindow3;
+            }
+
             BringToFront();
             Activate();
         }
@@ -66,9 +87,43 @@ namespace FlashpointSecurePlayer {
                 webBrowser1.Url = webBrowserURL;
             }
         }
-
+        
         private void Server_FormClosing(object sender, FormClosingEventArgs e) {
-            Application.Exit();
+            //Application.Exit();
+            SHDocVw.WebBrowser shDocVwWebBrowser = webBrowser1 as SHDocVw.WebBrowser;
+
+            if (shDocVwWebBrowser != null) {
+                // IE5
+                shDocVwWebBrowser.NewWindow2 -= dWebBrowserEvents2_NewWindow2;
+                // IE6
+                shDocVwWebBrowser.NewWindow3 -= dWebBrowserEvents2_NewWindow3;
+            }
+        }
+
+        private void dWebBrowserEvents2_NewWindow2(ref object ppDisp, ref bool Cancel) {
+            Server serverForm = new Server();
+            serverForm.Show(this);
+            ppDisp = serverForm.PPDisp;
+            Cancel = false;
+        }
+
+        private void dWebBrowserEvents2_NewWindow3(ref object ppDisp, ref bool Cancel, uint dwFlags, string bstrUrlContext, string bstrUrl) {
+            dWebBrowserEvents2_NewWindow2(ref ppDisp, ref Cancel);
+        }
+
+        protected override void WndProc(ref Message m) {
+            if (m.Msg == WM_PARENTNOTIFY) {
+                if (!DesignMode) {
+                    if (m.WParam.ToInt32() == WM_DESTROY) {
+                        Close();
+                    }
+                }
+
+                DefWndProc(ref m);
+                return;
+            }
+            
+            base.WndProc(ref m);
         }
     }
 }

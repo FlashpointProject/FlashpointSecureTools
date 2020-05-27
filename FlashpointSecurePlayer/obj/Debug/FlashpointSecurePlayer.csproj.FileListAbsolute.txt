@@ -46,3 +46,5 @@ C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\Fla
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.csproj.CopyComplete
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.exe
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.pdb
+C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\Interop.SHDocVw.dll
+C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.csproj.ResolveComReference.cache

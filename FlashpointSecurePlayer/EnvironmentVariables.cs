@@ -17,8 +17,13 @@ namespace FlashpointSecurePlayer {
 
         public EnvironmentVariables(Form form) : base(form) { }
 
-        public void Activate(string name, string server, string applicationMutexName) {
+        public void Activate(string name, string server) {
             base.Activate(name);
+
+            if (String.IsNullOrEmpty(name)) {
+                throw new FormatException("name cannot be null or empty.");
+            }
+
             ModificationsElement modificationsElement = GetModificationsElement(false, Name);
 
             if (modificationsElement == null) {

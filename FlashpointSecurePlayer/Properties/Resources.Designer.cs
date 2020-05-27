@@ -79,6 +79,15 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Another instance of Flashpoint Secure Player is preventing the Modifications from being activated..
+        /// </summary>
+        internal static string AnotherInstanceCausingInterference {
+            get {
+                return ResourceManager.GetString("AnotherInstanceCausingInterference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to as Administrator User.
         /// </summary>
         internal static string AsAdministratorUser {
