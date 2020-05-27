@@ -58,10 +58,6 @@ namespace FlashpointSecurePlayer {
                 throw new InvalidOperationException("Cannot Start Import when the Import has started.");
             }
 
-            if (String.IsNullOrEmpty(name)) {
-                throw new FormatException("name cannot be null or empty.");
-            }
-
             Name = name;
             Deactivate();
 
@@ -99,9 +95,9 @@ namespace FlashpointSecurePlayer {
                 throw new InvalidOperationException("Cannot Activate when the Import has started.");
             }
 
-            if (String.IsNullOrEmpty(name)) {
-                throw new FormatException("name cannot be null or empty.");
-            }
+            //if (String.IsNullOrEmpty(name)) {
+                //throw new FormatException("name cannot be null or empty.");
+            //}
 
             Name = name;
             Deactivate();

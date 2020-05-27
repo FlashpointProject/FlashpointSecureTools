@@ -1,16 +1,15 @@
-﻿using System.Resources;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Flashpoint Secure Player")]
-[assembly: AssemblyDescription("This player attempts to solve common compatibility or portability issues posed by browser plugins on Windows for the purpose of playback in BlueMaxima's Flashpoint.")]
+[assembly: AssemblyTitle("Flashpoint Secure Player Configuration Editor")]
+[assembly: AssemblyDescription("This application is a configuration editor for Flashpoint Secure Player.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("BlueMaxima's Flashpoint")]
-[assembly: AssemblyProduct("Flashpoint Secure Player")]
+[assembly: AssemblyProduct("Flashpoint Secure Player Configuration Editor")]
 [assembly: AssemblyCopyright("Copyright © Anthony Kleine 2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -21,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("40f29106-602d-484f-8f97-41d1c9c2c414")]
+[assembly: Guid("63f2a5a1-7648-4cf3-900e-dc97aea5b08b")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -35,5 +34,3 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.1.5.0")]
 [assembly: AssemblyFileVersion("1.1.5.0")]
-[assembly: NeutralResourcesLanguage("en")]
-

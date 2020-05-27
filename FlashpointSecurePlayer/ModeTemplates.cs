@@ -43,6 +43,11 @@ namespace FlashpointSecurePlayer {
 
         public void Activate(string name, ref string server, ref string software, ref ProcessStartInfo softwareProcessStartInfo) {
             base.Activate(name);
+
+            if (String.IsNullOrEmpty(name)) {
+                throw new FormatException("name cannot be null or empty.");
+            }
+
             ModificationsElement modificationsElement = GetModificationsElement(false, Name);
 
             if (modificationsElement == null) {

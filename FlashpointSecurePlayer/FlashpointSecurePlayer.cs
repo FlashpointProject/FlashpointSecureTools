@@ -18,10 +18,11 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Modific
 namespace FlashpointSecurePlayer {
     public partial class FlashpointSecurePlayer : Form {
         private const string APPLICATION_MUTEX_NAME = "Flashpoint Secure Player";
+        private const string MODIFICATIONS_MUTEX_NAME = "Flashpoint Secure Player Modifications";
         private const string FLASHPOINT_LAUNCHER_PARENT_PROCESS_EXE_FILE_NAME = "CMD.EXE";
         private const string FLASHPOINT_LAUNCHER_PROCESS_NAME = "FLASHPOINT";
         private Mutex applicationMutex = null;
-        private static SemaphoreSlim modificationsSemaphoreSlim = new SemaphoreSlim(1, 1);
+        //private static SemaphoreSlim modificationsSemaphoreSlim = new SemaphoreSlim(1, 1);
         private readonly RunAsAdministrator runAsAdministrator;
         private readonly EnvironmentVariables environmentVariables;
         private readonly ModeTemplates modeTemplates;
@@ -32,6 +33,7 @@ namespace FlashpointSecurePlayer {
         private bool activeX = false;
         private string server = String.Empty;
         private string software = String.Empty;
+        Server serverForm = null;
         private ProcessStartInfo softwareProcessStartInfo = null;
         private bool softwareIsOldCPUSimulator = false;
 
@@ -88,7 +90,7 @@ namespace FlashpointSecurePlayer {
                 AskLaunch(Properties.Resources.AsAdministratorUser);
 
                 try {
-                    RestartApplication(true, this, APPLICATION_MUTEX_NAME);
+                    RestartApplication(true, this, ref applicationMutex);
                     throw new InvalidModificationException("The Modification does not work unless run as Administrator User.");
                 } catch (ApplicationRestartRequiredException ex) {
                     LogExceptionToLauncher(ex);
@@ -106,7 +108,7 @@ namespace FlashpointSecurePlayer {
             AskLaunch(Properties.Resources.WithCompatibilitySettings);
 
             try {
-                RestartApplication(false, this, APPLICATION_MUTEX_NAME);
+                RestartApplication(false, this, ref applicationMutex);
                 throw new InvalidModificationException("The Modification does not work unless run with Compatibility Settings.");
             } catch (ApplicationRestartRequiredException ex) {
                 LogExceptionToLauncher(ex);
@@ -153,7 +155,7 @@ namespace FlashpointSecurePlayer {
             HideWindow(ref processStartInfo);
 
             try {
-                RestartApplication(false, this, APPLICATION_MUTEX_NAME, processStartInfo);
+                RestartApplication(false, this, ref applicationMutex, processStartInfo);
                 throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator.");
             } catch (ApplicationRestartRequiredException ex) {
                 LogExceptionToLauncher(ex);
@@ -162,150 +164,273 @@ namespace FlashpointSecurePlayer {
         }
 
         private async Task ActivateModificationsAsync(string commandLine, ErrorDelegate errorDelegate) {
-            await modificationsSemaphoreSlim.WaitAsync().ConfigureAwait(true);
+            bool createdNew = false;
 
-            try {
-                if (String.IsNullOrEmpty(ModificationsName)) {
-                    //errorDelegate(Properties.Resources.CurationMissingModificationName);
-                    //throw new InvalidModificationException();
-                    return;
+            using (Mutex modificationsMutex = new Mutex(true, MODIFICATIONS_MUTEX_NAME, out createdNew)) {
+                if (!createdNew) {
+                    if (!modificationsMutex.WaitOne()) {
+                        errorDelegate(Properties.Resources.AnotherInstanceCausingInterference);
+                        throw new InvalidModificationException("Another Modification is currently in progress.");
+                    }
                 }
 
-                ProgressManager.CurrentGoal.Start(9);
-
                 try {
-                    //try {
-                    ModificationsElement activeModificationsElement = null;
+                    //if (String.IsNullOrEmpty(ModificationsName)) {
+                    //errorDelegate(Properties.Resources.CurationMissingModificationName);
+                    //throw new InvalidModificationException();
+                    //return;
+                    //}
+
+                    ProgressManager.CurrentGoal.Start(9);
 
                     try {
-                        activeModificationsElement = GetActiveModificationsElement(false);
-                    } catch (System.Configuration.ConfigurationErrorsException ex) {
-                        LogExceptionToLauncher(ex);
-                        // Fail silently.
-                    }
+                        //try {
+                        ModificationsElement activeModificationsElement = null;
 
-                    if (activeModificationsElement != null) {
-                        if (!String.IsNullOrEmpty(activeModificationsElement.Active)) {
-                            throw new InvalidModificationException("The Modifications Element (" + activeModificationsElement.Active + ") is active.");
-                        }
-                    }
-
-                    ProgressManager.CurrentGoal.Steps++;
-
-                    await DownloadFlashpointSecurePlayerSectionAsync(ModificationsName).ConfigureAwait(true);
-                    ModificationsElement modificationsElement = null;
-
-                    try {
-                        modificationsElement = GetModificationsElement(false, ModificationsName);
-                    } catch (System.Configuration.ConfigurationErrorsException ex) {
-                        LogExceptionToLauncher(ex);
-                        errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                        // we really need modificationsElement to exist
-                        throw new InvalidModificationException("The Modifications Element " + ModificationsName + " does not exist.");
-                    }
-
-                    if (modificationsElement == null) {
-                        errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                        throw new InvalidModificationException("The Modifications Element " + ModificationsName + " is null.");
-                    }
-
-                    if (DownloadsBeforeModificationNames == null) {
-                        DownloadsBeforeModificationNames = new List<string>();
-                    }
-
-                    try {
-                        if (modificationsElement.RunAsAdministrator) {
-                            RunAsAdministratorModification = true;
+                        try {
+                            activeModificationsElement = GetActiveModificationsElement(false);
+                        } catch (System.Configuration.ConfigurationErrorsException ex) {
+                            LogExceptionToLauncher(ex);
+                            // Fail silently.
                         }
 
-                        if (modificationsElement.DownloadsBefore.Count > 0) {
-                            ModificationsElement.DownloadBeforeElementCollection.DownloadBeforeElement downloadsBeforeElement = null;
+                        if (activeModificationsElement != null) {
+                            if (!String.IsNullOrEmpty(activeModificationsElement.Active)) {
+                                throw new InvalidModificationException("The Modifications Element (" + activeModificationsElement.Active + ") is active.");
+                            }
+                        }
 
-                            for (int i = 0;i < modificationsElement.DownloadsBefore.Count;i++) {
-                                downloadsBeforeElement = modificationsElement.DownloadsBefore.Get(i) as ModificationsElement.DownloadBeforeElementCollection.DownloadBeforeElement;
+                        ProgressManager.CurrentGoal.Steps++;
+                        ModificationsElement modificationsElement = null;
 
-                                if (downloadsBeforeElement == null) {
-                                    throw new System.Configuration.ConfigurationErrorsException("The Downloads Before Element (" + i + ") is null.");
-                                }
+                        if (!String.IsNullOrEmpty(ModificationsName)) {
+                            await DownloadFlashpointSecurePlayerSectionAsync(ModificationsName).ConfigureAwait(true);
 
-                                DownloadsBeforeModificationNames.Add(downloadsBeforeElement.Name);
+                            try {
+                                modificationsElement = GetModificationsElement(false, ModificationsName);
+                            } catch (System.Configuration.ConfigurationErrorsException ex) {
+                                LogExceptionToLauncher(ex);
+                                errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                                // we really need modificationsElement to exist
+                                throw new InvalidModificationException("The Modifications Element " + ModificationsName + " does not exist.");
                             }
 
-                            //SetModificationsElement(modificationsElement, Name);
+                            if (modificationsElement == null) {
+                                errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                                throw new InvalidModificationException("The Modifications Element " + ModificationsName + " is null.");
+                            }
                         }
-                    } catch (System.Configuration.ConfigurationErrorsException ex) {
-                        LogExceptionToLauncher(ex);
-                        errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                    }
 
-                    ProgressManager.CurrentGoal.Steps++;
+                        if (DownloadsBeforeModificationNames == null) {
+                            DownloadsBeforeModificationNames = new List<string>();
+                        }
+
+                        try {
+                            if (modificationsElement != null) {
+                                if (modificationsElement.RunAsAdministrator) {
+                                    RunAsAdministratorModification = true;
+                                }
+
+                                if (modificationsElement.DownloadsBefore.Count > 0) {
+                                    ModificationsElement.DownloadBeforeElementCollection.DownloadBeforeElement downloadsBeforeElement = null;
+
+                                    for (int i = 0;i < modificationsElement.DownloadsBefore.Count;i++) {
+                                        downloadsBeforeElement = modificationsElement.DownloadsBefore.Get(i) as ModificationsElement.DownloadBeforeElementCollection.DownloadBeforeElement;
+
+                                        if (downloadsBeforeElement == null) {
+                                            throw new System.Configuration.ConfigurationErrorsException("The Downloads Before Element (" + i + ") is null.");
+                                        }
+
+                                        DownloadsBeforeModificationNames.Add(downloadsBeforeElement.Name);
+                                    }
+
+                                    //SetModificationsElement(modificationsElement, Name);
+                                }
+                            }
+                        } catch (System.Configuration.ConfigurationErrorsException ex) {
+                            LogExceptionToLauncher(ex);
+                            errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                        }
+
+                        ProgressManager.CurrentGoal.Steps++;
+
+                        try {
+                            runAsAdministrator.Activate(ModificationsName, RunAsAdministratorModification);
+                        } catch (System.Configuration.ConfigurationErrorsException ex) {
+                            LogExceptionToLauncher(ex);
+                            errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                        } catch (TaskRequiresElevationException ex) {
+                            LogExceptionToLauncher(ex);
+                            AskLaunchAsAdministratorUser();
+                        }
+
+                        ProgressManager.CurrentGoal.Steps++;
+
+                        if (modificationsElement != null) {
+                            if (modificationsElement.EnvironmentVariables.Count > 0) {
+                                try {
+                                    environmentVariables.Activate(ModificationsName, server);
+                                } catch (EnvironmentVariablesFailedException ex) {
+                                    LogExceptionToLauncher(ex);
+                                    errorDelegate(Properties.Resources.EnvironmentVariablesFailed);
+                                } catch (System.Configuration.ConfigurationErrorsException ex) {
+                                    LogExceptionToLauncher(ex);
+                                    errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                                } catch (TaskRequiresElevationException ex) {
+                                    LogExceptionToLauncher(ex);
+                                    AskLaunchAsAdministratorUser();
+                                } catch (CompatibilityLayersException ex) {
+                                    LogExceptionToLauncher(ex);
+                                    AskLaunchWithCompatibilitySettings();
+                                }
+                            }
+                        }
+
+                        ProgressManager.CurrentGoal.Steps++;
+
+                        if (modificationsElement != null) {
+                            if (modificationsElement.ModeTemplates.ElementInformation.IsPresent) {
+                                try {
+                                    modeTemplates.Activate(ModificationsName, ref server, ref software, ref softwareProcessStartInfo);
+                                } catch (ModeTemplatesFailedException ex) {
+                                    LogExceptionToLauncher(ex);
+                                    errorDelegate(Properties.Resources.ModeTemplatesFailed);
+                                } catch (System.Configuration.ConfigurationErrorsException ex) {
+                                    LogExceptionToLauncher(ex);
+                                    errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                                } catch (TaskRequiresElevationException ex) {
+                                    LogExceptionToLauncher(ex);
+                                    AskLaunchAsAdministratorUser();
+                                }
+                            }
+                        }
+
+                        ProgressManager.CurrentGoal.Steps++;
+
+                        if (DownloadsBeforeModificationNames.Count > 0) {
+                            try {
+                                await downloadsBefore.ActivateAsync(ModificationsName, DownloadsBeforeModificationNames).ConfigureAwait(true);
+                            } catch (DownloadFailedException ex) {
+                                LogExceptionToLauncher(ex);
+                                errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, String.Join(", ", DownloadsBeforeModificationNames)));
+                            } catch (System.Configuration.ConfigurationErrorsException ex) {
+                                LogExceptionToLauncher(ex);
+                                errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                            }
+                        }
+
+                        ProgressManager.CurrentGoal.Steps++;
+
+                        if (modificationsElement != null) {
+                            if (modificationsElement.RegistryBackups.Count > 0) {
+                                try {
+                                    registryBackup.Activate(ModificationsName);
+                                } catch (RegistryBackupFailedException ex) {
+                                    LogExceptionToLauncher(ex);
+                                    errorDelegate(Properties.Resources.RegistryBackupFailed);
+                                } catch (System.Configuration.ConfigurationErrorsException ex) {
+                                    LogExceptionToLauncher(ex);
+                                    errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                                } catch (TaskRequiresElevationException ex) {
+                                    LogExceptionToLauncher(ex);
+                                    AskLaunchAsAdministratorUser();
+                                } catch (ArgumentException ex) {
+                                    LogExceptionToLauncher(ex);
+                                    errorDelegate(Properties.Resources.GameIsMissingFiles);
+                                }
+                            }
+                        }
+
+                        ProgressManager.CurrentGoal.Steps++;
+
+                        if (modificationsElement != null) {
+                            if (modificationsElement.SingleInstance.ElementInformation.IsPresent) {
+                                try {
+                                    singleInstance.Activate(ModificationsName, commandLine);
+                                } catch (InvalidModificationException ex) {
+                                    LogExceptionToLauncher(ex);
+                                    throw ex;
+                                } catch (TaskRequiresElevationException ex) {
+                                    LogExceptionToLauncher(ex);
+                                    AskLaunchAsAdministratorUser();
+                                } catch {
+                                    errorDelegate(Properties.Resources.UnknownProcessCompatibilityConflict);
+                                }
+                            }
+                        }
+
+                        ProgressManager.CurrentGoal.Steps++;
+
+                        if (modificationsElement != null) {
+                            if (modificationsElement.OldCPUSimulator.ElementInformation.IsPresent) {
+                                try {
+                                    oldCPUSimulator.Activate(ModificationsName, ref server, ref software, ref softwareProcessStartInfo, out softwareIsOldCPUSimulator);
+                                } catch (OldCPUSimulatorFailedException ex) {
+                                    LogExceptionToLauncher(ex);
+                                    errorDelegate(Properties.Resources.OldCPUSimulatorFailed);
+                                } catch (System.Configuration.ConfigurationErrorsException ex) {
+                                    LogExceptionToLauncher(ex);
+                                    errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                                } catch (TaskRequiresElevationException ex) {
+                                    LogExceptionToLauncher(ex);
+                                    AskLaunchAsAdministratorUser();
+                                }
+                            }
+                        }
+
+                        ProgressManager.CurrentGoal.Steps++;
+                        /*
+                        } finally {
+                            try {
+                                LockActiveModificationsElement();
+                            } catch (System.Configuration.ConfigurationErrorsException ex) {
+                                LogExceptionToLauncher(ex);
+                                errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                            }
+
+                            ProgressManager.CurrentGoal.Steps++;
+                        }
+                        */
+                    } finally {
+                        ProgressManager.CurrentGoal.Stop();
+                    }
+                } finally {
+                    modificationsMutex.ReleaseMutex();
+                }
+            }
+        }
+
+        private async Task DeactivateModificationsAsync(ErrorDelegate errorDelegate) {
+            bool createdNew = false;
+
+            using (Mutex modificationsMutex = new Mutex(true, MODIFICATIONS_MUTEX_NAME, out createdNew)) {
+                if (!createdNew) {
+                    if (!modificationsMutex.WaitOne()) {
+                        errorDelegate(Properties.Resources.AnotherInstanceCausingInterference);
+                        throw new InvalidModificationException("Another Modification is currently in progress.");
+                    }
+                }
+
+                try {
+                    ProgressManager.CurrentGoal.Start(3);
 
                     try {
-                        runAsAdministrator.Activate(ModificationsName, RunAsAdministratorModification);
-                    } catch (System.Configuration.ConfigurationErrorsException ex) {
-                        LogExceptionToLauncher(ex);
-                        errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                    } catch (TaskRequiresElevationException ex) {
-                        LogExceptionToLauncher(ex);
-                        AskLaunchAsAdministratorUser();
-                    }
-
-                    ProgressManager.CurrentGoal.Steps++;
-                    
-                    if (modificationsElement.EnvironmentVariables.Count > 0) {
+                        /*
                         try {
-                            environmentVariables.Activate(ModificationsName, server, APPLICATION_MUTEX_NAME);
-                        } catch (EnvironmentVariablesFailedException ex) {
-                            LogExceptionToLauncher(ex);
-                            errorDelegate(Properties.Resources.EnvironmentVariablesFailed);
-                        } catch (System.Configuration.ConfigurationErrorsException ex) {
-                            LogExceptionToLauncher(ex);
-                            errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                        } catch (TaskRequiresElevationException ex) {
-                            LogExceptionToLauncher(ex);
-                            AskLaunchAsAdministratorUser();
-                        } catch (CompatibilityLayersException ex) {
-                            LogExceptionToLauncher(ex);
-                            AskLaunchWithCompatibilitySettings();
-                        }
-                    }
-
-                    ProgressManager.CurrentGoal.Steps++;
-
-                    if (modificationsElement.ModeTemplates.ElementInformation.IsPresent) {
-                        try {
-                            modeTemplates.Activate(ModificationsName, ref server, ref software, ref softwareProcessStartInfo);
-                        } catch (ModeTemplatesFailedException ex) {
-                            LogExceptionToLauncher(ex);
-                            errorDelegate(Properties.Resources.ModeTemplatesFailed);
-                        } catch (System.Configuration.ConfigurationErrorsException ex) {
-                            LogExceptionToLauncher(ex);
-                            errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                        } catch (TaskRequiresElevationException ex) {
-                            LogExceptionToLauncher(ex);
-                            AskLaunchAsAdministratorUser();
-                        }
-                    }
-
-                    ProgressManager.CurrentGoal.Steps++;
-
-                    if (DownloadsBeforeModificationNames.Count > 0) {
-                        try {
-                            await downloadsBefore.ActivateAsync(ModificationsName, DownloadsBeforeModificationNames).ConfigureAwait(true);
-                        } catch (DownloadFailedException ex) {
-                            LogExceptionToLauncher(ex);
-                            errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, String.Join(", ", DownloadsBeforeModificationNames)));
+                            UnlockActiveModificationsElement();
                         } catch (System.Configuration.ConfigurationErrorsException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                         }
-                    }
 
-                    ProgressManager.CurrentGoal.Steps++;
+                        ProgressManager.CurrentGoal.Steps++;
+                        */
 
-                    if (modificationsElement.RegistryBackups.Count > 0) {
+                        // the modifications are deactivated in reverse order of how they're activated
                         try {
-                            registryBackup.Activate(ModificationsName);
+                            // this one really needs to work
+                            // we can't continue if it does not
+                            registryBackup.Deactivate();
                         } catch (RegistryBackupFailedException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.RegistryBackupFailed);
@@ -319,137 +444,46 @@ namespace FlashpointSecurePlayer {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.GameIsMissingFiles);
                         }
-                    }
 
-                    ProgressManager.CurrentGoal.Steps++;
+                        ProgressManager.CurrentGoal.Steps++;
 
-                    if (modificationsElement.SingleInstance.ElementInformation.IsPresent) {
                         try {
-                            singleInstance.Activate(ModificationsName, commandLine);
-                        } catch (InvalidModificationException ex) {
+                            environmentVariables.Deactivate(server);
+                        } catch (EnvironmentVariablesFailedException ex) {
                             LogExceptionToLauncher(ex);
-                            throw ex;
-                        } catch (TaskRequiresElevationException ex) {
-                            LogExceptionToLauncher(ex);
-                            AskLaunchAsAdministratorUser();
-                        } catch {
-                            errorDelegate(Properties.Resources.UnknownProcessCompatibilityConflict);
-                        }
-                    }
-
-                    ProgressManager.CurrentGoal.Steps++;
-
-                    if (modificationsElement.OldCPUSimulator.ElementInformation.IsPresent) {
-                        try {
-                            oldCPUSimulator.Activate(ModificationsName, ref server, ref software, ref softwareProcessStartInfo, out softwareIsOldCPUSimulator);
-                        } catch (OldCPUSimulatorFailedException ex) {
-                            LogExceptionToLauncher(ex);
-                            errorDelegate(Properties.Resources.OldCPUSimulatorFailed);
+                            errorDelegate(Properties.Resources.EnvironmentVariablesFailed);
                         } catch (System.Configuration.ConfigurationErrorsException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                         } catch (TaskRequiresElevationException ex) {
                             LogExceptionToLauncher(ex);
                             AskLaunchAsAdministratorUser();
+                        } catch (CompatibilityLayersException ex) {
+                            LogExceptionToLauncher(ex);
+                            AskLaunchWithCompatibilitySettings();
                         }
-                    }
 
-                    ProgressManager.CurrentGoal.Steps++;
-                    /*
-                    } finally {
+                        ProgressManager.CurrentGoal.Steps++;
+
                         try {
-                            LockActiveModificationsElement();
+                            ModificationsElement activeModificationsElement = GetActiveModificationsElement(false);
+
+                            if (activeModificationsElement != null) {
+                                activeModificationsElement.Active = ACTIVE_EXE_CONFIGURATION_NAME;
+                                SetFlashpointSecurePlayerSection(ACTIVE_EXE_CONFIGURATION_NAME);
+                            }
                         } catch (System.Configuration.ConfigurationErrorsException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                         }
 
                         ProgressManager.CurrentGoal.Steps++;
+                    } finally {
+                        ProgressManager.CurrentGoal.Stop();
                     }
-                    */
                 } finally {
-                    ProgressManager.CurrentGoal.Stop();
+                    modificationsMutex.ReleaseMutex();
                 }
-            } finally {
-                modificationsSemaphoreSlim.Release();
-            }
-        }
-
-        private async Task DeactivateModificationsAsync(ErrorDelegate errorDelegate) {
-            await modificationsSemaphoreSlim.WaitAsync().ConfigureAwait(true);
-
-            try {
-                ProgressManager.CurrentGoal.Start(3);
-
-                try {
-                    /*
-                    try {
-                        UnlockActiveModificationsElement();
-                    } catch (System.Configuration.ConfigurationErrorsException ex) {
-                        LogExceptionToLauncher(ex);
-                        errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                    }
-
-                    ProgressManager.CurrentGoal.Steps++;
-                    */
-
-                    // the modifications are deactivated in reverse order of how they're activated
-                    try {
-                        // this one really needs to work
-                        // we can't continue if it does not
-                        registryBackup.Deactivate();
-                    } catch (RegistryBackupFailedException ex) {
-                        LogExceptionToLauncher(ex);
-                        errorDelegate(Properties.Resources.RegistryBackupFailed);
-                    } catch (System.Configuration.ConfigurationErrorsException ex) {
-                        LogExceptionToLauncher(ex);
-                        errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                    } catch (TaskRequiresElevationException ex) {
-                        LogExceptionToLauncher(ex);
-                        AskLaunchAsAdministratorUser();
-                    } catch (ArgumentException ex) {
-                        LogExceptionToLauncher(ex);
-                        errorDelegate(Properties.Resources.GameIsMissingFiles);
-                    }
-
-                    ProgressManager.CurrentGoal.Steps++;
-
-                    try {
-                        environmentVariables.Deactivate(server);
-                    } catch (EnvironmentVariablesFailedException ex) {
-                        LogExceptionToLauncher(ex);
-                        errorDelegate(Properties.Resources.EnvironmentVariablesFailed);
-                    } catch (System.Configuration.ConfigurationErrorsException ex) {
-                        LogExceptionToLauncher(ex);
-                        errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                    } catch (TaskRequiresElevationException ex) {
-                        LogExceptionToLauncher(ex);
-                        AskLaunchAsAdministratorUser();
-                    } catch (CompatibilityLayersException ex) {
-                        LogExceptionToLauncher(ex);
-                        AskLaunchWithCompatibilitySettings();
-                    }
-
-                    ProgressManager.CurrentGoal.Steps++;
-
-                    try {
-                        ModificationsElement activeModificationsElement = GetActiveModificationsElement(false);
-
-                        if (activeModificationsElement != null) {
-                            activeModificationsElement.Active = ACTIVE_EXE_CONFIGURATION_NAME;
-                            SetFlashpointSecurePlayerSection(ACTIVE_EXE_CONFIGURATION_NAME);
-                        }
-                    } catch (System.Configuration.ConfigurationErrorsException ex) {
-                        LogExceptionToLauncher(ex);
-                        errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                    }
-
-                    ProgressManager.CurrentGoal.Steps++;
-                } finally {
-                    ProgressManager.CurrentGoal.Stop();
-                }
-            } finally {
-                modificationsSemaphoreSlim.Release();
             }
         }
 
@@ -633,7 +667,12 @@ namespace FlashpointSecurePlayer {
 
                     if (!String.IsNullOrEmpty(server)) {
                         ProgressManager.CurrentGoal.Steps++;
-                        Server serverForm = new Server(new Uri(server));
+
+                        serverForm = new Server(new Uri(server)) {
+                            WindowState = FormWindowState.Maximized
+                        };
+
+                        serverForm.FormClosing += serverForm_FormClosing;
 
                         ProgressManager.CurrentGoal.Steps++;
                         Hide();
@@ -744,6 +783,12 @@ namespace FlashpointSecurePlayer {
             // only if closing...
             ShowOutput(Properties.Resources.RequiredComponentsAreUnloading);
 
+            if (serverForm != null) {
+                serverForm.FormClosing -= serverForm_FormClosing;
+                serverForm.Close();
+                serverForm = null;
+            }
+
             try {
                 await DeactivateModificationsAsync(delegate (string text) {
                     // I will assassinate the Cyrollan delegate myself...
@@ -764,6 +809,7 @@ namespace FlashpointSecurePlayer {
 
                 if (!createdNew) {
                     // multiple instances open, blow up immediately
+                    applicationMutex = null;
                     throw new InvalidOperationException("You cannot run multiple instances of Flashpoint Secure Player.");
                 }
             } catch (InvalidOperationException ex) {
@@ -950,6 +996,21 @@ namespace FlashpointSecurePlayer {
                 LogExceptionToLauncher(ex);
                 // Fail silently.
             }
+
+            if (applicationMutex != null) {
+                applicationMutex.ReleaseMutex();
+                applicationMutex = null;
+            }
+        }
+
+        private void serverForm_FormClosing(object sender, FormClosingEventArgs e) {
+            // stop form closing recursion
+            if (serverForm != null) {
+                serverForm.FormClosing -= serverForm_FormClosing;
+                serverForm = null;
+            }
+
+            Application.Exit();
         }
     }
 }
