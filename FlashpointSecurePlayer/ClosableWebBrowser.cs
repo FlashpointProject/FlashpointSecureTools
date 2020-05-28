@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,11 +12,15 @@ using static FlashpointSecurePlayer.Shared;
 using static FlashpointSecurePlayer.Shared.Exceptions;
 
 namespace FlashpointSecurePlayer {
-    public class ClosableWebBrowser : WebBrowser {
+    public partial class ClosableWebBrowser : WebBrowser {
         protected readonly Form form = null;
 
         public ClosableWebBrowser(Form form) {
             this.form = form;
+        }
+
+        protected override void OnPaint(PaintEventArgs pe) {
+            base.OnPaint(pe);
         }
 
         protected override void WndProc(ref Message m) {

@@ -24,27 +24,26 @@
         /// </summary>
         private void InitializeComponent() {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Server));
+            this.closableWebBrowser1 = new ClosableWebBrowser(this);
             this.SuspendLayout();
             // 
-            // webBrowser1
+            // closableWebBrowser1
             // 
-            this.webBrowser1 = new ClosableWebBrowser(this);
-            this.webBrowser1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.webBrowser1.Location = new System.Drawing.Point(0, 0);
-            this.webBrowser1.Margin = new System.Windows.Forms.Padding(0);
-            this.webBrowser1.MinimumSize = new System.Drawing.Size(20, 20);
-            this.webBrowser1.Name = "webBrowser1";
-            this.webBrowser1.ScriptErrorsSuppressed = true;
-            this.webBrowser1.Size = new System.Drawing.Size(640, 480);
-            this.webBrowser1.TabIndex = 0;
-            this.webBrowser1.Url = new System.Uri("about:blank", System.UriKind.Absolute);
+            this.closableWebBrowser1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.closableWebBrowser1.Location = new System.Drawing.Point(0, 0);
+            this.closableWebBrowser1.MinimumSize = new System.Drawing.Size(20, 20);
+            this.closableWebBrowser1.Name = "closableWebBrowser1";
+            this.closableWebBrowser1.ScriptErrorsSuppressed = true;
+            this.closableWebBrowser1.Size = new System.Drawing.Size(640, 480);
+            this.closableWebBrowser1.TabIndex = 0;
+            this.closableWebBrowser1.Url = new System.Uri("about:blank", System.UriKind.Absolute);
             // 
             // Server
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(640, 480);
-            this.Controls.Add(this.webBrowser1);
+            this.Controls.Add(this.closableWebBrowser1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Server";
             this.Text = "Flashpoint Secure Player";
@@ -57,7 +56,7 @@
 
         #endregion
 
-        private ClosableWebBrowser webBrowser1;
+        private ClosableWebBrowser closableWebBrowser1;
     }
 }
 
