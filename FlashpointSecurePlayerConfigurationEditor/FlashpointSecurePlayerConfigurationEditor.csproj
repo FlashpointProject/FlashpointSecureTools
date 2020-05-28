@@ -31,6 +31,10 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>
+    </StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -45,6 +49,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AboutFlashpointSecurePlayerConfigurationEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AboutFlashpointSecurePlayerConfigurationEditor.Designer.cs">
+      <DependentUpon>AboutFlashpointSecurePlayerConfigurationEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="CompatibilitySettingsEditor.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -57,13 +67,25 @@
     <Compile Include="FlashpointSecurePlayerConfigurationEditor.Designer.cs">
       <DependentUpon>FlashpointSecurePlayerConfigurationEditor.cs</DependentUpon>
     </Compile>
+    <Compile Include="ModificationNameEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ModificationNameEditor.Designer.cs">
+      <DependentUpon>ModificationNameEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="AboutFlashpointSecurePlayerConfigurationEditor.resx">
+      <DependentUpon>AboutFlashpointSecurePlayerConfigurationEditor.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="CompatibilitySettingsEditor.resx">
       <DependentUpon>CompatibilitySettingsEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FlashpointSecurePlayerConfigurationEditor.resx">
       <DependentUpon>FlashpointSecurePlayerConfigurationEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ModificationNameEditor.resx">
+      <DependentUpon>ModificationNameEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

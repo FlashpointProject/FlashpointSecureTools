@@ -59,5 +59,23 @@ namespace FlashpointSecurePlayerConfigurationEditor.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Flashpoint Secure Player Configuration Editor.
+        /// </summary>
+        internal static string FlashpointSecurePlayerConfigurationEditor {
+            get {
+                return ResourceManager.GetString("FlashpointSecurePlayerConfigurationEditor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Do you want to save the changes to {0}?.
+        /// </summary>
+        internal static string SaveChangesToConfiguration {
+            get {
+                return ResourceManager.GetString("SaveChangesToConfiguration", resourceCulture);
+            }
+        }
     }
 }

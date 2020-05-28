@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace FlashpointSecurePlayerVisualEditor {
+namespace FlashpointSecurePlayerConfigurationEditor {
     public partial class CompatibilitySettingsEditor : Form {
         public CompatibilitySettingsEditor() {
             InitializeComponent();
