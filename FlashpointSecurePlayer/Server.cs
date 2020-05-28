@@ -69,13 +69,18 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            SHDocVw.WebBrowser shDocVwWebBrowser = webBrowser1 as SHDocVw.WebBrowser;
+            SHDocVw.WebBrowser shDocVwWebBrowser = webBrowser1.ActiveXInstance as SHDocVw.WebBrowser;
 
             if (shDocVwWebBrowser != null) {
                 // IE5
                 shDocVwWebBrowser.NewWindow2 += dWebBrowserEvents2_NewWindow2;
                 // IE6
                 shDocVwWebBrowser.NewWindow3 += dWebBrowserEvents2_NewWindow3;
+                shDocVwWebBrowser.WindowSetTop += dWebBrowserEvents2_WindowSetTop;
+                shDocVwWebBrowser.WindowSetLeft += dWebBrowserEvents2_WindowSetLeft;
+                shDocVwWebBrowser.WindowSetWidth += dWebBrowserEvents2_WindowSetWidth;
+                shDocVwWebBrowser.WindowSetHeight += dWebBrowserEvents2_WindowSetHeight;
+                shDocVwWebBrowser.WindowSetResizable += dWebBrowserEvents2_WindowSetResizable;
             }
 
             BringToFront();
@@ -90,13 +95,18 @@ namespace FlashpointSecurePlayer {
         
         private void Server_FormClosing(object sender, FormClosingEventArgs e) {
             //Application.Exit();
-            SHDocVw.WebBrowser shDocVwWebBrowser = webBrowser1 as SHDocVw.WebBrowser;
+            SHDocVw.WebBrowser shDocVwWebBrowser = webBrowser1.ActiveXInstance as SHDocVw.WebBrowser;
 
             if (shDocVwWebBrowser != null) {
                 // IE5
                 shDocVwWebBrowser.NewWindow2 -= dWebBrowserEvents2_NewWindow2;
                 // IE6
                 shDocVwWebBrowser.NewWindow3 -= dWebBrowserEvents2_NewWindow3;
+                shDocVwWebBrowser.WindowSetTop -= dWebBrowserEvents2_WindowSetTop;
+                shDocVwWebBrowser.WindowSetLeft -= dWebBrowserEvents2_WindowSetLeft;
+                shDocVwWebBrowser.WindowSetWidth -= dWebBrowserEvents2_WindowSetWidth;
+                shDocVwWebBrowser.WindowSetHeight -= dWebBrowserEvents2_WindowSetHeight;
+                shDocVwWebBrowser.WindowSetResizable -= dWebBrowserEvents2_WindowSetResizable;
             }
         }
 
@@ -111,19 +121,31 @@ namespace FlashpointSecurePlayer {
             dWebBrowserEvents2_NewWindow2(ref ppDisp, ref Cancel);
         }
 
-        protected override void WndProc(ref Message m) {
-            if (m.Msg == WM_PARENTNOTIFY) {
-                if (!DesignMode) {
-                    if (m.WParam.ToInt32() == WM_DESTROY) {
-                        Close();
-                    }
-                }
+        private void dWebBrowserEvents2_WindowSetTop(int Top) {
+            // TODO: fix for windows where top > height
+            this.Top = Top;
+        }
 
-                DefWndProc(ref m);
-                return;
+        private void dWebBrowserEvents2_WindowSetLeft(int Left) {
+            this.Left = Left;
+        }
+
+        private void dWebBrowserEvents2_WindowSetWidth(int Width) {
+            this.Width = this.Width - webBrowser1.Width + Width;
+        }
+
+        private void dWebBrowserEvents2_WindowSetHeight(int Height) {
+            this.Height = this.Height - webBrowser1.Height + Height;
+        }
+
+        private void dWebBrowserEvents2_WindowSetResizable(bool Resizable) {
+            if (Resizable) {
+                FormBorderStyle = FormBorderStyle.Sizable;
+                MaximizeBox = true;
+            } else {
+                FormBorderStyle = FormBorderStyle.FixedSingle;
+                MaximizeBox = false;
             }
-            
-            base.WndProc(ref m);
         }
     }
 }
