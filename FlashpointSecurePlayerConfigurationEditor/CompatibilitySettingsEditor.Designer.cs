@@ -1,4 +1,4 @@
-﻿namespace FlashpointSecurePlayerVisualEditor {
+﻿namespace FlashpointSecurePlayerConfigurationEditor {
     partial class CompatibilitySettingsEditor {
         /// <summary>
         /// Required designer variable.

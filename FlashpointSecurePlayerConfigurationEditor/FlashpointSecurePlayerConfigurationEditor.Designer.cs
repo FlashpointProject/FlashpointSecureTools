@@ -1,4 +1,4 @@
-﻿namespace FlashpointSecurePlayerVisualEditor {
+﻿namespace FlashpointSecurePlayerConfigurationEditor {
     partial class FlashpointSecurePlayerConfigurationEditor {
         /// <summary>
         /// Required designer variable.
@@ -53,6 +53,11 @@
             this.registryBackupsTabPage = new System.Windows.Forms.TabPage();
             this.binaryTypeCheckBox = new System.Windows.Forms.CheckBox();
             this.registryBackupsDataGridView = new System.Windows.Forms.DataGridView();
+            this.registryBackupsTypeDataGridViewComboBoxColumn = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.registryBackupsKeyNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.registryBackupsValueNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.registryBackupsValueDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.registryBackupsValueKindDataGridViewComboBoxColumn = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.singleInstanceTabPage = new System.Windows.Forms.TabPage();
             this.commandLineLabel = new System.Windows.Forms.Label();
             this.commandLineTextBox = new System.Windows.Forms.TextBox();
@@ -94,16 +99,11 @@
             this.toolStripTextSeperator = new System.Windows.Forms.ToolStripSeparator();
             this.modificationNameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.compatibilitySettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.showTooltipsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.onlineHelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.registryBackupsTypeDataGridViewComboBoxColumn = new System.Windows.Forms.DataGridViewComboBoxColumn();
-            this.registryBackupsKeyNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.registryBackupsValueNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.registryBackupsValueDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.registryBackupsValueKindDataGridViewComboBoxColumn = new System.Windows.Forms.DataGridViewComboBoxColumn();
-            this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.showTooltipsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.modificationsTabControl.SuspendLayout();
             this.runAsAdministratorTabPage.SuspendLayout();
             this.environmentVariablesTabPage.SuspendLayout();
@@ -413,6 +413,55 @@
             this.registryBackupsDataGridView.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.registryBackupsDataGridView_CellValueChanged);
             this.registryBackupsDataGridView.CurrentCellDirtyStateChanged += new System.EventHandler(this.registryBackupsDataGridView_CurrentCellDirtyStateChanged);
             // 
+            // registryBackupsTypeDataGridViewComboBoxColumn
+            // 
+            this.registryBackupsTypeDataGridViewComboBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.registryBackupsTypeDataGridViewComboBoxColumn.HeaderText = "Type";
+            this.registryBackupsTypeDataGridViewComboBoxColumn.Items.AddRange(new object[] {
+            "KEY",
+            "VALUE"});
+            this.registryBackupsTypeDataGridViewComboBoxColumn.Name = "registryBackupsTypeDataGridViewComboBoxColumn";
+            this.registryBackupsTypeDataGridViewComboBoxColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.registryBackupsTypeDataGridViewComboBoxColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.registryBackupsTypeDataGridViewComboBoxColumn.Width = 56;
+            // 
+            // registryBackupsKeyNameDataGridViewTextBoxColumn
+            // 
+            this.registryBackupsKeyNameDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.registryBackupsKeyNameDataGridViewTextBoxColumn.FillWeight = 1F;
+            this.registryBackupsKeyNameDataGridViewTextBoxColumn.HeaderText = "Key Name";
+            this.registryBackupsKeyNameDataGridViewTextBoxColumn.Name = "registryBackupsKeyNameDataGridViewTextBoxColumn";
+            // 
+            // registryBackupsValueNameDataGridViewTextBoxColumn
+            // 
+            this.registryBackupsValueNameDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.registryBackupsValueNameDataGridViewTextBoxColumn.FillWeight = 1F;
+            this.registryBackupsValueNameDataGridViewTextBoxColumn.HeaderText = "Value Name";
+            this.registryBackupsValueNameDataGridViewTextBoxColumn.Name = "registryBackupsValueNameDataGridViewTextBoxColumn";
+            // 
+            // registryBackupsValueDataGridViewTextBoxColumn
+            // 
+            this.registryBackupsValueDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.registryBackupsValueDataGridViewTextBoxColumn.FillWeight = 0.5F;
+            this.registryBackupsValueDataGridViewTextBoxColumn.HeaderText = "Value";
+            this.registryBackupsValueDataGridViewTextBoxColumn.Name = "registryBackupsValueDataGridViewTextBoxColumn";
+            // 
+            // registryBackupsValueKindDataGridViewComboBoxColumn
+            // 
+            this.registryBackupsValueKindDataGridViewComboBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.registryBackupsValueKindDataGridViewComboBoxColumn.HeaderText = "Value Kind";
+            this.registryBackupsValueKindDataGridViewComboBoxColumn.Items.AddRange(new object[] {
+            "Binary",
+            "DWord",
+            "ExpandString",
+            "MultiString",
+            "None",
+            "QWord",
+            "String",
+            "Unknown"});
+            this.registryBackupsValueKindDataGridViewComboBoxColumn.Name = "registryBackupsValueKindDataGridViewComboBoxColumn";
+            this.registryBackupsValueKindDataGridViewComboBoxColumn.Width = 64;
+            // 
             // singleInstanceTabPage
             // 
             this.singleInstanceTabPage.Controls.Add(this.commandLineLabel);
@@ -689,6 +738,7 @@
             this.exitToolStripMenuItem.ShortcutKeyDisplayString = "Alt+F4";
             this.exitToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
             this.exitToolStripMenuItem.Text = "Exit";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
             // editToolStripMenuItem
             // 
@@ -710,6 +760,7 @@
             // 
             // undoToolStripMenuItem
             // 
+            this.undoToolStripMenuItem.Enabled = false;
             this.undoToolStripMenuItem.Name = "undoToolStripMenuItem";
             this.undoToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Z";
             this.undoToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
@@ -717,6 +768,7 @@
             // 
             // redoToolStripMenuItem
             // 
+            this.redoToolStripMenuItem.Enabled = false;
             this.redoToolStripMenuItem.Name = "redoToolStripMenuItem";
             this.redoToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Y";
             this.redoToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
@@ -729,27 +781,34 @@
             // 
             // cutToolStripMenuItem
             // 
+            this.cutToolStripMenuItem.Enabled = false;
             this.cutToolStripMenuItem.Name = "cutToolStripMenuItem";
             this.cutToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+X";
             this.cutToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             this.cutToolStripMenuItem.Text = "Cut";
+            this.cutToolStripMenuItem.Click += new System.EventHandler(this.cutToolStripMenuItem_Click);
             // 
             // copyToolStripMenuItem
             // 
+            this.copyToolStripMenuItem.Enabled = false;
             this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
             this.copyToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+C";
             this.copyToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             this.copyToolStripMenuItem.Text = "Copy";
+            this.copyToolStripMenuItem.Click += new System.EventHandler(this.copyToolStripMenuItem_Click);
             // 
             // pasteToolStripMenuItem
             // 
+            this.pasteToolStripMenuItem.Enabled = false;
             this.pasteToolStripMenuItem.Name = "pasteToolStripMenuItem";
             this.pasteToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+V";
             this.pasteToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             this.pasteToolStripMenuItem.Text = "Paste";
+            this.pasteToolStripMenuItem.Click += new System.EventHandler(this.pasteToolStripMenuItem_Click);
             // 
             // deleteToolStripMenuItem
             // 
+            this.deleteToolStripMenuItem.Enabled = false;
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
             this.deleteToolStripMenuItem.ShortcutKeyDisplayString = "Del";
             this.deleteToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
@@ -757,6 +816,7 @@
             // 
             // selectAllToolStripMenuItem
             // 
+            this.selectAllToolStripMenuItem.Enabled = false;
             this.selectAllToolStripMenuItem.Name = "selectAllToolStripMenuItem";
             this.selectAllToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+A";
             this.selectAllToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
@@ -772,83 +832,14 @@
             this.modificationNameToolStripMenuItem.Name = "modificationNameToolStripMenuItem";
             this.modificationNameToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             this.modificationNameToolStripMenuItem.Text = "Modification Name...";
+            this.modificationNameToolStripMenuItem.Click += new System.EventHandler(this.modificationNameToolStripMenuItem_Click);
             // 
             // compatibilitySettingsToolStripMenuItem
             // 
             this.compatibilitySettingsToolStripMenuItem.Name = "compatibilitySettingsToolStripMenuItem";
             this.compatibilitySettingsToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             this.compatibilitySettingsToolStripMenuItem.Text = "Compatibility Settings...";
-            // 
-            // helpToolStripMenuItem
-            // 
-            this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.onlineHelpToolStripMenuItem,
-            this.aboutToolStripMenuItem});
-            this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
-            this.helpToolStripMenuItem.Text = "Help";
-            // 
-            // onlineHelpToolStripMenuItem
-            // 
-            this.onlineHelpToolStripMenuItem.Name = "onlineHelpToolStripMenuItem";
-            this.onlineHelpToolStripMenuItem.ShortcutKeyDisplayString = "F1";
-            this.onlineHelpToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.onlineHelpToolStripMenuItem.Text = "Online Help";
-            // 
-            // aboutToolStripMenuItem
-            // 
-            this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.aboutToolStripMenuItem.Text = "About...";
-            // 
-            // registryBackupsTypeDataGridViewComboBoxColumn
-            // 
-            this.registryBackupsTypeDataGridViewComboBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.registryBackupsTypeDataGridViewComboBoxColumn.HeaderText = "Type";
-            this.registryBackupsTypeDataGridViewComboBoxColumn.Items.AddRange(new object[] {
-            "KEY",
-            "VALUE"});
-            this.registryBackupsTypeDataGridViewComboBoxColumn.Name = "registryBackupsTypeDataGridViewComboBoxColumn";
-            this.registryBackupsTypeDataGridViewComboBoxColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.registryBackupsTypeDataGridViewComboBoxColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            this.registryBackupsTypeDataGridViewComboBoxColumn.Width = 56;
-            // 
-            // registryBackupsKeyNameDataGridViewTextBoxColumn
-            // 
-            this.registryBackupsKeyNameDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.registryBackupsKeyNameDataGridViewTextBoxColumn.FillWeight = 1F;
-            this.registryBackupsKeyNameDataGridViewTextBoxColumn.HeaderText = "Key Name";
-            this.registryBackupsKeyNameDataGridViewTextBoxColumn.Name = "registryBackupsKeyNameDataGridViewTextBoxColumn";
-            // 
-            // registryBackupsValueNameDataGridViewTextBoxColumn
-            // 
-            this.registryBackupsValueNameDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.registryBackupsValueNameDataGridViewTextBoxColumn.FillWeight = 1F;
-            this.registryBackupsValueNameDataGridViewTextBoxColumn.HeaderText = "Value Name";
-            this.registryBackupsValueNameDataGridViewTextBoxColumn.Name = "registryBackupsValueNameDataGridViewTextBoxColumn";
-            // 
-            // registryBackupsValueDataGridViewTextBoxColumn
-            // 
-            this.registryBackupsValueDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.registryBackupsValueDataGridViewTextBoxColumn.FillWeight = 0.5F;
-            this.registryBackupsValueDataGridViewTextBoxColumn.HeaderText = "Value";
-            this.registryBackupsValueDataGridViewTextBoxColumn.Name = "registryBackupsValueDataGridViewTextBoxColumn";
-            // 
-            // registryBackupsValueKindDataGridViewComboBoxColumn
-            // 
-            this.registryBackupsValueKindDataGridViewComboBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.registryBackupsValueKindDataGridViewComboBoxColumn.HeaderText = "Value Kind";
-            this.registryBackupsValueKindDataGridViewComboBoxColumn.Items.AddRange(new object[] {
-            "Binary",
-            "DWord",
-            "ExpandString",
-            "MultiString",
-            "None",
-            "QWord",
-            "String",
-            "Unknown"});
-            this.registryBackupsValueKindDataGridViewComboBoxColumn.Name = "registryBackupsValueKindDataGridViewComboBoxColumn";
-            this.registryBackupsValueKindDataGridViewComboBoxColumn.Width = 64;
+            this.compatibilitySettingsToolStripMenuItem.Click += new System.EventHandler(this.compatibilitySettingsToolStripMenuItem_Click);
             // 
             // viewToolStripMenuItem
             // 
@@ -863,10 +854,34 @@
             this.showTooltipsToolStripMenuItem.Checked = true;
             this.showTooltipsToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.showTooltipsToolStripMenuItem.Name = "showTooltipsToolStripMenuItem";
-            this.showTooltipsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.showTooltipsToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
             this.showTooltipsToolStripMenuItem.Text = "Show Tooltips";
             this.showTooltipsToolStripMenuItem.CheckStateChanged += new System.EventHandler(this.showTooltipsToolStripMenuItem_CheckStateChanged);
             this.showTooltipsToolStripMenuItem.Click += new System.EventHandler(this.showTooltipsToolStripMenuItem_Click);
+            // 
+            // helpToolStripMenuItem
+            // 
+            this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.onlineHelpToolStripMenuItem,
+            this.aboutToolStripMenuItem});
+            this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            this.helpToolStripMenuItem.Text = "Help";
+            // 
+            // onlineHelpToolStripMenuItem
+            // 
+            this.onlineHelpToolStripMenuItem.Name = "onlineHelpToolStripMenuItem";
+            this.onlineHelpToolStripMenuItem.ShortcutKeyDisplayString = "F1";
+            this.onlineHelpToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
+            this.onlineHelpToolStripMenuItem.Text = "Online Help";
+            this.onlineHelpToolStripMenuItem.Click += new System.EventHandler(this.onlineHelpToolStripMenuItem_Click);
+            // 
+            // aboutToolStripMenuItem
+            // 
+            this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
+            this.aboutToolStripMenuItem.Text = "About...";
+            this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
             // FlashpointSecurePlayerConfigurationEditor
             // 
@@ -881,6 +896,7 @@
             this.MaximizeBox = false;
             this.Name = "FlashpointSecurePlayerConfigurationEditor";
             this.Text = "Flashpoint Secure Player Configuration Editor";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FlashpointSecurePlayerConfigurationEditor_FormClosing);
             this.Load += new System.EventHandler(this.FlashpointSecurePlayerConfigurationEditor_Load);
             this.modificationsTabControl.ResumeLayout(false);
             this.runAsAdministratorTabPage.ResumeLayout(false);

@@ -24,7 +24,8 @@ namespace FlashpointSecurePlayer {
             base.Activate(name);
 
             if (String.IsNullOrEmpty(name)) {
-                throw new FormatException("name cannot be null or empty.");
+                // no argument
+                return;
             }
 
             ModificationsElement modificationsElement = GetModificationsElement(false, Name);
