@@ -21,7 +21,7 @@ namespace FlashpointSecurePlayer {
 
         public object PPDisp {
             get {
-                return webBrowser1.ActiveXInstance;
+                return closableWebBrowser1.ActiveXInstance;
             }
         }
 
@@ -61,7 +61,7 @@ namespace FlashpointSecurePlayer {
             }
 
             try {
-                customSecurityManager = new CustomSecurityManager(webBrowser1);
+                customSecurityManager = new CustomSecurityManager(closableWebBrowser1);
             } catch (Win32Exception) {
                 ProgressManager.ShowError();
                 MessageBox.Show(Properties.Resources.FailedCreateCustomSecurityManager, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -69,7 +69,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            SHDocVw.WebBrowser shDocVwWebBrowser = webBrowser1.ActiveXInstance as SHDocVw.WebBrowser;
+            SHDocVw.WebBrowser shDocVwWebBrowser = closableWebBrowser1.ActiveXInstance as SHDocVw.WebBrowser;
 
             if (shDocVwWebBrowser != null) {
                 // IE5
@@ -89,13 +89,13 @@ namespace FlashpointSecurePlayer {
 
         private void Server_Shown(object sender, EventArgs e) {
             if (webBrowserURL != null) {
-                webBrowser1.Url = webBrowserURL;
+                closableWebBrowser1.Url = webBrowserURL;
             }
         }
         
         private void Server_FormClosing(object sender, FormClosingEventArgs e) {
             //Application.Exit();
-            SHDocVw.WebBrowser shDocVwWebBrowser = webBrowser1.ActiveXInstance as SHDocVw.WebBrowser;
+            SHDocVw.WebBrowser shDocVwWebBrowser = closableWebBrowser1.ActiveXInstance as SHDocVw.WebBrowser;
 
             if (shDocVwWebBrowser != null) {
                 // IE5
@@ -131,11 +131,11 @@ namespace FlashpointSecurePlayer {
         }
 
         private void dWebBrowserEvents2_WindowSetWidth(int Width) {
-            this.Width = this.Width - webBrowser1.Width + Width;
+            this.Width = this.Width - closableWebBrowser1.Width + Width;
         }
 
         private void dWebBrowserEvents2_WindowSetHeight(int Height) {
-            this.Height = this.Height - webBrowser1.Height + Height;
+            this.Height = this.Height - closableWebBrowser1.Height + Height;
         }
 
         private void dWebBrowserEvents2_WindowSetResizable(bool Resizable) {
