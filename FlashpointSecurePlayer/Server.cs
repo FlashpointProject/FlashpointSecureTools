@@ -122,7 +122,6 @@ namespace FlashpointSecurePlayer {
         }
 
         private void dWebBrowserEvents2_WindowSetTop(int Top) {
-            // TODO: fix for windows where top > height
             this.Top = Top;
         }
 

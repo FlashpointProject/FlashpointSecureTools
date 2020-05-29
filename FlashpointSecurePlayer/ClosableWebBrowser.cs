@@ -24,7 +24,8 @@ namespace FlashpointSecurePlayer {
         }
 
         protected override void WndProc(ref Message m) {
-            if (m.Msg == WM_PARENTNOTIFY) {
+            switch (m.Msg) {
+                case WM_PARENTNOTIFY:
                 if (!DesignMode) {
                     if (m.WParam.ToInt32() == WM_DESTROY) {
                         if (form != null) {
@@ -35,6 +36,13 @@ namespace FlashpointSecurePlayer {
 
                 DefWndProc(ref m);
                 return;
+                case WM_PAINT:
+                if (form.WindowState != FormWindowState.Maximized) {
+                    // lame fix: browser hangs when window.open top attribute > control height (why?)
+                    form.Width--;
+                    form.Width++;
+                }
+                break;
             }
 
             base.WndProc(ref m);

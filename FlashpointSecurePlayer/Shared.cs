@@ -130,8 +130,9 @@ namespace FlashpointSecurePlayer {
 
         public const int MAX_PATH = 260;
 
-        public const int WM_PARENTNOTIFY = 0x210;
-        public const int WM_DESTROY = 2;
+        public const int WM_DESTROY = 0x00000002;
+        public const int WM_PAINT = 0x0000000F;
+        public const int WM_PARENTNOTIFY = 0x00000210;
 
         public enum BINARY_TYPE : uint {
             SCS_32BIT_BINARY = 0, // A 32-bit Windows-based application
