@@ -681,10 +681,6 @@ namespace FlashpointSecurePlayer {
         public async Task StartImportAsync(string name, BINARY_TYPE binaryType) {
             base.StartImport(name);
 
-            if (String.IsNullOrEmpty(name)) {
-                throw new FormatException("name cannot be null or empty.");
-            }
-
             ModificationsElement modificationsElement = GetModificationsElement(true, Name);
 
             // this happens here since this check doesn't need to occur to activate
