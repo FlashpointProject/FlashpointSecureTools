@@ -24,14 +24,15 @@
         /// </summary>
         private void InitializeComponent() {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Server));
-            this.closableWebBrowser1 = new ClosableWebBrowser(this);
             this.SuspendLayout();
             // 
             // closableWebBrowser1
             // 
+            this.closableWebBrowser1 = new ClosableWebBrowser(this);
             this.closableWebBrowser1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.closableWebBrowser1.Location = new System.Drawing.Point(0, 0);
-            this.closableWebBrowser1.MinimumSize = new System.Drawing.Size(20, 20);
+            this.closableWebBrowser1.Margin = new System.Windows.Forms.Padding(0);
+            this.closableWebBrowser1.MinimumSize = new System.Drawing.Size(32, 32);
             this.closableWebBrowser1.Name = "closableWebBrowser1";
             this.closableWebBrowser1.ScriptErrorsSuppressed = true;
             this.closableWebBrowser1.Size = new System.Drawing.Size(640, 480);
