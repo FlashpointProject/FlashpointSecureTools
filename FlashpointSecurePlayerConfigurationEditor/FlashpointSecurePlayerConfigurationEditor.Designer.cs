@@ -85,6 +85,7 @@
             this.toolStripInSeperator = new System.Windows.Forms.ToolStripSeparator();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.combineWithToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripOutSeperator = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -644,6 +645,7 @@
             this.toolStripInSeperator,
             this.saveToolStripMenuItem,
             this.saveAsToolStripMenuItem,
+            this.combineWithToolStripMenuItem,
             this.toolStripOutSeperator,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
@@ -726,6 +728,12 @@
             this.saveAsToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Shift+S";
             this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
             this.saveAsToolStripMenuItem.Text = "Save As...";
+            // 
+            // combineWithToolStripMenuItem
+            // 
+            this.combineWithToolStripMenuItem.Name = "combineWithToolStripMenuItem";
+            this.combineWithToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
+            this.combineWithToolStripMenuItem.Text = "Combine With...";
             // 
             // toolStripOutSeperator
             // 
@@ -1011,6 +1019,7 @@
         private System.Windows.Forms.DataGridViewComboBoxColumn registryBackupsValueKindDataGridViewComboBoxColumn;
         private System.Windows.Forms.ToolStripMenuItem viewToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem showTooltipsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem combineWithToolStripMenuItem;
     }
 }
 
