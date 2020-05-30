@@ -37,12 +37,14 @@ namespace FlashpointSecurePlayer {
                 DefWndProc(ref m);
                 return;
                 case WM_PAINT:
-                if (form.WindowState != FormWindowState.Maximized) {
-                    // lame fix: browser hangs when window.open top attribute > control height (why?)
-                    // Width, Height, and WindowState changes all work here
-                    // Width/Height are less obvious and Height doesn't cause text reflow
-                    form.Height--;
-                    form.Height++;
+                if (form != null) {
+                    if (form.WindowState != FormWindowState.Maximized) {
+                        // lame fix: browser hangs when window.open top attribute > control height (why?)
+                        // Width, Height, and WindowState changes all work here
+                        // Width/Height are less obvious and Height doesn't cause text reflow
+                        form.Height--;
+                        form.Height++;
+                    }
                 }
                 break;
             }
