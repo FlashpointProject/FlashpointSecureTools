@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace FlashpointSecurePlayerConfigurationEditor.Properties {
+namespace FlashpointSecurePlayer.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -20,6 +20,18 @@ namespace FlashpointSecurePlayerConfigurationEditor.Properties {
         public static Settings Default {
             get {
                 return defaultInstance;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string InitialDirectory {
+            get {
+                return ((string)(this["InitialDirectory"]));
+            }
+            set {
+                this["InitialDirectory"] = value;
             }
         }
     }

@@ -1,4 +1,4 @@
-﻿namespace FlashpointSecurePlayerConfigurationEditor {
+﻿namespace FlashpointSecurePlayer {
     partial class FlashpointSecurePlayerConfigurationEditor {
         /// <summary>
         /// Required designer variable.
@@ -893,6 +893,7 @@
             // 
             // FlashpointSecurePlayerConfigurationEditor
             // 
+            this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(640, 480);
@@ -906,6 +907,8 @@
             this.Text = "Flashpoint Secure Player Configuration Editor";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FlashpointSecurePlayerConfigurationEditor_FormClosing);
             this.Load += new System.EventHandler(this.FlashpointSecurePlayerConfigurationEditor_Load);
+            this.DragDrop += new System.Windows.Forms.DragEventHandler(this.FlashpointSecurePlayerConfigurationEditor_DragDrop);
+            this.DragEnter += new System.Windows.Forms.DragEventHandler(this.FlashpointSecurePlayerConfigurationEditor_DragEnter);
             this.modificationsTabControl.ResumeLayout(false);
             this.runAsAdministratorTabPage.ResumeLayout(false);
             this.runAsAdministratorTabPage.PerformLayout();

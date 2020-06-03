@@ -1,4 +1,4 @@
-﻿namespace FlashpointSecurePlayerConfigurationEditor {
+﻿namespace FlashpointSecurePlayer {
     partial class AboutFlashpointSecurePlayerConfigurationEditor {
         /// <summary>
         /// Required designer variable.
