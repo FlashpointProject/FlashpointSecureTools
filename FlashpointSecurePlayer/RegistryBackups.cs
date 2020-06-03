@@ -981,7 +981,11 @@ namespace FlashpointSecurePlayer {
                         break;
                         case TYPE.VALUE:
                         try {
-                            SetValueInRegistryView(keyName, registryBackupElement.ValueName, activeRegistryBackupElement._ValueExpanded, registryBackupElement.ValueKind.GetValueOrDefault(), registryView);
+                            if (String.IsNullOrEmpty(activeRegistryBackupElement._ValueExpanded)) {
+                                SetValueInRegistryView(keyName, registryBackupElement.ValueName, registryBackupElement.Value, registryBackupElement.ValueKind.GetValueOrDefault(), registryView);
+                            } else {
+                                SetValueInRegistryView(keyName, registryBackupElement.ValueName, activeRegistryBackupElement._ValueExpanded, registryBackupElement.ValueKind.GetValueOrDefault(), registryView);
+                            }
                         } catch (FormatException) {
                             // value marked for deletion
                             Deactivate();
