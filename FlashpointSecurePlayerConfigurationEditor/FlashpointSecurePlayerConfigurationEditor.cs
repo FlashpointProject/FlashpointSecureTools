@@ -4,14 +4,21 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace FlashpointSecurePlayerConfigurationEditor {
+namespace FlashpointSecurePlayer {
     public partial class FlashpointSecurePlayerConfigurationEditor : Form {
         // TODO: https://www.codeproject.com/Articles/18025/Generic-Memento-Pattern-for-Undo-Redo-in-C
+        enum ImportType {
+            ActiveXControl,
+            RegistrationFile
+        }
+        
+        
         public FlashpointSecurePlayerConfigurationEditor() {
             InitializeComponent();
         }
@@ -43,6 +50,98 @@ namespace FlashpointSecurePlayerConfigurationEditor {
                     }
                 }
             }
+        }
+
+        private void New() {
+            // TODO
+        }
+
+        private void Open(string fileName = null) {
+            if (String.IsNullOrEmpty(fileName)) {
+                string initialDirectory = Environment.CurrentDirectory;
+
+                if (!String.IsNullOrEmpty(Properties.Settings.Default.InitialDirectory)) {
+                    initialDirectory = Properties.Settings.Default.InitialDirectory;
+                }
+
+                using (OpenFileDialog openFileDialog = new OpenFileDialog() {
+                    InitialDirectory = initialDirectory,
+                    RestoreDirectory = true,
+                    Filter = "Configuration Files (*.config)|*.config|All Files (*.*)|*.*",
+                    DefaultExt = "config",
+                    Multiselect = false
+                }) {
+                    DialogResult dialogResult = openFileDialog.ShowDialog();
+
+                    if (dialogResult == DialogResult.OK) {
+                        try {
+                            fileName = Path.GetFullPath(openFileDialog.FileName);
+                            Properties.Settings.Default.InitialDirectory = Path.GetDirectoryName(fileName);
+                        } catch {
+                            // Fail silently.
+                        }
+                    }
+                }
+            }
+
+            if (String.IsNullOrEmpty(fileName)) {
+                return;
+            }
+
+            // TODO: open configuration in Shared
+        }
+
+        private void Import(ImportType importType) {
+            // TODO
+        }
+
+        private void Close() {
+            // TODO
+        }
+
+        private void Save(bool fileName = false) {
+            string saveFileDialogFileName = null;
+
+            if (fileName) {
+                string initialDirectory = Environment.CurrentDirectory;
+
+                if (!String.IsNullOrEmpty(Properties.Settings.Default.InitialDirectory)) {
+                    initialDirectory = Properties.Settings.Default.InitialDirectory;
+                }
+
+                using (SaveFileDialog saveFileDialog = new SaveFileDialog() {
+                    InitialDirectory = initialDirectory,
+                    RestoreDirectory = true,
+                    Filter = "Configuration Files (*.config)|*.config|All Files (*.*)|*.*",
+                    DefaultExt = "config"
+                }) {
+                    DialogResult dialogResult = saveFileDialog.ShowDialog();
+
+                    if (dialogResult == DialogResult.OK) {
+                        try {
+                            saveFileDialogFileName = Path.GetFullPath(saveFileDialog.FileName);
+
+                            if (!String.IsNullOrEmpty(saveFileDialogFileName)) {
+                                fileName = false;
+                            }
+
+                            Properties.Settings.Default.InitialDirectory = Path.GetDirectoryName(saveFileDialogFileName);
+                        } catch {
+                            // Fail silently.
+                        }
+                    }
+                }
+            }
+
+            if (fileName) {
+                return;
+            }
+
+            // TODO: save configuration with Shared
+        }
+
+        private void SaveAs() {
+            Save(true);
         }
 
         private void ShowCompatibilitySettingsEditor() {
@@ -236,6 +335,26 @@ namespace FlashpointSecurePlayerConfigurationEditor {
             }
 
             registryBackupsDataGridView.Rows[e.RowIndex].ErrorText = String.Empty;
+        }
+
+        private void FlashpointSecurePlayerConfigurationEditor_DragEnter(object sender, DragEventArgs e) {
+            e.Effect = DragDropEffects.None;
+
+            if (e.Data.GetDataPresent(DataFormats.FileDrop)) {
+                e.Effect = DragDropEffects.Copy;
+            }
+        }
+
+        private void FlashpointSecurePlayerConfigurationEditor_DragDrop(object sender, DragEventArgs e) {
+            string[] fileNames = e.Data.GetData(DataFormats.FileDrop) as string[];
+
+            if (fileNames != null) {
+                if (fileNames.Any()) {
+                    if (!String.IsNullOrEmpty(fileNames[0])) {
+                        Open(fileNames[0]);
+                    }
+                }
+            }
         }
     }
 }

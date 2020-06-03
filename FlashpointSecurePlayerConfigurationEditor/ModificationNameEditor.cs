@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace FlashpointSecurePlayerConfigurationEditor {
+namespace FlashpointSecurePlayer {
     public partial class ModificationNameEditor : Form {
         public ModificationNameEditor() {
             InitializeComponent();
