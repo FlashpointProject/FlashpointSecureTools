@@ -69,7 +69,11 @@ namespace FlashpointSecurePlayer {
                 ProgressManager.CurrentGoal.Steps++;
 
                 if (!String.IsNullOrEmpty(modificationsElement.ModeTemplates.SoftwareModeTemplate.WorkingDirectory)) {
-                    SetWorkingDirectory(ref softwareProcessStartInfo, modificationsElement.ModeTemplates.SoftwareModeTemplate.WorkingDirectory);
+                    try {
+                        SetWorkingDirectory(ref softwareProcessStartInfo, modificationsElement.ModeTemplates.SoftwareModeTemplate.WorkingDirectory);
+                    } catch (ArgumentNullException) {
+                        throw new ModeTemplatesFailedException("Working Directory cannot be null.");
+                    }
                 }
 
                 ProgressManager.CurrentGoal.Steps++;

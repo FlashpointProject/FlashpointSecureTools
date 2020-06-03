@@ -276,7 +276,7 @@ namespace FlashpointSecurePlayer {
         private static FlashpointSecurePlayerSection flashpointSecurePlayerSection = null;
         private static FlashpointSecurePlayerSection activeFlashpointSecurePlayerSection = null;
 
-        private const string FLASHPOINT_SECURE_PLAYER_STARTUP_PATH = "FLASHPOINTSECUREPLAYERSTARTUPPATH";
+        public const string FLASHPOINT_SECURE_PLAYER_STARTUP_PATH = "FLASHPOINTSECUREPLAYERSTARTUPPATH";
         public const string OLD_CPU_SIMULATOR_PATH = "OldCPUSimulator\\OldCPUSimulator.exe";
         public const string OLD_CPU_SIMULATOR_PARENT_PROCESS_EXE_FILE_NAME = "OLDCPUSIMULATOR.EXE";
 
@@ -770,6 +770,17 @@ namespace FlashpointSecurePlayer {
 
                                 set {
                                     base["_deleted"] = value;
+                                }
+                            }
+
+                            [ConfigurationProperty("_valueExpanded", IsRequired = false)]
+                            public string _ValueExpanded {
+                                get {
+                                    return base["_valueExpanded"] as string;
+                                }
+
+                                set {
+                                    base["_valueExpanded"] = value;
                                 }
                             }
 
@@ -1371,7 +1382,7 @@ namespace FlashpointSecurePlayer {
         // find path in registry value
         // string must begin with path
         // string cannot exceed MAX_PATH*2+15 characters
-        public static object AddVariablesToLengthenedValue(object value) {
+        public static object ReplaceStartupPathEnvironmentVariable(object value) {
             // since it's a value we'll just check it exists
             if (!(value is string valueString)) {
                 return value;
@@ -1397,7 +1408,8 @@ namespace FlashpointSecurePlayer {
             return valueString;
         }
 
-        public static object RemoveVariablesFromLengthenedValue(object value) {
+        /*
+        public static object ReplaceStartupPathEnvironmentVariable(object value) {
             if (!(value is string valueString)) {
                 return value;
             }
@@ -1407,6 +1419,7 @@ namespace FlashpointSecurePlayer {
             }
             return valueString;
         }
+        */
 
         public static bool GetCommandLineArgument(string commandLine, out string commandLineArgument) {
             commandLineArgument = String.Empty;
@@ -1685,7 +1698,7 @@ namespace FlashpointSecurePlayer {
                 processStartInfo = new ProcessStartInfo();
             }
 
-            processStartInfo.WorkingDirectory = RemoveVariablesFromLengthenedValue(workingDirectory) as string;
+            processStartInfo.WorkingDirectory = Environment.ExpandEnvironmentVariables(workingDirectory);
         }
 
         public static Process GetParentProcess() {

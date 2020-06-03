@@ -848,9 +848,10 @@ namespace FlashpointSecurePlayer {
             ModificationsElement activeModificationsElement = GetActiveModificationsElement(true, Name);
             RegistryBackupElement registryBackupElement = null;
             RegistryBackupElement activeRegistryBackupElement = null;
-            string keyDeleted = null;
             string keyName = null;
             object value = null;
+            string keyDeleted = null;
+            string valueExpanded = null;
 
             try {
                 fullPath = Path.GetFullPath(Name);
@@ -905,7 +906,17 @@ namespace FlashpointSecurePlayer {
                         break;
                         case TYPE.VALUE:
                         try {
-                            value = AddVariablesToLengthenedValue(LengthenValue(GetValueInRegistryView(keyName, registryBackupElement.ValueName, registryView), fullPath));
+                            valueExpanded = Environment.ExpandEnvironmentVariables(registryBackupElement.Value);
+
+                            if (valueExpanded != registryBackupElement.Value) {
+                                activeRegistryBackupElement._ValueExpanded = valueExpanded;
+                            }
+                        } catch (ArgumentNullException) {
+                            // Fail silently.
+                        }
+
+                        try {
+                            value = /*ReplaceStartupPathEnvironmentVariable(LengthenValue(*/GetValueInRegistryView(keyName, registryBackupElement.ValueName, registryView)/*, fullPath))*/;
                         } catch (ArgumentException) {
                             // value doesn't exist
                             value = null;
@@ -941,6 +952,7 @@ namespace FlashpointSecurePlayer {
                 for (int i = 0;i < modificationsElement.RegistryBackups.Count;i++) {
                     // the "active" one is the one that doesn't have a name (it has the "active" attribute)
                     registryBackupElement = modificationsElement.RegistryBackups.Get(i) as RegistryBackupElement;
+                    activeRegistryBackupElement = activeModificationsElement.RegistryBackups.Get(i) as RegistryBackupElement;
 
                     if (registryBackupElement == null) {
                         Deactivate();
@@ -969,7 +981,7 @@ namespace FlashpointSecurePlayer {
                         break;
                         case TYPE.VALUE:
                         try {
-                            SetValueInRegistryView(keyName, registryBackupElement.ValueName, RemoveVariablesFromLengthenedValue(registryBackupElement.Value), registryBackupElement.ValueKind.GetValueOrDefault(), registryView);
+                            SetValueInRegistryView(keyName, registryBackupElement.ValueName, activeRegistryBackupElement._ValueExpanded, registryBackupElement.ValueKind.GetValueOrDefault(), registryView);
                         } catch (FormatException) {
                             // value marked for deletion
                             Deactivate();
@@ -1086,8 +1098,14 @@ namespace FlashpointSecurePlayer {
                                 if (value == null) {
                                     clear = true;
                                 } else {
-                                    if (value.ToString() != RemoveVariablesFromLengthenedValue(registryBackupElement.Value).ToString()) {
-                                        clear = true;
+                                    if (String.IsNullOrEmpty(activeRegistryBackupElement._ValueExpanded)) {
+                                        if (value.ToString() != registryBackupElement.Value) {
+                                            clear = true;
+                                        }
+                                    } else {
+                                        if (value.ToString() != activeRegistryBackupElement._ValueExpanded) {
+                                            clear = true;
+                                        }
                                     }
                                 }
 
@@ -1131,7 +1149,7 @@ namespace FlashpointSecurePlayer {
                             if (String.IsNullOrEmpty(activeRegistryBackupElement._Deleted)) {
                                 try {
                                     // value was different before
-                                    SetValueInRegistryView(GetUserKeyValueName(activeRegistryBackupElement.KeyName), activeRegistryBackupElement.ValueName, RemoveVariablesFromLengthenedValue(activeRegistryBackupElement.Value), activeRegistryBackupElement.ValueKind.GetValueOrDefault(), registryView);
+                                    SetValueInRegistryView(GetUserKeyValueName(activeRegistryBackupElement.KeyName), activeRegistryBackupElement.ValueName, /*RemoveVariablesFromLengthenedValue(*/activeRegistryBackupElement.Value/*)*/, activeRegistryBackupElement.ValueKind.GetValueOrDefault(), registryView);
                                 } catch (InvalidOperationException) {
                                     // value doesn't exist and can't be created
                                     throw new RegistryBackupFailedException("The value " + activeRegistryBackupElement.ValueName + " cannot be created.");
@@ -1233,7 +1251,7 @@ namespace FlashpointSecurePlayer {
                 value = null;
 
                 try {
-                    value = AddVariablesToLengthenedValue(LengthenValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView), fullPath));
+                    value = ReplaceStartupPathEnvironmentVariable(LengthenValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView), fullPath));
                 } catch (ArgumentException) {
                     // value doesn't exist
                     value = null;
@@ -1273,7 +1291,7 @@ namespace FlashpointSecurePlayer {
                 value = null;
 
                 try {
-                    value = AddVariablesToLengthenedValue(LengthenValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView), fullPath));
+                    value = ReplaceStartupPathEnvironmentVariable(LengthenValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView), fullPath));
                 } catch (ArgumentException) {
                 } catch (SecurityException) {
                     // we have permission to access the key at this point so this must not be important
@@ -1441,7 +1459,7 @@ namespace FlashpointSecurePlayer {
 
                     // value
                     try {
-                        value = AddVariablesToLengthenedValue(LengthenValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView), fullPath));
+                        value = ReplaceStartupPathEnvironmentVariable(LengthenValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView), fullPath));
                     } catch (ArgumentException) {
                         // value doesn't exist
                         value = null;
