@@ -847,6 +847,17 @@ namespace FlashpointSecurePlayer {
                 } catch {
                     // Fail silently.
                 }
+
+                try {
+                    Environment.SetEnvironmentVariable(FLASHPOINT_SECURE_PLAYER_STARTUP_PATH, Application.StartupPath, EnvironmentVariableTarget.Process);
+                } catch (ArgumentException ex) {
+                    LogExceptionToLauncher(ex);
+                    Application.Exit();
+                    return;
+                } catch (System.Security.SecurityException ex) {
+                    LogExceptionToLauncher(ex);
+                    throw new TaskRequiresElevationException("Setting the " + FLASHPOINT_SECURE_PLAYER_STARTUP_PATH + " Environment Variable requires elevation.");
+                }
             } catch (TaskRequiresElevationException ex) {
                 LogExceptionToLauncher(ex);
 

@@ -98,6 +98,7 @@
     <Compile Include="OldCPUSimulator.cs" />
     <Compile Include="ProgressManager.cs" />
     <Compile Include="RunAsAdministrator.cs" />
+    <Compile Include="Settings.cs" />
     <Compile Include="Shared.cs" />
     <Compile Include="SingleInstance.cs" />
     <Compile Include="ProcessSync.cs" />
