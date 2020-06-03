@@ -17,6 +17,18 @@ namespace FlashpointSecurePlayer {
 
         public EnvironmentVariables(Form form) : base(form) { }
 
+        private string GetComparableName(string name) {
+            int comparableNameLength = name.IndexOf('\0');
+            string comparableName = null;
+
+            if (comparableNameLength == -1) {
+                comparableName = name;
+            } else {
+                comparableName = name.Substring(comparableNameLength);
+            }
+            return comparableName;
+        }
+
         public void Activate(string name, string server) {
             base.Activate(name);
 
@@ -31,6 +43,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
+            string comparableName = null;
             string value = null;
             List<string> values = null;
             string compatibilityLayerValue = null;
@@ -56,11 +69,17 @@ namespace FlashpointSecurePlayer {
                     if (environmentVariablesElement == null) {
                         throw new System.Configuration.ConfigurationErrorsException("The Environment Variables Element (" + i + ") is null.");
                     }
+                    
+                    comparableName = GetComparableName(environmentVariablesElement.Name);
+
+                    if (comparableName == FLASHPOINT_SECURE_PLAYER_STARTUP_PATH) {
+                        throw new EnvironmentVariablesFailedException("The " + FLASHPOINT_SECURE_PLAYER_STARTUP_PATH + " Environment Variable cannot be modified.");
+                    }
 
                     value = environmentVariablesElement.Value;
 
                     try {
-                        Environment.SetEnvironmentVariable(environmentVariablesElement.Name, RemoveVariablesFromLengthenedValue(value) as string);
+                        Environment.SetEnvironmentVariable(environmentVariablesElement.Name, Environment.ExpandEnvironmentVariables(value), EnvironmentVariableTarget.Process);
                     } catch (ArgumentException) {
                         throw new EnvironmentVariablesFailedException("Failed to set the " + environmentVariablesElement.Name + " Environment Variable.");
                     } catch (SecurityException) {
@@ -70,7 +89,7 @@ namespace FlashpointSecurePlayer {
                     // if this is the compatibility layer variable
                     // and the value is not what we want to set it to
                     // and we're in server mode...
-                    if (environmentVariablesElement.Name == COMPATIBILITY_LAYER_NAME && !String.IsNullOrEmpty(server)) {
+                    if (comparableName == COMPATIBILITY_LAYER_NAME && !String.IsNullOrEmpty(server)) {
                         values = new List<string>();
 
                         // the compatibility layers may contain more values
@@ -112,7 +131,8 @@ namespace FlashpointSecurePlayer {
             if (modificationsElement == null) {
                 return;
             }
-
+            
+            string comparableName = null;
             string value = null;
             List<string> values = null;
             string compatibilityLayerValue = null;
@@ -142,6 +162,12 @@ namespace FlashpointSecurePlayer {
                         throw new System.Configuration.ConfigurationErrorsException("The Environment Variables Element (" + i + ") is null.");
                     }
 
+                    comparableName = GetComparableName(environmentVariablesElement.Name);
+
+                    if (comparableName == FLASHPOINT_SECURE_PLAYER_STARTUP_PATH) {
+                        throw new EnvironmentVariablesFailedException("The " + FLASHPOINT_SECURE_PLAYER_STARTUP_PATH + " Environment Variable cannot be modified.");
+                    }
+
                     value = environmentVariablesElement.Value;
                     values = new List<string>();
 
@@ -152,9 +178,9 @@ namespace FlashpointSecurePlayer {
                     // if this isn't the compatibility layer variable
                     // or the value isn't what we want to set it to
                     // or we're not in server mode...
-                    if (environmentVariablesElement.Name != COMPATIBILITY_LAYER_NAME || values.Except(compatibilityLayerValues).Any() || String.IsNullOrEmpty(server)) {
+                    if (comparableName != COMPATIBILITY_LAYER_NAME || values.Except(compatibilityLayerValues).Any() || String.IsNullOrEmpty(server)) {
                         try {
-                            Environment.SetEnvironmentVariable(environmentVariablesElement.Name, null);
+                            Environment.SetEnvironmentVariable(environmentVariablesElement.Name, null, EnvironmentVariableTarget.Process);
                         } catch (ArgumentException) {
                             throw new EnvironmentVariablesFailedException("Failed to set the " + environmentVariablesElement.Name + " Environment Variable.");
                         } catch (SecurityException) {
