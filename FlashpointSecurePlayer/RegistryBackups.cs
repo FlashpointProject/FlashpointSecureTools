@@ -981,11 +981,7 @@ namespace FlashpointSecurePlayer {
                         break;
                         case TYPE.VALUE:
                         try {
-                            if (String.IsNullOrEmpty(activeRegistryBackupElement._ValueExpanded)) {
-                                SetValueInRegistryView(keyName, registryBackupElement.ValueName, registryBackupElement.Value, registryBackupElement.ValueKind.GetValueOrDefault(), registryView);
-                            } else {
-                                SetValueInRegistryView(keyName, registryBackupElement.ValueName, activeRegistryBackupElement._ValueExpanded, registryBackupElement.ValueKind.GetValueOrDefault(), registryView);
-                            }
+                            SetValueInRegistryView(keyName, registryBackupElement.ValueName, String.IsNullOrEmpty(activeRegistryBackupElement._ValueExpanded) ? registryBackupElement.Value : activeRegistryBackupElement._ValueExpanded, registryBackupElement.ValueKind.GetValueOrDefault(), registryView);
                         } catch (FormatException) {
                             // value marked for deletion
                             Deactivate();
@@ -1102,14 +1098,8 @@ namespace FlashpointSecurePlayer {
                                 if (value == null) {
                                     clear = true;
                                 } else {
-                                    if (String.IsNullOrEmpty(activeRegistryBackupElement._ValueExpanded)) {
-                                        if (value.ToString() != registryBackupElement.Value) {
-                                            clear = true;
-                                        }
-                                    } else {
-                                        if (value.ToString() != activeRegistryBackupElement._ValueExpanded) {
-                                            clear = true;
-                                        }
+                                    if (value.ToString() != (String.IsNullOrEmpty(activeRegistryBackupElement._ValueExpanded) ? registryBackupElement.Value : activeRegistryBackupElement._ValueExpanded)) {
+                                        clear = true;
                                     }
                                 }
 
