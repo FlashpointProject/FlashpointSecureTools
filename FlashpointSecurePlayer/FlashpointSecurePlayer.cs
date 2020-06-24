@@ -667,8 +667,16 @@ namespace FlashpointSecurePlayer {
 
                     if (!String.IsNullOrEmpty(server)) {
                         ProgressManager.CurrentGoal.Steps++;
+                        Uri webBrowserURL = null;
 
-                        serverForm = new Server(new Uri(server)) {
+                        try {
+                            webBrowserURL = new Uri(server);
+                        } catch {
+                            ShowError(Properties.Resources.AddressNotUnderstood);
+                            return;
+                        }
+
+                        serverForm = new Server(webBrowserURL) {
                             WindowState = FormWindowState.Maximized
                         };
 
