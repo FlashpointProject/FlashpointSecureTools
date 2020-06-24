@@ -79,6 +79,15 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The address wasn&apos;t understood. Please report this bug..
+        /// </summary>
+        internal static string AddressNotUnderstood {
+            get {
+                return ResourceManager.GetString("AddressNotUnderstood", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Another instance of Flashpoint Secure Player is preventing the Modifications from being activated..
         /// </summary>
         internal static string AnotherInstanceCausingInterference {

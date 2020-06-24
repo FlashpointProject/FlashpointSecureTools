@@ -123,6 +123,9 @@
   <data name="ActiveXControlUninstallFailed" xml:space="preserve">
     <value>The ActiveX Control failed to uninstall.</value>
   </data>
+  <data name="AddressNotUnderstood" xml:space="preserve">
+    <value>The address wasn't understood. Please report this bug.</value>
+  </data>
   <data name="AnotherInstanceCausingInterference" xml:space="preserve">
     <value>Another instance of Flashpoint Secure Player is preventing the Modifications from being activated.</value>
   </data>
