@@ -131,7 +131,7 @@ The `modification` element below also causes the application to be run as Admini
 Set Via:
  - Configuration File: `environmentVariables` element
 
-The Environment Variables Modification may be used to set environment variables for the current process and any software it launches only. The envrionment variables are not set for the entire system. The `%FLASHPOINTSECUREPLAYERSTARTUPPATH%` variable may be used in the value, which will be substituted with the startup path of Flashpoint Secure Player.
+The Environment Variables Modification may be used to set environment variables for the current process and any software it launches only. The envrionment variables are not set for the entire system. The `FLASHPOINTSECUREPLAYERSTARTUPPATH` variable may be used in the value, which will be substituted with the startup path of Flashpoint Secure Player.
 
 Here is a modification `element` that sets the `FP_UNITY_PATH` variable to the location of the Unity Web Player plugin.
 
@@ -189,7 +189,7 @@ The first attribute is `format`, which [formats](https://docs.microsoft.com/en-u
 
 The second attribute is `hideWindow`, which causes the window of the software to be hidden. This is ideal for hiding console windows for softwares that have them. Please note that the `hideWindow` attribute is not supported when using the Old CPU Simulator Modification. For more information, see the section about [Old CPU Simulator](#old-cpu-simulator) below.
 
-The third attribute is `workingDirectory`, which sets the working directory for the process.
+The third attribute is `workingDirectory`, which sets the working directory for the process. The `FLASHPOINTSECUREPLAYERSTARTUPPATH` variable may be used in this value, which will be substituted with the startup path of Flashpoint Secure Player.
 
 For example, a practical use of the Software Mode Template would be to create a `modification` element that always ensures the use of important Java options. Note that this example is simplified from the real Java configuration file for the purpose of demonstration.
 
@@ -231,7 +231,7 @@ The Downloads Before Modification may be used to download files from the Flashpo
 Set Via:
  - Configuration File: `registryBackups` element
 
-The Registry Backups Modification allows for specifying registry keys and values to be set temporarily and reverted when the player is exited. This allows for registry keys and values to only be set for the duration of time required. The `%FLASHPOINTSECUREPLAYERSTARTUPPATH%` variable may be used in values, which will be substituted with the startup path of Flashpoint Secure Player.
+The Registry Backups Modification allows for specifying registry keys and values to be set temporarily and reverted when the player is exited. This allows for registry keys and values to only be set for the duration of time required. The `FLASHPOINTSECUREPLAYERSTARTUPPATH` variable may be used in values, which will be substituted with the startup path of Flashpoint Secure Player.
 
 Here is a `modifications` element which temporarily changes the Unity directory.
 
