@@ -68,7 +68,7 @@ namespace FlashpointSecurePlayer {
 
                 ProgressManager.CurrentGoal.Steps++;
 
-                if (!String.IsNullOrEmpty(modificationsElement.ModeTemplates.SoftwareModeTemplate.WorkingDirectory)) {
+                if (!String.IsNullOrEmpty(Environment.ExpandEnvironmentVariables(modificationsElement.ModeTemplates.SoftwareModeTemplate.WorkingDirectory))) {
                     try {
                         SetWorkingDirectory(ref softwareProcessStartInfo, modificationsElement.ModeTemplates.SoftwareModeTemplate.WorkingDirectory);
                     } catch (ArgumentNullException) {
