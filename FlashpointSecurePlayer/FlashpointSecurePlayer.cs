@@ -26,6 +26,7 @@ namespace FlashpointSecurePlayer {
         private readonly RunAsAdministrator runAsAdministrator;
         private readonly EnvironmentVariables environmentVariables;
         private readonly ModeTemplates modeTemplates;
+        private readonly DownloadSource downloadSource;
         private readonly DownloadsBefore downloadsBefore;
         private readonly RegistryBackups registryBackup;
         private readonly SingleInstance singleInstance;
@@ -39,6 +40,7 @@ namespace FlashpointSecurePlayer {
 
         private string ModificationsName { get; set; } = ACTIVE_EXE_CONFIGURATION_NAME;
         private bool RunAsAdministratorModification { get; set; } = false;
+        private string DownloadSourceModificationName { get; set; } = null;
         private List<string> DownloadsBeforeModificationNames { get; set; } = null;
 
         private delegate void ErrorDelegate(string text);
@@ -48,6 +50,7 @@ namespace FlashpointSecurePlayer {
             runAsAdministrator = new RunAsAdministrator(this);
             environmentVariables = new EnvironmentVariables(this);
             modeTemplates = new ModeTemplates(this);
+            downloadSource = new DownloadSource(this);
             downloadsBefore = new DownloadsBefore(this);
             registryBackup = new RegistryBackups(this);
             singleInstance = new SingleInstance(this);
@@ -181,7 +184,7 @@ namespace FlashpointSecurePlayer {
                     //return;
                     //}
 
-                    ProgressManager.CurrentGoal.Start(9);
+                    ProgressManager.CurrentGoal.Start(10);
 
                     try {
                         //try {
@@ -229,6 +232,12 @@ namespace FlashpointSecurePlayer {
                             if (modificationsElement != null) {
                                 if (modificationsElement.RunAsAdministrator) {
                                     RunAsAdministratorModification = true;
+                                }
+
+                                if (modificationsElement.DownloadSource.ElementInformation.IsPresent) {
+                                    if (!String.IsNullOrEmpty(modificationsElement.DownloadSource.Name)) {
+                                        DownloadSourceModificationName = modificationsElement.DownloadSource.Name;
+                                    }
                                 }
 
                                 if (modificationsElement.DownloadsBefore.Count > 0) {
@@ -302,6 +311,26 @@ namespace FlashpointSecurePlayer {
                                     LogExceptionToLauncher(ex);
                                     AskLaunchAsAdministratorUser();
                                 }
+                            }
+                        }
+
+                        ProgressManager.CurrentGoal.Steps++;
+
+                        if (!String.IsNullOrEmpty(DownloadSourceModificationName)) {
+                            try {
+                                await downloadSource.Activate(ModificationsName, DownloadSourceModificationName, ref software).ConfigureAwait(true);
+                            } catch (DownloadFailedException ex) {
+                                LogExceptionToLauncher(ex);
+                                errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, DownloadSourceModificationName));
+                            } catch (System.Configuration.ConfigurationErrorsException ex) {
+                                LogExceptionToLauncher(ex);
+                                errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                            } catch (TaskRequiresElevationException ex) {
+                                LogExceptionToLauncher(ex);
+                                AskLaunchAsAdministratorUser();
+                            } catch (ArgumentException ex) {
+                                LogExceptionToLauncher(ex);
+                                errorDelegate(String.Format(Properties.Resources.AddressNotUnderstood, DownloadSourceModificationName));
                             }
                         }
 
@@ -672,7 +701,7 @@ namespace FlashpointSecurePlayer {
                         try {
                             webBrowserURL = new Uri(server);
                         } catch {
-                            ShowError(Properties.Resources.AddressNotUnderstood);
+                            ShowError(String.Format(Properties.Resources.AddressNotUnderstood, server));
                             return;
                         }
 
@@ -897,6 +926,12 @@ namespace FlashpointSecurePlayer {
                     if (i < args.Length - 1) {
                         if (arg == "--name" || arg == "-n") {
                             ModificationsName = args[i + 1];
+                            i++;
+                        } else if (arg == "--download-source" || arg == "-dlsrc") {
+                            if (DownloadSourceModificationName == null) {
+                                DownloadSourceModificationName = args[i + 1];
+                            }
+                            
                             i++;
                         } else if (arg == "--download-before" || arg == "-dlb") {
                             if (DownloadsBeforeModificationNames == null) {

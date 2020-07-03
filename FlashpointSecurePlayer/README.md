@@ -7,7 +7,7 @@ The Flashpoint Secure Player is an advanced application that makes modifications
 
 It is driven by a model consisting of two concepts: Modes and Modifications. The Modes and Modifications are set either via the command line or a configuration file. The configuration files may be hosted on the Flashpoint Server, making it easy to integrate into the existing Flashpoint curation flow. A number of sample configuration files are included alongside the player in the FlashpointSecurePlayerConfigs folder.
 
-Presently, there are three Modes (ActiveX Mode, Server Mode, and Software Mode) and seven Modifications (Run As Administrator, Mode Templates, Environment Variables, Downloads Before, Registry Backups, Single Instance, and Old CPU Simulator.)
+Presently, there are three Modes (ActiveX Mode, Server Mode, and Software Mode) and eight Modifications (Run As Administrator, Mode Templates, Environment Variables, Download Source, Downloads Before, Registry Backups, Single Instance, and Old CPU Simulator.)
 
 This player has bugs. Help me find them! If you've found a bug, report anything unusual as an issue.
 
@@ -209,7 +209,24 @@ With the "Java" Modification Name specified, the URL is factored into the regex,
 
 `FlashpointSecurePlayer --name "Java" --software "http://www.example.com/example.jar"`
 
-## Downloads Before
+## Download Source
+Set Via:
+ - Command Line: `--download-source` (or `-dlsrc`)
+ - Configuration File: `downloadSource` element
+
+The Download Source Modification download a files from the Flashpoint Server and opens the downloaded file in the software. It has no effect in Server Mode. This is useful for software that is only capable of loading files from the computer and takes the file to open as an argument. The command line argument may only be used once.
+
+This Modification may be useful when used alongside the Downloads Before Modification. For more information, see the section about [Downloads Before Modifications](#downloads-before) below. Here is a `modification` element that demonstrates the use of the Download Source Modification.
+
+```
+<modification name="downloadsourceexample">
+  <modeTemplates>
+    <downloadSource name="http://www.example.com/movie.swf" />
+  </modeTemplates>
+</modification>
+```
+
+## <a name="downloads-before"></a> Downloads Before
 Set Via:
  - Command Line: `--download-before` (or `-dlb`)
  - Configuration File: `downloadsBefore` element
