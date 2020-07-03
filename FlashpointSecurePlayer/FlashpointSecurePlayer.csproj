@@ -84,6 +84,7 @@
       <DependentUpon>ClosableWebBrowser.cs</DependentUpon>
     </Compile>
     <Compile Include="CustomSecurityManager.cs" />
+    <Compile Include="DownloadSource.cs" />
     <Compile Include="DownloadsBefore.cs" />
     <Compile Include="InternetInterfaces.cs" />
     <Compile Include="ModeTemplates.cs" />

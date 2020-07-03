@@ -252,6 +252,8 @@ namespace FlashpointSecurePlayer {
             int bufferSize
         );
 
+        public static readonly Task CompletedTask = Task.FromResult(false);
+
         public const string HTDOCS = "..\\Server\\htdocs";
         // there should be only one HTTP Client per application
         // (as of right now though this is exclusively used by DownloadsBefore class)
@@ -574,82 +576,27 @@ namespace FlashpointSecurePlayer {
                         }
                     }
 
-                    public class OldCPUSimulatorElement : ConfigurationElement {
-                        [ConfigurationProperty("targetRate", DefaultValue = null, IsRequired = false)]
-                        public int? TargetRate {
+                    public class DownloadSourceElement : ConfigurationElement {
+                        [ConfigurationProperty("name", IsRequired = false)]
+                        public string Name {
                             get {
-                                return (int?)base["targetRate"];
+                                return base["name"] as string;
                             }
 
                             set {
-                                base["targetRate"] = value;
-                            }
-                        }
-
-                        [ConfigurationProperty("refreshRate", DefaultValue = null, IsRequired = false)]
-                        public int? RefreshRate {
-                            get {
-                                return (int?)base["refreshRate"];
-                            }
-
-                            set {
-                                base["refreshRate"] = value;
-                            }
-                        }
-
-                        [ConfigurationProperty("setProcessPriorityHigh", DefaultValue = false, IsRequired = false)]
-                        public bool SetProcessPriorityHigh {
-                            get {
-                                return (bool)base["setProcessPriorityHigh"];
-                            }
-
-                            set {
-                                base["setProcessPriorityHigh"] = value;
-                            }
-                        }
-
-                        [ConfigurationProperty("setSyncedProcessAffinityOne", DefaultValue = true, IsRequired = false)]
-                        public bool SetSyncedProcessAffinityOne {
-                            get {
-                                return (bool)base["setSyncedProcessAffinityOne"];
-                            }
-
-                            set {
-                                base["setSyncedProcessAffinityOne"] = value;
-                            }
-                        }
-
-                        [ConfigurationProperty("syncedProcessMainThreadOnly", DefaultValue = true, IsRequired = false)]
-                        public bool SyncedProcessMainThreadOnly {
-                            get {
-                                return (bool)base["syncedProcessMainThreadOnly"];
-                            }
-
-                            set {
-                                base["syncedProcessMainThreadOnly"] = value;
-                            }
-                        }
-
-                        [ConfigurationProperty("refreshRateFloorFifteen", DefaultValue = true, IsRequired = false)]
-                        public bool RefreshRateFloorFifteen {
-                            get {
-                                return (bool)base["refreshRateFloorFifteen"];
-                            }
-
-                            set {
-                                base["refreshRateFloorFifteen"] = value;
+                                base["name"] = value;
                             }
                         }
                     }
 
-                    [ConfigurationProperty("oldCPUSimulator", IsRequired = false)]
-                    public OldCPUSimulatorElement OldCPUSimulator {
+                    [ConfigurationProperty("downloadSource", IsRequired = false)]
+                    public DownloadSourceElement DownloadSource {
                         get {
-                            return (OldCPUSimulatorElement)base["oldCPUSimulator"];
+                            return (DownloadSourceElement)base["downloadSource"];
                         }
 
                         set {
-                            base["oldCPUSimulator"] = value;
+                            base["downloadSource"] = value;
                         }
                     }
 
@@ -877,6 +824,85 @@ namespace FlashpointSecurePlayer {
 
                         set {
                             base["singleInstance"] = value;
+                        }
+                    }
+
+                    public class OldCPUSimulatorElement : ConfigurationElement {
+                        [ConfigurationProperty("targetRate", DefaultValue = null, IsRequired = false)]
+                        public int? TargetRate {
+                            get {
+                                return (int?)base["targetRate"];
+                            }
+
+                            set {
+                                base["targetRate"] = value;
+                            }
+                        }
+
+                        [ConfigurationProperty("refreshRate", DefaultValue = null, IsRequired = false)]
+                        public int? RefreshRate {
+                            get {
+                                return (int?)base["refreshRate"];
+                            }
+
+                            set {
+                                base["refreshRate"] = value;
+                            }
+                        }
+
+                        [ConfigurationProperty("setProcessPriorityHigh", DefaultValue = false, IsRequired = false)]
+                        public bool SetProcessPriorityHigh {
+                            get {
+                                return (bool)base["setProcessPriorityHigh"];
+                            }
+
+                            set {
+                                base["setProcessPriorityHigh"] = value;
+                            }
+                        }
+
+                        [ConfigurationProperty("setSyncedProcessAffinityOne", DefaultValue = true, IsRequired = false)]
+                        public bool SetSyncedProcessAffinityOne {
+                            get {
+                                return (bool)base["setSyncedProcessAffinityOne"];
+                            }
+
+                            set {
+                                base["setSyncedProcessAffinityOne"] = value;
+                            }
+                        }
+
+                        [ConfigurationProperty("syncedProcessMainThreadOnly", DefaultValue = true, IsRequired = false)]
+                        public bool SyncedProcessMainThreadOnly {
+                            get {
+                                return (bool)base["syncedProcessMainThreadOnly"];
+                            }
+
+                            set {
+                                base["syncedProcessMainThreadOnly"] = value;
+                            }
+                        }
+
+                        [ConfigurationProperty("refreshRateFloorFifteen", DefaultValue = true, IsRequired = false)]
+                        public bool RefreshRateFloorFifteen {
+                            get {
+                                return (bool)base["refreshRateFloorFifteen"];
+                            }
+
+                            set {
+                                base["refreshRateFloorFifteen"] = value;
+                            }
+                        }
+                    }
+
+                    [ConfigurationProperty("oldCPUSimulator", IsRequired = false)]
+                    public OldCPUSimulatorElement OldCPUSimulator {
+                        get {
+                            return (OldCPUSimulatorElement)base["oldCPUSimulator"];
+                        }
+
+                        set {
+                            base["oldCPUSimulator"] = value;
                         }
                     }
                 }

@@ -79,7 +79,7 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The address wasn&apos;t understood. Please report this bug..
+        ///   Looks up a localized string similar to The address ({0}) wasn&apos;t understood. Please report this bug..
         /// </summary>
         internal static string AddressNotUnderstood {
             get {
