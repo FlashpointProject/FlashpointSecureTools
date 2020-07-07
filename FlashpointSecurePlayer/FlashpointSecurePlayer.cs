@@ -676,6 +676,7 @@ namespace FlashpointSecurePlayer {
                             } else {
                                 ProgressManager.ShowError();
                                 MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                Application.Exit();
                             }
 
                             throw new InvalidModificationException("An error occured while activating.");
@@ -958,6 +959,7 @@ namespace FlashpointSecurePlayer {
                 await DeactivateModificationsAsync(delegate (string text) {
                     ProgressManager.ShowError();
                     MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Application.Exit();
                     throw new InvalidModificationException("An error occured while deactivating.");
                 }).ConfigureAwait(false);
             } catch (InvalidModificationException ex) {

@@ -30,7 +30,9 @@ namespace FlashpointSecurePlayer {
             // we want it to default to null
             bool dialogResultSet = true;
 
-            Task.WhenAll(tasks).ContinueWith(delegate (Task task) {
+            Task.WhenAll(tasks).ContinueWith(delegate (Task antecedentTask) {
+                HandleAntecedentTask(antecedentTask);
+
                 // this closes the form hosting the Message Box and
                 // causes it to stop blocking
                 closableForm.Close();
