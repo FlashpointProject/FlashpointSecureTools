@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -34,12 +35,14 @@ namespace FlashpointSecurePlayer {
                 Task[] downloadTasks = new Task[downloadsBeforeNames.Count];
 
                 for (int i = 0;i < downloadsBeforeNames.Count;i++) {
-                    downloadTasks[i] = DownloadAsync(downloadsBeforeNames[i]).ContinueWith(delegate (Task task) {
+                    downloadTasks[i] = DownloadAsync(downloadsBeforeNames[i]).ContinueWith(delegate (Task antecedentTask) {
+                        HandleAntecedentTask(antecedentTask);
+
                         ProgressManager.CurrentGoal.Steps++;
                     }, TaskScheduler.FromCurrentSynchronizationContext());
                 }
 
-                await Task.WhenAll(downloadTasks).ConfigureAwait(false);
+                await Task.WhenAll(downloadTasks).ConfigureAwait(true);
             } finally {
                 ProgressManager.CurrentGoal.Stop();
             }

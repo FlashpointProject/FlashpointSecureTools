@@ -1005,55 +1005,72 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        public static void HandleAntecedentTask(Task antecedentTask) {
+            if (antecedentTask.IsFaulted) {
+                Exception ex = antecedentTask.Exception;
+
+                while (ex is AggregateException && ex.InnerException != null) {
+                    ex = ex.InnerException;
+                }
+
+                throw ex;
+            }
+        }
+
         public static async Task DownloadAsync(string name) {
             await downloadSemaphoreSlim.WaitAsync().ConfigureAwait(true);
 
             try {
-                using (HttpResponseMessage httpResponseMessage = await httpClient.GetAsync(name, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(true))
-                using (Stream stream = await httpResponseMessage.Content.ReadAsStreamAsync().ConfigureAwait(true)) {
-                    bool currentGoalStarted = false;
-
-                    if (httpResponseMessage.Content.Headers.ContentLength != null) {
-                        currentGoalStarted = true;
-                        ProgressManager.CurrentGoal.Start((int)Math.Ceiling((double)httpResponseMessage.Content.Headers.ContentLength.GetValueOrDefault() / STREAM_READ_LENGTH));
+                using (HttpResponseMessage httpResponseMessage = await httpClient.GetAsync(name, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(true)) {
+                    if (!httpResponseMessage.IsSuccessStatusCode) {
+                        throw new Exceptions.DownloadFailedException("The HTTP Response Message failed with a Status Code of " + httpResponseMessage.StatusCode + ".");
                     }
 
-                    try {
-                        // now we loop through the stream and read it
-                        // to the end in chunks
-                        // we can't use StreamReader.ReadToEnd because
-                        // the result of the function could use too much memory
-                        // for large files
-                        // temporary buffer so we don't always reallocate this
-                        byte[] streamReadBuffer = new byte[STREAM_READ_LENGTH];
-                        int characterNumber = 0;
+                    using (Stream stream = await httpResponseMessage.Content.ReadAsStreamAsync().ConfigureAwait(true)) {
+                        bool currentGoalStarted = false;
 
-                        do {
-                            // if for whatever reason there's a problem
-                            // just ignore this download
-                            try {
-                                characterNumber = await stream.ReadAsync(streamReadBuffer, 0, STREAM_READ_LENGTH).ConfigureAwait(true);
-                            } catch (ArgumentNullException) {
-                                break;
-                            } catch (ArgumentOutOfRangeException) {
-                                break;
-                            } catch (ArgumentException) {
-                                break;
-                            } catch (NotSupportedException) {
-                                break;
-                            } catch (ObjectDisposedException) {
-                                break;
-                            } catch (InvalidOperationException) {
-                                break;
-                            }
+                        if (httpResponseMessage.Content.Headers.ContentLength != null) {
+                            currentGoalStarted = true;
+                            ProgressManager.CurrentGoal.Start((int)Math.Ceiling((double)httpResponseMessage.Content.Headers.ContentLength.GetValueOrDefault() / STREAM_READ_LENGTH));
+                        }
 
+                        try {
+                            // now we loop through the stream and read it
+                            // to the end in chunks
+                            // we can't use StreamReader.ReadToEnd because
+                            // the result of the function could use too much memory
+                            // for large files
+                            // temporary buffer so we don't always reallocate this
+                            byte[] streamReadBuffer = new byte[STREAM_READ_LENGTH];
+                            int characterNumber = 0;
+
+                            do {
+                                // if for whatever reason there's a problem
+                                // just ignore this download
+                                try {
+                                    characterNumber = await stream.ReadAsync(streamReadBuffer, 0, STREAM_READ_LENGTH).ConfigureAwait(true);
+                                } catch (ArgumentNullException) {
+                                    break;
+                                } catch (ArgumentOutOfRangeException) {
+                                    break;
+                                } catch (ArgumentException) {
+                                    break;
+                                } catch (NotSupportedException) {
+                                    break;
+                                } catch (ObjectDisposedException) {
+                                    break;
+                                } catch (InvalidOperationException) {
+                                    break;
+                                }
+
+                                if (currentGoalStarted) {
+                                    ProgressManager.CurrentGoal.Steps++;
+                                }
+                            } while (characterNumber > 0);
+                        } finally {
                             if (currentGoalStarted) {
-                                ProgressManager.CurrentGoal.Steps++;
+                                ProgressManager.CurrentGoal.Stop();
                             }
-                        } while (characterNumber > 0);
-                    } finally {
-                        if (currentGoalStarted) {
-                            ProgressManager.CurrentGoal.Stop();
                         }
                     }
                 }
