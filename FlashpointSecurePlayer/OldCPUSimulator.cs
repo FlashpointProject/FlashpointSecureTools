@@ -10,8 +10,10 @@ using System.Windows.Forms;
 
 using static FlashpointSecurePlayer.Shared;
 using static FlashpointSecurePlayer.Shared.Exceptions;
-using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.ModificationsElementCollection;
-using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement.OldCPUSimulatorElement;
 
 namespace FlashpointSecurePlayer {
     class OldCPUSimulator : Modifications {
@@ -28,12 +30,18 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            ModificationsElement modificationsElement = GetModificationsElement(false, Name);
+            TemplateElement templateElement = GetTemplateElement(false, Name);
 
-            if (modificationsElement == null) {
+            if (templateElement == null) {
                 return;
             }
-            
+
+            ModificationsElement modificationsElement = templateElement.Modifications;
+
+            if (!modificationsElement.ElementInformation.IsPresent) {
+                return;
+            }
+
             oldCPUSimulatorElement = modificationsElement.OldCPUSimulator;
 
             if (!oldCPUSimulatorElement.ElementInformation.IsPresent) {
@@ -51,17 +59,17 @@ namespace FlashpointSecurePlayer {
             // we don't want to start a new instance in that case
             // the user has manually started Old CPU Simulator already
             Process parentProcess = GetParentProcess();
-            string parentProcessEXEFileName = null;
+            string parentProcessFileName = null;
 
             if (parentProcess != null) {
                 try {
-                    parentProcessEXEFileName = Path.GetFileName(GetProcessEXEName(parentProcess)).ToUpper();
+                    parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess)).ToUpper();
                 } catch {
                     throw new OldCPUSimulatorFailedException("Failed to get the parent process EXE name.");
                 }
             }
 
-            if (parentProcessEXEFileName == OLD_CPU_SIMULATOR_PARENT_PROCESS_EXE_FILE_NAME) {
+            if (parentProcessFileName == OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME) {
                 return;
             }
 
@@ -125,6 +133,11 @@ namespace FlashpointSecurePlayer {
                 // potentially relative to this executable
                 try {
                     string[] argv = CommandLineToArgv(software, out int argc);
+
+                    if (argc <= 0) {
+                        throw new IndexOutOfRangeException("The command line argument is out of range.");
+                    }
+
                     // TODO: deal with paths with quotes... someday
                     oldCPUSimulatorSoftware.Append(Path.GetFullPath(argv[0]));
                 } catch {

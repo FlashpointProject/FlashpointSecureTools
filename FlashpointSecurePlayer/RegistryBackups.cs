@@ -19,8 +19,10 @@ using Microsoft.Win32;
 
 using static FlashpointSecurePlayer.Shared;
 using static FlashpointSecurePlayer.Shared.Exceptions;
-using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.ModificationsElementCollection;
-using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement.RegistryBackupElementCollection;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement.RegistryBackupElementCollection;
 
 namespace FlashpointSecurePlayer {
     public class RegistryBackups : Modifications {
@@ -681,7 +683,8 @@ namespace FlashpointSecurePlayer {
         public async Task StartImportAsync(string name, BINARY_TYPE binaryType) {
             base.StartImport(name);
 
-            ModificationsElement modificationsElement = GetModificationsElement(true, Name);
+            TemplateElement templateElement = GetTemplateElement(true, Name);
+            ModificationsElement modificationsElement = templateElement.Modifications;
 
             // this happens here since this check doesn't need to occur to activate
             if (modificationsElement.RegistryBackups.Get(Name) != null) {
@@ -839,13 +842,20 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            ModificationsElement modificationsElement = GetModificationsElement(false, Name);
+            TemplateElement templateElement = GetTemplateElement(false, Name);
 
-            if (modificationsElement == null) {
+            if (templateElement == null) {
                 return;
             }
 
-            ModificationsElement activeModificationsElement = GetActiveModificationsElement(true, Name);
+            ModificationsElement modificationsElement = templateElement.Modifications;
+
+            if (!modificationsElement.ElementInformation.IsPresent) {
+                return;
+            }
+
+            TemplateElement activeTemplateElement = GetActiveTemplateElement(true, Name);
+            ModificationsElement activeModificationsElement = activeTemplateElement.Modifications;
             RegistryBackupElement registryBackupElement = null;
             RegistryBackupElement activeRegistryBackupElement = null;
             string keyName = null;
@@ -1011,30 +1021,39 @@ namespace FlashpointSecurePlayer {
 
         new public void Deactivate() {
             base.Deactivate();
-            ModificationsElement activeModificationsElement = GetActiveModificationsElement(false);
+            TemplateElement activeTemplateElement = GetActiveTemplateElement(false);
 
             // if the activation backup doesn't exist, we don't need to do stuff
-            if (activeModificationsElement == null) {
+            if (activeTemplateElement == null) {
                 return;
             }
+
+            ModificationsElement activeModificationsElement = activeTemplateElement.Modifications;
 
             // if the activation backup exists, but no key is marked as active...
             // we assume the registry has changed, and don't revert the changes, to be safe
             // (it should never happen unless the user tampered with the config file)
-            string modificationsElementName = activeModificationsElement.Active;
+            string templateElementName = activeTemplateElement.Active;
 
             // don't allow infinite recursion!
-            if (String.IsNullOrEmpty(modificationsElementName)) {
+            if (String.IsNullOrEmpty(templateElementName)) {
                 activeModificationsElement.RegistryBackups.Clear();
                 SetFlashpointSecurePlayerSection(Name);
                 return;
             }
 
-            ModificationsElement modificationsElement = GetModificationsElement(false, modificationsElementName);
+            TemplateElement templateElement = GetTemplateElement(false, templateElementName);
+            ModificationsElement modificationsElement = null;
 
             // if the active element pointed to doesn't exist... same assumption
             // and another safeguard against recursion
-            if (modificationsElement == null || modificationsElement == activeModificationsElement) {
+            if (templateElement != null && templateElement != activeTemplateElement) {
+                if (templateElement.Modifications.ElementInformation.IsPresent) {
+                    modificationsElement = templateElement.Modifications;
+                }
+            }
+            
+            if (modificationsElement == null) {
                 activeModificationsElement.RegistryBackups.Clear();
                 SetFlashpointSecurePlayerSection(Name);
                 return;
@@ -1211,16 +1230,22 @@ namespace FlashpointSecurePlayer {
             }
 
             // if there isn't any KCB to deal with...
-            ModificationsElement modificationsElement = null;
+            TemplateElement templateElement = null;
 
             // must catch exceptions here for thread safety
             try {
-                modificationsElement = GetModificationsElement(false, Name);
+                templateElement = GetTemplateElement(false, Name);
             } catch (System.Configuration.ConfigurationErrorsException) {
                 return;
             }
 
-            if (modificationsElement == null) {
+            if (templateElement == null) {
+                return;
+            }
+
+            ModificationsElement modificationsElement = templateElement.Modifications;
+
+            if (!modificationsElement.ElementInformation.IsPresent) {
                 return;
             }
 
@@ -1335,16 +1360,22 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            ModificationsElement modificationsElement = null;
+            TemplateElement templateElement = null;
 
             // must catch exceptions here for thread safety
             try {
-                modificationsElement = GetModificationsElement(false, Name);
+                templateElement = GetTemplateElement(false, Name);
             } catch (System.Configuration.ConfigurationErrorsException) {
                 return;
             }
 
-            if (modificationsElement == null) {
+            if (templateElement == null) {
+                return;
+            }
+
+            ModificationsElement modificationsElement = templateElement.Modifications;
+
+            if (!modificationsElement.ElementInformation.IsPresent) {
                 return;
             }
 
@@ -1411,15 +1442,21 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            ModificationsElement modificationsElement = null;
+            TemplateElement templateElement = null;
 
             try {
-                modificationsElement = GetModificationsElement(false, Name);
+                templateElement = GetTemplateElement(false, Name);
             } catch (System.Configuration.ConfigurationErrorsException) {
                 return;
             }
 
-            if (modificationsElement == null) {
+            if (templateElement == null) {
+                return;
+            }
+
+            ModificationsElement modificationsElement = templateElement.Modifications;
+
+            if (!modificationsElement.ElementInformation.IsPresent) {
                 return;
             }
 

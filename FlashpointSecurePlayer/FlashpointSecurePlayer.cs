@@ -13,32 +13,32 @@ using System.Windows.Forms;
 
 using static FlashpointSecurePlayer.Shared;
 using static FlashpointSecurePlayer.Shared.Exceptions;
-using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.ModificationsElementCollection;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement;
 
 namespace FlashpointSecurePlayer {
     public partial class FlashpointSecurePlayer : Form {
         private const string APPLICATION_MUTEX_NAME = "Flashpoint Secure Player";
         private const string MODIFICATIONS_MUTEX_NAME = "Flashpoint Secure Player Modifications";
-        private const string FLASHPOINT_LAUNCHER_PARENT_PROCESS_EXE_FILE_NAME = "CMD.EXE";
+        private const string FLASHPOINT_LAUNCHER_PARENT_PROCESS_FILE_NAME = "CMD.EXE";
         private const string FLASHPOINT_LAUNCHER_PROCESS_NAME = "FLASHPOINT";
+
         private Mutex applicationMutex = null;
-        //private static SemaphoreSlim modificationsSemaphoreSlim = new SemaphoreSlim(1, 1);
+
         private readonly RunAsAdministrator runAsAdministrator;
         private readonly EnvironmentVariables environmentVariables;
-        private readonly ModeTemplates modeTemplates;
-        private readonly DownloadSource downloadSource;
         private readonly DownloadsBefore downloadsBefore;
         private readonly RegistryBackups registryBackup;
         private readonly SingleInstance singleInstance;
         private readonly OldCPUSimulator oldCPUSimulator;
+        
         private bool activeX = false;
-        private string server = String.Empty;
-        private string software = String.Empty;
         Server serverForm = null;
         private ProcessStartInfo softwareProcessStartInfo = null;
         private bool softwareIsOldCPUSimulator = false;
 
-        private string ModificationsName { get; set; } = ACTIVE_EXE_CONFIGURATION_NAME;
+        private string TemplateName { get; set; } = ACTIVE_EXE_CONFIGURATION_NAME;
         private bool RunAsAdministratorModification { get; set; } = false;
         private string DownloadSourceModificationName { get; set; } = null;
         private List<string> DownloadsBeforeModificationNames { get; set; } = null;
@@ -49,8 +49,6 @@ namespace FlashpointSecurePlayer {
             InitializeComponent();
             runAsAdministrator = new RunAsAdministrator(this);
             environmentVariables = new EnvironmentVariables(this);
-            modeTemplates = new ModeTemplates(this);
-            downloadSource = new DownloadSource(this);
             downloadsBefore = new DownloadsBefore(this);
             registryBackup = new RegistryBackups(this);
             singleInstance = new SingleInstance(this);
@@ -120,18 +118,24 @@ namespace FlashpointSecurePlayer {
         }
 
         private void AskLaunchWithOldCPUSimulator() {
-            ModificationsElement modificationsElement = GetModificationsElement(false, ModificationsName);
+            TemplateElement templateElement = GetTemplateElement(false, TemplateName);
 
-            if (modificationsElement == null) {
+            if (templateElement == null) {
+                return;
+            }
+
+            ModificationsElement modificationsElement = templateElement.Modifications;
+
+            if (!modificationsElement.ElementInformation.IsPresent) {
                 return;
             }
 
             Process parentProcess = GetParentProcess();
-            string parentProcessEXEFileName = null;
+            string parentProcessFileName = null;
 
             if (parentProcess != null) {
                 try {
-                    parentProcessEXEFileName = Path.GetFileName(GetProcessEXEName(parentProcess)).ToUpper();
+                    parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess)).ToUpper();
                 } catch {
                     ProgressManager.ShowError();
                     MessageBox.Show(Properties.Resources.ProcessFailedStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -140,7 +144,7 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
-            if (parentProcessEXEFileName == OLD_CPU_SIMULATOR_PARENT_PROCESS_EXE_FILE_NAME) {
+            if (parentProcessFileName == OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME) {
                 return;
             }
 
@@ -166,7 +170,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private async Task ActivateModificationsAsync(string commandLine, ErrorDelegate errorDelegate) {
+        private async Task ActivateModificationsAsync(ErrorDelegate errorDelegate) {
             bool createdNew = false;
 
             using (Mutex modificationsMutex = new Mutex(true, MODIFICATIONS_MUTEX_NAME, out createdNew)) {
@@ -184,60 +188,56 @@ namespace FlashpointSecurePlayer {
                     //return;
                     //}
 
-                    ProgressManager.CurrentGoal.Start(10);
+                    ProgressManager.CurrentGoal.Start(8);
 
                     try {
                         //try {
-                        ModificationsElement activeModificationsElement = null;
+                        TemplateElement activeTemplateElement = null;
 
                         try {
-                            activeModificationsElement = GetActiveModificationsElement(false);
+                            activeTemplateElement = GetActiveTemplateElement(false);
                         } catch (System.Configuration.ConfigurationErrorsException ex) {
                             LogExceptionToLauncher(ex);
                             // Fail silently.
                         }
 
-                        if (activeModificationsElement != null) {
-                            if (!String.IsNullOrEmpty(activeModificationsElement.Active)) {
-                                throw new InvalidModificationException("The Modifications Element (" + activeModificationsElement.Active + ") is active.");
+                        if (activeTemplateElement != null) {
+                            if (!String.IsNullOrEmpty(activeTemplateElement.Active)) {
+                                throw new InvalidModificationException("The Modifications Element (" + activeTemplateElement.Active + ") is active.");
                             }
                         }
 
                         ProgressManager.CurrentGoal.Steps++;
-                        ModificationsElement modificationsElement = null;
+                        TemplateElement templateElement = null;
 
-                        if (!String.IsNullOrEmpty(ModificationsName)) {
-                            await DownloadFlashpointSecurePlayerSectionAsync(ModificationsName).ConfigureAwait(true);
+                        if (!String.IsNullOrEmpty(TemplateName)) {
+                            await DownloadFlashpointSecurePlayerSectionAsync(TemplateName).ConfigureAwait(true);
 
                             try {
-                                modificationsElement = GetModificationsElement(false, ModificationsName);
+                                templateElement = GetTemplateElement(false, TemplateName);
                             } catch (System.Configuration.ConfigurationErrorsException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                                 // we really need modificationsElement to exist
-                                throw new InvalidModificationException("The Modifications Element " + ModificationsName + " does not exist.");
+                                throw new InvalidModificationException("The Modifications Element " + TemplateName + " does not exist.");
                             }
 
-                            if (modificationsElement == null) {
+                            if (templateElement == null) {
                                 errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                                throw new InvalidModificationException("The Modifications Element " + ModificationsName + " is null.");
+                                throw new InvalidModificationException("The Modifications Element " + TemplateName + " is null.");
                             }
                         }
+
+                        ModificationsElement modificationsElement = templateElement.Modifications;
 
                         if (DownloadsBeforeModificationNames == null) {
                             DownloadsBeforeModificationNames = new List<string>();
                         }
 
                         try {
-                            if (modificationsElement != null) {
+                            if (modificationsElement.ElementInformation.IsPresent) {
                                 if (modificationsElement.RunAsAdministrator) {
                                     RunAsAdministratorModification = true;
-                                }
-
-                                if (modificationsElement.DownloadSource.ElementInformation.IsPresent) {
-                                    if (!String.IsNullOrEmpty(modificationsElement.DownloadSource.Name)) {
-                                        DownloadSourceModificationName = modificationsElement.DownloadSource.Name;
-                                    }
                                 }
 
                                 if (modificationsElement.DownloadsBefore.Count > 0) {
@@ -264,7 +264,7 @@ namespace FlashpointSecurePlayer {
                         ProgressManager.CurrentGoal.Steps++;
 
                         try {
-                            runAsAdministrator.Activate(ModificationsName, RunAsAdministratorModification);
+                            runAsAdministrator.Activate(TemplateName, RunAsAdministratorModification);
                         } catch (System.Configuration.ConfigurationErrorsException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.ConfigurationFailedLoad);
@@ -275,10 +275,10 @@ namespace FlashpointSecurePlayer {
 
                         ProgressManager.CurrentGoal.Steps++;
 
-                        if (modificationsElement != null) {
+                        if (modificationsElement.ElementInformation.IsPresent) {
                             if (modificationsElement.EnvironmentVariables.Count > 0) {
                                 try {
-                                    environmentVariables.Activate(ModificationsName, server);
+                                    environmentVariables.Activate(TemplateName, server);
                                 } catch (EnvironmentVariablesFailedException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.EnvironmentVariablesFailed);
@@ -295,12 +295,13 @@ namespace FlashpointSecurePlayer {
                             }
                         }
 
+                        /*
                         ProgressManager.CurrentGoal.Steps++;
 
                         if (modificationsElement != null) {
                             if (modificationsElement.ModeTemplates.ElementInformation.IsPresent) {
                                 try {
-                                    modeTemplates.Activate(ModificationsName, ref server, ref software, ref softwareProcessStartInfo);
+                                    modeTemplates.Activate(TemplateName, ref server, ref software, ref softwareProcessStartInfo);
                                 } catch (ModeTemplatesFailedException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.ModeTemplatesFailed);
@@ -318,7 +319,7 @@ namespace FlashpointSecurePlayer {
 
                         if (!String.IsNullOrEmpty(DownloadSourceModificationName)) {
                             try {
-                                await downloadSource.Activate(ModificationsName, DownloadSourceModificationName, ref software).ConfigureAwait(true);
+                                await downloadSource.Activate(TemplateName, DownloadSourceModificationName, ref software).ConfigureAwait(true);
                             } catch (DownloadFailedException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, DownloadSourceModificationName));
@@ -333,12 +334,13 @@ namespace FlashpointSecurePlayer {
                                 errorDelegate(String.Format(Properties.Resources.AddressNotUnderstood, DownloadSourceModificationName));
                             }
                         }
+                        */
 
                         ProgressManager.CurrentGoal.Steps++;
 
                         if (DownloadsBeforeModificationNames.Count > 0) {
                             try {
-                                await downloadsBefore.ActivateAsync(ModificationsName, DownloadsBeforeModificationNames).ConfigureAwait(true);
+                                await downloadsBefore.ActivateAsync(TemplateName, DownloadsBeforeModificationNames).ConfigureAwait(true);
                             } catch (DownloadFailedException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, String.Join(", ", DownloadsBeforeModificationNames)));
@@ -350,10 +352,10 @@ namespace FlashpointSecurePlayer {
 
                         ProgressManager.CurrentGoal.Steps++;
 
-                        if (modificationsElement != null) {
+                        if (modificationsElement.ElementInformation.IsPresent) {
                             if (modificationsElement.RegistryBackups.Count > 0) {
                                 try {
-                                    registryBackup.Activate(ModificationsName);
+                                    registryBackup.Activate(TemplateName);
                                 } catch (RegistryBackupFailedException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.RegistryBackupFailed);
@@ -372,10 +374,17 @@ namespace FlashpointSecurePlayer {
 
                         ProgressManager.CurrentGoal.Steps++;
 
-                        if (modificationsElement != null) {
+                        if (modificationsElement.ElementInformation.IsPresent) {
                             if (modificationsElement.SingleInstance.ElementInformation.IsPresent) {
                                 try {
-                                    singleInstance.Activate(ModificationsName, commandLine);
+                                    string executablePath = String.Empty;
+                                    string[] argv = CommandLineToArgv(Mode.commandLine, out int argc);
+
+                                    if (argc > 0) {
+                                        executablePath = argv[0];
+                                    }
+
+                                    singleInstance.Activate(TemplateName, executablePath);
                                 } catch (InvalidModificationException ex) {
                                     LogExceptionToLauncher(ex);
                                     throw ex;
@@ -390,10 +399,10 @@ namespace FlashpointSecurePlayer {
 
                         ProgressManager.CurrentGoal.Steps++;
 
-                        if (modificationsElement != null) {
+                        if (modificationsElement.ElementInformation.IsPresent) {
                             if (modificationsElement.OldCPUSimulator.ElementInformation.IsPresent) {
                                 try {
-                                    oldCPUSimulator.Activate(ModificationsName, ref server, ref software, ref softwareProcessStartInfo, out softwareIsOldCPUSimulator);
+                                    oldCPUSimulator.Activate(TemplateName, ref Mode.name, ref Mode.commandLine, ref softwareProcessStartInfo, out softwareIsOldCPUSimulator);
                                 } catch (OldCPUSimulatorFailedException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.OldCPUSimulatorFailed);
@@ -495,10 +504,10 @@ namespace FlashpointSecurePlayer {
                         ProgressManager.CurrentGoal.Steps++;
 
                         try {
-                            ModificationsElement activeModificationsElement = GetActiveModificationsElement(false);
+                            TemplateElement activeTemplateElement = GetActiveTemplateElement(false);
 
-                            if (activeModificationsElement != null) {
-                                activeModificationsElement.Active = ACTIVE_EXE_CONFIGURATION_NAME;
+                            if (activeTemplateElement != null) {
+                                activeTemplateElement.Active = ACTIVE_EXE_CONFIGURATION_NAME;
                                 SetFlashpointSecurePlayerSection(ACTIVE_EXE_CONFIGURATION_NAME);
                             }
                         } catch (System.Configuration.ConfigurationErrorsException ex) {
@@ -519,7 +528,7 @@ namespace FlashpointSecurePlayer {
         private async Task StartSecurePlayback() {
             if (activeX) {
                 // ActiveX Mode
-                if (String.IsNullOrEmpty(ModificationsName)) {
+                if (String.IsNullOrEmpty(TemplateName)) {
                     ShowError(Properties.Resources.CurationMissingModificationName);
                     throw new InvalidModificationException("The Modification Name may not be the Active Modification Name.");
                 }
@@ -537,11 +546,11 @@ namespace FlashpointSecurePlayer {
                     ActiveXControl activeXControl;
 
                     try {
-                        activeXControl = new ActiveXControl(ModificationsName);
+                        activeXControl = new ActiveXControl(TemplateName);
                     } catch (DllNotFoundException ex) {
                         LogExceptionToLauncher(ex);
                         ProgressManager.ShowError();
-                        MessageBox.Show(String.Format(Properties.Resources.GameIsMissingFiles, ModificationsName), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show(String.Format(Properties.Resources.GameIsMissingFiles, TemplateName), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         Application.Exit();
                         return;
                     } catch (InvalidActiveXControlException ex) {
@@ -550,7 +559,7 @@ namespace FlashpointSecurePlayer {
                         return;
                     }
 
-                    GetBinaryType(ModificationsName, out BINARY_TYPE binaryType);
+                    GetBinaryType(TemplateName, out BINARY_TYPE binaryType);
 
                     // first, we install the control without a registry backup running
                     // this is so we can be sure we can uninstall the control
@@ -580,7 +589,7 @@ namespace FlashpointSecurePlayer {
 
                     try {
                         try {
-                            await registryBackup.StartImportAsync(ModificationsName, binaryType).ConfigureAwait(true);
+                            await registryBackup.StartImportAsync(TemplateName, binaryType).ConfigureAwait(true);
                         } catch (RegistryBackupFailedException ex) {
                             LogExceptionToLauncher(ex);
                             ShowError(Properties.Resources.RegistryBackupFailed);
@@ -670,7 +679,7 @@ namespace FlashpointSecurePlayer {
 
                 try {
                     try {
-                        await ActivateModificationsAsync(software, delegate (string text) {
+                        await ActivateModificationsAsync(delegate (string text) {
                             if (text.IndexOf("\n") == -1) {
                                 ShowError(text);
                             } else {
@@ -695,7 +704,7 @@ namespace FlashpointSecurePlayer {
                         }
                     }
 
-                    if (!String.IsNullOrEmpty(server)) {
+                    if (Mode.name == Mode.NAME.WEB_BROWSER) {
                         ProgressManager.CurrentGoal.Steps++;
                         Uri webBrowserURL = null;
 
@@ -716,11 +725,15 @@ namespace FlashpointSecurePlayer {
                         Hide();
                         serverForm.Show();
                         return;
-                    } else if (!String.IsNullOrEmpty(software)) {
+                    } else if (Mode.name == Mode.NAME.SOFTWARE) {
                         ProgressManager.CurrentGoal.Steps++;
 
                         try {
-                            string[] argv = CommandLineToArgv(software, out int argc);
+                            string[] argv = CommandLineToArgv(Mode.commandLine, out int argc);
+
+                            if (argc <= 0) {
+                                throw new IndexOutOfRangeException("The command line argument is out of range.");
+                            }
 
                             if (softwareProcessStartInfo == null) {
                                 softwareProcessStartInfo = new ProcessStartInfo();
@@ -728,7 +741,7 @@ namespace FlashpointSecurePlayer {
 
                             string fullPath = Path.GetFullPath(argv[0]);
                             softwareProcessStartInfo.FileName = fullPath;
-                            softwareProcessStartInfo.Arguments = GetCommandLineArgumentRange(software, 1, -1);
+                            softwareProcessStartInfo.Arguments = GetCommandLineArgumentRange(Mode.commandLine, 1, -1);
                             softwareProcessStartInfo.ErrorDialog = false;
 
                             if (String.IsNullOrEmpty(softwareProcessStartInfo.WorkingDirectory)) {
@@ -887,14 +900,14 @@ namespace FlashpointSecurePlayer {
                 }
 
                 try {
-                    Environment.SetEnvironmentVariable(FLASHPOINT_SECURE_PLAYER_STARTUP_PATH, Application.StartupPath, EnvironmentVariableTarget.Process);
+                    Environment.SetEnvironmentVariable(FLASHPOINT_STARTUP_PATH, Application.StartupPath, EnvironmentVariableTarget.Process);
                 } catch (ArgumentException ex) {
                     LogExceptionToLauncher(ex);
                     Application.Exit();
                     return;
                 } catch (System.Security.SecurityException ex) {
                     LogExceptionToLauncher(ex);
-                    throw new TaskRequiresElevationException("Setting the " + FLASHPOINT_SECURE_PLAYER_STARTUP_PATH + " Environment Variable requires elevation.");
+                    throw new TaskRequiresElevationException("Setting the " + FLASHPOINT_STARTUP_PATH + " Environment Variable requires elevation.");
                 }
             } catch (TaskRequiresElevationException ex) {
                 LogExceptionToLauncher(ex);
@@ -914,26 +927,25 @@ namespace FlashpointSecurePlayer {
 
             string arg = null;
             string[] args = Environment.GetCommandLineArgs();
+            // TODO: set env vars
+            // URL
+            // DOWNLOAD PATH
 
-            for (int i = 1;i < args.Length;i++) {
+            for (int i = 3;i < args.Length;i++) {
                 arg = args[i].ToLower();
 
                 // instead of switch I use else if because C# is too lame for multiple case statements
-                if (arg == "--run-as-administrator" || arg == "-a") {
-                    RunAsAdministratorModification = true;
-                } else if (arg == "--activex" || arg == "-ax") {
+                if (arg == "--activex" || arg == "-ax") {
                     activeX = true;
+                } else if (arg == "--run-as-administrator" || arg == "-a") {
+                    RunAsAdministratorModification = true;
                 } else {
                     if (i < args.Length - 1) {
-                        if (arg == "--name" || arg == "-n") {
-                            ModificationsName = args[i + 1];
-                            i++;
-                        } else if (arg == "--download-source" || arg == "-dlsrc") {
-                            if (DownloadSourceModificationName == null) {
-                                DownloadSourceModificationName = args[i + 1];
-                            }
-                            
-                            i++;
+                        if (arg == "--arguments" || arg == "-args") {
+                            // TODO: set env var
+                            // ARGUMENTS
+                            GetCommandLineArgumentRange(Environment.CommandLine, i + 1, -1);
+                            break;
                         } else if (arg == "--download-before" || arg == "-dlb") {
                             if (DownloadsBeforeModificationNames == null) {
                                 DownloadsBeforeModificationNames = new List<string>();
@@ -941,12 +953,6 @@ namespace FlashpointSecurePlayer {
 
                             DownloadsBeforeModificationNames.Add(args[i + 1]);
                             i++;
-                        } else if (arg == "--server" || arg == "-sv") {
-                            server = args[i + 1];
-                            i++;
-                        } else if (arg == "--software" || arg == "-sw") {
-                            software = GetCommandLineArgumentRange(Environment.CommandLine, i + 1, -1);
-                            break;
                         }
                     }
                 }
@@ -989,17 +995,17 @@ namespace FlashpointSecurePlayer {
                 //ShowError(Properties.Resources.GameNotCuratedCorrectly);
                 string text = Properties.Resources.NoGameSelected;
                 Process parentProcess = GetParentProcess();
-                string parentProcessEXEFileName = null;
+                string parentProcessFileName = null;
 
                 if (parentProcess != null) {
                     try {
-                        parentProcessEXEFileName = Path.GetFileName(GetProcessEXEName(parentProcess)).ToUpper();
+                        parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess)).ToUpper();
                     } catch {
                         // Fail silently.
                     }
                 }
 
-                if (parentProcessEXEFileName != FLASHPOINT_LAUNCHER_PARENT_PROCESS_EXE_FILE_NAME) {
+                if (parentProcessFileName != FLASHPOINT_LAUNCHER_PARENT_PROCESS_FILE_NAME) {
                     text += " " + Properties.Resources.UseFlashpointLauncher;
                     Process[] processesByName;
 
