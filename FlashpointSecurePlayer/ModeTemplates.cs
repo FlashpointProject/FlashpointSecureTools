@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -11,9 +12,9 @@ using System.Windows.Forms;
 
 using static FlashpointSecurePlayer.Shared;
 using static FlashpointSecurePlayer.Shared.Exceptions;
-using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.ModificationsElementCollection;
-using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement.ModeTemplatesElement;
-using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement.ModeTemplatesElement.ModeTemplateElement.RegexElementCollection;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.ModificationsElement.ModeTemplatesElement;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.ModificationsElement.ModeTemplatesElement.ModeTemplateElement.RegexElementCollection;
 
 namespace FlashpointSecurePlayer {
     class ModeTemplates : Modifications {
@@ -49,7 +50,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            ModificationsElement modificationsElement = GetModificationsElement(false, Name);
+            ModificationsElement modificationsElement = GetTemplateElement(false, Name);
 
             if (modificationsElement == null) {
                 return;
@@ -111,3 +112,4 @@ namespace FlashpointSecurePlayer {
         }
     }
 }
+*/

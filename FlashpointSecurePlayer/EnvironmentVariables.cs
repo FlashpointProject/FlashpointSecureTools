@@ -8,8 +8,10 @@ using System.Windows.Forms;
 
 using static FlashpointSecurePlayer.Shared;
 using static FlashpointSecurePlayer.Shared.Exceptions;
-using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.ModificationsElementCollection;
-using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement.EnvironmentVariablesElementCollection;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement.EnvironmentVariablesElementCollection;
 
 namespace FlashpointSecurePlayer {
     class EnvironmentVariables : Modifications {
@@ -37,9 +39,15 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            ModificationsElement modificationsElement = GetModificationsElement(false, Name);
+            TemplateElement templateElement = GetTemplateElement(false, Name);
 
-            if (modificationsElement == null) {
+            if (templateElement == null) {
+                return;
+            }
+
+            ModificationsElement modificationsElement = templateElement.Modifications;
+
+            if (!modificationsElement.ElementInformation.IsPresent) {
                 return;
             }
 
@@ -72,8 +80,8 @@ namespace FlashpointSecurePlayer {
                     
                     comparableName = GetComparableName(environmentVariablesElement.Name);
 
-                    if (comparableName == FLASHPOINT_SECURE_PLAYER_STARTUP_PATH) {
-                        throw new EnvironmentVariablesFailedException("The " + FLASHPOINT_SECURE_PLAYER_STARTUP_PATH + " Environment Variable cannot be modified.");
+                    if (comparableName == FLASHPOINT_STARTUP_PATH) {
+                        throw new EnvironmentVariablesFailedException("The " + FLASHPOINT_STARTUP_PATH + " Environment Variable cannot be modified.");
                     }
 
                     value = environmentVariablesElement.Value;
@@ -126,12 +134,18 @@ namespace FlashpointSecurePlayer {
             }
 
             // don't need to get active name, we're only deactivating for this process
-            ModificationsElement modificationsElement = GetModificationsElement(false, Name);
+            TemplateElement templateElement = GetTemplateElement(false, Name);
 
-            if (modificationsElement == null) {
+            if (templateElement == null) {
                 return;
             }
-            
+
+            ModificationsElement modificationsElement = templateElement.Modifications;
+
+            if (!modificationsElement.ElementInformation.IsPresent) {
+                return;
+            }
+
             string comparableName = null;
             string value = null;
             List<string> values = null;
@@ -164,8 +178,8 @@ namespace FlashpointSecurePlayer {
 
                     comparableName = GetComparableName(environmentVariablesElement.Name);
 
-                    if (comparableName == FLASHPOINT_SECURE_PLAYER_STARTUP_PATH) {
-                        throw new EnvironmentVariablesFailedException("The " + FLASHPOINT_SECURE_PLAYER_STARTUP_PATH + " Environment Variable cannot be modified.");
+                    if (comparableName == FLASHPOINT_STARTUP_PATH) {
+                        throw new EnvironmentVariablesFailedException("The " + FLASHPOINT_STARTUP_PATH + " Environment Variable cannot be modified.");
                     }
 
                     value = environmentVariablesElement.Value;
