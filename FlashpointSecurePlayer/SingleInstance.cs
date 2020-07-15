@@ -63,7 +63,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            TemplateElement templateElement = GetTemplateElement(false, Name);
+            TemplateElement templateElement = GetTemplateElement(false, TemplateName);
 
             if (templateElement == null) {
                 return;
@@ -92,8 +92,8 @@ namespace FlashpointSecurePlayer {
             //string[] argv = CommandLineToArgv(executablePath, out int argc);
 
             // the paths we'll be comparing to test if the executable is strictly the same
-            string comparableExecutablePath = String.Empty;
-            string activeComparableExecutablePath = String.Empty;
+            string comparableExecutablePath = null;
+            string activeComparableExecutablePath = null;
 
             try {
                 activeComparableExecutablePath = Path.GetFullPath(executablePath);
