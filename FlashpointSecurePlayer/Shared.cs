@@ -18,8 +18,6 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace FlashpointSecurePlayer {
-    using FlashpointSecurePlayerMode = Mode;
-
     public static class Shared {
         public static class Exceptions {
             public class ApplicationRestartRequiredException : InvalidOperationException {
@@ -70,22 +68,22 @@ namespace FlashpointSecurePlayer {
                 public InvalidActiveXControlException(string message, Exception inner) : base(message, inner) { }
             }
 
-            public class InvalidCurationException : InvalidOperationException {
-                public InvalidCurationException() { }
-                public InvalidCurationException(string message) : base(message) { }
-                public InvalidCurationException(string message, Exception inner) : base(message, inner) { }
+            public class InvalidTemplateException : InvalidOperationException {
+                public InvalidTemplateException() { }
+                public InvalidTemplateException(string message) : base(message) { }
+                public InvalidTemplateException(string message, Exception inner) : base(message, inner) { }
             }
 
-            public class InvalidModificationException : InvalidCurationException {
+            public class InvalidModeException : InvalidTemplateException {
+                public InvalidModeException() { }
+                public InvalidModeException(string message) : base(message) { }
+                public InvalidModeException(string message, Exception inner) : base(message, inner) { }
+            }
+
+            public class InvalidModificationException : InvalidTemplateException {
                 public InvalidModificationException() { }
                 public InvalidModificationException(string message) : base(message) { }
                 public InvalidModificationException(string message, Exception inner) : base(message, inner) { }
-            }
-
-            public class ModeTemplatesFailedException : InvalidModificationException {
-                public ModeTemplatesFailedException() { }
-                public ModeTemplatesFailedException(string message) : base(message) { }
-                public ModeTemplatesFailedException(string message, Exception inner) : base(message, inner) { }
             }
 
             public class OldCPUSimulatorFailedException : InvalidModificationException {
@@ -257,6 +255,7 @@ namespace FlashpointSecurePlayer {
         public static readonly Task CompletedTask = Task.FromResult(false);
 
         public const string HTDOCS = "..\\Server\\htdocs";
+        public const string LOCALHOST = "localhost";
         // there should be only one HTTP Client per application
         // (as of right now though this is exclusively used by DownloadsBefore class)
         private static readonly HttpClientHandler httpClientHandler = new HttpClientHandler {
@@ -386,10 +385,19 @@ namespace FlashpointSecurePlayer {
                     }
 
                     public class ModeElement : ConfigurationElement {
-                        [ConfigurationProperty("name", DefaultValue = FlashpointSecurePlayerMode.NAME.WEB_BROWSER, IsRequired = true)]
-                        public FlashpointSecurePlayerMode.NAME Name {
+                        public enum NAME {
+                            WEB_BROWSER,
+                            SOFTWARE
+                        }
+
+                        public enum WEB_BROWSER_NAME {
+                            INTERNET_EXPLORER
+                        }
+
+                        [ConfigurationProperty("name", DefaultValue = NAME.WEB_BROWSER, IsRequired = true)]
+                        public NAME Name {
                             get {
-                                return (FlashpointSecurePlayerMode.NAME)base["name"];
+                                return (NAME)base["name"];
                             }
 
                             set {
@@ -397,10 +405,10 @@ namespace FlashpointSecurePlayer {
                             }
                         }
                         
-                        [ConfigurationProperty("webBrowserName", DefaultValue = FlashpointSecurePlayerMode.WEB_BROWSER_NAME.INTERNET_EXPLORER, IsRequired = false)]
-                        public FlashpointSecurePlayerMode.WEB_BROWSER_NAME WebBrowserName {
+                        [ConfigurationProperty("webBrowserName", DefaultValue = WEB_BROWSER_NAME.INTERNET_EXPLORER, IsRequired = false)]
+                        public WEB_BROWSER_NAME WebBrowserName {
                             get {
-                                return (FlashpointSecurePlayerMode.WEB_BROWSER_NAME)base["webBrowserName"];
+                                return (WEB_BROWSER_NAME)base["webBrowserName"];
                             }
 
                             set {
@@ -416,17 +424,6 @@ namespace FlashpointSecurePlayer {
 
                             set {
                                 base["commandLine"] = value;
-                            }
-                        }
-
-                        [ConfigurationProperty("urlAction", DefaultValue = FlashpointSecurePlayerMode.URL_ACTION.OPEN, IsRequired = false)]
-                        public FlashpointSecurePlayerMode.URL_ACTION URLAction {
-                            get {
-                                return (FlashpointSecurePlayerMode.URL_ACTION)base["urlAction"];
-                            }
-
-                            set {
-                                base["urlAction"] = value;
                             }
                         }
 

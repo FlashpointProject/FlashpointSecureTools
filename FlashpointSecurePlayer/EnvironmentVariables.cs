@@ -15,7 +15,8 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Templat
 
 namespace FlashpointSecurePlayer {
     class EnvironmentVariables : Modifications {
-        const string COMPATIBILITY_LAYER_NAME = "__COMPAT_LAYER";
+        private const string COMPATIBILITY_LAYER_NAME = "__COMPAT_LAYER";
+        private IList<string> ReadOnlyComparableNames { get; } = new List<string> { FLASHPOINT_STARTUP_PATH, FLASHPOINT_DOWNLOAD_PATH }.AsReadOnly();
 
         public EnvironmentVariables(Form form) : base(form) { }
 
@@ -31,7 +32,7 @@ namespace FlashpointSecurePlayer {
             return comparableName;
         }
 
-        public void Activate(string name, string server) {
+        public void Activate(string name, ModeElement modeElement) {
             base.Activate(name);
 
             if (String.IsNullOrEmpty(name)) {
@@ -39,7 +40,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            TemplateElement templateElement = GetTemplateElement(false, Name);
+            TemplateElement templateElement = GetTemplateElement(false, TemplateName);
 
             if (templateElement == null) {
                 return;
@@ -80,8 +81,8 @@ namespace FlashpointSecurePlayer {
                     
                     comparableName = GetComparableName(environmentVariablesElement.Name);
 
-                    if (comparableName == FLASHPOINT_STARTUP_PATH) {
-                        throw new EnvironmentVariablesFailedException("The " + FLASHPOINT_STARTUP_PATH + " Environment Variable cannot be modified.");
+                    if (ReadOnlyComparableNames.Contains(comparableName)) {
+                        throw new EnvironmentVariablesFailedException("The " + environmentVariablesElement.Name + " Environment Variable cannot be modified.");
                     }
 
                     value = environmentVariablesElement.Value;
@@ -97,7 +98,7 @@ namespace FlashpointSecurePlayer {
                     // if this is the compatibility layer variable
                     // and the value is not what we want to set it to
                     // and we're in server mode...
-                    if (comparableName == COMPATIBILITY_LAYER_NAME && !String.IsNullOrEmpty(server)) {
+                    if (comparableName == COMPATIBILITY_LAYER_NAME && modeElement.Name == ModeElement.NAME.WEB_BROWSER) {
                         values = new List<string>();
 
                         // the compatibility layers may contain more values
@@ -125,16 +126,16 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        public void Deactivate(string server) {
+        public void Deactivate(ModeElement modeElement) {
             // do the reverse of activation because we can
             base.Deactivate();
 
-            if (String.IsNullOrEmpty(Name)) {
+            if (String.IsNullOrEmpty(TemplateName)) {
                 return;
             }
 
             // don't need to get active name, we're only deactivating for this process
-            TemplateElement templateElement = GetTemplateElement(false, Name);
+            TemplateElement templateElement = GetTemplateElement(false, TemplateName);
 
             if (templateElement == null) {
                 return;
@@ -178,8 +179,8 @@ namespace FlashpointSecurePlayer {
 
                     comparableName = GetComparableName(environmentVariablesElement.Name);
 
-                    if (comparableName == FLASHPOINT_STARTUP_PATH) {
-                        throw new EnvironmentVariablesFailedException("The " + FLASHPOINT_STARTUP_PATH + " Environment Variable cannot be modified.");
+                    if (ReadOnlyComparableNames.Contains(comparableName)) {
+                        throw new EnvironmentVariablesFailedException("The " + environmentVariablesElement.Name + " Environment Variable cannot be modified.");
                     }
 
                     value = environmentVariablesElement.Value;
@@ -192,7 +193,7 @@ namespace FlashpointSecurePlayer {
                     // if this isn't the compatibility layer variable
                     // or the value isn't what we want to set it to
                     // or we're not in server mode...
-                    if (comparableName != COMPATIBILITY_LAYER_NAME || values.Except(compatibilityLayerValues).Any() || String.IsNullOrEmpty(server)) {
+                    if (comparableName != COMPATIBILITY_LAYER_NAME || values.Except(compatibilityLayerValues).Any() || modeElement.Name != ModeElement.NAME.WEB_BROWSER) {
                         try {
                             Environment.SetEnvironmentVariable(environmentVariablesElement.Name, null, EnvironmentVariableTarget.Process);
                         } catch (ArgumentException) {

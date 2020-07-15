@@ -16,7 +16,7 @@ namespace FlashpointSecurePlayer {
         private readonly object importPausedLock = new object();
         private bool importPaused = true;
 
-        protected string Name { get; set; } = String.Empty;
+        protected string TemplateName { get; set; } = String.Empty;
         protected bool ImportStarted { get; set; } = false;
 
         protected bool ImportPaused {
@@ -62,7 +62,7 @@ namespace FlashpointSecurePlayer {
                 throw new FormatException("name cannot be null or empty.");
             }
 
-            Name = name;
+            TemplateName = name;
             Deactivate();
 
             /*
@@ -103,7 +103,7 @@ namespace FlashpointSecurePlayer {
                 //throw new FormatException("name cannot be null or empty.");
             //}
 
-            Name = name;
+            TemplateName = name;
             Deactivate();
 
             //SetFlashpointSecurePlayerSection();

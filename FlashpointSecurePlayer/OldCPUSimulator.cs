@@ -19,7 +19,7 @@ namespace FlashpointSecurePlayer {
     class OldCPUSimulator : Modifications {
         public OldCPUSimulator(Form form) : base(form) { }
 
-        public void Activate(string name, ref string server, ref string software, ref ProcessStartInfo softwareProcessStartInfo, out bool softwareIsOldCPUSimulator) {
+        public void Activate(string name, ref ModeElement modeElement, ref ProcessStartInfo softwareProcessStartInfo, out bool softwareIsOldCPUSimulator) {
             OldCPUSimulatorElement oldCPUSimulatorElement = null;
             softwareIsOldCPUSimulator = false;
 
@@ -30,7 +30,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            TemplateElement templateElement = GetTemplateElement(false, Name);
+            TemplateElement templateElement = GetTemplateElement(false, TemplateName);
 
             if (templateElement == null) {
                 return;
@@ -117,12 +117,13 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            if (!String.IsNullOrEmpty(server)) {
+            if (modeElement.Name == ModeElement.NAME.WEB_BROWSER) {
                 // server mode, need to restart the whole app
                 // handled in the GUI side of things
-                throw new OldCPUSimulatorRequiresApplicationRestartException("The Old CPU Simulator in Server Mode requires a restart.");
-            } else if (!String.IsNullOrEmpty(software)) {
+                throw new OldCPUSimulatorRequiresApplicationRestartException("The Old CPU Simulator in Web Browser Mode requires a restart.");
+            } else if (modeElement.Name == ModeElement.NAME.SOFTWARE) {
                 // USB the HDMI to .exe the database
+                string commandLineExpanded = Environment.ExpandEnvironmentVariables(modeElement.CommandLine);
                 StringBuilder oldCPUSimulatorSoftware = new StringBuilder("\"");
 
                 // the problem we're dealing with here
@@ -132,7 +133,7 @@ namespace FlashpointSecurePlayer {
                 // but still launch the executable from a path
                 // potentially relative to this executable
                 try {
-                    string[] argv = CommandLineToArgv(software, out int argc);
+                    string[] argv = CommandLineToArgv(commandLineExpanded, out int argc);
 
                     if (argc <= 0) {
                         throw new IndexOutOfRangeException("The command line argument is out of range.");
@@ -145,10 +146,10 @@ namespace FlashpointSecurePlayer {
                 }
 
                 oldCPUSimulatorSoftware.Append("\" ");
-                oldCPUSimulatorSoftware.Append(GetCommandLineArgumentRange(software, 1, -1));
+                oldCPUSimulatorSoftware.Append(GetCommandLineArgumentRange(commandLineExpanded, 1, -1));
                 // this becomes effectively the new thing passed as --software
                 // the shared function is used both here and GUI side for restarts
-                software = OLD_CPU_SIMULATOR_PATH + " " + GetOldCPUSimulatorProcessStartInfoArguments(oldCPUSimulatorElement, oldCPUSimulatorSoftware.ToString());
+                modeElement.CommandLine = OLD_CPU_SIMULATOR_PATH + " " + GetOldCPUSimulatorProcessStartInfoArguments(oldCPUSimulatorElement, oldCPUSimulatorSoftware.ToString());
                 softwareIsOldCPUSimulator = true;
 
                 if (softwareProcessStartInfo == null) {

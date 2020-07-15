@@ -25,7 +25,7 @@ namespace FlashpointSecurePlayer {
         private const string FLASHPOINT_LAUNCHER_PROCESS_NAME = "FLASHPOINT";
 
         private Mutex applicationMutex = null;
-
+        
         private readonly RunAsAdministrator runAsAdministrator;
         private readonly EnvironmentVariables environmentVariables;
         private readonly DownloadsBefore downloadsBefore;
@@ -63,6 +63,51 @@ namespace FlashpointSecurePlayer {
         private void ShowError(string errorLabelText) {
             ProgressManager.ShowError();
             this.errorLabel.Text = errorLabelText;
+        }
+
+        private void ShowNoGameSelected() {
+            // detect if this application was started by Flashpoint Launcher
+            // none of this is strictly necessary, I'm just trying
+            // to reduce the amount of stupid in the #help-me-please channel
+            //ShowError(Properties.Resources.GameNotCuratedCorrectly);
+            string text = Properties.Resources.NoGameSelected;
+            Process parentProcess = GetParentProcess();
+            string parentProcessFileName = null;
+
+            if (parentProcess != null) {
+                try {
+                    parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess)).ToUpper();
+                } catch {
+                    // Fail silently.
+                }
+            }
+
+            if (parentProcessFileName != FLASHPOINT_LAUNCHER_PARENT_PROCESS_FILE_NAME) {
+                text += " " + Properties.Resources.UseFlashpointLauncher;
+                Process[] processesByName;
+
+                // detect if Flashpoint Launcher is open
+                // we only show this message if it isn't open yet
+                // because we don't want to confuse n00bs into
+                // opening two instances of it
+                try {
+                    processesByName = Process.GetProcessesByName(FLASHPOINT_LAUNCHER_PROCESS_NAME);
+                } catch (InvalidOperationException) {
+                    // only occurs Windows XP which is unsupported
+                    ProgressManager.ShowError();
+                    MessageBox.Show(Properties.Resources.WindowsVersionTooOld, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Application.Exit();
+                    return;
+                }
+
+                if (processesByName.Length <= 0) {
+                    text += " " + Properties.Resources.OpenFlashpointLauncher;
+                }
+            }
+
+            ProgressManager.ShowError();
+            MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            Application.Exit();
         }
 
         private void AskLaunch(string applicationRestartMessage) {
@@ -118,6 +163,10 @@ namespace FlashpointSecurePlayer {
         }
 
         private void AskLaunchWithOldCPUSimulator() {
+            if (String.IsNullOrEmpty(TemplateName)) {
+                // TODO
+            }
+
             TemplateElement templateElement = GetTemplateElement(false, TemplateName);
 
             if (templateElement == null) {
@@ -170,7 +219,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private async Task ActivateModificationsAsync(ErrorDelegate errorDelegate) {
+        private async Task ActivateModificationsAsync(ModeElement modeElement, ErrorDelegate errorDelegate) {
             bool createdNew = false;
 
             using (Mutex modificationsMutex = new Mutex(true, MODIFICATIONS_MUTEX_NAME, out createdNew)) {
@@ -278,7 +327,7 @@ namespace FlashpointSecurePlayer {
                         if (modificationsElement.ElementInformation.IsPresent) {
                             if (modificationsElement.EnvironmentVariables.Count > 0) {
                                 try {
-                                    environmentVariables.Activate(TemplateName, server);
+                                    environmentVariables.Activate(TemplateName, modeElement);
                                 } catch (EnvironmentVariablesFailedException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.EnvironmentVariablesFailed);
@@ -377,8 +426,8 @@ namespace FlashpointSecurePlayer {
                         if (modificationsElement.ElementInformation.IsPresent) {
                             if (modificationsElement.SingleInstance.ElementInformation.IsPresent) {
                                 try {
-                                    string executablePath = String.Empty;
-                                    string[] argv = CommandLineToArgv(Mode.commandLine, out int argc);
+                                    string executablePath = null;
+                                    string[] argv = CommandLineToArgv(Environment.ExpandEnvironmentVariables(modeElement.CommandLine), out int argc);
 
                                     if (argc > 0) {
                                         executablePath = argv[0];
@@ -402,7 +451,7 @@ namespace FlashpointSecurePlayer {
                         if (modificationsElement.ElementInformation.IsPresent) {
                             if (modificationsElement.OldCPUSimulator.ElementInformation.IsPresent) {
                                 try {
-                                    oldCPUSimulator.Activate(TemplateName, ref Mode.name, ref Mode.commandLine, ref softwareProcessStartInfo, out softwareIsOldCPUSimulator);
+                                    oldCPUSimulator.Activate(TemplateName, ref modeElement, ref softwareProcessStartInfo, out softwareIsOldCPUSimulator);
                                 } catch (OldCPUSimulatorFailedException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.OldCPUSimulatorFailed);
@@ -438,7 +487,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private async Task DeactivateModificationsAsync(ErrorDelegate errorDelegate) {
+        private async Task DeactivateModificationsAsync(ModeElement modeElement, ErrorDelegate errorDelegate) {
             bool createdNew = false;
 
             using (Mutex modificationsMutex = new Mutex(true, MODIFICATIONS_MUTEX_NAME, out createdNew)) {
@@ -486,7 +535,7 @@ namespace FlashpointSecurePlayer {
                         ProgressManager.CurrentGoal.Steps++;
 
                         try {
-                            environmentVariables.Deactivate(server);
+                            environmentVariables.Deactivate(modeElement);
                         } catch (EnvironmentVariablesFailedException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.EnvironmentVariablesFailed);
@@ -678,8 +727,20 @@ namespace FlashpointSecurePlayer {
                 ProgressManager.CurrentGoal.Start(2);
 
                 try {
+                    if (String.IsNullOrEmpty(TemplateName)) {
+                        // TODO
+                    }
+
+                    TemplateElement templateElement = GetTemplateElement(false, TemplateName);
+
+                    if (templateElement == null) {
+                        // TODO
+                    }
+
+                    ModeElement modeElement = templateElement.Mode;
+
                     try {
-                        await ActivateModificationsAsync(delegate (string text) {
+                        await ActivateModificationsAsync(modeElement, delegate(string text) {
                             if (text.IndexOf("\n") == -1) {
                                 ShowError(text);
                             } else {
@@ -704,14 +765,25 @@ namespace FlashpointSecurePlayer {
                         }
                     }
 
-                    if (Mode.name == Mode.NAME.WEB_BROWSER) {
+                    if (modeElement.Name == ModeElement.NAME.WEB_BROWSER) {
                         ProgressManager.CurrentGoal.Steps++;
+                        string url = null;
+                        
+                        try {
+                            // we need to find the compatibility layers so we can check later if the ones we want are already set
+                            url = Environment.GetEnvironmentVariable(FLASHPOINT_URL);
+                        } catch (ArgumentException) {
+                            throw new EnvironmentVariablesFailedException("Failed to get the " + FLASHPOINT_URL + " Environment Variable.");
+                        } catch (System.Security.SecurityException) {
+                            throw new TaskRequiresElevationException("Getting the " + FLASHPOINT_URL + " Environment Variable requires elevation.");
+                        }
+
                         Uri webBrowserURL = null;
 
                         try {
-                            webBrowserURL = new Uri(server);
+                            webBrowserURL = new Uri(url);
                         } catch {
-                            ShowError(String.Format(Properties.Resources.AddressNotUnderstood, server));
+                            ShowError(String.Format(Properties.Resources.AddressNotUnderstood, url));
                             return;
                         }
 
@@ -725,11 +797,12 @@ namespace FlashpointSecurePlayer {
                         Hide();
                         serverForm.Show();
                         return;
-                    } else if (Mode.name == Mode.NAME.SOFTWARE) {
+                    } else if (modeElement.Name == ModeElement.NAME.SOFTWARE) {
                         ProgressManager.CurrentGoal.Steps++;
 
                         try {
-                            string[] argv = CommandLineToArgv(Mode.commandLine, out int argc);
+                            string commandLineExpanded = Environment.ExpandEnvironmentVariables(modeElement.CommandLine);
+                            string[] argv = CommandLineToArgv(commandLineExpanded, out int argc);
 
                             if (argc <= 0) {
                                 throw new IndexOutOfRangeException("The command line argument is out of range.");
@@ -741,7 +814,7 @@ namespace FlashpointSecurePlayer {
 
                             string fullPath = Path.GetFullPath(argv[0]);
                             softwareProcessStartInfo.FileName = fullPath;
-                            softwareProcessStartInfo.Arguments = GetCommandLineArgumentRange(Mode.commandLine, 1, -1);
+                            softwareProcessStartInfo.Arguments = GetCommandLineArgumentRange(commandLineExpanded, 1, -1);
                             softwareProcessStartInfo.ErrorDialog = false;
 
                             if (String.IsNullOrEmpty(softwareProcessStartInfo.WorkingDirectory)) {
@@ -827,7 +900,7 @@ namespace FlashpointSecurePlayer {
                     ProgressManager.CurrentGoal.Stop();
                 }
             }
-            throw new InvalidCurationException("No Mode was used.");
+            throw new InvalidModeException("No Mode was used.");
         }
 
         private async Task StopSecurePlayback(FormClosingEventArgs e) {
@@ -840,8 +913,20 @@ namespace FlashpointSecurePlayer {
                 serverForm = null;
             }
 
+            if (String.IsNullOrEmpty(TemplateName)) {
+                return;
+            }
+
+            TemplateElement templateElement = GetTemplateElement(false, TemplateName);
+
+            if (templateElement == null) {
+                return;
+            }
+
+            ModeElement modeElement = templateElement.Mode;
+
             try {
-                await DeactivateModificationsAsync(delegate (string text) {
+                await DeactivateModificationsAsync(modeElement, delegate(string text) {
                     // I will assassinate the Cyrollan delegate myself...
                 }).ConfigureAwait(false);
             } catch (InvalidModificationException ex) {
@@ -889,6 +974,18 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
+            // needed upon application restart to focus the new window
+            BringToFront();
+            Activate();
+            ShowOutput(Properties.Resources.RequiredComponentsAreUnloading);
+
+            string arg = null;
+            string[] args = Environment.GetCommandLineArgs();
+
+            // TODO: set env vars
+            // URL
+            // DOWNLOAD PATH
+
             try {
                 try {
                     Directory.SetCurrentDirectory(Application.StartupPath);
@@ -909,6 +1006,63 @@ namespace FlashpointSecurePlayer {
                     LogExceptionToLauncher(ex);
                     throw new TaskRequiresElevationException("Setting the " + FLASHPOINT_STARTUP_PATH + " Environment Variable requires elevation.");
                 }
+
+                if (args.Length < 2) {
+                    throw new InvalidTemplateException("No URL or Template was used.");
+                }
+
+                if (String.IsNullOrEmpty(args[2])) {
+                    throw new InvalidTemplateException("Template Name was null or empty.");
+                }
+
+                string url = args[1];
+                
+                try {
+                    Environment.SetEnvironmentVariable(FLASHPOINT_URL, url, EnvironmentVariableTarget.Process);
+                } catch (ArgumentException ex) {
+                    LogExceptionToLauncher(ex);
+                    Application.Exit();
+                    return;
+                } catch (System.Security.SecurityException ex) {
+                    LogExceptionToLauncher(ex);
+                    throw new TaskRequiresElevationException("Setting the " + FLASHPOINT_URL + " Environment Variable requires elevation.");
+                }
+
+                StringBuilder downloadPath = new StringBuilder(HTDOCS);
+
+                try {
+                    Uri downloadURL = new Uri(url);
+
+                    if (downloadURL.Host.ToLower() != LOCALHOST) {
+                        downloadPath.Append("\\");
+                        downloadPath.Append(downloadURL.Host);
+                    }
+
+                    downloadPath.Append(downloadURL.LocalPath);
+                } catch (UriFormatException) {
+                    throw new ArgumentException("The URL " + url + " is malformed.");
+                } catch (NullReferenceException) {
+                    throw new ArgumentNullException("The URL is null.");
+                } catch (InvalidOperationException) {
+                    throw new ArgumentException("The URL " + url + " is invalid.");
+                }
+
+                try {
+                    Environment.SetEnvironmentVariable(FLASHPOINT_DOWNLOAD_PATH, downloadPath.ToString(), EnvironmentVariableTarget.Process);
+                } catch (ArgumentException ex) {
+                    LogExceptionToLauncher(ex);
+                    Application.Exit();
+                    return;
+                } catch (System.Security.SecurityException ex) {
+                    LogExceptionToLauncher(ex);
+                    throw new TaskRequiresElevationException("Setting the " + FLASHPOINT_DOWNLOAD_PATH + " Environment Variable requires elevation.");
+                }
+
+                TemplateName = args[2];
+            } catch (InvalidTemplateException ex) {
+                LogExceptionToLauncher(ex);
+                ShowNoGameSelected();
+                return;
             } catch (TaskRequiresElevationException ex) {
                 LogExceptionToLauncher(ex);
 
@@ -919,17 +1073,6 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
             }
-
-            // needed upon application restart to focus the new window
-            BringToFront();
-            Activate();
-            ShowOutput(Properties.Resources.RequiredComponentsAreUnloading);
-
-            string arg = null;
-            string[] args = Environment.GetCommandLineArgs();
-            // TODO: set env vars
-            // URL
-            // DOWNLOAD PATH
 
             for (int i = 3;i < args.Length;i++) {
                 arg = args[i].ToLower();
@@ -958,11 +1101,23 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
+            if (String.IsNullOrEmpty(TemplateName)) {
+                // TODO
+            }
+
+            TemplateElement templateElement = GetTemplateElement(false, TemplateName);
+
+            if (templateElement == null) {
+                // TODO
+            }
+
+            ModeElement modeElement = templateElement.Mode;
+
             // this is where we do crash recovery
             // we attempt to deactivate whatever was in the config file first
             // it's important this succeeds
             try {
-                await DeactivateModificationsAsync(delegate (string text) {
+                await DeactivateModificationsAsync(modeElement, delegate(string text) {
                     ProgressManager.ShowError();
                     MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Application.Exit();
@@ -987,50 +1142,9 @@ namespace FlashpointSecurePlayer {
                 // no need to exit here, error shown in interface
                 //Application.Exit();
                 return;
-            } catch (InvalidCurationException ex) {
+            } catch (InvalidModeException ex) {
                 LogExceptionToLauncher(ex);
-                // detect if this application was started by Flashpoint Launcher
-                // none of this is strictly necessary, I'm just trying
-                // to reduce the amount of stupid in the #help-me-please channel
-                //ShowError(Properties.Resources.GameNotCuratedCorrectly);
-                string text = Properties.Resources.NoGameSelected;
-                Process parentProcess = GetParentProcess();
-                string parentProcessFileName = null;
-
-                if (parentProcess != null) {
-                    try {
-                        parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess)).ToUpper();
-                    } catch {
-                        // Fail silently.
-                    }
-                }
-
-                if (parentProcessFileName != FLASHPOINT_LAUNCHER_PARENT_PROCESS_FILE_NAME) {
-                    text += " " + Properties.Resources.UseFlashpointLauncher;
-                    Process[] processesByName;
-
-                    // detect if Flashpoint Launcher is open
-                    // we only show this message if it isn't open yet
-                    // because we don't want to confuse n00bs into
-                    // opening two instances of it
-                    try {
-                        processesByName = Process.GetProcessesByName(FLASHPOINT_LAUNCHER_PROCESS_NAME);
-                    } catch (InvalidOperationException) {
-                        // only occurs Windows XP which is unsupported
-                        ProgressManager.ShowError();
-                        MessageBox.Show(Properties.Resources.WindowsVersionTooOld, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        Application.Exit();
-                        return;
-                    }
-
-                    if (processesByName.Length <= 0) {
-                        text += " " + Properties.Resources.OpenFlashpointLauncher;
-                    }
-                }
-
-                ProgressManager.ShowError();
-                MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Application.Exit();
+                ShowNoGameSelected();
                 return;
             }
         }
@@ -1054,7 +1168,7 @@ namespace FlashpointSecurePlayer {
             } catch (InvalidModificationException ex) {
                 LogExceptionToLauncher(ex);
                 // Fail silently.
-            } catch (InvalidCurationException ex) {
+            } catch (InvalidModeException ex) {
                 LogExceptionToLauncher(ex);
                 // Fail silently.
             }

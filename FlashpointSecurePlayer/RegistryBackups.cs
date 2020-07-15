@@ -683,24 +683,24 @@ namespace FlashpointSecurePlayer {
         public async Task StartImportAsync(string name, BINARY_TYPE binaryType) {
             base.StartImport(name);
 
-            TemplateElement templateElement = GetTemplateElement(true, Name);
+            TemplateElement templateElement = GetTemplateElement(true, TemplateName);
             ModificationsElement modificationsElement = templateElement.Modifications;
 
             // this happens here since this check doesn't need to occur to activate
-            if (modificationsElement.RegistryBackups.Get(Name) != null) {
+            if (modificationsElement.RegistryBackups.Get(TemplateName) != null) {
                 // preset already exists with this name
                 // prevent a registry backup from running for a non-curator
-                throw new InvalidModificationException("A Modification with the name " + Name + " exists.");
+                throw new InvalidModificationException("A Modification with the name " + TemplateName + " exists.");
             }
 
             try {
-                fullPath = Path.GetFullPath(Name);
+                fullPath = Path.GetFullPath(TemplateName);
             } catch (PathTooLongException) {
-                throw new ArgumentException("The path is too long to " + Name + ".");
+                throw new ArgumentException("The path is too long to " + TemplateName + ".");
             } catch (SecurityException) {
-                throw new TaskRequiresElevationException("Getting the Full Path to " + Name + " requires elevation.");
+                throw new TaskRequiresElevationException("Getting the Full Path to " + TemplateName + " requires elevation.");
             } catch (NotSupportedException) {
-                throw new ArgumentException("The path to " + Name + " is not supported.");
+                throw new ArgumentException("The path to " + TemplateName + " is not supported.");
             }
 
             // check permission to run
@@ -817,7 +817,7 @@ namespace FlashpointSecurePlayer {
             this.kernelSession.Source.Dispose();
             this.kernelSession.Dispose();
 
-            SetFlashpointSecurePlayerSection(Name);
+            SetFlashpointSecurePlayerSection(TemplateName);
             ImportStarted = false;
 
             if (form != null) {
@@ -842,7 +842,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            TemplateElement templateElement = GetTemplateElement(false, Name);
+            TemplateElement templateElement = GetTemplateElement(false, TemplateName);
 
             if (templateElement == null) {
                 return;
@@ -854,7 +854,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            TemplateElement activeTemplateElement = GetActiveTemplateElement(true, Name);
+            TemplateElement activeTemplateElement = GetActiveTemplateElement(true, TemplateName);
             ModificationsElement activeModificationsElement = activeTemplateElement.Modifications;
             RegistryBackupElement registryBackupElement = null;
             RegistryBackupElement activeRegistryBackupElement = null;
@@ -864,13 +864,13 @@ namespace FlashpointSecurePlayer {
             string valueExpanded = null;
 
             try {
-                fullPath = Path.GetFullPath(Name);
+                fullPath = Path.GetFullPath(TemplateName);
             } catch (PathTooLongException) {
-                throw new ArgumentException("The path is too long to " + Name + ".");
+                throw new ArgumentException("The path is too long to " + TemplateName + ".");
             } catch (SecurityException) {
-                throw new TaskRequiresElevationException("Getting the Full Path to " + Name + " requires elevation.");
+                throw new TaskRequiresElevationException("Getting the Full Path to " + TemplateName + " requires elevation.");
             } catch (NotSupportedException) {
-                throw new ArgumentException("The path to " + Name + " is not supported.");
+                throw new ArgumentException("The path to " + TemplateName + " is not supported.");
             }
 
             // to prevent issues with HKEY_LOCAL_MACHINE and crash recovery
@@ -955,7 +955,7 @@ namespace FlashpointSecurePlayer {
 
                     // we do this and save in the loop so we can safely deactivate if needed partway through the process
                     activeModificationsElement.RegistryBackups.Set(activeRegistryBackupElement);
-                    SetFlashpointSecurePlayerSection(Name);
+                    SetFlashpointSecurePlayerSection(TemplateName);
                     ProgressManager.CurrentGoal.Steps++;
                 }
 
@@ -1038,7 +1038,7 @@ namespace FlashpointSecurePlayer {
             // don't allow infinite recursion!
             if (String.IsNullOrEmpty(templateElementName)) {
                 activeModificationsElement.RegistryBackups.Clear();
-                SetFlashpointSecurePlayerSection(Name);
+                SetFlashpointSecurePlayerSection(TemplateName);
                 return;
             }
 
@@ -1055,7 +1055,7 @@ namespace FlashpointSecurePlayer {
             
             if (modificationsElement == null) {
                 activeModificationsElement.RegistryBackups.Clear();
-                SetFlashpointSecurePlayerSection(Name);
+                SetFlashpointSecurePlayerSection(TemplateName);
                 return;
             }
 
@@ -1131,7 +1131,7 @@ namespace FlashpointSecurePlayer {
 
                             if (clear) {
                                 activeModificationsElement.RegistryBackups.Clear();
-                                SetFlashpointSecurePlayerSection(Name);
+                                SetFlashpointSecurePlayerSection(TemplateName);
                                 return;
                             }
                         }
@@ -1187,7 +1187,7 @@ namespace FlashpointSecurePlayer {
 
                         // save as we go along to handle failure
                         activeModificationsElement.RegistryBackups.RemoveAt(0);
-                        SetFlashpointSecurePlayerSection(Name);
+                        SetFlashpointSecurePlayerSection(TemplateName);
                     }
 
                     ProgressManager.CurrentGoal.Steps++;
@@ -1234,7 +1234,7 @@ namespace FlashpointSecurePlayer {
 
             // must catch exceptions here for thread safety
             try {
-                templateElement = GetTemplateElement(false, Name);
+                templateElement = GetTemplateElement(false, TemplateName);
             } catch (System.Configuration.ConfigurationErrorsException) {
                 return;
             }
@@ -1297,7 +1297,7 @@ namespace FlashpointSecurePlayer {
                 }
 
                 modificationsElement.RegistryBackups.Set(registryBackupElement);
-                SetFlashpointSecurePlayerSection(Name);
+                SetFlashpointSecurePlayerSection(TemplateName);
                 return;
             }
 
@@ -1334,7 +1334,7 @@ namespace FlashpointSecurePlayer {
                 }
 
                 modificationsElement.RegistryBackups.Set(registryBackupElement);
-                SetFlashpointSecurePlayerSection(Name);
+                SetFlashpointSecurePlayerSection(TemplateName);
                 return;
             }
 
@@ -1364,7 +1364,7 @@ namespace FlashpointSecurePlayer {
 
             // must catch exceptions here for thread safety
             try {
-                templateElement = GetTemplateElement(false, Name);
+                templateElement = GetTemplateElement(false, TemplateName);
             } catch (System.Configuration.ConfigurationErrorsException) {
                 return;
             }
@@ -1445,7 +1445,7 @@ namespace FlashpointSecurePlayer {
             TemplateElement templateElement = null;
 
             try {
-                templateElement = GetTemplateElement(false, Name);
+                templateElement = GetTemplateElement(false, TemplateName);
             } catch (System.Configuration.ConfigurationErrorsException) {
                 return;
             }
@@ -1517,7 +1517,7 @@ namespace FlashpointSecurePlayer {
 
                     // and out of the queue
                     // (the Key is the TimeStamp)
-                    SetFlashpointSecurePlayerSection(Name);
+                    SetFlashpointSecurePlayerSection(TemplateName);
                     modificationsQueue[safeKeyHandle].Remove(queuedModification.Key);
                 }
             }
