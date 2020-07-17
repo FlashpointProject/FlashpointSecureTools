@@ -50,6 +50,18 @@ namespace FlashpointSecurePlayer {
                 public DownloadFailedException(string message, Exception inner) : base(message, inner) { }
             }
 
+            public class ImportFailedException : InvalidOperationException {
+                public ImportFailedException() { }
+                public ImportFailedException(string message) : base(message) { }
+                public ImportFailedException(string message, Exception inner) : base(message, inner) { }
+            }
+
+            public class ActiveXImportFailedException : ImportFailedException {
+                public ActiveXImportFailedException() { }
+                public ActiveXImportFailedException(string message) : base(message) { }
+                public ActiveXImportFailedException(string message, Exception inner) : base(message, inner) { }
+            }
+
             public class JobObjectException : Win32Exception {
                 public JobObjectException() { }
                 public JobObjectException(string message) : base(message) { }
@@ -255,7 +267,7 @@ namespace FlashpointSecurePlayer {
         public static readonly Task CompletedTask = Task.FromResult(false);
 
         public const string HTDOCS = "..\\Server\\htdocs";
-        public const string LOCALHOST = "localhost";
+        public static readonly string[] INDEX_EXTENSIONS = new string[2] { "html", "htm" };
         // there should be only one HTTP Client per application
         // (as of right now though this is exclusively used by DownloadsBefore class)
         private static readonly HttpClientHandler httpClientHandler = new HttpClientHandler {
@@ -282,7 +294,8 @@ namespace FlashpointSecurePlayer {
         public const string FLASHPOINT_STARTUP_PATH = "FP_STARTUP_PATH";
         public const string FLASHPOINT_URL = "FP_URL";
         public const string FLASHPOINT_ARGUMENTS = "FP_ARGUMENTS";
-        public const string FLASHPOINT_DOWNLOAD_PATH = "FP_DOWNLOAD_PATH";
+        public const string FLASHPOINT_HTDOCS_FILE = "FP_HTDOCS_FILE";
+        public const string FLASHPOINT_HTDOCS_DIRNAME_FILE = "FP_HTDOCS_DIRNAME_FILE";
 
         public const string OLD_CPU_SIMULATOR_PATH = "OldCPUSimulator\\OldCPUSimulator.exe";
         public const string OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME = "OLDCPUSIMULATOR.EXE";
@@ -352,7 +365,7 @@ namespace FlashpointSecurePlayer {
                             if (String.IsNullOrEmpty(base["name"] as string)) {
                                 return base["name"] as string;
                             }
-                            return (base["name"] as string).ToLower();
+                            return (base["name"] as string).ToLowerInvariant();
                         }
 
                         set {
@@ -361,7 +374,7 @@ namespace FlashpointSecurePlayer {
                                 return;
                             }
 
-                            base["name"] = value.ToLower();
+                            base["name"] = value.ToLowerInvariant();
                         }
                     }
 
@@ -371,7 +384,7 @@ namespace FlashpointSecurePlayer {
                             if (String.IsNullOrEmpty(base["active"] as string)) {
                                 return base["active"] as string;
                             }
-                            return (base["active"] as string).ToLower();
+                            return (base["active"] as string).ToLowerInvariant();
                         }
 
                         set {
@@ -380,7 +393,7 @@ namespace FlashpointSecurePlayer {
                                 return;
                             }
 
-                            base["active"] = value.ToLower();
+                            base["active"] = value.ToLowerInvariant();
                         }
                     }
 
@@ -481,7 +494,7 @@ namespace FlashpointSecurePlayer {
                                         if (String.IsNullOrEmpty(base["name"] as string)) {
                                             return base["name"] as string;
                                         }
-                                        return (base["name"] as string).ToUpper();
+                                        return (base["name"] as string).ToUpperInvariant();
                                     }
 
                                     set {
@@ -490,7 +503,7 @@ namespace FlashpointSecurePlayer {
                                             return;
                                         }
 
-                                        base["name"] = value.ToUpper();
+                                        base["name"] = value.ToUpperInvariant();
                                     }
                                 }
 
@@ -527,12 +540,12 @@ namespace FlashpointSecurePlayer {
                             }
 
                             new public ConfigurationElement Get(string name) {
-                                name = name.ToUpper();
+                                name = name.ToUpperInvariant();
                                 return base.Get(name);
                             }
 
                             new public void Remove(string name) {
-                                name = name.ToUpper();
+                                name = name.ToUpperInvariant();
                                 base.Remove(name);
                             }
                         }
@@ -604,7 +617,7 @@ namespace FlashpointSecurePlayer {
                                         if (String.IsNullOrEmpty(base["keyName"] as string)) {
                                             return base["keyName"] as string;
                                         }
-                                        return (base["keyName"] as string).ToUpper();
+                                        return (base["keyName"] as string).ToUpperInvariant();
                                     }
 
                                     set {
@@ -613,7 +626,7 @@ namespace FlashpointSecurePlayer {
                                             return;
                                         }
 
-                                        base["keyName"] = value.ToUpper();
+                                        base["keyName"] = value.ToUpperInvariant();
                                     }
                                 }
 
@@ -623,7 +636,7 @@ namespace FlashpointSecurePlayer {
                                         if (String.IsNullOrEmpty(base["valueName"] as string)) {
                                             return base["valueName"] as string;
                                         }
-                                        return (base["valueName"] as string).ToUpper();
+                                        return (base["valueName"] as string).ToUpperInvariant();
                                     }
 
                                     set {
@@ -632,7 +645,7 @@ namespace FlashpointSecurePlayer {
                                             return;
                                         }
 
-                                        base["valueName"] = value.ToUpper();
+                                        base["valueName"] = value.ToUpperInvariant();
                                     }
                                 }
 
@@ -697,12 +710,12 @@ namespace FlashpointSecurePlayer {
                             }
 
                             new public ConfigurationElement Get(string name) {
-                                name = name.ToUpper();
+                                name = name.ToUpperInvariant();
                                 return base.Get(name);
                             }
 
                             new public void Remove(string name) {
-                                name = name.ToUpper();
+                                name = name.ToUpperInvariant();
                                 base.Remove(name);
                             }
 
@@ -878,12 +891,12 @@ namespace FlashpointSecurePlayer {
                 }
 
                 new public TemplateElement Get(string name) {
-                    name = name.ToLower();
+                    name = name.ToLowerInvariant();
                     return base.Get(name) as TemplateElement;
                 }
 
                 new public void Remove(string name) {
-                    name = name.ToLower();
+                    name = name.ToLowerInvariant();
                     base.Remove(name);
                 }
             }
@@ -978,7 +991,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        public static async Task DownloadAsync(string name) {
+        public static async Task<Uri> DownloadAsync(string name) {
             await downloadSemaphoreSlim.WaitAsync().ConfigureAwait(true);
 
             try {
@@ -1034,6 +1047,7 @@ namespace FlashpointSecurePlayer {
                             }
                         }
                     }
+                    return httpResponseMessage.RequestMessage.RequestUri;
                 }
             } catch (ArgumentNullException) {
                 throw new Exceptions.DownloadFailedException("The download name is invalid.");
@@ -1051,7 +1065,7 @@ namespace FlashpointSecurePlayer {
 
             string invalidNameCharacters = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
             Regex invalidNameCharactersRegex = new Regex("[" + Regex.Escape(invalidNameCharacters) + "]+");
-            return invalidNameCharactersRegex.Replace(name, ".").ToLower();
+            return invalidNameCharactersRegex.Replace(name, ".").ToLowerInvariant();
         }
 
         private static Configuration GetActiveEXEConfiguration() {
@@ -1358,7 +1372,7 @@ namespace FlashpointSecurePlayer {
                 if (shortPathName != null) {
                     if (shortPathName.Length > 0) {
                         // if the value is a short value...
-                        if (valueString.ToUpper().IndexOf(shortPathName.ToString().ToUpper()) == 0) {
+                        if (valueString.ToUpperInvariant().IndexOf(shortPathName.ToString().ToUpperInvariant()) == 0) {
                             // get the long path
                             StringBuilder longPathName = null;
 
@@ -1402,7 +1416,7 @@ namespace FlashpointSecurePlayer {
 
                 if (pathName != null) {
                     if (pathName.Length > 0) {
-                        if (valueString.ToUpper().IndexOf(RemoveTrailingSlash(pathName.ToString()).ToUpper()) == 0) {
+                        if (valueString.ToUpperInvariant().IndexOf(RemoveTrailingSlash(pathName.ToString()).ToUpperInvariant()) == 0) {
                             valueString = "%" + FLASHPOINT_STARTUP_PATH + "%\\" + RemoveValueStringSlash(valueString.Substring(pathName.Length));
                         }
                     }

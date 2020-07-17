@@ -63,7 +63,7 @@ namespace FlashpointSecurePlayer {
 
             if (parentProcess != null) {
                 try {
-                    parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess)).ToUpper();
+                    parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess)).ToUpperInvariant();
                 } catch {
                     throw new OldCPUSimulatorFailedException("Failed to get the parent process EXE name.");
                 }

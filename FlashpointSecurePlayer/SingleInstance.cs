@@ -108,7 +108,7 @@ namespace FlashpointSecurePlayer {
             // converting to a Uri canonicalizes the path
             // making them possible to compare
             try {
-                activeComparableExecutablePath = new Uri(activeComparableExecutablePath).LocalPath.ToUpper();
+                activeComparableExecutablePath = new Uri(activeComparableExecutablePath).LocalPath.ToUpperInvariant();
             } catch (UriFormatException) {
                 throw new ArgumentException("The path " + activeComparableExecutablePath + " is malformed.");
             } catch (NullReferenceException) {
@@ -133,7 +133,7 @@ namespace FlashpointSecurePlayer {
                         processName = GetProcessName(processesByName[i]);
 
                         try {
-                            comparableExecutablePath = new Uri(processName.ToString()).LocalPath.ToUpper();
+                            comparableExecutablePath = new Uri(processName.ToString()).LocalPath.ToUpperInvariant();
 
                             if (comparableExecutablePath == activeComparableExecutablePath) {
                                 processesByNameStrict.Add(processesByName[i]);
