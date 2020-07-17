@@ -213,7 +213,7 @@ namespace FlashpointSecurePlayer {
                 return keyValueName;
             }
 
-            keyValueName = keyValueName.ToUpper() + "\\";
+            keyValueName = keyValueName.ToUpperInvariant() + "\\";
 
             if (keyValueName.IndexOf("HKEY_LOCAL_MACHINE\\") == 0) {
                 keyValueName = "HKEY_CURRENT_USER\\" + keyValueName.Substring(19);
@@ -229,7 +229,7 @@ namespace FlashpointSecurePlayer {
                 return kernelRegistryString;
             }
 
-            kernelRegistryString = kernelRegistryString.ToUpper() + "\\";
+            kernelRegistryString = kernelRegistryString.ToUpperInvariant() + "\\";
             string keyValueName = String.Empty;
 
             if (kernelRegistryString.IndexOf("\\REGISTRY\\MACHINE\\") == 0) {
@@ -237,7 +237,7 @@ namespace FlashpointSecurePlayer {
             } else {
                 if (kernelRegistryString.IndexOf("\\REGISTRY\\USER\\") == 0) {
                     keyValueName = "HKEY_USERS\\" + kernelRegistryString.Substring(15);
-                    string currentUser = WindowsIdentity.GetCurrent().User.Value.ToUpper();
+                    string currentUser = WindowsIdentity.GetCurrent().User.Value.ToUpperInvariant();
 
                     if (keyValueName.IndexOf("HKEY_USERS\\" + currentUser + "_CLASSES\\") == 0) {
                         keyValueName = "HKEY_CURRENT_USER\\SOFTWARE\\CLASSES\\" + keyValueName.Substring(20 + currentUser.Length);
@@ -254,7 +254,7 @@ namespace FlashpointSecurePlayer {
         }
 
         private RegistryKey OpenBaseKeyInRegistryView(string keyName, RegistryView registryView) {
-            keyName = keyName.ToUpper() + "\\";
+            keyName = keyName.ToUpperInvariant() + "\\";
             RegistryHive? registryHive = null;
 
             if (keyName.IndexOf("HKEY_CURRENT_USER\\") == 0) {
@@ -610,7 +610,7 @@ namespace FlashpointSecurePlayer {
                 return keyValueName;
             }
 
-            keyValueName = keyValueName.ToUpper();
+            keyValueName = keyValueName.ToUpperInvariant();
 
             // remove Wow6432Node and WowAA32Node after affected keys
             List<string> keyValueNameSplit = keyValueName.Split(new string[] { "\\WOW6432NODE\\", "\\WOW64AANODE\\" }, StringSplitOptions.None).ToList();
@@ -690,7 +690,7 @@ namespace FlashpointSecurePlayer {
             if (modificationsElement.RegistryBackups.Get(TemplateName) != null) {
                 // preset already exists with this name
                 // prevent a registry backup from running for a non-curator
-                throw new InvalidModificationException("A Modification with the name " + TemplateName + " exists.");
+                throw new InvalidTemplateException("A Template with the name " + TemplateName + " exists.");
             }
 
             try {
@@ -1200,7 +1200,7 @@ namespace FlashpointSecurePlayer {
         private void GotValue(RegistryTraceData registryTraceData) {
             if (registryTraceData.ProcessID == Process.GetCurrentProcess().Id || registryTraceData.ProcessID == -1) {
                 if (ImportPaused) {
-                    if (registryTraceData.ValueName.ToUpper() == IMPORT_RESUME) {
+                    if (registryTraceData.ValueName.ToUpperInvariant() == IMPORT_RESUME) {
                         ResumeImport();
                         // hold here until after the control has installed
                         // that way we can recieve registry messages as they come in
@@ -1209,7 +1209,7 @@ namespace FlashpointSecurePlayer {
                         resumeEventWaitHandle.WaitOne();
                     }
                 } else {
-                    if (registryTraceData.ValueName.ToUpper() == IMPORT_PAUSE) {
+                    if (registryTraceData.ValueName.ToUpperInvariant() == IMPORT_PAUSE) {
                         PauseImport();
                     }
                 }

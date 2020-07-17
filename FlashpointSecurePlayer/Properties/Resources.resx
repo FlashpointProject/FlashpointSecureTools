@@ -136,8 +136,11 @@
     <value>The configuration failed to load.
 Please ensure Flashpoint is not corrupted, was extracted correctly, and is not running from OneDrive or a network drive.</value>
   </data>
-  <data name="CurationMissingModificationName" xml:space="preserve">
-    <value>This curation is missing a modification name.</value>
+  <data name="CurationMissingTemplateName" xml:space="preserve">
+    <value>This curation is missing a template name.</value>
+  </data>
+  <data name="DownloadingGameFile" xml:space="preserve">
+    <value>A game file is being downloaded.</value>
   </data>
   <data name="EnvironmentVariablesFailed" xml:space="preserve">
     <value>The Environment Variables failed.</value>
@@ -174,11 +177,11 @@ Please ensure Flashpoint is not corrupted, was extracted correctly, and is not r
     <value>This game will not work unless run {0}. Do you want to launch it {0}?
 If you choose No, the application will exit.</value>
   </data>
-  <data name="ModeTemplatesFailed" xml:space="preserve">
-    <value>The Mode Templates failed.</value>
-  </data>
   <data name="NoGameSelected" xml:space="preserve">
     <value>No game was selected to start, so the application is exiting.</value>
+  </data>
+  <data name="NoModeSelected" xml:space="preserve">
+    <value>No mode was selected.</value>
   </data>
   <data name="OldCPUSimulatorFailed" xml:space="preserve">
     <value>The Old CPU Simulator failed. The Target Rate may be invalid.</value>
@@ -192,8 +195,8 @@ If you choose No, the application will exit.</value>
   <data name="ProcessFailedStart" xml:space="preserve">
     <value>The process failed to start.</value>
   </data>
-  <data name="RegistryBackupAlreadyRunning" xml:space="preserve">
-    <value>The Registry Backup cannot run because another one is already running.</value>
+  <data name="RegistryBackupAlreadyInProgress" xml:space="preserve">
+    <value>The Registry Backup cannot start because another one is already in progress.</value>
   </data>
   <data name="RegistryBackupFailed" xml:space="preserve">
     <value>The Registry Backup failed.</value>
@@ -201,8 +204,8 @@ If you choose No, the application will exit.</value>
   <data name="RegistryBackupInProgress" xml:space="preserve">
     <value>A Registry Backup is in progress. Please do not turn off your computer.</value>
   </data>
-  <data name="RegistryBackupNotRunning" xml:space="preserve">
-    <value>The Registry Backup cannot exit because it was not running.</value>
+  <data name="RegistryBackupNotInProgress" xml:space="preserve">
+    <value>The Registry Backup cannot be stopped because no Registry Backup was in progress.</value>
   </data>
   <data name="RegistryBackupWasSuccessful" xml:space="preserve">
     <value>The Registry Backup was successful.</value>

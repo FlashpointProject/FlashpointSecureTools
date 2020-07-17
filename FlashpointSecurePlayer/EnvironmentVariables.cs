@@ -16,7 +16,7 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Templat
 namespace FlashpointSecurePlayer {
     class EnvironmentVariables : Modifications {
         private const string COMPATIBILITY_LAYER_NAME = "__COMPAT_LAYER";
-        private IList<string> ReadOnlyComparableNames { get; } = new List<string> { FLASHPOINT_STARTUP_PATH, FLASHPOINT_DOWNLOAD_PATH }.AsReadOnly();
+        private IList<string> ReadOnlyComparableNames { get; } = new List<string> { FLASHPOINT_STARTUP_PATH, FLASHPOINT_HTDOCS_FILE }.AsReadOnly();
 
         public EnvironmentVariables(Form form) : base(form) { }
 
@@ -104,11 +104,11 @@ namespace FlashpointSecurePlayer {
                         // the compatibility layers may contain more values
                         // but we're only concerned if it contains the values we want
                         if (compatibilityLayerValue != null) {
-                            compatibilityLayerValues = compatibilityLayerValue.ToUpper().Split(' ').ToList();
+                            compatibilityLayerValues = compatibilityLayerValue.ToUpperInvariant().Split(' ').ToList();
                         }
 
                         if (value != null) {
-                            values = value.ToUpper().Split(' ').ToList();
+                            values = value.ToUpperInvariant().Split(' ').ToList();
                         }
 
                         // we have to restart in this case in server mode
@@ -162,7 +162,7 @@ namespace FlashpointSecurePlayer {
             }
 
             if (compatibilityLayerValue != null) {
-                compatibilityLayerValues = compatibilityLayerValue.ToUpper().Split(' ').ToList();
+                compatibilityLayerValues = compatibilityLayerValue.ToUpperInvariant().Split(' ').ToList();
             }
 
             ProgressManager.CurrentGoal.Start(modificationsElement.EnvironmentVariables.Count);
@@ -187,7 +187,7 @@ namespace FlashpointSecurePlayer {
                     values = new List<string>();
 
                     if (value != null) {
-                        values = value.ToUpper().Split(' ').ToList();
+                        values = value.ToUpperInvariant().Split(' ').ToList();
                     }
 
                     // if this isn't the compatibility layer variable

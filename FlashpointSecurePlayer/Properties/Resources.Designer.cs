@@ -116,11 +116,20 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This curation is missing a modification name..
+        ///   Looks up a localized string similar to This curation is missing a template name..
         /// </summary>
-        internal static string CurationMissingModificationName {
+        internal static string CurationMissingTemplateName {
             get {
-                return ResourceManager.GetString("CurationMissingModificationName", resourceCulture);
+                return ResourceManager.GetString("CurationMissingTemplateName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A game file is being downloaded..
+        /// </summary>
+        internal static string DownloadingGameFile {
+            get {
+                return ResourceManager.GetString("DownloadingGameFile", resourceCulture);
             }
         }
         
@@ -226,20 +235,20 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Mode Templates failed..
-        /// </summary>
-        internal static string ModeTemplatesFailed {
-            get {
-                return ResourceManager.GetString("ModeTemplatesFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to No game was selected to start, so the application is exiting..
         /// </summary>
         internal static string NoGameSelected {
             get {
                 return ResourceManager.GetString("NoGameSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No mode was selected..
+        /// </summary>
+        internal static string NoModeSelected {
+            get {
+                return ResourceManager.GetString("NoModeSelected", resourceCulture);
             }
         }
         
@@ -280,11 +289,11 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Registry Backup cannot run because another one is already running..
+        ///   Looks up a localized string similar to The Registry Backup cannot start because another one is already in progress..
         /// </summary>
-        internal static string RegistryBackupAlreadyRunning {
+        internal static string RegistryBackupAlreadyInProgress {
             get {
-                return ResourceManager.GetString("RegistryBackupAlreadyRunning", resourceCulture);
+                return ResourceManager.GetString("RegistryBackupAlreadyInProgress", resourceCulture);
             }
         }
         
@@ -307,11 +316,11 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Registry Backup cannot exit because it was not running..
+        ///   Looks up a localized string similar to The Registry Backup cannot be stopped because no Registry Backup was in progress..
         /// </summary>
-        internal static string RegistryBackupNotRunning {
+        internal static string RegistryBackupNotInProgress {
             get {
-                return ResourceManager.GetString("RegistryBackupNotRunning", resourceCulture);
+                return ResourceManager.GetString("RegistryBackupNotInProgress", resourceCulture);
             }
         }
         

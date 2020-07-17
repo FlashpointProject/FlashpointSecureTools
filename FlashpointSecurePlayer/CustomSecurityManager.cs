@@ -87,7 +87,7 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
-            pwszUrl = pwszUrl.ToLower();
+            pwszUrl = pwszUrl.ToLowerInvariant();
 
             if (pwszUrl.IndexOf("http://") != 0 && pwszUrl.IndexOf("https://") != 0 && pwszUrl.IndexOf("ftp://") != 0) {
                 // we've wandered off from Flashpoint Server, revert to default zone settings
@@ -118,7 +118,7 @@ namespace FlashpointSecurePlayer {
             }
 
             try {
-                if (Path.GetExtension(new Uri(pwszUrl).LocalPath).ToUpper() == FLASH_EXTENSION) {
+                if (Path.GetExtension(new Uri(pwszUrl).LocalPath).ToUpperInvariant() == FLASH_EXTENSION) {
                     if (dwAction == URLACTION_ACTIVEX_TREATASUNTRUSTED) { // don't trust Flash ActiveX Controls
                         pPolicy = URLPOLICY_ALLOW;
                     }
@@ -128,7 +128,7 @@ namespace FlashpointSecurePlayer {
                 return S_FALSE;
             }
 
-            pwszUrl = pwszUrl.ToLower();
+            pwszUrl = pwszUrl.ToLowerInvariant();
 
             if (pwszUrl.IndexOf("http://") != 0 && pwszUrl.IndexOf("https://") != 0 && pwszUrl.IndexOf("ftp://") != 0) {
                 // we've wandered off from Flashpoint Server, don't allow zone elevation
