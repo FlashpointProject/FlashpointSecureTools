@@ -67,9 +67,9 @@ namespace FlashpointSecurePlayer {
 
             // next... we need to check if the CPU speed is actually faster than
             // what we want to underclock to
-            long currentMhz = 0;
+            long mhzLimit = 0;
 
-            ProcessStartInfo oldCPUSimulatorProcessStartInfo = new ProcessStartInfo(OLD_CPU_SIMULATOR_PATH, "--dev-get-current-mhz") {
+            ProcessStartInfo oldCPUSimulatorProcessStartInfo = new ProcessStartInfo(OLD_CPU_SIMULATOR_PATH, "--dev-get-mhz-limit") {
                 UseShellExecute = false,
                 RedirectStandardError = false,
                 RedirectStandardOutput = true,
@@ -97,15 +97,15 @@ namespace FlashpointSecurePlayer {
                     oldCPUSimulatorProcessStandardOutput = oldCPUSimulatorProcess.StandardOutput.ReadToEnd();
                 }
 
-                if (oldCPUSimulatorProcess.ExitCode != 0 || !long.TryParse(oldCPUSimulatorProcessStandardOutput.Split('\n').Last(), out currentMhz)) {
-                    throw new OldCPUSimulatorFailedException("Failed to get current rate.");
+                if (oldCPUSimulatorProcess.ExitCode != 0 || !long.TryParse(oldCPUSimulatorProcessStandardOutput.Split('\n').Last(), out mhzLimit)) {
+                    throw new OldCPUSimulatorFailedException("Failed to get rate limit.");
                 }
             } catch {
-                throw new OldCPUSimulatorFailedException("Failed to get current rate.");
+                throw new OldCPUSimulatorFailedException("Failed to get rate limit.");
             }
 
             // if our CPU is too slow, just ignore the modification
-            if (currentMhz <= oldCPUSimulatorElement.TargetRate) {
+            if (mhzLimit <= oldCPUSimulatorElement.TargetRate) {
                 return;
             }
 
