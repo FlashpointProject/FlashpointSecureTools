@@ -390,17 +390,36 @@ namespace FlashpointSecurePlayer {
                         throw new IndexOutOfRangeException("The command line argument is out of range.");
                     }
 
+                    string fullPath = Path.GetFullPath(argv[0]);
+
                     if (softwareProcessStartInfo == null) {
                         softwareProcessStartInfo = new ProcessStartInfo();
                     }
 
-                    string fullPath = Path.GetFullPath(argv[0]);
-                    softwareProcessStartInfo.FileName = fullPath;
-                    softwareProcessStartInfo.Arguments = GetCommandLineArgumentRange(commandLineExpanded, 1, -1);
+                    if (String.IsNullOrEmpty(softwareProcessStartInfo.FileName)) {
+                        softwareProcessStartInfo.FileName = fullPath;
+                    }
+
+                    if (String.IsNullOrEmpty(softwareProcessStartInfo.Arguments)) {
+                        softwareProcessStartInfo.Arguments = GetCommandLineArgumentRange(commandLineExpanded, 1, -1);
+                    }
+
                     softwareProcessStartInfo.ErrorDialog = false;
 
+                    if (modeElement.HideWindow) {
+                        HideWindow(ref softwareProcessStartInfo);
+                    }
+
                     if (String.IsNullOrEmpty(softwareProcessStartInfo.WorkingDirectory)) {
-                        softwareProcessStartInfo.WorkingDirectory = Path.GetDirectoryName(fullPath);
+                        if (String.IsNullOrEmpty(modeElement.WorkingDirectory)) {
+                            softwareProcessStartInfo.WorkingDirectory = Path.GetDirectoryName(fullPath);
+                        } else {
+                            try {
+                                SetWorkingDirectory(ref softwareProcessStartInfo, Environment.ExpandEnvironmentVariables(modeElement.WorkingDirectory));
+                            } catch (ArgumentNullException) {
+                                throw new InvalidModeException("The Mode failed because the Working Directory cannot be null.");
+                            }
+                        }
                     }
 
                     Process softwareProcess = Process.Start(softwareProcessStartInfo);
