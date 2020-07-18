@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -19,6 +20,43 @@ namespace FlashpointSecurePlayer {
         private IList<string> ReadOnlyComparableNames { get; } = new List<string> { FLASHPOINT_STARTUP_PATH, FLASHPOINT_HTDOCS_FILE }.AsReadOnly();
 
         public EnvironmentVariables(Form form) : base(form) { }
+
+        private void FindAndReplace(EnvironmentVariablesElement environmentVariablesElement) {
+            string value = null;
+
+            try {
+                value = Environment.GetEnvironmentVariable(environmentVariablesElement.Name);
+            } catch (ArgumentException) {
+                throw new EnvironmentVariablesFailedException("Failed to get the " + environmentVariablesElement.Name + " Environment Variable.");
+            } catch (SecurityException) {
+                throw new TaskRequiresElevationException("Getting the " + environmentVariablesElement.Name + " Environment Variable requires elevation.");
+            }
+
+            Regex regex = null;
+
+            try {
+                regex = new Regex(environmentVariablesElement.Find);
+            } catch (ArgumentException) {
+                throw new EnvironmentVariablesFailedException("The Regex Pattern " + environmentVariablesElement.Find + " is invalid.");
+            }
+
+            try {
+                value = regex.Replace(value, environmentVariablesElement.Replace);
+            } catch (ArgumentNullException) {
+                // value was not defined
+                return;
+            } catch (RegexMatchTimeoutException) {
+                throw new EnvironmentVariablesFailedException("The Regex Match timed out.");
+            }
+
+            try {
+                Environment.SetEnvironmentVariable(environmentVariablesElement.Name, value, EnvironmentVariableTarget.Process);
+            } catch (ArgumentException) {
+                throw new EnvironmentVariablesFailedException("Failed to set the " + environmentVariablesElement.Name + " Environment Variable.");
+            } catch (SecurityException) {
+                throw new TaskRequiresElevationException("Setting the " + environmentVariablesElement.Name + " Environment Variable requires elevation.");
+            }
+        }
 
         private string GetComparableName(string name) {
             int comparableNameLength = name.IndexOf('\0');
@@ -84,7 +122,8 @@ namespace FlashpointSecurePlayer {
                     if (ReadOnlyComparableNames.Contains(comparableName)) {
                         throw new EnvironmentVariablesFailedException("The " + environmentVariablesElement.Name + " Environment Variable cannot be modified.");
                     }
-
+                    
+                    FindAndReplace(environmentVariablesElement);
                     value = environmentVariablesElement.Value;
 
                     try {

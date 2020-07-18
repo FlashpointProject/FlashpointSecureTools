@@ -75,9 +75,9 @@ namespace FlashpointSecurePlayer {
 
             // next... we need to check if the CPU speed is actually faster than
             // what we want to underclock to
-            long currentMhz = 0;
+            long mhzLimit = 0;
 
-            ProcessStartInfo oldCPUSimulatorProcessStartInfo = new ProcessStartInfo(OLD_CPU_SIMULATOR_PATH, "--dev-get-current-mhz") {
+            ProcessStartInfo oldCPUSimulatorProcessStartInfo = new ProcessStartInfo(OLD_CPU_SIMULATOR_PATH, "--dev-get-mhz-limit") {
                 UseShellExecute = false,
                 RedirectStandardError = false,
                 RedirectStandardOutput = true,
@@ -105,23 +105,24 @@ namespace FlashpointSecurePlayer {
                     oldCPUSimulatorProcessStandardOutput = oldCPUSimulatorProcess.StandardOutput.ReadToEnd();
                 }
 
-                if (oldCPUSimulatorProcess.ExitCode != 0 || !long.TryParse(oldCPUSimulatorProcessStandardOutput.Split('\n').Last(), out currentMhz)) {
-                    throw new OldCPUSimulatorFailedException("Failed to get current rate.");
+                if (oldCPUSimulatorProcess.ExitCode != 0 || !long.TryParse(oldCPUSimulatorProcessStandardOutput.Split('\n').Last(), out mhzLimit)) {
+                    throw new OldCPUSimulatorFailedException("Failed to get rate limit.");
                 }
             } catch {
-                throw new OldCPUSimulatorFailedException("Failed to get current rate.");
+                throw new OldCPUSimulatorFailedException("Failed to get rate limit.");
             }
 
             // if our CPU is too slow, just ignore the modification
-            if (currentMhz <= oldCPUSimulatorElement.TargetRate) {
+            if (mhzLimit <= oldCPUSimulatorElement.TargetRate) {
                 return;
             }
 
-            if (modeElement.Name == ModeElement.NAME.WEB_BROWSER) {
+            switch (modeElement.Name) {
+                case ModeElement.NAME.WEB_BROWSER:
                 // server mode, need to restart the whole app
                 // handled in the GUI side of things
                 throw new OldCPUSimulatorRequiresApplicationRestartException("The Old CPU Simulator in Web Browser Mode requires a restart.");
-            } else if (modeElement.Name == ModeElement.NAME.SOFTWARE) {
+                case ModeElement.NAME.SOFTWARE:
                 // USB the HDMI to .exe the database
                 string commandLineExpanded = Environment.ExpandEnvironmentVariables(modeElement.CommandLine);
                 StringBuilder oldCPUSimulatorSoftware = new StringBuilder("\"");
@@ -149,13 +150,15 @@ namespace FlashpointSecurePlayer {
                 oldCPUSimulatorSoftware.Append(GetCommandLineArgumentRange(commandLineExpanded, 1, -1));
                 // this becomes effectively the new thing passed as --software
                 // the shared function is used both here and GUI side for restarts
-                modeElement.CommandLine = OLD_CPU_SIMULATOR_PATH + " " + GetOldCPUSimulatorProcessStartInfoArguments(oldCPUSimulatorElement, oldCPUSimulatorSoftware.ToString());
+                //modeElement.CommandLine = OLD_CPU_SIMULATOR_PATH + " " + GetOldCPUSimulatorProcessStartInfoArguments(oldCPUSimulatorElement, oldCPUSimulatorSoftware.ToString());
                 softwareIsOldCPUSimulator = true;
 
                 if (softwareProcessStartInfo == null) {
                     softwareProcessStartInfo = new ProcessStartInfo();
                 }
 
+                softwareProcessStartInfo.FileName = OLD_CPU_SIMULATOR_PATH;
+                softwareProcessStartInfo.Arguments = GetOldCPUSimulatorProcessStartInfoArguments(oldCPUSimulatorElement, oldCPUSimulatorSoftware.ToString());
                 softwareProcessStartInfo.RedirectStandardError = true;
                 softwareProcessStartInfo.RedirectStandardOutput = false;
                 softwareProcessStartInfo.RedirectStandardInput = false;

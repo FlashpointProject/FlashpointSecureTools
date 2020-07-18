@@ -507,18 +507,29 @@ namespace FlashpointSecurePlayer {
                                     }
                                 }
 
-                                [ConfigurationProperty("findAndReplace", IsRequired = false)]
-                                public string FindAndReplace {
+                                [ConfigurationProperty("find", IsRequired = false)]
+                                public string Find {
                                     get {
-                                        return base["findAndReplace"] as string;
+                                        return base["find"] as string;
                                     }
 
                                     set {
-                                        base["findAndReplace"] = value;
+                                        base["find"] = value;
                                     }
                                 }
 
-                                [ConfigurationProperty("value", IsRequired = true)]
+                                [ConfigurationProperty("replace", IsRequired = false)]
+                                public string Replace {
+                                    get {
+                                        return base["replace"] as string;
+                                    }
+
+                                    set {
+                                        base["replace"] = value;
+                                    }
+                                }
+
+                                [ConfigurationProperty("value", IsRequired = false)]
                                 public string Value {
                                     get {
                                         return base["value"] as string;
