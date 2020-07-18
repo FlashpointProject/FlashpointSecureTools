@@ -1180,11 +1180,6 @@ namespace FlashpointSecurePlayer {
                     }
                 }
 
-                if (htdocsFile == null) {
-                    // still create environment variable
-                    htdocsFile = String.Empty;
-                }
-
                 string htdocsDirectoryNameFile = null;
 
                 try {
@@ -1199,12 +1194,21 @@ namespace FlashpointSecurePlayer {
                     htdocsDirectoryNameFile = String.Empty;
                 }
 
+                if (htdocsFile == null) {
+                    // still create environment variable
+                    htdocsFile = String.Empty;
+                }
+
+                if (!String.IsNullOrEmpty(htdocsFile) && !String.IsNullOrEmpty(htdocsDirectoryNameFile)) {
+                    htdocsFile = htdocsDirectoryNameFile + "\\" + htdocsFile;
+                }
+
                 try {
                     Environment.SetEnvironmentVariable(FLASHPOINT_STARTUP_PATH, Application.StartupPath, EnvironmentVariableTarget.Process);
                     Environment.SetEnvironmentVariable(FLASHPOINT_URL, URL, EnvironmentVariableTarget.Process);
                     Environment.SetEnvironmentVariable(FLASHPOINT_ARGUMENTS, Arguments, EnvironmentVariableTarget.Process);
                     Environment.SetEnvironmentVariable(FLASHPOINT_HTDOCS_FILE, htdocsFile, EnvironmentVariableTarget.Process);
-                    Environment.SetEnvironmentVariable(FLASHPOINT_HTDOCS_DIRNAME_FILE, htdocsDirectoryNameFile, EnvironmentVariableTarget.Process);
+                    Environment.SetEnvironmentVariable(FLASHPOINT_HTDOCS_FILE_DIR, htdocsDirectoryNameFile, EnvironmentVariableTarget.Process);
                 } catch (ArgumentException ex) {
                     LogExceptionToLauncher(ex);
                     Application.Exit();

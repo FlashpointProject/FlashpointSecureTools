@@ -295,7 +295,7 @@ namespace FlashpointSecurePlayer {
         public const string FLASHPOINT_URL = "FP_URL";
         public const string FLASHPOINT_ARGUMENTS = "FP_ARGUMENTS";
         public const string FLASHPOINT_HTDOCS_FILE = "FP_HTDOCS_FILE";
-        public const string FLASHPOINT_HTDOCS_DIRNAME_FILE = "FP_HTDOCS_DIRNAME_FILE";
+        public const string FLASHPOINT_HTDOCS_FILE_DIR = "FP_HTDOCS_FILE_DIR";
 
         public const string OLD_CPU_SIMULATOR_PATH = "OldCPUSimulator\\OldCPUSimulator.exe";
         public const string OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME = "OLDCPUSIMULATOR.EXE";
