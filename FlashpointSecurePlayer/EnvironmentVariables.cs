@@ -22,6 +22,10 @@ namespace FlashpointSecurePlayer {
         public EnvironmentVariables(Form form) : base(form) { }
 
         private void FindAndReplace(EnvironmentVariablesElement environmentVariablesElement) {
+            if (String.IsNullOrEmpty(environmentVariablesElement.Find)) {
+                return;
+            }
+
             string value = null;
 
             try {
@@ -70,10 +74,10 @@ namespace FlashpointSecurePlayer {
             return comparableName;
         }
 
-        public void Activate(string name, ModeElement modeElement) {
-            base.Activate(name);
+        public void Activate(string templateName, ModeElement modeElement) {
+            base.Activate(templateName);
 
-            if (String.IsNullOrEmpty(name)) {
+            if (String.IsNullOrEmpty(templateName)) {
                 // no argument
                 return;
             }
@@ -165,6 +169,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        /*
         public void Deactivate(ModeElement modeElement) {
             // do the reverse of activation because we can
             base.Deactivate();
@@ -248,5 +253,6 @@ namespace FlashpointSecurePlayer {
                 ProgressManager.CurrentGoal.Stop();
             }
         }
+        */
     }
 }

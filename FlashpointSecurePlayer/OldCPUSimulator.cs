@@ -19,13 +19,13 @@ namespace FlashpointSecurePlayer {
     class OldCPUSimulator : Modifications {
         public OldCPUSimulator(Form form) : base(form) { }
 
-        public void Activate(string name, ref ModeElement modeElement, ref ProcessStartInfo softwareProcessStartInfo, out bool softwareIsOldCPUSimulator) {
+        public void Activate(string templateName, ref ModeElement modeElement, ref ProcessStartInfo softwareProcessStartInfo, out bool softwareIsOldCPUSimulator) {
             OldCPUSimulatorElement oldCPUSimulatorElement = null;
             softwareIsOldCPUSimulator = false;
 
-            base.Activate(name);
+            base.Activate(templateName);
 
-            if (String.IsNullOrEmpty(name)) {
+            if (String.IsNullOrEmpty(templateName)) {
                 // no argument
                 return;
             }

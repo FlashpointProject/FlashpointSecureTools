@@ -488,7 +488,15 @@ namespace FlashpointSecurePlayer {
 
                         public class EnvironmentVariablesElementCollection : TemplatesConfigurationElementCollection {
                             public class EnvironmentVariablesElement : ConfigurationElement {
-                                [ConfigurationProperty("name", IsKey = true, IsRequired = true)]
+                                protected ConfigurationProperty _value = null;
+
+                                public EnvironmentVariablesElement() {
+                                    _value = new ConfigurationProperty(String.IsNullOrEmpty(Find) ? "value" : "replace",
+                                        typeof(string), null, ConfigurationPropertyOptions.IsRequired);
+                                }
+
+                                // name not key for multiple find replace operations if so desired
+                                [ConfigurationProperty("name", IsKey = false, IsRequired = true)]
                                 public string Name {
                                     get {
                                         if (String.IsNullOrEmpty(base["name"] as string)) {
@@ -517,28 +525,42 @@ namespace FlashpointSecurePlayer {
                                         base["find"] = value;
                                     }
                                 }
-
-                                [ConfigurationProperty("replace", IsRequired = false)]
+                                
                                 public string Replace {
                                     get {
-                                        return base["replace"] as string;
+                                        return base[_value] as string;
                                     }
 
                                     set {
-                                        base["replace"] = value;
+                                        base[_value] = value;
                                     }
                                 }
-
+                                
                                 [ConfigurationProperty("value", IsRequired = false)]
                                 public string Value {
                                     get {
-                                        return base["value"] as string;
+                                        return base[_value] as string;
                                     }
 
                                     set {
-                                        base["value"] = value;
+                                        base[_value] = value;
                                     }
                                 }
+
+                                /*
+                                protected override object OnRequiredPropertyNotFound(string name) {
+                                    if (String.IsNullOrEmpty(Find)) {
+                                        if (name == "replace") {
+                                            return null;
+                                        }
+                                    } else {
+                                        if (name == "value") {
+                                            return null;
+                                        }
+                                    }
+                                    return base.OnRequiredPropertyNotFound(name);
+                                }
+                                */
                             }
 
                             protected override object GetElementKey(ConfigurationElement configurationElement) {
@@ -766,14 +788,14 @@ namespace FlashpointSecurePlayer {
                         }
 
                         public class SingleInstanceElement : ConfigurationElement {
-                            [ConfigurationProperty("executablePath", IsRequired = false)]
-                            public string ExecutablePath {
+                            [ConfigurationProperty("executable", IsRequired = false)]
+                            public string Executable {
                                 get {
-                                    return base["executablePath"] as string;
+                                    return base["executable"] as string;
                                 }
 
                                 set {
-                                    base["executablePath"] = value;
+                                    base["executable"] = value;
                                 }
                             }
 
@@ -1060,7 +1082,7 @@ namespace FlashpointSecurePlayer {
                     }
                     return httpResponseMessage.RequestMessage.RequestUri;
                 }
-            } catch (ArgumentNullException) {
+            } catch (ArgumentException) {
                 throw new Exceptions.DownloadFailedException("The download name is invalid.");
             } catch (HttpRequestException) {
                 throw new Exceptions.DownloadFailedException("The HTTP Request is invalid.");
@@ -1220,7 +1242,7 @@ namespace FlashpointSecurePlayer {
                 try {
                     exeConfiguration.Sections.Add("flashpointSecurePlayer", new FlashpointSecurePlayerSection());
                 } catch (ArgumentException) {
-                    throw new ConfigurationErrorsException("The flashpointSecurePlayer Section is invalid.");
+                    throw configurationErrorsException;
                 }
 
                 // reload it into the configuration

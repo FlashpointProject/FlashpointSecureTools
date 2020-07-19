@@ -127,7 +127,7 @@
     <value>The address ({0}) wasn't understood. Please report this bug.</value>
   </data>
   <data name="AnotherInstanceCausingInterference" xml:space="preserve">
-    <value>Another instance of Flashpoint Secure Player is preventing the Modifications from being activated.</value>
+    <value>Another instance of Flashpoint Secure Player is preventing the Template from being activated.</value>
   </data>
   <data name="AsAdministratorUser" xml:space="preserve">
     <value>as Administrator User</value>
@@ -138,9 +138,6 @@ Please ensure Flashpoint is not corrupted, was extracted correctly, and is not r
   </data>
   <data name="CurationMissingTemplateName" xml:space="preserve">
     <value>This curation is missing a template name.</value>
-  </data>
-  <data name="DownloadingGameFile" xml:space="preserve">
-    <value>A game file is being downloaded.</value>
   </data>
   <data name="EnvironmentVariablesFailed" xml:space="preserve">
     <value>The Environment Variables failed.</value>
@@ -156,6 +153,9 @@ Please ensure Flashpoint is not corrupted, was extracted correctly, and is not r
   </data>
   <data name="FlashpointSecurePlayer" xml:space="preserve">
     <value>Flashpoint Secure Player</value>
+  </data>
+  <data name="GameDownloading" xml:space="preserve">
+    <value>The game is downloading.</value>
   </data>
   <data name="GameFailedLaunch" xml:space="preserve">
     <value>This game failed to launch {0}.</value>

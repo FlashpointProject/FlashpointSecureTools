@@ -88,7 +88,7 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Another instance of Flashpoint Secure Player is preventing the Modifications from being activated..
+        ///   Looks up a localized string similar to Another instance of Flashpoint Secure Player is preventing the Template from being activated..
         /// </summary>
         internal static string AnotherInstanceCausingInterference {
             get {
@@ -121,15 +121,6 @@ namespace FlashpointSecurePlayer.Properties {
         internal static string CurationMissingTemplateName {
             get {
                 return ResourceManager.GetString("CurationMissingTemplateName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A game file is being downloaded..
-        /// </summary>
-        internal static string DownloadingGameFile {
-            get {
-                return ResourceManager.GetString("DownloadingGameFile", resourceCulture);
             }
         }
         
@@ -175,6 +166,15 @@ namespace FlashpointSecurePlayer.Properties {
         internal static string FlashpointSecurePlayer {
             get {
                 return ResourceManager.GetString("FlashpointSecurePlayer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The game is downloading..
+        /// </summary>
+        internal static string GameDownloading {
+            get {
+                return ResourceManager.GetString("GameDownloading", resourceCulture);
             }
         }
         

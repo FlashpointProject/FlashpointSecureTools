@@ -680,8 +680,8 @@ namespace FlashpointSecurePlayer {
             return keyValueName;
         }
 
-        public async Task StartImportAsync(string name, BINARY_TYPE binaryType) {
-            base.StartImport(name);
+        public async Task StartImportAsync(string templateName, BINARY_TYPE binaryType) {
+            base.StartImport(templateName);
 
             TemplateElement templateElement = GetTemplateElement(true, TemplateName);
             ModificationsElement modificationsElement = templateElement.Modifications;
@@ -834,10 +834,10 @@ namespace FlashpointSecurePlayer {
             await StopImportAsync(false).ConfigureAwait(false);
         }
 
-        new public void Activate(string name) {
-            base.Activate(name);
+        new public void Activate(string templateName) {
+            base.Activate(templateName);
 
-            if (String.IsNullOrEmpty(name)) {
+            if (String.IsNullOrEmpty(templateName)) {
                 // no argument
                 return;
             }

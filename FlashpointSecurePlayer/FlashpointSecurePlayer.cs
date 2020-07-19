@@ -20,6 +20,7 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Templat
 namespace FlashpointSecurePlayer {
     public partial class FlashpointSecurePlayer : Form {
         private const string APPLICATION_MUTEX_NAME = "Flashpoint Secure Player";
+        private const string MODE_MUTEX_NAME = "Flashpoint Secure Player Mode";
         private const string MODIFICATIONS_MUTEX_NAME = "Flashpoint Secure Player Modifications";
         private const string FLASHPOINT_LAUNCHER_PARENT_PROCESS_FILE_NAME = "CMD.EXE";
         private const string FLASHPOINT_LAUNCHER_PROCESS_NAME = "FLASHPOINT";
@@ -360,152 +361,182 @@ namespace FlashpointSecurePlayer {
         }
 
         private void ActivateMode(TemplateElement templateElement, ErrorDelegate errorDelegate) {
-            ModeElement modeElement = templateElement.Mode;
+            bool createdNew = false;
 
-            switch (modeElement.Name) {
-                case ModeElement.NAME.WEB_BROWSER:
-                Uri webBrowserURL = null;
-
-                try {
-                    webBrowserURL = new Uri(URL);
-                } catch {
-                    errorDelegate(String.Format(Properties.Resources.AddressNotUnderstood, URL));
-                    throw new InvalidModeException("The Mode did not understand the address.");
+            using (Mutex modeMutex = new Mutex(true, MODE_MUTEX_NAME, out createdNew)) {
+                if (!createdNew) {
+                    if (!modeMutex.WaitOne()) {
+                        errorDelegate(Properties.Resources.AnotherInstanceCausingInterference);
+                        throw new InvalidModeException("Another Mode is activating.");
+                    }
                 }
 
-                serverForm = new Server(webBrowserURL) {
-                    WindowState = FormWindowState.Maximized
-                };
-
-                serverForm.FormClosing += serverForm_FormClosing;
-                Hide();
-                serverForm.Show();
-                return;
-                case ModeElement.NAME.SOFTWARE:
                 try {
-                    string commandLineExpanded = Environment.ExpandEnvironmentVariables(modeElement.CommandLine);
-                    string[] argv = CommandLineToArgv(commandLineExpanded, out int argc);
+                    ModeElement modeElement = templateElement.Mode;
 
-                    if (argc <= 0) {
-                        throw new IndexOutOfRangeException("The command line argument is out of range.");
-                    }
+                    switch (modeElement.Name) {
+                        case ModeElement.NAME.WEB_BROWSER:
+                        Uri webBrowserURL = null;
 
-                    string fullPath = Path.GetFullPath(argv[0]);
+                        try {
+                            webBrowserURL = new Uri(URL);
+                        } catch {
+                            errorDelegate(String.Format(Properties.Resources.AddressNotUnderstood, URL));
+                            throw new InvalidModeException("The Mode did not understand the address.");
+                        }
 
-                    if (softwareProcessStartInfo == null) {
-                        softwareProcessStartInfo = new ProcessStartInfo();
-                    }
+                        serverForm = new Server(webBrowserURL) {
+                            WindowState = FormWindowState.Maximized
+                        };
 
-                    if (String.IsNullOrEmpty(softwareProcessStartInfo.FileName)) {
-                        softwareProcessStartInfo.FileName = fullPath;
-                    }
+                        serverForm.FormClosing += serverForm_FormClosing;
+                        Hide();
+                        serverForm.Show();
+                        return;
+                        case ModeElement.NAME.SOFTWARE:
+                        try {
+                            string commandLineExpanded = Environment.ExpandEnvironmentVariables(modeElement.CommandLine);
+                            string[] argv = CommandLineToArgv(commandLineExpanded, out int argc);
 
-                    if (String.IsNullOrEmpty(softwareProcessStartInfo.Arguments)) {
-                        softwareProcessStartInfo.Arguments = GetCommandLineArgumentRange(commandLineExpanded, 1, -1);
-                    }
+                            if (argc <= 0) {
+                                throw new IndexOutOfRangeException("The command line argument is out of range.");
+                            }
 
-                    softwareProcessStartInfo.ErrorDialog = false;
+                            string fullPath = Path.GetFullPath(argv[0]);
 
-                    if (modeElement.HideWindow) {
-                        HideWindow(ref softwareProcessStartInfo);
-                    }
+                            if (softwareProcessStartInfo == null) {
+                                softwareProcessStartInfo = new ProcessStartInfo();
+                            }
 
-                    if (String.IsNullOrEmpty(softwareProcessStartInfo.WorkingDirectory)) {
-                        if (String.IsNullOrEmpty(modeElement.WorkingDirectory)) {
-                            softwareProcessStartInfo.WorkingDirectory = Path.GetDirectoryName(fullPath);
-                        } else {
+                            if (String.IsNullOrEmpty(softwareProcessStartInfo.FileName)) {
+                                softwareProcessStartInfo.FileName = fullPath;
+                            }
+
+                            if (String.IsNullOrEmpty(softwareProcessStartInfo.Arguments)) {
+                                softwareProcessStartInfo.Arguments = GetCommandLineArgumentRange(commandLineExpanded, 1, -1);
+                            }
+
+                            softwareProcessStartInfo.ErrorDialog = false;
+
+                            if (modeElement.HideWindow) {
+                                HideWindow(ref softwareProcessStartInfo);
+                            }
+
+                            if (String.IsNullOrEmpty(softwareProcessStartInfo.WorkingDirectory)) {
+                                if (String.IsNullOrEmpty(modeElement.WorkingDirectory)) {
+                                    softwareProcessStartInfo.WorkingDirectory = Path.GetDirectoryName(fullPath);
+                                } else {
+                                    try {
+                                        SetWorkingDirectory(ref softwareProcessStartInfo, Environment.ExpandEnvironmentVariables(modeElement.WorkingDirectory));
+                                    } catch (ArgumentNullException) {
+                                        throw new InvalidModeException("The Mode failed because the Working Directory cannot be null.");
+                                    }
+                                }
+                            }
+
+                            Process softwareProcess = Process.Start(softwareProcessStartInfo);
+
                             try {
-                                SetWorkingDirectory(ref softwareProcessStartInfo, Environment.ExpandEnvironmentVariables(modeElement.WorkingDirectory));
-                            } catch (ArgumentNullException) {
-                                throw new InvalidModeException("The Mode failed because the Working Directory cannot be null.");
+                                ProcessSync.Start(softwareProcess);
+                            } catch (JobObjectException ex) {
+                                LogExceptionToLauncher(ex);
+                                // popup message box and blow up
+                                errorDelegate(Properties.Resources.JobObjectNotCreated);
+                                softwareProcess.Kill();
+                                Environment.Exit(-1);
+                                throw new InvalidModeException("The Mode failed to create a Job Object.");
                             }
-                        }
-                    }
 
-                    Process softwareProcess = Process.Start(softwareProcessStartInfo);
+                            Hide();
 
-                    try {
-                        ProcessSync.Start(softwareProcess);
-                    } catch (JobObjectException ex) {
-                        LogExceptionToLauncher(ex);
-                        // popup message box and blow up
-                        errorDelegate(Properties.Resources.JobObjectNotCreated);
-                        softwareProcess.Kill();
-                        Environment.Exit(-1);
-                        throw new InvalidModeException("The Mode failed to create a Job Object.");
-                    }
-                    
-                    Hide();
+                            if (!softwareProcess.HasExited) {
+                                softwareProcess.WaitForExit();
+                            }
 
-                    if (!softwareProcess.HasExited) {
-                        softwareProcess.WaitForExit();
-                    }
+                            Show();
 
-                    Show();
+                            string softwareProcessStandardError = null;
+                            string softwareProcessStandardOutput = null;
 
-                    string softwareProcessStandardError = null;
-                    string softwareProcessStandardOutput = null;
+                            if (softwareProcessStartInfo.RedirectStandardError) {
+                                softwareProcessStandardError = softwareProcess.StandardError.ReadToEnd();
+                            }
 
-                    if (softwareProcessStartInfo.RedirectStandardError) {
-                        softwareProcessStandardError = softwareProcess.StandardError.ReadToEnd();
-                    }
+                            if (softwareProcessStartInfo.RedirectStandardOutput) {
+                                softwareProcessStandardOutput = softwareProcess.StandardOutput.ReadToEnd();
+                            }
 
-                    if (softwareProcessStartInfo.RedirectStandardOutput) {
-                        softwareProcessStandardOutput = softwareProcess.StandardOutput.ReadToEnd();
-                    }
+                            if (softwareIsOldCPUSimulator) {
+                                switch (softwareProcess.ExitCode) {
+                                    case 0:
+                                    break;
+                                    case -1:
+                                    if (!String.IsNullOrEmpty(softwareProcessStandardError)) {
+                                        string[] lastSoftwareProcessStandardErrors = softwareProcessStandardError.Split('\n');
+                                        string lastSoftwareProcessStandardError = null;
 
-                    if (softwareIsOldCPUSimulator) {
-                        switch (softwareProcess.ExitCode) {
-                            case 0:
-                            break;
-                            case -1:
-                            if (!String.IsNullOrEmpty(softwareProcessStandardError)) {
-                                string[] lastSoftwareProcessStandardErrors = softwareProcessStandardError.Split('\n');
-                                string lastSoftwareProcessStandardError = null;
+                                        if (lastSoftwareProcessStandardErrors.Length > 1) {
+                                            lastSoftwareProcessStandardError = lastSoftwareProcessStandardErrors[lastSoftwareProcessStandardErrors.Length - 2];
+                                        }
 
-                                if (lastSoftwareProcessStandardErrors.Length > 1) {
-                                    lastSoftwareProcessStandardError = lastSoftwareProcessStandardErrors[lastSoftwareProcessStandardErrors.Length - 2];
-                                }
-
-                                if (!String.IsNullOrEmpty(lastSoftwareProcessStandardError)) {
-                                    MessageBox.Show(lastSoftwareProcessStandardError);
+                                        if (!String.IsNullOrEmpty(lastSoftwareProcessStandardError)) {
+                                            MessageBox.Show(lastSoftwareProcessStandardError);
+                                        }
+                                    }
+                                    break;
+                                    case -2:
+                                    MessageBox.Show("You cannot run multiple instances of Old CPU Simulator.");
+                                    break;
+                                    case -3:
+                                    MessageBox.Show("Failed to Create New String");
+                                    break;
+                                    case -4:
+                                    MessageBox.Show("Failed to Set String");
+                                    break;
+                                    default:
+                                    MessageBox.Show("Failed to Simulate Old CPU");
+                                    break;
                                 }
                             }
-                            break;
-                            case -2:
-                            MessageBox.Show("You cannot run multiple instances of Old CPU Simulator.");
-                            break;
-                            case -3:
-                            MessageBox.Show("Failed to Create New String");
-                            break;
-                            case -4:
-                            MessageBox.Show("Failed to Set String");
-                            break;
-                            default:
-                            MessageBox.Show("Failed to Simulate Old CPU");
-                            break;
+                        } catch {
+                            Show();
+                            errorDelegate(Properties.Resources.ProcessFailedStart);
+                            throw new InvalidModeException("The Mode failed to start the Process.");
                         }
+
+                        Application.Exit();
+                        return;
                     }
-                } catch {
-                    Show();
-                    errorDelegate(Properties.Resources.ProcessFailedStart);
-                    throw new InvalidModeException("The Mode failed to start the Process.");
+
+                    ProgressManager.ShowError();
+                    MessageBox.Show(Properties.Resources.NoModeSelected, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    throw new InvalidModeException("No Mode was used.");
+                } finally {
+                    modeMutex.ReleaseMutex();
                 }
-
-                Application.Exit();
-                return;
             }
-
-            ProgressManager.ShowError();
-            MessageBox.Show(Properties.Resources.NoModeSelected, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            throw new InvalidModeException("No Mode was used.");
         }
 
         private void DeactivateMode(TemplateElement templateElement, ErrorDelegate errorDelegate) {
-            if (serverForm != null) {
-                serverForm.FormClosing -= serverForm_FormClosing;
-                serverForm.Close();
-                serverForm = null;
+            bool createdNew = false;
+
+            using (Mutex modeMutex = new Mutex(true, MODE_MUTEX_NAME, out createdNew)) {
+                if (!createdNew) {
+                    if (!modeMutex.WaitOne()) {
+                        errorDelegate(Properties.Resources.AnotherInstanceCausingInterference);
+                        throw new InvalidModeException("Another Mode is activating.");
+                    }
+                }
+
+                try {
+                    if (serverForm != null) {
+                        serverForm.FormClosing -= serverForm_FormClosing;
+                        serverForm.Close();
+                        serverForm = null;
+                    }
+                } finally {
+                    modeMutex.ReleaseMutex();
+                }
             }
         }
 
@@ -516,7 +547,7 @@ namespace FlashpointSecurePlayer {
                 if (!createdNew) {
                     if (!modificationsMutex.WaitOne()) {
                         errorDelegate(Properties.Resources.AnotherInstanceCausingInterference);
-                        throw new InvalidModificationException("Another Modification is currently in progress.");
+                        throw new InvalidModificationException("Another Modification is activating.");
                     }
                 }
 
@@ -704,14 +735,14 @@ namespace FlashpointSecurePlayer {
                         if (modificationsElement.ElementInformation.IsPresent) {
                             if (modificationsElement.SingleInstance.ElementInformation.IsPresent) {
                                 try {
-                                    string executablePath = null;
+                                    string executable = null;
                                     string[] argv = CommandLineToArgv(Environment.ExpandEnvironmentVariables(modeElement.CommandLine), out int argc);
 
                                     if (argc > 0) {
-                                        executablePath = argv[0];
+                                        executable = argv[0];
                                     }
 
-                                    singleInstance.Activate(TemplateName, executablePath);
+                                    singleInstance.Activate(TemplateName, executable);
                                 } catch (InvalidModificationException ex) {
                                     LogExceptionToLauncher(ex);
                                     throw ex;
@@ -765,30 +796,21 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private async Task DeactivateModificationsAsync(TemplateElement templateElement, ErrorDelegate errorDelegate) {
+        private async Task DeactivateModificationsAsync(ErrorDelegate errorDelegate) {
             bool createdNew = false;
 
             using (Mutex modificationsMutex = new Mutex(true, MODIFICATIONS_MUTEX_NAME, out createdNew)) {
                 if (!createdNew) {
                     if (!modificationsMutex.WaitOne()) {
                         errorDelegate(Properties.Resources.AnotherInstanceCausingInterference);
-                        throw new InvalidModificationException("Another Modification is currently in progress.");
+                        throw new InvalidModificationException("Another Modification is activating.");
                     }
                 }
 
                 try {
-                    ProgressManager.CurrentGoal.Start(4);
+                    ProgressManager.CurrentGoal.Start(2);
 
                     try {
-                        // throw on deactivation
-                        if (templateElement == null) {
-                            errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                            throw new InvalidTemplateException("The Template Element " + TemplateName + " is null.");
-                        }
-
-                        ModeElement modeElement = templateElement.Mode;
-                        ProgressManager.CurrentGoal.Steps++;
-
                         /*
                         try {
                             UnlockActiveModificationsElement();
@@ -821,6 +843,7 @@ namespace FlashpointSecurePlayer {
 
                         ProgressManager.CurrentGoal.Steps++;
 
+                        /*
                         try {
                             environmentVariables.Deactivate(modeElement);
                         } catch (EnvironmentVariablesFailedException ex) {
@@ -838,6 +861,7 @@ namespace FlashpointSecurePlayer {
                         }
 
                         ProgressManager.CurrentGoal.Steps++;
+                        */
 
                         try {
                             TemplateElement activeTemplateElement = GetActiveTemplateElement(false);
@@ -861,7 +885,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private async Task StartSecurePlayback() {
+        private async Task StartSecurePlayback(TemplateElement templateElement) {
             if (activeX) {
                 // ActiveX Import
                 await ImportActiveX(delegate (string text) {
@@ -880,23 +904,6 @@ namespace FlashpointSecurePlayer {
             // switch to synced process
             ProgressManager.Reset();
             ShowOutput(Properties.Resources.RequiredComponentsAreLoading);
-
-            // get template element on load
-            await DownloadFlashpointSecurePlayerSectionAsync(TemplateName).ConfigureAwait(true);
-            TemplateElement templateElement = null;
-
-            // get template element on start
-            // throw on start
-            try {
-                templateElement = GetTemplateElement(false, TemplateName);
-            } catch (System.Configuration.ConfigurationErrorsException ex) {
-                LogExceptionToLauncher(ex);
-                throw new InvalidTemplateException("The Template Element " + TemplateName + " does not exist.");
-            }
-
-            if (templateElement == null) {
-                throw new InvalidTemplateException("The Template Element " + TemplateName + " is null.");
-            }
 
             try {
                 await ActivateModificationsAsync(templateElement, delegate (string text) {
@@ -938,29 +945,10 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private async Task StopSecurePlayback(FormClosingEventArgs e) {
+        private async Task StopSecurePlayback(FormClosingEventArgs e, TemplateElement templateElement) {
             // only if closing...
             ProgressManager.Reset();
             ShowOutput(Properties.Resources.RequiredComponentsAreUnloading);
-
-            // not a big deal if we fail to get the template here
-            if (String.IsNullOrEmpty(TemplateName)) {
-                return;
-            }
-
-            // get template element on stop
-            TemplateElement templateElement = null;
-
-            try {
-                templateElement = GetTemplateElement(false, TemplateName);
-            } catch (System.Configuration.ConfigurationErrorsException ex) {
-                LogExceptionToLauncher(ex);
-                return;
-            }
-
-            if (templateElement == null) {
-                return;
-            }
             
             try {
                 DeactivateMode(templateElement, delegate (string text) {
@@ -973,7 +961,7 @@ namespace FlashpointSecurePlayer {
             }
 
             try {
-                await DeactivateModificationsAsync(templateElement, delegate (string text) {
+                await DeactivateModificationsAsync(delegate (string text) {
                     // And God forbid I should fail, one touch of the button on my remote detonator...
                     // will be enough to end it all, obliterating Caldoria...
                     // and this foul infestation along with it!
@@ -989,6 +977,7 @@ namespace FlashpointSecurePlayer {
             // default to false in case of error
             bool createdNew = false;
 
+            // test multiple instances
             try {
                 // signals the Mutex if it has not been
                 applicationMutex = new Mutex(true, APPLICATION_MUTEX_NAME, out createdNew);
@@ -1030,6 +1019,7 @@ namespace FlashpointSecurePlayer {
             ShowOutput(Properties.Resources.RequiredComponentsAreUnloading);
 
             try {
+                // Set Current Directory
                 try {
                     Directory.SetCurrentDirectory(Application.StartupPath);
                 } catch (System.Security.SecurityException ex) {
@@ -1039,10 +1029,11 @@ namespace FlashpointSecurePlayer {
                     // Fail silently.
                 }
 
+                // Get Arguments
                 string[] args = Environment.GetCommandLineArgs();
 
                 // throw on load
-                if (args.Length < 2) {
+                if (args.Length < 3) {
                     throw new InvalidTemplateException("No Template was used.");
                 }
 
@@ -1075,31 +1066,11 @@ namespace FlashpointSecurePlayer {
                     }
                 }
 
-                // throw on load
-                if (String.IsNullOrEmpty(TemplateName)) {
-                    throw new InvalidTemplateException("Template Name was null or empty.");
-                }
-
-                TemplateElement templateElement = null;
-
-                // throw on load
-                try {
-                    templateElement = GetTemplateElement(false, TemplateName);
-                } catch (System.Configuration.ConfigurationErrorsException ex) {
-                    LogExceptionToLauncher(ex);
-                    throw new InvalidTemplateException("The Template Element " + TemplateName + " does not exist.");
-                }
-
-                // throw on load
-                if (templateElement == null) {
-                    throw new InvalidTemplateException("The Template Element " + TemplateName + " is null.");
-                }
-
                 // this is where we do crash recovery
                 // we attempt to deactivate whatever was in the config file first
                 // it's important this succeeds
                 try {
-                    await DeactivateModificationsAsync(templateElement, delegate (string text) {
+                    await DeactivateModificationsAsync(delegate (string text) {
                         ProgressManager.ShowError();
                         MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         Application.Exit();
@@ -1131,67 +1102,94 @@ namespace FlashpointSecurePlayer {
         private async void FlashpointSecurePlayer_Shown(object sender, EventArgs e) {
             try {
                 //Show();
-                ShowOutput(Properties.Resources.DownloadingGameFile);
-                Uri requestUri = null;
+                ShowOutput(Properties.Resources.GameDownloading);
+                // get Template Element
+                TemplateElement templateElement = null;
 
                 try {
-                    requestUri = await DownloadAsync(URL).ConfigureAwait(false);
-                } catch (DownloadFailedException ex) {
+                    if (String.IsNullOrEmpty(TemplateName)) {
+                        throw new InvalidTemplateException("The Template Name may not be null or empty.");
+                    }
+                } catch (InvalidTemplateException ex) {
+                    LogExceptionToLauncher(ex);
+                    ShowNoGameSelected();
+                    return;
+                }
+
+                await DownloadFlashpointSecurePlayerSectionAsync(TemplateName).ConfigureAwait(true);
+                // get template element on start
+                // throw on start
+                try {
+                    templateElement = GetTemplateElement(false, TemplateName);
+                } catch (System.Configuration.ConfigurationErrorsException ex) {
                     LogExceptionToLauncher(ex);
                     ProgressManager.ShowError();
-                    MessageBox.Show(String.Format(Properties.Resources.GameIsMissingFiles, URL), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(Properties.Resources.ConfigurationFailedLoad, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Application.Exit();
                     return;
-
                 }
 
-                StringBuilder htdocsFilePath = new StringBuilder(HTDOCS);
-
-                try {
-                    // ignore host if going through localhost (no proxy)
-                    if (requestUri.Host.ToLowerInvariant() != "localhost") {
-                        htdocsFilePath.Append("\\");
-                        htdocsFilePath.Append(requestUri.Host);
-                    }
-
-                    htdocsFilePath.Append(requestUri.LocalPath);
-                } catch (UriFormatException) {
-                    throw new ArgumentException("The URL " + URL + " is malformed.");
-                } catch (NullReferenceException) {
-                    throw new ArgumentNullException("The URL is null.");
-                } catch (InvalidOperationException) {
-                    throw new ArgumentException("The URL " + URL + " is invalid.");
+                if (templateElement == null) {
+                    ProgressManager.ShowError();
+                    MessageBox.Show(Properties.Resources.ConfigurationFailedLoad, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Application.Exit();
+                    return;
                 }
 
+                // get HTDOCS File/HTDOCS File Directory (in Software Mode)
                 string htdocsFile = null;
+                string htdocsFileDirectory = null;
 
-                try {
-                    htdocsFile = Path.GetFileName(htdocsFilePath.ToString());
-                } catch (ArgumentException ex) {
-                    LogExceptionToLauncher(ex);
-                    // Fail silently?
-                }
+                if (templateElement.Mode.Name == ModeElement.NAME.SOFTWARE) {
+                    try {
+                        Uri requestUri = await DownloadAsync(URL).ConfigureAwait(false);
+                        StringBuilder htdocsFilePath = new StringBuilder(HTDOCS);
 
-                // empty ONLY, not null
-                if (htdocsFile == String.Empty) {
-                    // path is to directory
-                    if (INDEX_EXTENSIONS.Length > 0) {
-                        htdocsFile = "index." + INDEX_EXTENSIONS[0];
+                        try {
+                            // ignore host if going through localhost (no proxy)
+                            if (requestUri.Host.ToLowerInvariant() != "localhost") {
+                                htdocsFilePath.Append("\\");
+                                htdocsFilePath.Append(requestUri.Host);
+                            }
+
+                            htdocsFilePath.Append(requestUri.LocalPath);
+                        } catch (UriFormatException) {
+                            throw new ArgumentException("The URL " + URL + " is malformed.");
+                        } catch (NullReferenceException) {
+                            throw new ArgumentNullException("The URL is null.");
+                        } catch (InvalidOperationException) {
+                            throw new ArgumentException("The URL " + URL + " is invalid.");
+                        }
+
+                        try {
+                            htdocsFile = Path.GetFileName(htdocsFilePath.ToString());
+                        } catch (ArgumentException ex) {
+                            LogExceptionToLauncher(ex);
+                            // Fail silently?
+                        }
+
+                        // empty ONLY, not null
+                        if (htdocsFile == String.Empty) {
+                            // path is to directory
+                            if (INDEX_EXTENSIONS.Length > 0) {
+                                htdocsFile = "index." + INDEX_EXTENSIONS[0];
+                            }
+                        }
+
+                        try {
+                            htdocsFileDirectory = Path.GetDirectoryName(htdocsFilePath.ToString());
+                        } catch (ArgumentException ex) {
+                            LogExceptionToLauncher(ex);
+                            // Fail silently?
+                        }
+
+                        if (!String.IsNullOrEmpty(htdocsFile) && !String.IsNullOrEmpty(htdocsFileDirectory)) {
+                            htdocsFile = htdocsFileDirectory + "\\" + htdocsFile;
+                        }
+                    } catch (DownloadFailedException ex) {
+                        LogExceptionToLauncher(ex);
+                        // Fail silently.
                     }
-                }
-
-                string htdocsDirectoryNameFile = null;
-
-                try {
-                    htdocsDirectoryNameFile = Path.GetDirectoryName(htdocsFilePath.ToString());
-                } catch (ArgumentException ex) {
-                    LogExceptionToLauncher(ex);
-                    // Fail silently?
-                }
-
-                if (htdocsDirectoryNameFile == null) {
-                    // still create environment variable
-                    htdocsDirectoryNameFile = String.Empty;
                 }
 
                 if (htdocsFile == null) {
@@ -1199,16 +1197,18 @@ namespace FlashpointSecurePlayer {
                     htdocsFile = String.Empty;
                 }
 
-                if (!String.IsNullOrEmpty(htdocsFile) && !String.IsNullOrEmpty(htdocsDirectoryNameFile)) {
-                    htdocsFile = htdocsDirectoryNameFile + "\\" + htdocsFile;
+                if (htdocsFileDirectory == null) {
+                    // still create environment variable
+                    htdocsFileDirectory = String.Empty;
                 }
 
+                // set Environment Variables
                 try {
                     Environment.SetEnvironmentVariable(FLASHPOINT_STARTUP_PATH, Application.StartupPath, EnvironmentVariableTarget.Process);
                     Environment.SetEnvironmentVariable(FLASHPOINT_URL, URL, EnvironmentVariableTarget.Process);
                     Environment.SetEnvironmentVariable(FLASHPOINT_ARGUMENTS, Arguments, EnvironmentVariableTarget.Process);
                     Environment.SetEnvironmentVariable(FLASHPOINT_HTDOCS_FILE, htdocsFile, EnvironmentVariableTarget.Process);
-                    Environment.SetEnvironmentVariable(FLASHPOINT_HTDOCS_FILE_DIR, htdocsDirectoryNameFile, EnvironmentVariableTarget.Process);
+                    Environment.SetEnvironmentVariable(FLASHPOINT_HTDOCS_FILE_DIR, htdocsFileDirectory, EnvironmentVariableTarget.Process);
                 } catch (ArgumentException ex) {
                     LogExceptionToLauncher(ex);
                     Application.Exit();
@@ -1220,8 +1220,9 @@ namespace FlashpointSecurePlayer {
 
                 ProgressManager.ShowOutput();
 
+                // Start Secure Playback
                 try {
-                    await StartSecurePlayback().ConfigureAwait(false);
+                    await StartSecurePlayback(templateElement).ConfigureAwait(false);
                 } catch (ActiveXImportFailedException ex) {
                     LogExceptionToLauncher(ex);
                     // no need to exit here, error shown in interface
@@ -1268,8 +1269,22 @@ namespace FlashpointSecurePlayer {
             //Show();
             ProgressManager.ShowOutput();
 
+            // get template element on stop
+            TemplateElement templateElement = null;
+
             try {
-                await StopSecurePlayback(e).ConfigureAwait(false);
+                templateElement = GetTemplateElement(false, TemplateName);
+            } catch (System.Configuration.ConfigurationErrorsException ex) {
+                LogExceptionToLauncher(ex);
+                return;
+            }
+
+            if (templateElement == null) {
+                return;
+            }
+
+            try {
+                await StopSecurePlayback(e, templateElement).ConfigureAwait(false);
             } catch (ActiveXImportFailedException ex) {
                 LogExceptionToLauncher(ex);
                 // Fail silently.

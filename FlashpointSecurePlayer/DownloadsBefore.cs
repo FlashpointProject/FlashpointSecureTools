@@ -19,8 +19,8 @@ namespace FlashpointSecurePlayer {
 
         private void Activate() { }
 
-        public async Task ActivateAsync(string name, List<string> downloadsBeforeNames) {
-            base.Activate(name);
+        public async Task ActivateAsync(string templateName, List<string> downloadsBeforeNames) {
+            base.Activate(templateName);
             //ModificationsElement modificationsElement = GetModificationsElement(true, Name);
 
             // purpose of the following code is to asynchronously
