@@ -13,8 +13,8 @@ namespace FlashpointSecurePlayer {
     class RunAsAdministrator : Modifications {
         public RunAsAdministrator(Form form) : base(form) { }
 
-        public void Activate(string name, bool runAsAdministrator) {
-            base.Activate(name);
+        public void Activate(string templateName, bool runAsAdministrator) {
+            base.Activate(templateName);
             /*
             ModificationsElement modificationsElement = GetModificationsElement(true, Name);
 

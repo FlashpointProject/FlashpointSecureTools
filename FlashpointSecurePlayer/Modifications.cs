@@ -53,16 +53,16 @@ namespace FlashpointSecurePlayer {
             ImportPaused = false;
         }
 
-        protected void StartImport(string name) {
+        protected void StartImport(string templateName) {
             if (ImportStarted) {
                 throw new InvalidOperationException("Cannot Start Import when the Import has started.");
             }
 
-            if (String.IsNullOrEmpty(name)) {
-                throw new FormatException("name cannot be null or empty.");
+            if (String.IsNullOrEmpty(templateName)) {
+                throw new FormatException("templateName cannot be null or empty.");
             }
 
-            TemplateName = name;
+            TemplateName = templateName;
             Deactivate();
 
             /*
@@ -94,16 +94,16 @@ namespace FlashpointSecurePlayer {
             */
         }
 
-        public void Activate(string name) {
+        public void Activate(string templateName) {
             if (ImportStarted) {
                 throw new InvalidOperationException("Cannot Activate when the Import has started.");
             }
 
             //if (String.IsNullOrEmpty(name)) {
-                //throw new FormatException("name cannot be null or empty.");
+            //throw new FormatException("templateName cannot be null or empty.");
             //}
 
-            TemplateName = name;
+            TemplateName = templateName;
             Deactivate();
 
             //SetFlashpointSecurePlayerSection();

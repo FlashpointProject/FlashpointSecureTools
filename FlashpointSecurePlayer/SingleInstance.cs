@@ -55,10 +55,10 @@ namespace FlashpointSecurePlayer {
             return ShowClosableMessageBox(new Task[] { task }, text, caption, messageBoxButtons, messageBoxIcon);
         }
 
-        public void Activate(string name, string executablePath) {
-            base.Activate(name);
+        public void Activate(string templateName, string executable) {
+            base.Activate(templateName);
 
-            if (String.IsNullOrEmpty(name)) {
+            if (String.IsNullOrEmpty(templateName)) {
                 // no argument
                 return;
             }
@@ -81,11 +81,11 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            if (!String.IsNullOrEmpty(singleInstanceElement.ExecutablePath)) {
-                executablePath = singleInstanceElement.ExecutablePath;
+            if (!String.IsNullOrEmpty(singleInstanceElement.Executable)) {
+                executable = singleInstanceElement.Executable;
             }
 
-            if (String.IsNullOrEmpty(executablePath)) {
+            if (String.IsNullOrEmpty(executable)) {
                 return;
             }
             
@@ -96,13 +96,13 @@ namespace FlashpointSecurePlayer {
             string activeComparableExecutablePath = null;
 
             try {
-                activeComparableExecutablePath = Path.GetFullPath(executablePath);
+                activeComparableExecutablePath = Path.GetFullPath(executable);
             } catch (PathTooLongException) {
-                throw new ArgumentException("The path is too long to " + executablePath + ".");
+                throw new ArgumentException("The path is too long to " + executable + ".");
             } catch (SecurityException) {
-                throw new TaskRequiresElevationException("Getting the Full Path to " + executablePath + " requires elevation.");
+                throw new TaskRequiresElevationException("Getting the Full Path to " + executable + " requires elevation.");
             } catch (NotSupportedException) {
-                throw new ArgumentException("The path " + executablePath + " is not supported.");
+                throw new ArgumentException("The path " + executable + " is not supported.");
             }
 
             // converting to a Uri canonicalizes the path
@@ -121,7 +121,7 @@ namespace FlashpointSecurePlayer {
             List<Process> processesByNameStrict;
             string processName = null;
             // GetProcessesByName can't have extension (stupidly)
-            string activeProcessName = Path.GetFileNameWithoutExtension(executablePath);
+            string activeProcessName = Path.GetFileNameWithoutExtension(executable);
 
             do {
                 // the strict list is the one which will be checked against for real
