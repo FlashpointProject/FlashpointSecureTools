@@ -17,7 +17,7 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Templat
 namespace FlashpointSecurePlayer {
     class EnvironmentVariables : Modifications {
         private const string COMPATIBILITY_LAYER_NAME = "__COMPAT_LAYER";
-        private IList<string> ReadOnlyComparableNames { get; } = new List<string> { FLASHPOINT_STARTUP_PATH, FLASHPOINT_HTDOCS_FILE }.AsReadOnly();
+        private IList<string> UnmodifiableComparableNames { get; } = new List<string> { FLASHPOINT_STARTUP_PATH, FLASHPOINT_HTDOCS_FILE }.AsReadOnly();
 
         public EnvironmentVariables(Form form) : base(form) { }
 
@@ -123,8 +123,8 @@ namespace FlashpointSecurePlayer {
                     
                     comparableName = GetComparableName(environmentVariablesElement.Name);
 
-                    if (ReadOnlyComparableNames.Contains(comparableName)) {
-                        throw new EnvironmentVariablesFailedException("The " + environmentVariablesElement.Name + " Environment Variable cannot be modified.");
+                    if (UnmodifiableComparableNames.Contains(comparableName)) {
+                        throw new EnvironmentVariablesFailedException("The " + environmentVariablesElement.Name + " Environment Variable cannot be modified at this time.");
                     }
                     
                     FindAndReplace(environmentVariablesElement);
@@ -223,8 +223,8 @@ namespace FlashpointSecurePlayer {
 
                     comparableName = GetComparableName(environmentVariablesElement.Name);
 
-                    if (ReadOnlyComparableNames.Contains(comparableName)) {
-                        throw new EnvironmentVariablesFailedException("The " + environmentVariablesElement.Name + " Environment Variable cannot be modified.");
+                    if (UnmodifiableComparableNames.Contains(comparableName)) {
+                        throw new EnvironmentVariablesFailedException("The " + environmentVariablesElement.Name + " Environment Variable cannot be modified at this time.");
                     }
 
                     value = environmentVariablesElement.Value;
