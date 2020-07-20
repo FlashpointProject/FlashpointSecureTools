@@ -396,10 +396,12 @@ namespace FlashpointSecurePlayer {
 
                         set {
                             if (String.IsNullOrEmpty(value)) {
+                                base[_active] = null;
                                 base[_name] = value;
                                 return;
                             }
 
+                            base[_mode] = null;
                             base[_name] = value.ToLowerInvariant();
                         }
                     }
@@ -477,7 +479,7 @@ namespace FlashpointSecurePlayer {
                             */
                             
                             _webBrowserName = new ConfigurationProperty("webBrowserName",
-                                typeof(WEB_BROWSER_NAME), WEB_BROWSER_NAME.INTERNET_EXPLORER, ConfigurationPropertyOptions.None);
+                                typeof(WEB_BROWSER_NAME?), WEB_BROWSER_NAME.INTERNET_EXPLORER, ConfigurationPropertyOptions.None);
                             _properties.Add(_webBrowserName);
 
                             _commandLine = new ConfigurationProperty("commandLine",
@@ -495,6 +497,16 @@ namespace FlashpointSecurePlayer {
                             }
 
                             set {
+                                switch (value) {
+                                    case NAME.WEB_BROWSER:
+                                    base[_commandLine] = null;
+                                    base[_hideWindow] = null;
+                                    break;
+                                    case NAME.SOFTWARE:
+                                    base[_webBrowserName] = null;
+                                    break;
+                                }
+
                                 base[_name] = value;
                             }
                         }
@@ -504,7 +516,7 @@ namespace FlashpointSecurePlayer {
                                 if (Name != NAME.WEB_BROWSER || _webBrowserName == null) {
                                     return null;
                                 }
-                                return (WEB_BROWSER_NAME)base[_webBrowserName];
+                                return base[_webBrowserName] as WEB_BROWSER_NAME?;
                             }
 
                             set {
@@ -546,7 +558,7 @@ namespace FlashpointSecurePlayer {
                                 if (Name != NAME.SOFTWARE || _hideWindow == null) {
                                     return null;
                                 }
-                                return (bool)base[_hideWindow];
+                                return base[_hideWindow] as bool?;
                             }
 
                             set {
@@ -569,7 +581,7 @@ namespace FlashpointSecurePlayer {
                             if (String.IsNullOrEmpty(Name) || _mode == null) {
                                 return null;
                             }
-                            return (ModeElement)base[_mode];
+                            return base[_mode] as ModeElement;
                         }
 
                         set {
@@ -650,11 +662,29 @@ namespace FlashpointSecurePlayer {
                                     }
 
                                     set {
+                                        if (String.IsNullOrEmpty(value)) {
+                                            base[_value] = Value;
+                                            base[_replace] = null;
+                                        } else {
+                                            base[_replace] = Value;
+                                            base[_value] = null;
+                                        }
+
                                         base[_find] = value;
                                     }
                                 }
                                 
                                 public string Replace {
+                                    get {
+                                        return Value;
+                                    }
+
+                                    set {
+                                        Value = value;
+                                    }
+                                }
+                                
+                                public string Value {
                                     get {
                                         if (String.IsNullOrEmpty(Find)) {
                                             return base[_value] as string;
@@ -665,24 +695,11 @@ namespace FlashpointSecurePlayer {
                                     set {
                                         if (String.IsNullOrEmpty(Find)) {
                                             base[_value] = value;
-                                        }
-                                        base[_replace] = value;
-                                    }
-                                }
-                                
-                                public string Value {
-                                    get {
-                                        if (!String.IsNullOrEmpty(Find)) {
-                                            return base[_replace] as string;
-                                        }
-                                        return base[_value] as string;
-                                    }
-
-                                    set {
-                                        if (!String.IsNullOrEmpty(Find)) {
+                                            base[_replace] = null;
+                                        } else {
                                             base[_replace] = value;
+                                            base[_value] = null;
                                         }
-                                        base[_value] = value;
                                     }
                                 }
 
@@ -775,7 +792,7 @@ namespace FlashpointSecurePlayer {
 
                                 //if (String.IsNullOrEmpty(templateName)) {
                                 _administrator = new ConfigurationProperty("administrator",
-                                    typeof(bool), false, ConfigurationPropertyOptions.None);
+                                    typeof(bool?), false, ConfigurationPropertyOptions.None);
                                 _properties.Add(_administrator);
                                 //}
                             }
@@ -839,6 +856,10 @@ namespace FlashpointSecurePlayer {
                                     }
 
                                     set {
+                                        if (Type != global::FlashpointSecurePlayer.RegistryBackups.TYPE.VALUE) {
+                                            base[_valueName] = null;
+                                        }
+
                                         base[_type] = value;
                                     }
                                 }
@@ -999,7 +1020,7 @@ namespace FlashpointSecurePlayer {
                                         return null;
                                     }
 
-                                    return (bool)base[_administrator];
+                                    return base[_administrator] as bool?;
                                 }
 
                                 set {
@@ -1147,7 +1168,7 @@ namespace FlashpointSecurePlayer {
                     
                     public ModificationsElement Modifications {
                         get {
-                            return (ModificationsElement)base[_modifications];
+                            return base[_modifications] as ModificationsElement;
                         }
 
                         set {
