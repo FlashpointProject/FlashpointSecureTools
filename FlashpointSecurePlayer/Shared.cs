@@ -307,12 +307,6 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
-            /*
-            protected override ConfigurationElement CreateNewElement() {
-                return new ConfigurationElement();
-            }
-            */
-
             protected override void BaseAdd(System.Configuration.ConfigurationElement configurationElement) {
                 BaseAdd(configurationElement, false);
             }
@@ -359,41 +353,80 @@ namespace FlashpointSecurePlayer {
         public class FlashpointSecurePlayerSection : ConfigurationSection {
             public class TemplatesElementCollection : TemplatesConfigurationElementCollection {
                 public class TemplateElement : ConfigurationElement {
-                    [ConfigurationProperty("name", IsKey = true, IsRequired = true)]
+                    protected ConfigurationPropertyCollection _properties = null;
+                    protected ConfigurationProperty _name = null;
+                    protected ConfigurationProperty _active = null;
+                    protected ConfigurationProperty _mode = null;
+                    protected ConfigurationProperty _modifications = null;
+
+                    public TemplateElement() {
+                        _properties = new ConfigurationPropertyCollection();
+
+                        _name = new ConfigurationProperty("name", typeof(string), null,
+                            ConfigurationPropertyOptions.IsKey | ConfigurationPropertyOptions.IsRequired);
+                        _properties.Add(_name);
+
+                        /*
+                        if (String.IsNullOrEmpty(Name)) {
+                            _active = new ConfigurationProperty("active", typeof(string), null, ConfigurationPropertyOptions.IsRequired);
+                            _properties.Add(_active);
+                        } else {
+                            _mode = new ConfigurationProperty("mode", typeof(ModeElement), null, ConfigurationPropertyOptions.IsRequired);
+                            _properties.Add(_mode);
+                        }
+                        */
+                        
+                        _active = new ConfigurationProperty("active", typeof(string), null, ConfigurationPropertyOptions.None);
+                        _properties.Add(_active);
+
+                        _mode = new ConfigurationProperty("mode", typeof(ModeElement), null, ConfigurationPropertyOptions.None);
+                        _properties.Add(_mode);
+
+                        _modifications = new ConfigurationProperty("modifications", typeof(ModificationsElement), null, ConfigurationPropertyOptions.None);
+                        _properties.Add(_modifications);
+                    }
+                    
                     public string Name {
                         get {
-                            if (String.IsNullOrEmpty(base["name"] as string)) {
-                                return base["name"] as string;
+                            if (String.IsNullOrEmpty(base[_name] as string)) {
+                                return base[_name] as string;
                             }
-                            return (base["name"] as string).ToLowerInvariant();
+                            return (base[_name] as string).ToLowerInvariant();
                         }
 
                         set {
                             if (String.IsNullOrEmpty(value)) {
-                                base["name"] = value;
+                                base[_name] = value;
                                 return;
                             }
 
-                            base["name"] = value.ToLowerInvariant();
+                            base[_name] = value.ToLowerInvariant();
                         }
                     }
-
-                    [ConfigurationProperty("active", IsRequired = false)]
+                    
                     public string Active {
                         get {
-                            if (String.IsNullOrEmpty(base["active"] as string)) {
-                                return base["active"] as string;
+                            if (!String.IsNullOrEmpty(Name) || _active == null) {
+                                return null;
                             }
-                            return (base["active"] as string).ToLowerInvariant();
+
+                            if (String.IsNullOrEmpty(base[_active] as string)) {
+                                return base[_active] as string;
+                            }
+                            return (base[_active] as string).ToLowerInvariant();
                         }
 
                         set {
-                            if (String.IsNullOrEmpty(value)) {
-                                base["active"] = value;
+                            if (!String.IsNullOrEmpty(Name) || _active == null) {
                                 return;
                             }
 
-                            base["active"] = value.ToLowerInvariant();
+                            if (String.IsNullOrEmpty(value)) {
+                                base[_active] = value;
+                                return;
+                            }
+
+                            base[_active] = value.ToLowerInvariant();
                         }
                     }
 
@@ -407,70 +440,144 @@ namespace FlashpointSecurePlayer {
                             INTERNET_EXPLORER
                         }
 
-                        [ConfigurationProperty("name", DefaultValue = NAME.WEB_BROWSER, IsRequired = true)]
+                        protected ConfigurationPropertyCollection _properties = null;
+                        protected ConfigurationProperty _name = null;
+                        protected ConfigurationProperty _webBrowserName = null;
+                        protected ConfigurationProperty _commandLine = null;
+                        protected ConfigurationProperty _workingDirectory = null;
+                        protected ConfigurationProperty _hideWindow = null;
+
+                        public ModeElement() {
+                            _properties = new ConfigurationPropertyCollection();
+
+                            _name = new ConfigurationProperty("name", typeof(NAME), NAME.WEB_BROWSER,
+                                ConfigurationPropertyOptions.IsKey | ConfigurationPropertyOptions.IsRequired);
+                            _properties.Add(_name);
+
+                            _workingDirectory = new ConfigurationProperty("workingDirectory", typeof(string), null, ConfigurationPropertyOptions.None);
+                            _properties.Add(_workingDirectory);
+
+                            /*
+                            switch (Name) {
+                                case NAME.WEB_BROWSER:
+                                _webBrowserName = new ConfigurationProperty("webBrowserName",
+                                    typeof(WEB_BROWSER_NAME), WEB_BROWSER_NAME.INTERNET_EXPLORER, ConfigurationPropertyOptions.IsRequired);
+                                _properties.Add(_webBrowserName);
+                                break;
+                                case NAME.SOFTWARE:
+                                _commandLine = new ConfigurationProperty("commandLine",
+                                    typeof(string), null, ConfigurationPropertyOptions.IsRequired);
+                                _properties.Add(_commandLine);
+
+                                _hideWindow = new ConfigurationProperty("hideWindow",
+                                    typeof(string), null, ConfigurationPropertyOptions.None);
+                                _properties.Add(_hideWindow);
+                                break;
+                            }
+                            */
+                            
+                            _webBrowserName = new ConfigurationProperty("webBrowserName",
+                                typeof(WEB_BROWSER_NAME), WEB_BROWSER_NAME.INTERNET_EXPLORER, ConfigurationPropertyOptions.None);
+                            _properties.Add(_webBrowserName);
+
+                            _commandLine = new ConfigurationProperty("commandLine",
+                                typeof(string), null, ConfigurationPropertyOptions.None);
+                            _properties.Add(_commandLine);
+
+                            _hideWindow = new ConfigurationProperty("hideWindow",
+                                typeof(string), null, ConfigurationPropertyOptions.None);
+                            _properties.Add(_hideWindow);
+                        }
+                        
                         public NAME Name {
                             get {
-                                return (NAME)base["name"];
+                                return (NAME)base[_name];
                             }
 
                             set {
-                                base["name"] = value;
+                                base[_name] = value;
                             }
                         }
                         
-                        [ConfigurationProperty("webBrowserName", DefaultValue = WEB_BROWSER_NAME.INTERNET_EXPLORER, IsRequired = false)]
-                        public WEB_BROWSER_NAME WebBrowserName {
+                        public WEB_BROWSER_NAME? WebBrowserName {
                             get {
-                                return (WEB_BROWSER_NAME)base["webBrowserName"];
+                                if (Name != NAME.WEB_BROWSER || _webBrowserName == null) {
+                                    return null;
+                                }
+                                return (WEB_BROWSER_NAME)base[_webBrowserName];
                             }
 
                             set {
-                                base["webBrowserName"] = value;
+                                if (Name != NAME.WEB_BROWSER || _webBrowserName == null) {
+                                    return;
+                                }
+                                base[_webBrowserName] = value;
                             }
                         }
-
-                        [ConfigurationProperty("commandLine", IsRequired = false)]
+                        
                         public string CommandLine {
                             get {
-                                return base["commandLine"] as string;
+                                if (Name != NAME.SOFTWARE || _commandLine == null) {
+                                    return null;
+                                }
+                                return base[_commandLine] as string;
                             }
 
                             set {
-                                base["commandLine"] = value;
+                                if (Name != NAME.SOFTWARE || _commandLine == null) {
+                                    return;
+                                }
+                                base[_commandLine] = value;
                             }
                         }
-
-                        [ConfigurationProperty("workingDirectory", IsRequired = false)]
+                        
                         public string WorkingDirectory {
                             get {
-                                return base["workingDirectory"] as string;
+                                return base[_workingDirectory] as string;
                             }
 
                             set {
-                                base["workingDirectory"] = value;
+                                base[_workingDirectory] = value;
+                            }
+                        }
+                        
+                        public bool? HideWindow {
+                            get {
+                                if (Name != NAME.SOFTWARE || _hideWindow == null) {
+                                    return null;
+                                }
+                                return (bool)base[_hideWindow];
+                            }
+
+                            set {
+                                if (Name != NAME.SOFTWARE || _hideWindow == null) {
+                                    return;
+                                }
+                                base[_hideWindow] = value;
                             }
                         }
 
-                        [ConfigurationProperty("hideWindow", DefaultValue = false, IsRequired = false)]
-                        public bool HideWindow {
+                        protected override ConfigurationPropertyCollection Properties {
                             get {
-                                return (bool)base["hideWindow"];
-                            }
-
-                            set {
-                                base["hideWindow"] = value;
+                                return _properties;
                             }
                         }
                     }
-
-                    [ConfigurationProperty("mode", IsRequired = true)]
+                    
                     public ModeElement Mode {
                         get {
-                            return (ModeElement)base["mode"];
+                            if (String.IsNullOrEmpty(Name) || _mode == null) {
+                                return null;
+                            }
+                            return (ModeElement)base[_mode];
                         }
 
                         set {
-                            base["mode"] = value;
+                            if (String.IsNullOrEmpty(Name) || _mode == null) {
+                                return;
+                            }
+
+                            base[_mode] = value;
                         }
                     }
 
@@ -488,79 +595,102 @@ namespace FlashpointSecurePlayer {
 
                         public class EnvironmentVariablesElementCollection : TemplatesConfigurationElementCollection {
                             public class EnvironmentVariablesElement : ConfigurationElement {
+                                protected ConfigurationPropertyCollection _properties = null;
+                                protected ConfigurationProperty _name = null;
+                                protected ConfigurationProperty _find = null;
+                                protected ConfigurationProperty _replace = null;
                                 protected ConfigurationProperty _value = null;
 
                                 public EnvironmentVariablesElement() {
+                                    _properties = new ConfigurationPropertyCollection();
+
+                                    // name not key for multiple find replace operations if so desired
+                                    _name = new ConfigurationProperty("name", typeof(string), null, ConfigurationPropertyOptions.IsRequired);
+                                    _properties.Add(_name);
+
+                                    _find = new ConfigurationProperty("find", typeof(string), null, ConfigurationPropertyOptions.None);
+                                    _properties.Add(_find);
+
+                                    /*
                                     _value = new ConfigurationProperty(String.IsNullOrEmpty(Find) ? "value" : "replace",
                                         typeof(string), null, ConfigurationPropertyOptions.IsRequired);
+                                    _properties.Add(_value);
+                                    */
+
+                                    _replace = new ConfigurationProperty("replace",
+                                        typeof(string), null, ConfigurationPropertyOptions.None);
+                                    _properties.Add(_replace);
+
+                                    _value = new ConfigurationProperty("value",
+                                        typeof(string), null, ConfigurationPropertyOptions.None);
+                                    _properties.Add(_value);
                                 }
 
-                                // name not key for multiple find replace operations if so desired
-                                [ConfigurationProperty("name", IsKey = false, IsRequired = true)]
                                 public string Name {
                                     get {
-                                        if (String.IsNullOrEmpty(base["name"] as string)) {
-                                            return base["name"] as string;
+                                        if (String.IsNullOrEmpty(base[_name] as string)) {
+                                            return base[_name] as string;
                                         }
-                                        return (base["name"] as string).ToUpperInvariant();
+                                        return (base[_name] as string).ToUpperInvariant();
                                     }
 
                                     set {
                                         if (String.IsNullOrEmpty(value)) {
-                                            base["name"] = value;
+                                            base[_name] = value;
                                             return;
                                         }
 
-                                        base["name"] = value.ToUpperInvariant();
+                                        base[_name] = value.ToUpperInvariant();
                                     }
                                 }
-
-                                [ConfigurationProperty("find", IsRequired = false)]
+                                
                                 public string Find {
                                     get {
-                                        return base["find"] as string;
+                                        return base[_find] as string;
                                     }
 
                                     set {
-                                        base["find"] = value;
+                                        base[_find] = value;
                                     }
                                 }
                                 
                                 public string Replace {
                                     get {
-                                        return base[_value] as string;
+                                        if (String.IsNullOrEmpty(Find)) {
+                                            return base[_value] as string;
+                                        }
+                                        return base[_replace] as string;
                                     }
 
                                     set {
-                                        base[_value] = value;
+                                        if (String.IsNullOrEmpty(Find)) {
+                                            base[_value] = value;
+                                        }
+                                        base[_replace] = value;
                                     }
                                 }
                                 
-                                [ConfigurationProperty("value", IsRequired = false)]
                                 public string Value {
                                     get {
+                                        if (!String.IsNullOrEmpty(Find)) {
+                                            return base[_replace] as string;
+                                        }
                                         return base[_value] as string;
                                     }
 
                                     set {
+                                        if (!String.IsNullOrEmpty(Find)) {
+                                            base[_replace] = value;
+                                        }
                                         base[_value] = value;
                                     }
                                 }
 
-                                /*
-                                protected override object OnRequiredPropertyNotFound(string name) {
-                                    if (String.IsNullOrEmpty(Find)) {
-                                        if (name == "replace") {
-                                            return null;
-                                        }
-                                    } else {
-                                        if (name == "value") {
-                                            return null;
-                                        }
+                                protected override ConfigurationPropertyCollection Properties {
+                                    get {
+                                        return _properties;
                                     }
-                                    return base.OnRequiredPropertyNotFound(name);
                                 }
-                                */
                             }
 
                             protected override object GetElementKey(ConfigurationElement configurationElement) {
@@ -632,103 +762,204 @@ namespace FlashpointSecurePlayer {
                         }
 
                         public class RegistryBackupElementCollection : TemplatesConfigurationElementCollection {
+                            protected ConfigurationPropertyCollection _properties = null;
+                            protected ConfigurationProperty _binaryType = null;
+                            protected ConfigurationProperty _administrator = null;
+
+                            public RegistryBackupElementCollection() {
+                                _properties = new ConfigurationPropertyCollection();
+
+                                _binaryType = new ConfigurationProperty("binaryType",
+                                    typeof(BINARY_TYPE), BINARY_TYPE.SCS_64BIT_BINARY, ConfigurationPropertyOptions.IsRequired);
+                                _properties.Add(_binaryType);
+
+                                //if (String.IsNullOrEmpty(templateName)) {
+                                _administrator = new ConfigurationProperty("administrator",
+                                    typeof(bool), false, ConfigurationPropertyOptions.None);
+                                _properties.Add(_administrator);
+                                //}
+                            }
+
                             public class RegistryBackupElement : ConfigurationElement {
-                                [ConfigurationProperty("type", DefaultValue = global::FlashpointSecurePlayer.RegistryBackups.TYPE.KEY, IsRequired = false)]
+                                protected ConfigurationPropertyCollection _properties = null;
+                                protected ConfigurationProperty _type = null;
+                                protected ConfigurationProperty _keyName = null;
+                                protected ConfigurationProperty _valueName = null;
+                                protected ConfigurationProperty _value = null;
+                                protected ConfigurationProperty _valueKind = null;
+                                protected ConfigurationProperty _deleted = null;
+                                protected ConfigurationProperty _valueExpanded = null;
+
+                                public RegistryBackupElement() {
+                                    _properties = new ConfigurationPropertyCollection();
+
+                                    _type = new ConfigurationProperty("type",
+                                        typeof(global::FlashpointSecurePlayer.RegistryBackups.TYPE),
+                                        global::FlashpointSecurePlayer.RegistryBackups.TYPE.KEY, ConfigurationPropertyOptions.None);
+                                    _properties.Add(_type);
+
+                                    _keyName = new ConfigurationProperty("keyName",
+                                        typeof(string), null, ConfigurationPropertyOptions.IsRequired);
+                                    _properties.Add(_keyName);
+
+                                    _value = new ConfigurationProperty("value",
+                                        typeof(string), null, ConfigurationPropertyOptions.None);
+                                    _properties.Add(_value);
+
+                                    _valueKind = new ConfigurationProperty("valueKind",
+                                        typeof(RegistryValueKind?), null, ConfigurationPropertyOptions.None);
+                                    _properties.Add(_valueKind);
+
+                                    /*
+                                    if (Type == global::FlashpointSecurePlayer.RegistryBackups.TYPE.VALUE) {
+                                        _valueName = new ConfigurationProperty("valueName",
+                                            typeof(string), null, ConfigurationPropertyOptions.IsRequired);
+                                        _properties.Add(_valueName);
+                                    }
+                                    */
+
+                                    _valueName = new ConfigurationProperty("valueName",
+                                        typeof(string), null, ConfigurationPropertyOptions.None);
+                                    _properties.Add(_valueName);
+
+                                    //if (String.IsNullOrEmpty(templateName)) {
+                                    _deleted = new ConfigurationProperty("deleted",
+                                            typeof(string), null, ConfigurationPropertyOptions.None);
+                                        _properties.Add(_deleted);
+
+                                        _valueExpanded = new ConfigurationProperty("valueExpanded",
+                                            typeof(string), null, ConfigurationPropertyOptions.None);
+                                        _properties.Add(_valueExpanded);
+                                    //}
+                                }
+                                
                                 public RegistryBackups.TYPE Type {
                                     get {
-                                        return (RegistryBackups.TYPE)base["type"];
+                                        return (RegistryBackups.TYPE)base[_type];
                                     }
 
                                     set {
-                                        base["type"] = value;
+                                        base[_type] = value;
                                     }
                                 }
-
-                                [ConfigurationProperty("keyName", IsRequired = true)]
+                                
                                 public string KeyName {
                                     get {
-                                        if (String.IsNullOrEmpty(base["keyName"] as string)) {
-                                            return base["keyName"] as string;
+                                        if (String.IsNullOrEmpty(base[_keyName] as string)) {
+                                            return base[_keyName] as string;
                                         }
-                                        return (base["keyName"] as string).ToUpperInvariant();
+                                        return (base[_keyName] as string).ToUpperInvariant();
                                     }
 
                                     set {
                                         if (String.IsNullOrEmpty(value)) {
-                                            base["keyName"] = value;
+                                            base[_keyName] = value;
                                             return;
                                         }
 
-                                        base["keyName"] = value.ToUpperInvariant();
+                                        base[_keyName] = value.ToUpperInvariant();
                                     }
                                 }
-
-                                [ConfigurationProperty("valueName", IsRequired = false)]
+                                
                                 public string ValueName {
                                     get {
-                                        if (String.IsNullOrEmpty(base["valueName"] as string)) {
-                                            return base["valueName"] as string;
+                                        if (Type != global::FlashpointSecurePlayer.RegistryBackups.TYPE.VALUE || _valueName == null) {
+                                            return null;
                                         }
-                                        return (base["valueName"] as string).ToUpperInvariant();
+
+                                        if (String.IsNullOrEmpty(base[_valueName] as string)) {
+                                            return base[_valueName] as string;
+                                        }
+                                        return (base[_valueName] as string).ToUpperInvariant();
                                     }
 
                                     set {
-                                        if (String.IsNullOrEmpty(value)) {
-                                            base["valueName"] = value;
+                                        if (Type != global::FlashpointSecurePlayer.RegistryBackups.TYPE.VALUE || _valueName == null) {
                                             return;
                                         }
 
-                                        base["valueName"] = value.ToUpperInvariant();
+                                        if (String.IsNullOrEmpty(value)) {
+                                            base[_valueName] = value;
+                                            return;
+                                        }
+
+                                        base[_valueName] = value.ToUpperInvariant();
                                     }
                                 }
-
-                                [ConfigurationProperty("value", IsRequired = false)]
+                                
                                 public string Value {
                                     get {
-                                        return base["value"] as string;
+                                        return base[_value] as string;
                                     }
 
                                     set {
-                                        base["value"] = value;
+                                        base[_value] = value;
                                     }
                                 }
-
-                                [ConfigurationProperty("valueKind", IsRequired = false)]
+                                
                                 public RegistryValueKind? ValueKind {
                                     get {
-                                        return base["valueKind"] as RegistryValueKind?;
+                                        if (_valueKind == null) {
+                                            return null;
+                                        }
+
+                                        return base[_valueKind] as RegistryValueKind?;
                                     }
 
                                     set {
-                                        base["valueKind"] = value;
+                                        if (_valueKind == null) {
+                                            return;
+                                        }
+
+                                        base[_valueKind] = value;
                                     }
                                 }
-
-                                [ConfigurationProperty("_deleted", IsRequired = false)]
+                                
                                 public string _Deleted {
                                     get {
-                                        return base["_deleted"] as string;
+                                        if (_deleted == null) {
+                                            return null;
+                                        }
+
+                                        return base[_deleted] as string;
                                     }
 
                                     set {
-                                        base["_deleted"] = value;
+                                        if (_deleted == null) {
+                                            return;
+                                        }
+
+                                        base[_deleted] = value;
                                     }
                                 }
-
-                                [ConfigurationProperty("_valueExpanded", IsRequired = false)]
+                                
                                 public string _ValueExpanded {
                                     get {
-                                        return base["_valueExpanded"] as string;
+                                        if (_valueExpanded == null) {
+                                            return null;
+                                        }
+
+                                        return base[_valueExpanded] as string;
                                     }
 
                                     set {
-                                        base["_valueExpanded"] = value;
+                                        if (_valueExpanded == null) {
+                                            return;
+                                        }
+
+                                        base[_valueExpanded] = value;
                                     }
                                 }
 
                                 public string Name {
                                     get {
                                         return this.KeyName + "\\" + this.ValueName;
+                                    }
+                                }
+
+                                protected override ConfigurationPropertyCollection Properties {
+                                    get {
+                                        return _properties;
                                     }
                                 }
                             }
@@ -751,26 +982,38 @@ namespace FlashpointSecurePlayer {
                                 name = name.ToUpperInvariant();
                                 base.Remove(name);
                             }
-
-                            [ConfigurationProperty("binaryType", DefaultValue = BINARY_TYPE.SCS_64BIT_BINARY, IsRequired = true)]
+                            
                             public BINARY_TYPE BinaryType {
                                 get {
-                                    return (BINARY_TYPE)base["binaryType"];
+                                    return (BINARY_TYPE)base[_binaryType];
                                 }
 
                                 set {
-                                    base["binaryType"] = value;
+                                    base[_binaryType] = value;
+                                }
+                            }
+                            
+                            public bool? _Administrator {
+                                get {
+                                    if (_administrator == null) {
+                                        return null;
+                                    }
+
+                                    return (bool)base[_administrator];
+                                }
+
+                                set {
+                                    if (_administrator == null) {
+                                        return;
+                                    }
+
+                                    base[_administrator] = value;
                                 }
                             }
 
-                            [ConfigurationProperty("_administrator", DefaultValue = false, IsRequired = false)]
-                            public bool _Administrator {
+                            protected override ConfigurationPropertyCollection Properties {
                                 get {
-                                    return (bool)base["_administrator"];
-                                }
-
-                                set {
-                                    base["_administrator"] = value;
+                                    return _properties;
                                 }
                             }
                         }
@@ -901,15 +1144,20 @@ namespace FlashpointSecurePlayer {
                             }
                         }
                     }
-
-                    [ConfigurationProperty("modifications", IsRequired = false)]
+                    
                     public ModificationsElement Modifications {
                         get {
-                            return (ModificationsElement)base["modifications"];
+                            return (ModificationsElement)base[_modifications];
                         }
 
                         set {
-                            base["modifications"] = value;
+                            base[_modifications] = value;
+                        }
+                    }
+
+                    protected override ConfigurationPropertyCollection Properties {
+                        get {
+                            return _properties;
                         }
                     }
                 }

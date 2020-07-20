@@ -418,7 +418,7 @@ namespace FlashpointSecurePlayer {
 
                             softwareProcessStartInfo.ErrorDialog = false;
 
-                            if (modeElement.HideWindow) {
+                            if (modeElement.HideWindow.GetValueOrDefault()) {
                                 HideWindow(ref softwareProcessStartInfo);
                             }
 
