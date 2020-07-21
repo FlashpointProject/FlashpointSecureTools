@@ -863,6 +863,7 @@ namespace FlashpointSecurePlayer {
             string keyDeleted = null;
             string valueExpanded = null;
 
+            /*
             try {
                 fullPath = Path.GetFullPath(TemplateName);
             } catch (PathTooLongException) {
@@ -872,6 +873,7 @@ namespace FlashpointSecurePlayer {
             } catch (NotSupportedException) {
                 throw new ArgumentException("The path to " + TemplateName + " is not supported.");
             }
+            */
 
             // to prevent issues with HKEY_LOCAL_MACHINE and crash recovery
             activeModificationsElement.RegistryBackups._Administrator = TestLaunchedAsAdministratorUser();

@@ -21,9 +21,27 @@ namespace FlashpointSecurePlayer {
 
         public EnvironmentVariables(Form form) : base(form) { }
 
+        private string GetComparableName(string name) {
+            int comparableNameLength = name.IndexOf('\0');
+            string comparableName = null;
+
+            if (comparableNameLength == -1) {
+                comparableName = name;
+            } else {
+                comparableName = name.Substring(comparableNameLength);
+            }
+            return comparableName;
+        }
+
         private void FindAndReplace(EnvironmentVariablesElement environmentVariablesElement) {
             if (String.IsNullOrEmpty(environmentVariablesElement.Find)) {
                 return;
+            }
+
+            string comparableName = GetComparableName(environmentVariablesElement.Name);
+
+            if (comparableName == COMPATIBILITY_LAYER_NAME) {
+                throw new EnvironmentVariablesFailedException("Find and replace with the " + COMPATIBILITY_LAYER_NAME + " Environment Variable is not supported.");
             }
 
             string value = null;
@@ -60,18 +78,6 @@ namespace FlashpointSecurePlayer {
             } catch (SecurityException) {
                 throw new TaskRequiresElevationException("Setting the " + environmentVariablesElement.Name + " Environment Variable requires elevation.");
             }
-        }
-
-        private string GetComparableName(string name) {
-            int comparableNameLength = name.IndexOf('\0');
-            string comparableName = null;
-
-            if (comparableNameLength == -1) {
-                comparableName = name;
-            } else {
-                comparableName = name.Substring(comparableNameLength);
-            }
-            return comparableName;
         }
 
         public void Activate(string templateName, ModeElement modeElement) {
