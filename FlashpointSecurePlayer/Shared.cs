@@ -456,9 +456,6 @@ namespace FlashpointSecurePlayer {
                                 ConfigurationPropertyOptions.IsKey | ConfigurationPropertyOptions.IsRequired);
                             _properties.Add(_name);
 
-                            _workingDirectory = new ConfigurationProperty("workingDirectory", typeof(string), null, ConfigurationPropertyOptions.None);
-                            _properties.Add(_workingDirectory);
-
                             /*
                             switch (Name) {
                                 case NAME.WEB_BROWSER:
@@ -485,6 +482,9 @@ namespace FlashpointSecurePlayer {
                             _commandLine = new ConfigurationProperty("commandLine",
                                 typeof(string), null, ConfigurationPropertyOptions.None);
                             _properties.Add(_commandLine);
+
+                            _workingDirectory = new ConfigurationProperty("workingDirectory", typeof(string), null, ConfigurationPropertyOptions.None);
+                            _properties.Add(_workingDirectory);
 
                             _hideWindow = new ConfigurationProperty("hideWindow",
                                 typeof(string), null, ConfigurationPropertyOptions.None);
@@ -545,10 +545,17 @@ namespace FlashpointSecurePlayer {
                         
                         public string WorkingDirectory {
                             get {
+                                if (Name != NAME.SOFTWARE || _workingDirectory == null) {
+                                    return null;
+                                }
                                 return base[_workingDirectory] as string;
                             }
 
                             set {
+                                if (Name != NAME.SOFTWARE || _workingDirectory == null) {
+                                    return;
+                                }
+
                                 base[_workingDirectory] = value;
                             }
                         }
@@ -1352,9 +1359,11 @@ namespace FlashpointSecurePlayer {
                     return httpResponseMessage.RequestMessage.RequestUri;
                 }
             } catch (ArgumentException) {
-                throw new Exceptions.DownloadFailedException("The download name is invalid.");
+                throw new Exceptions.DownloadFailedException("The download failed because the download name (" + name + ") is invalid.");
             } catch (HttpRequestException) {
-                throw new Exceptions.DownloadFailedException("The HTTP Request is invalid.");
+                throw new Exceptions.DownloadFailedException("The download failed because the HTTP Request is invalid.");
+            } catch (InvalidOperationException) {
+                throw new Exceptions.DownloadFailedException("The download failed because the address (" + name + ") was not understood.");
             } finally {
                 downloadSemaphoreSlim.Release();
             }

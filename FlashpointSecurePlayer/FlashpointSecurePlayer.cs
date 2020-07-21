@@ -382,7 +382,7 @@ namespace FlashpointSecurePlayer {
                             webBrowserURL = new Uri(URL);
                         } catch {
                             errorDelegate(String.Format(Properties.Resources.AddressNotUnderstood, URL));
-                            throw new InvalidModeException("The Mode did not understand the address.");
+                            throw new InvalidModeException("The address (" + URL + ") was not understood by the Mode.");
                         }
 
                         serverForm = new Server(webBrowserURL) {
@@ -1142,7 +1142,7 @@ namespace FlashpointSecurePlayer {
 
                 if (templateElement.Mode.Name == ModeElement.NAME.SOFTWARE) {
                     try {
-                        Uri requestUri = await DownloadAsync(URL).ConfigureAwait(false);
+                        Uri requestUri = await DownloadAsync(URL).ConfigureAwait(true);
                         StringBuilder htdocsFilePath = new StringBuilder(HTDOCS);
 
                         try {
@@ -1298,7 +1298,7 @@ namespace FlashpointSecurePlayer {
                 LogExceptionToLauncher(ex);
                 // Fail silently.
             }
-
+            
             if (applicationMutex != null) {
                 applicationMutex.ReleaseMutex();
                 applicationMutex = null;

@@ -1,0 +1,7 @@
+{ 
+ hero1="yin", 
+ hero2="yang", 
+ score=0, 
+ training=nil, 
+ keys={level1="training", level2="level1", level3="level2", level4="level3", level5="level4"}, 
+ }
