@@ -396,12 +396,12 @@ namespace FlashpointSecurePlayer {
 
                         set {
                             if (String.IsNullOrEmpty(value)) {
-                                base[_active] = null;
+                                base[_mode] = null;
                                 base[_name] = value;
                                 return;
                             }
 
-                            base[_mode] = null;
+                            base[_active] = null;
                             base[_name] = value.ToLowerInvariant();
                         }
                     }
@@ -453,7 +453,7 @@ namespace FlashpointSecurePlayer {
                             _properties = new ConfigurationPropertyCollection();
 
                             _name = new ConfigurationProperty("name", typeof(NAME), NAME.WEB_BROWSER,
-                                ConfigurationPropertyOptions.IsKey | ConfigurationPropertyOptions.IsRequired);
+                                ConfigurationPropertyOptions.IsKey/* | ConfigurationPropertyOptions.IsRequired*/);
                             _properties.Add(_name);
 
                             /*
