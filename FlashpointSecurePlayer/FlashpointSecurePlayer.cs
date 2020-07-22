@@ -1195,11 +1195,13 @@ namespace FlashpointSecurePlayer {
 
                 // set Environment Variables
                 try {
+                    // required
                     Environment.SetEnvironmentVariable(FP_STARTUP_PATH, Application.StartupPath, EnvironmentVariableTarget.Process);
                     Environment.SetEnvironmentVariable(FP_URL, URL, EnvironmentVariableTarget.Process);
-                    Environment.SetEnvironmentVariable(FP_ARGUMENTS, Arguments, EnvironmentVariableTarget.Process);
-                    Environment.SetEnvironmentVariable(FP_HTDOCS_FILE, htdocsFile, EnvironmentVariableTarget.Process);
-                    Environment.SetEnvironmentVariable(FP_HTDOCS_FILE_DIR, htdocsFileDirectory, EnvironmentVariableTarget.Process);
+                    // optional
+                    Environment.SetEnvironmentVariable(FP_ARGUMENTS, String.IsNullOrEmpty(Arguments) ? " " : Arguments, EnvironmentVariableTarget.Process);
+                    Environment.SetEnvironmentVariable(FP_HTDOCS_FILE, String.IsNullOrEmpty(htdocsFile) ? " " : htdocsFile, EnvironmentVariableTarget.Process);
+                    Environment.SetEnvironmentVariable(FP_HTDOCS_FILE_DIR, String.IsNullOrEmpty(htdocsFileDirectory) ? " " : htdocsFileDirectory, EnvironmentVariableTarget.Process);
                 } catch (ArgumentException ex) {
                     LogExceptionToLauncher(ex);
                     Application.Exit();

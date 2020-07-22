@@ -487,7 +487,7 @@ namespace FlashpointSecurePlayer {
                             _properties.Add(_workingDirectory);
 
                             _hideWindow = new ConfigurationProperty("hideWindow",
-                                typeof(string), null, ConfigurationPropertyOptions.None);
+                                typeof(bool), false, ConfigurationPropertyOptions.None);
                             _properties.Add(_hideWindow);
                         }
                         
