@@ -863,9 +863,11 @@ namespace FlashpointSecurePlayer {
                                     }
 
                                     set {
-                                        if (Type != global::FlashpointSecurePlayer.RegistryBackups.TYPE.VALUE) {
+                                        /*
+                                        if (value != global::FlashpointSecurePlayer.RegistryBackups.TYPE.VALUE) {
                                             base[_valueName] = null;
                                         }
+                                        */
 
                                         base[_type] = value;
                                     }
@@ -891,9 +893,11 @@ namespace FlashpointSecurePlayer {
                                 
                                 public string ValueName {
                                     get {
+                                        /*
                                         if (Type != global::FlashpointSecurePlayer.RegistryBackups.TYPE.VALUE || _valueName == null) {
                                             return null;
                                         }
+                                        */
 
                                         if (String.IsNullOrEmpty(base[_valueName] as string)) {
                                             return base[_valueName] as string;
@@ -902,9 +906,11 @@ namespace FlashpointSecurePlayer {
                                     }
 
                                     set {
+                                        /*
                                         if (Type != global::FlashpointSecurePlayer.RegistryBackups.TYPE.VALUE || _valueName == null) {
                                             return;
                                         }
+                                        */
 
                                         if (String.IsNullOrEmpty(value)) {
                                             base[_valueName] = value;
