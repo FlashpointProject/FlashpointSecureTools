@@ -636,7 +636,7 @@ namespace FlashpointSecurePlayer {
                         if (modificationsElement.ElementInformation.IsPresent) {
                             if (modificationsElement.EnvironmentVariables.Count > 0) {
                                 try {
-                                    environmentVariables.Activate(TemplateName, modeElement);
+                                    environmentVariables.Activate(TemplateName);
                                 } catch (EnvironmentVariablesFailedException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.EnvironmentVariablesFailed);
@@ -735,14 +735,7 @@ namespace FlashpointSecurePlayer {
                         if (modificationsElement.ElementInformation.IsPresent) {
                             if (modificationsElement.SingleInstance.ElementInformation.IsPresent) {
                                 try {
-                                    string executable = null;
-                                    string[] argv = CommandLineToArgv(Environment.ExpandEnvironmentVariables(modeElement.CommandLine), out int argc);
-
-                                    if (argc > 0) {
-                                        executable = argv[0];
-                                    }
-
-                                    singleInstance.Activate(TemplateName, executable);
+                                    singleInstance.Activate(TemplateName);
                                 } catch (InvalidModificationException ex) {
                                     LogExceptionToLauncher(ex);
                                     throw ex;
@@ -760,7 +753,7 @@ namespace FlashpointSecurePlayer {
                         if (modificationsElement.ElementInformation.IsPresent) {
                             if (modificationsElement.OldCPUSimulator.ElementInformation.IsPresent) {
                                 try {
-                                    oldCPUSimulator.Activate(TemplateName, ref modeElement, ref softwareProcessStartInfo, out softwareIsOldCPUSimulator);
+                                    oldCPUSimulator.Activate(TemplateName, ref softwareProcessStartInfo, out softwareIsOldCPUSimulator);
                                 } catch (OldCPUSimulatorFailedException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.OldCPUSimulatorFailed);
@@ -842,10 +835,9 @@ namespace FlashpointSecurePlayer {
                         }
 
                         ProgressManager.CurrentGoal.Steps++;
-
-                        /*
+                        
                         try {
-                            environmentVariables.Deactivate(modeElement);
+                            environmentVariables.Deactivate();
                         } catch (EnvironmentVariablesFailedException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.EnvironmentVariablesFailed);
@@ -861,7 +853,6 @@ namespace FlashpointSecurePlayer {
                         }
 
                         ProgressManager.CurrentGoal.Steps++;
-                        */
 
                         try {
                             TemplateElement activeTemplateElement = GetActiveTemplateElement(false);
@@ -1204,11 +1195,11 @@ namespace FlashpointSecurePlayer {
 
                 // set Environment Variables
                 try {
-                    Environment.SetEnvironmentVariable(FLASHPOINT_STARTUP_PATH, Application.StartupPath, EnvironmentVariableTarget.Process);
-                    Environment.SetEnvironmentVariable(FLASHPOINT_URL, URL, EnvironmentVariableTarget.Process);
-                    Environment.SetEnvironmentVariable(FLASHPOINT_ARGUMENTS, Arguments, EnvironmentVariableTarget.Process);
-                    Environment.SetEnvironmentVariable(FLASHPOINT_HTDOCS_FILE, htdocsFile, EnvironmentVariableTarget.Process);
-                    Environment.SetEnvironmentVariable(FLASHPOINT_HTDOCS_FILE_DIR, htdocsFileDirectory, EnvironmentVariableTarget.Process);
+                    Environment.SetEnvironmentVariable(FP_STARTUP_PATH, Application.StartupPath, EnvironmentVariableTarget.Process);
+                    Environment.SetEnvironmentVariable(FP_URL, URL, EnvironmentVariableTarget.Process);
+                    Environment.SetEnvironmentVariable(FP_ARGUMENTS, Arguments, EnvironmentVariableTarget.Process);
+                    Environment.SetEnvironmentVariable(FP_HTDOCS_FILE, htdocsFile, EnvironmentVariableTarget.Process);
+                    Environment.SetEnvironmentVariable(FP_HTDOCS_FILE_DIR, htdocsFileDirectory, EnvironmentVariableTarget.Process);
                 } catch (ArgumentException ex) {
                     LogExceptionToLauncher(ex);
                     Application.Exit();

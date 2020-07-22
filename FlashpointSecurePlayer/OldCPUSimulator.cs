@@ -19,7 +19,28 @@ namespace FlashpointSecurePlayer {
     class OldCPUSimulator : Modifications {
         public OldCPUSimulator(Form form) : base(form) { }
 
-        public void Activate(string templateName, ref ModeElement modeElement, ref ProcessStartInfo softwareProcessStartInfo, out bool softwareIsOldCPUSimulator) {
+        public bool TestRunningWithOldCPUSimulator() {
+            // now, we might already be running under Old CPU Simulator
+            // we don't want to start a new instance in that case
+            // the user has manually started Old CPU Simulator already
+            Process parentProcess = GetParentProcess();
+            string parentProcessFileName = null;
+
+            if (parentProcess != null) {
+                try {
+                    parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess)).ToUpperInvariant();
+                } catch {
+                    throw new OldCPUSimulatorFailedException("Failed to get the parent process EXE name.");
+                }
+            }
+
+            if (parentProcessFileName == OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME) {
+                return true;
+            }
+            return false;
+        }
+
+        public void Activate(string templateName, ref ProcessStartInfo softwareProcessStartInfo, out bool softwareIsOldCPUSimulator) {
             OldCPUSimulatorElement oldCPUSimulatorElement = null;
             softwareIsOldCPUSimulator = false;
 
@@ -36,6 +57,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
+            ModeElement modeElement = templateElement.Mode;
             ModificationsElement modificationsElement = templateElement.Modifications;
 
             if (!modificationsElement.ElementInformation.IsPresent) {
@@ -55,21 +77,8 @@ namespace FlashpointSecurePlayer {
                 throw new OldCPUSimulatorFailedException("The target rate is required.");
             }
 
-            // now, we might already be running under Old CPU Simulator
-            // we don't want to start a new instance in that case
-            // the user has manually started Old CPU Simulator already
-            Process parentProcess = GetParentProcess();
-            string parentProcessFileName = null;
-
-            if (parentProcess != null) {
-                try {
-                    parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess)).ToUpperInvariant();
-                } catch {
-                    throw new OldCPUSimulatorFailedException("Failed to get the parent process EXE name.");
-                }
-            }
-
-            if (parentProcessFileName == OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME) {
+            if (TestRunningWithOldCPUSimulator()) {
+                // aaand we're done
                 return;
             }
 

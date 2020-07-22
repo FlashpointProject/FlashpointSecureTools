@@ -55,7 +55,7 @@ namespace FlashpointSecurePlayer {
             return ShowClosableMessageBox(new Task[] { task }, text, caption, messageBoxButtons, messageBoxIcon);
         }
 
-        public void Activate(string templateName, string executable) {
+        public void Activate(string templateName) {
             base.Activate(templateName);
 
             if (String.IsNullOrEmpty(templateName)) {
@@ -69,6 +69,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
+            ModeElement modeElement = templateElement.Mode;
             ModificationsElement modificationsElement = templateElement.Modifications;
 
             if (!modificationsElement.ElementInformation.IsPresent) {
@@ -81,8 +82,14 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            if (!String.IsNullOrEmpty(singleInstanceElement.Executable)) {
-                executable = singleInstanceElement.Executable;
+            string executable = singleInstanceElement.Executable;
+
+            if (String.IsNullOrEmpty(executable)) {
+                string[] argv = CommandLineToArgv(Environment.ExpandEnvironmentVariables(modeElement.CommandLine), out int argc);
+
+                if (argc > 0) {
+                    executable = argv[0];
+                }
             }
 
             if (String.IsNullOrEmpty(executable)) {
