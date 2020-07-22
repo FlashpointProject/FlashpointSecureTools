@@ -1,7 +1,0 @@
-{ 
- score=50, 
- keys=nil, 
- driver="spongebob", 
- passenger="patrick", 
- warp="intro", 
- }
