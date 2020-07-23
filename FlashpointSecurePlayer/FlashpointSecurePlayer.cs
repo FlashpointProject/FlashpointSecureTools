@@ -200,9 +200,14 @@ namespace FlashpointSecurePlayer {
             }
 
             AskLaunch(Properties.Resources.WithOldCPUSimulator);
+            string fullPath = null;
 
             // Old CPU Simulator needs to be on top, not us
-            string fullPath = Path.GetFullPath(OLD_CPU_SIMULATOR_PATH);
+            try {
+                fullPath = Path.GetFullPath(OLD_CPU_SIMULATOR_PATH);
+            } catch {
+                throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator and getting the full path to Old CPU Simulator failed.");
+            }
 
             ProcessStartInfo processStartInfo = new ProcessStartInfo {
                 FileName = fullPath,
@@ -1128,6 +1133,7 @@ namespace FlashpointSecurePlayer {
                 }
 
                 // get HTDOCS File/HTDOCS File Directory (in Software Mode)
+                string htdocsFullFilePath = null;
                 string htdocsFile = null;
                 string htdocsFileDirectory = null;
 
@@ -1168,7 +1174,21 @@ namespace FlashpointSecurePlayer {
                         }
 
                         try {
-                            htdocsFileDirectory = Path.GetDirectoryName(htdocsFilePath.ToString());
+                            htdocsFullFilePath = Path.GetFullPath(htdocsFilePath.ToString());
+                        } catch (PathTooLongException) {
+                            throw new ArgumentException("The path is too long to " + htdocsFilePath.ToString() + ".");
+                        } catch (System.Security.SecurityException) {
+                            throw new TaskRequiresElevationException("Getting the Full Path to " + htdocsFilePath.ToString() + " requires elevation.");
+                        } catch (NotSupportedException) {
+                            throw new ArgumentException("The path " + htdocsFilePath.ToString() + " is not supported.");
+                        }
+
+                        if (htdocsFullFilePath == null) {
+                            htdocsFullFilePath = String.Empty;
+                        }
+
+                        try {
+                            htdocsFileDirectory = Path.GetDirectoryName(htdocsFullFilePath);
                         } catch (ArgumentException ex) {
                             LogExceptionToLauncher(ex);
                             // Fail silently?
