@@ -1030,11 +1030,11 @@ namespace FlashpointSecurePlayer {
 
                 // throw on load
                 if (args.Length < 3) {
-                    throw new InvalidTemplateException("No Template was used.");
+                    throw new InvalidTemplateException("The Template Name and URL are required.");
                 }
 
-                URL = args[1];
-                TemplateName = args[2];
+                TemplateName = args[1];
+                URL = args[2];
                 string arg = null;
 
                 for (int i = 3;i < args.Length;i++) {
