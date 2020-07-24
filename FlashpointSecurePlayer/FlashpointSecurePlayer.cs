@@ -1057,8 +1057,12 @@ namespace FlashpointSecurePlayer {
 
                                 DownloadsBeforeModificationNames.Add(args[i + 1]);
                                 i++;
+                                continue;
                             }
                         }
+
+                        Arguments = GetCommandLineArgumentRange(Environment.CommandLine, i, -1);
+                        break;
                     }
                 }
 
