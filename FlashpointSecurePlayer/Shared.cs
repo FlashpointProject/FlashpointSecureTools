@@ -710,6 +710,12 @@ namespace FlashpointSecurePlayer {
                                     }
                                 }
 
+                                public string _Key {
+                                    get {
+                                        return this.Name + "\\" + this.Find;
+                                    }
+                                }
+
                                 protected override ConfigurationPropertyCollection Properties {
                                     get {
                                         return _properties;
@@ -719,7 +725,7 @@ namespace FlashpointSecurePlayer {
 
                             protected override object GetElementKey(ConfigurationElement configurationElement) {
                                 EnvironmentVariablesElement environmentVariablesElement = configurationElement as EnvironmentVariablesElement;
-                                return environmentVariablesElement.Name;
+                                return environmentVariablesElement._Key;
                             }
 
                             protected override ConfigurationElement CreateNewElement() {
