@@ -746,6 +746,9 @@ namespace FlashpointSecurePlayer {
                                 } catch (ArgumentException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.GameIsMissingFiles);
+                                } catch (InvalidOperationException ex) {
+                                    LogExceptionToLauncher(ex);
+                                    errorDelegate(Properties.Resources.RegistryBackupFailed);
                                 }
                             }
                         }
@@ -852,6 +855,9 @@ namespace FlashpointSecurePlayer {
                         } catch (ArgumentException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.GameIsMissingFiles);
+                        } catch (InvalidOperationException ex) {
+                            LogExceptionToLauncher(ex);
+                            errorDelegate(Properties.Resources.RegistryBackupFailed);
                         }
 
                         ProgressManager.CurrentGoal.Steps++;
