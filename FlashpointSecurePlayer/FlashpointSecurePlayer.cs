@@ -227,142 +227,157 @@ namespace FlashpointSecurePlayer {
         }
 
         private async Task ImportActiveX(ErrorDelegate errorDelegate) {
-            if (String.IsNullOrEmpty(TemplateName)) {
-                errorDelegate(Properties.Resources.CurationMissingTemplateName);
-                throw new InvalidTemplateException("The Template Name may not be the Active Template Name.");
-            }
+            bool createdNew = false;
 
-            // this requires admin
-            if (!TestLaunchedAsAdministratorUser()) {
-                AskLaunchAsAdministratorUser();
-            }
-
-            ProgressManager.Reset();
-            ShowOutput(Properties.Resources.RegistryBackupInProgress);
-            ProgressManager.CurrentGoal.Start(6);
-
-            try {
-                ActiveXControl activeXControl = null;
-
-                try {
-                    activeXControl = new ActiveXControl(TemplateName);
-                } catch (DllNotFoundException ex) {
-                    LogExceptionToLauncher(ex);
-                    errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, TemplateName));
-                    throw new ActiveXImportFailedException("The ActiveX Import failed because the DLL was not found.");
-                } catch (InvalidActiveXControlException ex) {
-                    LogExceptionToLauncher(ex);
-                    errorDelegate(Properties.Resources.GameNotActiveXControl);
-                    throw new ActiveXImportFailedException("The ActiveX Import failed because the DLL is not an ActiveX Control.");
+            using (Mutex modificationsMutex = new Mutex(true, MODIFICATIONS_MUTEX_NAME, out createdNew)) {
+                if (!createdNew) {
+                    if (!modificationsMutex.WaitOne()) {
+                        errorDelegate(Properties.Resources.AnotherInstanceCausingInterference);
+                        throw new ActiveXImportFailedException("The ActiveX Import failed because a Modification is activating.");
+                    }
                 }
 
-                GetBinaryType(TemplateName, out BINARY_TYPE binaryType);
-
-                // first, we install the control without a registry backup running
-                // this is so we can be sure we can uninstall the control
                 try {
-                    activeXControl.Install();
-                } catch (Win32Exception ex) {
-                    LogExceptionToLauncher(ex);
-                    errorDelegate(Properties.Resources.ActiveXControlInstallFailed);
-                    throw new ActiveXImportFailedException("The ActiveX Import failed because the ActiveX Control failed to install.");
-                }
-
-                ProgressManager.CurrentGoal.Steps++;
-
-                // next, uninstall the control
-                // in case it was already installed before this whole process
-                // this is to ensure an existing install
-                // doesn't interfere with our registry backup results
-                try {
-                    activeXControl.Uninstall();
-                } catch (Win32Exception ex) {
-                    LogExceptionToLauncher(ex);
-                    errorDelegate(Properties.Resources.ActiveXControlUninstallFailed);
-                    throw new ActiveXImportFailedException("The ActiveX Import failed because the ActiveX Control failed to uninstall.");
-                }
-
-                ProgressManager.CurrentGoal.Steps++;
-
-                try {
-                    try {
-                        await registryBackup.StartImportAsync(TemplateName, binaryType).ConfigureAwait(true);
-                    } catch (RegistryBackupFailedException ex) {
-                        LogExceptionToLauncher(ex);
-                        errorDelegate(Properties.Resources.RegistryBackupFailed);
-                        throw new ActiveXImportFailedException("The ActiveX Import failed because the Registry Backup failed when the ActiveX Import was started.");
-                    } catch (System.Configuration.ConfigurationErrorsException ex) {
-                        LogExceptionToLauncher(ex);
-                        errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                        throw new ActiveXImportFailedException("The ActiveX Import failed because the configuration failed to load when the ActiveX Import was started.");
-                    } catch (InvalidModificationException ex) {
-                        LogExceptionToLauncher(ex);
-                        errorDelegate(Properties.Resources.GameNotCuratedCorrectly);
-                        throw new ActiveXImportFailedException("The ActiveX Import failed because the Modification is invalid.");
-                    } catch (TaskRequiresElevationException ex) {
-                        LogExceptionToLauncher(ex);
-                        // we're already running as admin?
-                        errorDelegate(String.Format(Properties.Resources.GameFailedLaunch, Properties.Resources.AsAdministratorUser));
-                        throw new ActiveXImportFailedException("The ActiveX Import failed running as Administrator User.");
-                    } catch (InvalidOperationException ex) {
-                        LogExceptionToLauncher(ex);
-                        errorDelegate(Properties.Resources.RegistryBackupAlreadyInProgress);
-                        throw new ActiveXImportFailedException("The ActiveX Import failed because a Registry Backup is already in progress.");
+                    if (String.IsNullOrEmpty(TemplateName)) {
+                        errorDelegate(Properties.Resources.CurationMissingTemplateName);
+                        throw new InvalidTemplateException("The Template Name may not be the Active Template Name.");
                     }
 
-                    ProgressManager.CurrentGoal.Steps++;
-
-                    // a registry backup is running, install the control
-                    try {
-                        activeXControl.Install();
-                    } catch (Win32Exception ex) {
-                        LogExceptionToLauncher(ex);
-                        errorDelegate(Properties.Resources.ActiveXControlInstallFailed);
-                        throw new ActiveXImportFailedException("The ActiveX Import failed because the ActiveX Control failed to install.");
+                    // this requires admin
+                    if (!TestLaunchedAsAdministratorUser()) {
+                        AskLaunchAsAdministratorUser();
                     }
 
-                    ProgressManager.CurrentGoal.Steps++;
+                    ProgressManager.Reset();
+                    ShowOutput(Properties.Resources.RegistryBackupInProgress);
+                    ProgressManager.CurrentGoal.Start(6);
 
                     try {
-                        await registryBackup.StopImportAsync().ConfigureAwait(true);
-                    } catch (RegistryBackupFailedException ex) {
-                        LogExceptionToLauncher(ex);
-                        errorDelegate(Properties.Resources.RegistryBackupFailed);
-                        throw new ActiveXImportFailedException("The ActiveX Import failed because the Registry Backup failed when the ActiveX Import was stopped.");
-                    } catch (System.Configuration.ConfigurationErrorsException ex) {
-                        LogExceptionToLauncher(ex);
-                        errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                        throw new ActiveXImportFailedException("The ActiveX Import failed because the configuration failed to load when the ActiveX Import was stopped.");
-                    } catch (InvalidOperationException ex) {
-                        LogExceptionToLauncher(ex);
-                        errorDelegate(Properties.Resources.RegistryBackupNotInProgress);
-                        throw new ActiveXImportFailedException("The ActiveX Import failed because the Registry Backup never started.");
+                        ActiveXControl activeXControl = null;
+
+                        try {
+                            activeXControl = new ActiveXControl(TemplateName);
+                        } catch (DllNotFoundException ex) {
+                            LogExceptionToLauncher(ex);
+                            errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, TemplateName));
+                            throw new ActiveXImportFailedException("The ActiveX Import failed because the DLL was not found.");
+                        } catch (InvalidActiveXControlException ex) {
+                            LogExceptionToLauncher(ex);
+                            errorDelegate(Properties.Resources.GameNotActiveXControl);
+                            throw new ActiveXImportFailedException("The ActiveX Import failed because the DLL is not an ActiveX Control.");
+                        }
+
+                        GetBinaryType(TemplateName, out BINARY_TYPE binaryType);
+
+                        // first, we install the control without a registry backup running
+                        // this is so we can be sure we can uninstall the control
+                        try {
+                            activeXControl.Install();
+                        } catch (Win32Exception ex) {
+                            LogExceptionToLauncher(ex);
+                            errorDelegate(Properties.Resources.ActiveXControlInstallFailed);
+                            throw new ActiveXImportFailedException("The ActiveX Import failed because the ActiveX Control failed to install.");
+                        }
+
+                        ProgressManager.CurrentGoal.Steps++;
+
+                        // next, uninstall the control
+                        // in case it was already installed before this whole process
+                        // this is to ensure an existing install
+                        // doesn't interfere with our registry backup results
+                        try {
+                            activeXControl.Uninstall();
+                        } catch (Win32Exception ex) {
+                            LogExceptionToLauncher(ex);
+                            errorDelegate(Properties.Resources.ActiveXControlUninstallFailed);
+                            throw new ActiveXImportFailedException("The ActiveX Import failed because the ActiveX Control failed to uninstall.");
+                        }
+
+                        ProgressManager.CurrentGoal.Steps++;
+
+                        try {
+                            try {
+                                await registryBackup.StartImportAsync(TemplateName, binaryType).ConfigureAwait(true);
+                            } catch (RegistryBackupFailedException ex) {
+                                LogExceptionToLauncher(ex);
+                                errorDelegate(Properties.Resources.RegistryBackupFailed);
+                                throw new ActiveXImportFailedException("The ActiveX Import failed because the Registry Backup failed when the ActiveX Import was started.");
+                            } catch (System.Configuration.ConfigurationErrorsException ex) {
+                                LogExceptionToLauncher(ex);
+                                errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                                throw new ActiveXImportFailedException("The ActiveX Import failed because the configuration failed to load when the ActiveX Import was started.");
+                            } catch (InvalidModificationException ex) {
+                                LogExceptionToLauncher(ex);
+                                errorDelegate(Properties.Resources.GameNotCuratedCorrectly);
+                                throw new ActiveXImportFailedException("The ActiveX Import failed because the Modification is invalid.");
+                            } catch (TaskRequiresElevationException ex) {
+                                LogExceptionToLauncher(ex);
+                                // we're already running as admin?
+                                errorDelegate(String.Format(Properties.Resources.GameFailedLaunch, Properties.Resources.AsAdministratorUser));
+                                throw new ActiveXImportFailedException("The ActiveX Import failed running as Administrator User.");
+                            } catch (InvalidOperationException ex) {
+                                LogExceptionToLauncher(ex);
+                                errorDelegate(Properties.Resources.RegistryBackupAlreadyInProgress);
+                                throw new ActiveXImportFailedException("The ActiveX Import failed because a Registry Backup is already in progress.");
+                            }
+
+                            ProgressManager.CurrentGoal.Steps++;
+
+                            // a registry backup is running, install the control
+                            try {
+                                activeXControl.Install();
+                            } catch (Win32Exception ex) {
+                                LogExceptionToLauncher(ex);
+                                errorDelegate(Properties.Resources.ActiveXControlInstallFailed);
+                                throw new ActiveXImportFailedException("The ActiveX Import failed because the ActiveX Control failed to install.");
+                            }
+
+                            ProgressManager.CurrentGoal.Steps++;
+
+                            try {
+                                await registryBackup.StopImportAsync().ConfigureAwait(true);
+                            } catch (RegistryBackupFailedException ex) {
+                                LogExceptionToLauncher(ex);
+                                errorDelegate(Properties.Resources.RegistryBackupFailed);
+                                throw new ActiveXImportFailedException("The ActiveX Import failed because the Registry Backup failed when the ActiveX Import was stopped.");
+                            } catch (System.Configuration.ConfigurationErrorsException ex) {
+                                LogExceptionToLauncher(ex);
+                                errorDelegate(Properties.Resources.ConfigurationFailedLoad);
+                                throw new ActiveXImportFailedException("The ActiveX Import failed because the configuration failed to load when the ActiveX Import was stopped.");
+                            } catch (InvalidOperationException ex) {
+                                LogExceptionToLauncher(ex);
+                                errorDelegate(Properties.Resources.RegistryBackupNotInProgress);
+                                throw new ActiveXImportFailedException("The ActiveX Import failed because the Registry Backup never started.");
+                            }
+                        } finally {
+                            // we do this to ensure the user can exit in the case of an error
+                            ControlBox = true;
+                        }
+
+                        ProgressManager.CurrentGoal.Steps++;
+
+                        // the registry backup is stopped, uninstall the control
+                        // this will leave the control uninstalled on the system
+                        // there is no way to tell if it was installed before
+                        // (which is the point of creating the backup so we can)
+                        try {
+                            activeXControl.Uninstall();
+                        } catch (Win32Exception ex) {
+                            LogExceptionToLauncher(ex);
+                            errorDelegate(Properties.Resources.ActiveXControlUninstallFailed);
+                            throw new ActiveXImportFailedException("The ActiveX Import failed because the ActiveX Control failed to uninstall.");
+                        }
+
+                        ProgressManager.CurrentGoal.Steps++;
+                    } finally {
+                        ProgressManager.CurrentGoal.Stop();
                     }
+
+                    ShowOutput(Properties.Resources.RegistryBackupWasSuccessful);
                 } finally {
-                    // we do this to ensure the user can exit in the case of an error
-                    ControlBox = true;
+                    modificationsMutex.ReleaseMutex();
                 }
-
-                ProgressManager.CurrentGoal.Steps++;
-
-                // the registry backup is stopped, uninstall the control
-                // this will leave the control uninstalled on the system
-                // there is no way to tell if it was installed before
-                // (which is the point of creating the backup so we can)
-                try {
-                    activeXControl.Uninstall();
-                } catch (Win32Exception ex) {
-                    LogExceptionToLauncher(ex);
-                    errorDelegate(Properties.Resources.ActiveXControlUninstallFailed);
-                    throw new ActiveXImportFailedException("The ActiveX Import failed because the ActiveX Control failed to uninstall.");
-                }
-
-                ProgressManager.CurrentGoal.Steps++;
-            } finally {
-                ProgressManager.CurrentGoal.Stop();
             }
-
-            ShowOutput(Properties.Resources.RegistryBackupWasSuccessful);
         }
 
         private void ActivateMode(TemplateElement templateElement, ErrorDelegate errorDelegate) {
@@ -882,21 +897,6 @@ namespace FlashpointSecurePlayer {
         }
 
         private async Task StartSecurePlayback(TemplateElement templateElement) {
-            if (activeX) {
-                // ActiveX Import
-                await ImportActiveX(delegate (string text) {
-                    if (text.IndexOf("\n") == -1) {
-                        ShowError(text);
-                    } else {
-                        ProgressManager.ShowError();
-                        MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        Application.Exit();
-                    }
-                    throw new ActiveXImportFailedException("An error occured while activating the ActiveX Import.");
-                });
-                return;
-            }
-
             // switch to synced process
             ProgressManager.Reset();
             ShowOutput(Properties.Resources.RequiredComponentsAreLoading);
@@ -1115,6 +1115,27 @@ namespace FlashpointSecurePlayer {
                     ShowNoGameSelected();
                     return;
                 }
+                
+                if (activeX) {
+                    // ActiveX Import
+                    try {
+                        await ImportActiveX(delegate (string text) {
+                            if (text.IndexOf("\n") == -1) {
+                                ShowError(text);
+                            } else {
+                                ProgressManager.ShowError();
+                                MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                Application.Exit();
+                            }
+                            throw new ActiveXImportFailedException("An error occured while activating the ActiveX Import.");
+                        });
+                    } catch (ActiveXImportFailedException ex) {
+                        LogExceptionToLauncher(ex);
+                        // no need to exit here, error shown in interface
+                        //Application.Exit();
+                    }
+                    return;
+                }
 
                 await DownloadFlashpointSecurePlayerSectionAsync(TemplateName).ConfigureAwait(true);
                 // get template element on start
@@ -1240,11 +1261,6 @@ namespace FlashpointSecurePlayer {
                 // Start Secure Playback
                 try {
                     await StartSecurePlayback(templateElement).ConfigureAwait(false);
-                } catch (ActiveXImportFailedException ex) {
-                    LogExceptionToLauncher(ex);
-                    // no need to exit here, error shown in interface
-                    //Application.Exit();
-                    return;
                 } catch (InvalidModeException ex) {
                     LogExceptionToLauncher(ex);
                     // no need to exit here, error shown in interface

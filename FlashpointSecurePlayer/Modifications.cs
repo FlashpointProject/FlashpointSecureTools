@@ -55,7 +55,7 @@ namespace FlashpointSecurePlayer {
 
         protected void StartImport(string templateName) {
             if (ImportStarted) {
-                throw new InvalidOperationException("Cannot Start Import when the Import has started.");
+                throw new InvalidOperationException("Cannot Start Import when the Import is in progress.");
             }
 
             if (String.IsNullOrEmpty(templateName)) {
@@ -96,7 +96,7 @@ namespace FlashpointSecurePlayer {
 
         public void Activate(string templateName) {
             if (ImportStarted) {
-                throw new InvalidOperationException("Cannot Activate when the Import has started.");
+                throw new InvalidOperationException("Cannot Activate when the Import is in progress.");
             }
 
             //if (String.IsNullOrEmpty(name)) {
@@ -111,7 +111,7 @@ namespace FlashpointSecurePlayer {
 
         public void Deactivate() {
             if (ImportStarted) {
-                throw new InvalidOperationException("Cannot Deactivate when the Import has started.");
+                throw new InvalidOperationException("Cannot Deactivate when the Import is in progress.");
             }
 
             //SetFlashpointSecurePlayerSection();
