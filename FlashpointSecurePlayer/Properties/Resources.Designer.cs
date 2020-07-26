@@ -235,6 +235,15 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The Modifications failed to load because an Import was in progress..
+        /// </summary>
+        internal static string ModificationsFailedImport {
+            get {
+                return ResourceManager.GetString("ModificationsFailedImport", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No game was selected to start, so the application is exiting..
         /// </summary>
         internal static string NoGameSelected {
