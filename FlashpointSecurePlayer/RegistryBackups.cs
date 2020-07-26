@@ -204,6 +204,8 @@ namespace FlashpointSecurePlayer {
                 // Fail silently.
             } catch (TaskRequiresElevationException) {
                 // Fail silently.
+            } catch (InvalidOperationException) {
+                // Fail silently.
             }
         }
 
@@ -714,114 +716,104 @@ namespace FlashpointSecurePlayer {
 
             // lock close button
             ImportStarted = true;
+            SetControlBox();
 
-            if (form != null) {
-                form.ControlBox = !ImportStarted;
-            }
+            try {
+                modificationsElement.RegistryBackups.BinaryType = binaryType;
+                resumeEventWaitHandle.Reset();
+                modificationsQueue = new Dictionary<ulong, SortedList<DateTime, RegistryBackupElement>>();
+                kcbModificationKeyNames = new Dictionary<ulong, string>();
 
-            modificationsElement.RegistryBackups.BinaryType = binaryType;
-            resumeEventWaitHandle.Reset();
-            modificationsQueue = new Dictionary<ulong, SortedList<DateTime, RegistryBackupElement>>();
-            kcbModificationKeyNames = new Dictionary<ulong, string>();
+                this.kernelSession = new TraceEventSession(KernelTraceEventParser.KernelSessionName);
+                this.kernelSession.EnableKernelProvider(KernelTraceEventParser.Keywords.Registry);
 
-            this.kernelSession = new TraceEventSession(KernelTraceEventParser.KernelSessionName);
-            this.kernelSession.EnableKernelProvider(KernelTraceEventParser.Keywords.Registry);
+                this.kernelSession.Source.Kernel.RegistryQueryValue += GotValue;
 
-            this.kernelSession.Source.Kernel.RegistryQueryValue += GotValue;
+                this.kernelSession.Source.Kernel.RegistryCreate += ModificationAdded;
+                this.kernelSession.Source.Kernel.RegistrySetValue += ModificationAdded;
+                this.kernelSession.Source.Kernel.RegistrySetInformation += ModificationAdded;
 
-            this.kernelSession.Source.Kernel.RegistryCreate += ModificationAdded;
-            this.kernelSession.Source.Kernel.RegistrySetValue += ModificationAdded;
-            this.kernelSession.Source.Kernel.RegistrySetInformation += ModificationAdded;
+                this.kernelSession.Source.Kernel.RegistryDelete += ModificationRemoved;
+                this.kernelSession.Source.Kernel.RegistryDeleteValue += ModificationRemoved;
 
-            this.kernelSession.Source.Kernel.RegistryDelete += ModificationRemoved;
-            this.kernelSession.Source.Kernel.RegistryDeleteValue += ModificationRemoved;
+                //this.KernelSession.Source.Kernel.RegistryFlush += RegistryModified;
 
-            //this.KernelSession.Source.Kernel.RegistryFlush += RegistryModified;
+                // https://social.msdn.microsoft.com/Forums/en-US/ff07fc25-31e3-4b6f-810e-7a1ee458084b/etw-registry-monitoring?forum=etw
+                this.kernelSession.Source.Kernel.RegistryKCBCreate += KCBStarted;
+                this.kernelSession.Source.Kernel.RegistryKCBRundownBegin += KCBStarted;
 
-            // https://social.msdn.microsoft.com/Forums/en-US/ff07fc25-31e3-4b6f-810e-7a1ee458084b/etw-registry-monitoring?forum=etw
-            this.kernelSession.Source.Kernel.RegistryKCBCreate += KCBStarted;
-            this.kernelSession.Source.Kernel.RegistryKCBRundownBegin += KCBStarted;
+                this.kernelSession.Source.Kernel.RegistryKCBDelete += KCBStopped;
+                this.kernelSession.Source.Kernel.RegistryKCBRundownEnd += KCBStopped;
 
-            this.kernelSession.Source.Kernel.RegistryKCBDelete += KCBStopped;
-            this.kernelSession.Source.Kernel.RegistryKCBRundownEnd += KCBStopped;
+                Thread processThread = new Thread(delegate () {
+                    kernelSession.Source.Process();
+                });
 
-            Thread processThread = new Thread(delegate () {
-                kernelSession.Source.Process();
-            });
+                processThread.Start();
 
-            processThread.Start();
+                try {
+                    // ensure the kernel session is actually processing
+                    for (int i = 0;i < IMPORT_TIMEOUT;i++) {
+                        // we just ping this value so it gets detected we tried to read it
+                        Registry.GetValue("HKEY_LOCAL_MACHINE", IMPORT_RESUME, null);
 
-            // ensure the kernel session is actually processing
-            for (int i = 0;i < IMPORT_TIMEOUT;i++) {
-                // we just ping this value so it gets detected we tried to read it
-                Registry.GetValue("HKEY_LOCAL_MACHINE", IMPORT_RESUME, null);
+                        if (!ImportPaused) {
+                            break;
+                        }
 
-                if (!ImportPaused) {
-                    break;
+                        //if (sync) {
+                        //Thread.Sleep(1000);
+                        //} else {
+                        await Task.Delay(1000).ConfigureAwait(true);
+                        //}
+                    }
+
+                    if (ImportPaused) {
+                        throw new RegistryBackupFailedException("A timeout occured while starting the Import.");
+                    }
+                } catch {
+                    this.kernelSession.Dispose();
+                    ImportStarted = false;
                 }
-
-                //if (sync) {
-                    //Thread.Sleep(1000);
-                //} else {
-                    await Task.Delay(1000).ConfigureAwait(false);
-                //}
+            } catch {
+                ImportStarted = false;
             }
 
-            if (ImportPaused) {
-                throw new RegistryBackupFailedException("A timeout occured while starting the Import.");
-            }
+            SetControlBox();
         }
 
         private async Task StopImportAsync(bool sync) {
-            base.StopImport();
-            resumeEventWaitHandle.Set();
+            try {
+                base.StopImport();
+                resumeEventWaitHandle.Set();
 
-            // stop this.kernelSession
-            // we give the registry backup a ten second
-            // timeout, which should be enough
-            for (int i = 0;i < IMPORT_TIMEOUT;i++) {
-                Registry.GetValue("HKEY_LOCAL_MACHINE", IMPORT_PAUSE, null);
+                // stop this.kernelSession
+                // we give the registry backup a ten second
+                // timeout, which should be enough
+                for (int i = 0;i < IMPORT_TIMEOUT;i++) {
+                    Registry.GetValue("HKEY_LOCAL_MACHINE", IMPORT_PAUSE, null);
 
-                if (ImportPaused) {
-                    break;
+                    if (ImportPaused) {
+                        break;
+                    }
+
+                    if (sync) {
+                        Thread.Sleep(1000);
+                    } else {
+                        await Task.Delay(1000).ConfigureAwait(true);
+                    }
                 }
 
-                if (sync) {
-                    Thread.Sleep(1000);
-                } else {
-                    await Task.Delay(1000).ConfigureAwait(true);
+                if (!ImportPaused) {
+                    throw new RegistryBackupFailedException("A timeout occured while stopping the Import.");
                 }
-            }
 
-            if (!ImportPaused) {
-                throw new RegistryBackupFailedException("A timeout occured while stopping the Import.");
-            }
-
-            this.kernelSession.Source.Kernel.RegistryQueryValue -= GotValue;
-
-            this.kernelSession.Source.Kernel.RegistryCreate -= ModificationAdded;
-            this.kernelSession.Source.Kernel.RegistrySetValue -= ModificationAdded;
-            this.kernelSession.Source.Kernel.RegistrySetInformation -= ModificationAdded;
-
-            this.kernelSession.Source.Kernel.RegistryDelete -= ModificationRemoved;
-            this.kernelSession.Source.Kernel.RegistryDeleteValue -= ModificationRemoved;
-
-            //this.KernelSession.Source.Kernel.RegistryFlush -= RegistryModified;
-
-            this.kernelSession.Source.Kernel.RegistryKCBCreate -= KCBStarted;
-            this.kernelSession.Source.Kernel.RegistryKCBRundownBegin -= KCBStarted;
-
-            this.kernelSession.Source.Kernel.RegistryKCBDelete -= KCBStopped;
-            this.kernelSession.Source.Kernel.RegistryKCBRundownEnd -= KCBStopped;
-
-            this.kernelSession.Source.Dispose();
-            this.kernelSession.Dispose();
-
-            SetFlashpointSecurePlayerSection(TemplateName);
-            ImportStarted = false;
-
-            if (form != null) {
-                form.ControlBox = !ImportStarted;
+                this.kernelSession.Stop();
+                SetFlashpointSecurePlayerSection(TemplateName);
+            } finally {
+                this.kernelSession.Dispose();
+                ImportStarted = false;
+                SetControlBox();
             }
         }
 

@@ -177,6 +177,9 @@ Please ensure Flashpoint is not corrupted, was extracted correctly, and is not r
     <value>This game will not work unless run {0}. Do you want to launch it {0}?
 If you choose No, the application will exit.</value>
   </data>
+  <data name="ModificationsFailedImport" xml:space="preserve">
+    <value>The Modifications failed to load because an Import was in progress.</value>
+  </data>
   <data name="NoGameSelected" xml:space="preserve">
     <value>No game was selected to start, so the application is exiting.</value>
   </data>

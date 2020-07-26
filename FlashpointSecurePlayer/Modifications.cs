@@ -45,6 +45,12 @@ namespace FlashpointSecurePlayer {
             Deactivate();
         }
 
+        protected void SetControlBox() {
+            if (form != null) {
+                form.ControlBox = !ImportStarted;
+            }
+        }
+
         public void PauseImport() {
             ImportPaused = true;
         }

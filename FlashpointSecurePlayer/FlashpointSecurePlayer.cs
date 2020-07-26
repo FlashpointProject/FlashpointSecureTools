@@ -347,7 +347,7 @@ namespace FlashpointSecurePlayer {
                             } catch (InvalidOperationException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.RegistryBackupNotInProgress);
-                                throw new ActiveXImportFailedException("The ActiveX Import failed because the Registry Backup never started.");
+                                throw new ActiveXImportFailedException("The ActiveX Import failed because the Registry Backup is not in progress.");
                             }
                         } finally {
                             // we do this to ensure the user can exit in the case of an error
@@ -748,7 +748,7 @@ namespace FlashpointSecurePlayer {
                                     errorDelegate(Properties.Resources.GameIsMissingFiles);
                                 } catch (InvalidOperationException ex) {
                                     LogExceptionToLauncher(ex);
-                                    errorDelegate(Properties.Resources.RegistryBackupFailed);
+                                    errorDelegate(Properties.Resources.ModificationsFailedImport);
                                 }
                             }
                         }
@@ -857,7 +857,7 @@ namespace FlashpointSecurePlayer {
                             errorDelegate(Properties.Resources.GameIsMissingFiles);
                         } catch (InvalidOperationException ex) {
                             LogExceptionToLauncher(ex);
-                            errorDelegate(Properties.Resources.RegistryBackupFailed);
+                            errorDelegate(Properties.Resources.ModificationsFailedImport);
                         }
 
                         ProgressManager.CurrentGoal.Steps++;

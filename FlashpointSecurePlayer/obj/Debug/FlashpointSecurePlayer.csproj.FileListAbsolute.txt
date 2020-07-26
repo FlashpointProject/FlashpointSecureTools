@@ -48,3 +48,5 @@ C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\Fla
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.exe
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.pdb
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.csprojAssemblyReference.cache
+C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll
+C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
