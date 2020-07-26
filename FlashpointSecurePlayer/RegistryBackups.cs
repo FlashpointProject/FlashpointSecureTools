@@ -1247,9 +1247,9 @@ namespace FlashpointSecurePlayer {
 
             ModificationsElement modificationsElement = templateElement.Modifications;
 
-            if (!modificationsElement.ElementInformation.IsPresent) {
-                return;
-            }
+            //if (!modificationsElement.ElementInformation.IsPresent) {
+                //return;
+            //}
 
             RegistryBackupElement registryBackupElement = new RegistryBackupElement {
                 KeyName = registryTraceData.KeyName,
@@ -1377,9 +1377,9 @@ namespace FlashpointSecurePlayer {
 
             ModificationsElement modificationsElement = templateElement.Modifications;
 
-            if (!modificationsElement.ElementInformation.IsPresent) {
-                return;
-            }
+            //if (!modificationsElement.ElementInformation.IsPresent) {
+                //return;
+            //}
 
             // create filler element to get name
             RegistryBackupElement registryBackupElement = new RegistryBackupElement {
@@ -1458,9 +1458,9 @@ namespace FlashpointSecurePlayer {
 
             ModificationsElement modificationsElement = templateElement.Modifications;
 
-            if (!modificationsElement.ElementInformation.IsPresent) {
-                return;
-            }
+            //if (!modificationsElement.ElementInformation.IsPresent) {
+                //return;
+            //}
 
             // it's stopped, remove it from the list of active key names
             ulong safeKeyHandle = registryTraceData.KeyHandle & 0x0000000FFFFFFFF;
