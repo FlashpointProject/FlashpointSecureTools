@@ -824,7 +824,7 @@ namespace FlashpointSecurePlayer {
                 }
 
                 try {
-                    ProgressManager.CurrentGoal.Start(2);
+                    ProgressManager.CurrentGoal.Start(3);
 
                     try {
                         /*
