@@ -246,13 +246,13 @@ Furthermore, the player may set an `_administrator` attribute, for internal use 
 
 The ActiveX Imports feature imports a Registry Backup from an ActiveX Control. After the Registry Backup is created, the ActiveX Control may be used in curations.
 
-As a curator using the ActiveX Mode, the ActiveX Control will be uninstalled on your machine if it was installed before. However, the benefit to this Mode is that after the Registry Backup has been created, ActiveX Controls will only be uninstalled if they had not previously been installed on the user's machine.
+As a curator using the ActiveX Imports, the ActiveX Control will be uninstalled on your machine if it was installed before. However, the benefit to this feature is that after the Registry Backup has been created, ActiveX Controls will only be uninstalled if they had not previously been installed on the user's machine.
 
 To use ActiveX Imports, simply add `--activex` at the end of your command line for the game.
 
 `FlashpointSecurePlayer "ActiveX\AstroAvenger2Loader\AstroAvenger2Loader.ocx" "http://www.shockwave.com/content/astroavenger2/sis/index.html" --activex`
 
-Please note that you should NOT use the ActiveX Mode in your final curation. The ActiveX Mode is only for curators to use to create a Registry Backup. Once the Registry Backup has been created using the command line above, which only needs to be done once, ever, per ActiveX Control, it will appear in the config folder with the same name, after which point it may be referenced in curations using Web Browser Mode as follows.
+Please note that you should NOT include `--activex` at the end of your command line in your final curation. The ActiveX Imports feature is only for curators to use to create a Registry Backup. Once the Registry Backup has been created using the command line above, which only needs to be done once, ever, per ActiveX Control, it will appear in the config folder with the same name, after which point it may be referenced in curations using Web Browser Mode as follows.
 
 `FlashpointSecurePlayer "ActiveX\AstroAvenger2Loader\AstroAvenger2Loader.ocx" "http://www.shockwave.com/content/astroavenger2/sis/index.html"`
 
