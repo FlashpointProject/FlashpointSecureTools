@@ -102,7 +102,7 @@ The Software Mode opens any software. Here is a `template` element that demonstr
 
 ```
 <template name="softwareexample">
-	<mode name="SOFTWARE" commandLine="Basilisk-Portable\Basilisk-Portable.exe" workingDirectory="%FP_STARTUP_PATH%" hideWindow="false" />
+	<mode name="SOFTWARE" commandLine="Basilisk-Portable\Basilisk-Portable.exe &quot;%FP_URL%&quot;" workingDirectory="%FP_STARTUP_PATH%" hideWindow="false" />
 </template>
 ```
 
