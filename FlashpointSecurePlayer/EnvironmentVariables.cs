@@ -99,6 +99,7 @@ namespace FlashpointSecurePlayer {
             List<string> modifiedValues = null;
             string compatibilityLayerValue = null;
             List<string> compatibilityLayerValues = new List<string>();
+            string unmodifiedValue = null;
 
             try {
                 // we need to find the compatibility layers so we can check later if the ones we want are already set
@@ -126,7 +127,29 @@ namespace FlashpointSecurePlayer {
                     if (UnmodifiableComparableNames.Contains(comparableName)) {
                         throw new EnvironmentVariablesFailedException("The " + environmentVariablesElement.Name + " Environment Variable cannot be modified at this time.");
                     }
-                    
+
+                    unmodifiedValue = null;
+
+                    try {
+                        unmodifiedValue = Environment.GetEnvironmentVariable(environmentVariablesElement.Name, EnvironmentVariableTarget.User);
+
+                        if (unmodifiedValue == null) {
+                            unmodifiedValue = Environment.GetEnvironmentVariable(environmentVariablesElement.Name, EnvironmentVariableTarget.Machine);
+                        }
+                    } catch (ArgumentException) {
+                        throw new EnvironmentVariablesFailedException("Failed to get the " + environmentVariablesElement.Name + " Environment Variable for user or machine.");
+                    } catch (SecurityException) {
+                        throw new TaskRequiresElevationException("Getting the " + environmentVariablesElement.Name + " Environment Variable for user or machine requires elevation.");
+                    }
+
+                    try {
+                        Environment.SetEnvironmentVariable(environmentVariablesElement.Name, unmodifiedValue, EnvironmentVariableTarget.Process);
+                    } catch (ArgumentException) {
+                        throw new EnvironmentVariablesFailedException("Failed to set the " + environmentVariablesElement.Name + " Environment Variable.");
+                    } catch (SecurityException) {
+                        throw new TaskRequiresElevationException("Setting the " + environmentVariablesElement.Name + " Environment Variable requires elevation.");
+                    }
+
                     modifiedValue = GetModifiedValue(environmentVariablesElement);
 
                     try {

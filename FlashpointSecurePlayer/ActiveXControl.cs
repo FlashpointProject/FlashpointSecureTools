@@ -64,8 +64,10 @@ namespace FlashpointSecurePlayer {
         }
 
         private void RegisterServer(DllRegisterServerDelegate DllRegisterServer) {
-            if (DllRegisterServer() != 0) {
-                throw new Win32Exception("Failed to register the DLL Server.");
+            uint errorCode = DllRegisterServer();
+
+            if (errorCode != 0) {
+                throw new Win32Exception("Failed to register the DLL Server (" + errorCode + ").");
             }
         }
 

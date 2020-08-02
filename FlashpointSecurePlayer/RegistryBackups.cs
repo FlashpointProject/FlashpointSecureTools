@@ -946,12 +946,12 @@ namespace FlashpointSecurePlayer {
                         }
                         break;
                     }
-
-                    // we do this and save in the loop so we can safely deactivate if needed partway through the process
+                    
                     activeModificationsElement.RegistryBackups.Set(activeRegistryBackupElement);
-                    SetFlashpointSecurePlayerSection(TemplateName);
                     ProgressManager.CurrentGoal.Steps++;
                 }
+
+                SetFlashpointSecurePlayerSection(TemplateName);
 
                 for (int i = 0;i < modificationsElement.RegistryBackups.Count;i++) {
                     // the "active" one is the one that doesn't have a name (it has the "active" attribute)
