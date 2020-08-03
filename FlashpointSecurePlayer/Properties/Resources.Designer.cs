@@ -271,6 +271,15 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to With Old CPU Simulator, the game may load slowly. Please wait for the game to load..
+        /// </summary>
+        internal static string OldCPUSimulatorSlow {
+            get {
+                return ResourceManager.GetString("OldCPUSimulatorSlow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Open the Flashpoint Launcher by opening the Start Flashpoint shortcut in the Flashpoint folder..
         /// </summary>
         internal static string OpenFlashpointLauncher {

@@ -13,11 +13,47 @@ using static FlashpointSecurePlayer.Shared;
 using static FlashpointSecurePlayer.Shared.Exceptions;
 
 using SHDocVw;
+using System.Security.Permissions;
 
 namespace FlashpointSecurePlayer {
-    public partial class Server : Form {
+    public partial class WebBrowser : Form {
+        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+        private class MessageFilter : IMessageFilter {
+            private const int MK_XBUTTON1 = 0x00010000;
+            private const int MK_XBUTTON2 = 0x00020000;
+            private const int MK_XBUTTONUP = 0x0000020C;
+
+            private readonly Form form;
+            private readonly EventHandler onBack;
+            private readonly EventHandler onForward;
+
+            public MessageFilter(Form form, EventHandler onBack, EventHandler onForward) {
+                this.form = form;
+                this.onBack = onBack;
+                this.onForward = onForward;
+            }
+
+            [SecurityPermission(SecurityAction.Demand)]
+            public bool PreFilterMessage(ref Message m) {
+                // Blocks all the messages relating to the left mouse button.
+                if (m.Msg == MK_XBUTTONUP) {
+                    int wParam = m.WParam.ToInt32();
+
+                    if ((wParam & MK_XBUTTON1) == MK_XBUTTON1) {
+                        this.onBack.Invoke(form, EventArgs.Empty);
+                        return true;
+                    } else if ((wParam & MK_XBUTTON2) == MK_XBUTTON2) {
+                        this.onForward.Invoke(form, EventArgs.Empty);
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+
         private CustomSecurityManager customSecurityManager;
         private Uri webBrowserURL = null;
+        private MessageFilter messageFilter = null;
 
         public object PPDisp {
             get {
@@ -25,16 +61,18 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        public Server() {
+        public WebBrowser() {
             InitializeComponent();
+            this.messageFilter = new MessageFilter(this, new EventHandler(OnBack), new EventHandler(OnForward));
         }
 
-        public Server(Uri WebBrowserURL) {
+        public WebBrowser(Uri WebBrowserURL) {
             InitializeComponent();
+            this.messageFilter = new MessageFilter(this, new EventHandler(OnBack), new EventHandler(OnForward));
             this.webBrowserURL = WebBrowserURL;
         }
 
-        private void Server_Load(object sender, EventArgs e) {
+        private void WebBrowser_Load(object sender, EventArgs e) {
             // default value is Redirector port
             /*
             short port = 8888;
@@ -87,13 +125,13 @@ namespace FlashpointSecurePlayer {
             Activate();
         }
 
-        private void Server_Shown(object sender, EventArgs e) {
+        private void WebBrowser_Shown(object sender, EventArgs e) {
             if (webBrowserURL != null) {
                 closableWebBrowser1.Url = webBrowserURL;
             }
         }
         
-        private void Server_FormClosing(object sender, FormClosingEventArgs e) {
+        private void WebBrowser_FormClosing(object sender, FormClosingEventArgs e) {
             //Application.Exit();
             SHDocVw.WebBrowser shDocVwWebBrowser = closableWebBrowser1.ActiveXInstance as SHDocVw.WebBrowser;
 
@@ -110,10 +148,18 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        private void WebBrowser_Activated(object sender, EventArgs e) {
+            Application.AddMessageFilter(messageFilter);
+        }
+
+        private void WebBrowser_Deactivate(object sender, EventArgs e) {
+            Application.RemoveMessageFilter(messageFilter);
+        }
+
         private void dWebBrowserEvents2_NewWindow2(ref object ppDisp, ref bool Cancel) {
-            Server serverForm = new Server();
-            serverForm.Show(this);
-            ppDisp = serverForm.PPDisp;
+            WebBrowser webBrowserForm = new WebBrowser();
+            webBrowserForm.Show(this);
+            ppDisp = webBrowserForm.PPDisp;
             Cancel = false;
         }
 
@@ -144,6 +190,18 @@ namespace FlashpointSecurePlayer {
             } else {
                 FormBorderStyle = FormBorderStyle.FixedSingle;
                 MaximizeBox = false;
+            }
+        }
+
+        private void OnBack(object sender, EventArgs e) {
+            if (closableWebBrowser1.CanGoBack) {
+                closableWebBrowser1.GoBack();
+            }
+        }
+
+        private void OnForward(object sender, EventArgs e) {
+            if (closableWebBrowser1.CanGoForward) {
+                closableWebBrowser1.GoForward();
             }
         }
     }

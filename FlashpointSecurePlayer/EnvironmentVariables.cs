@@ -33,7 +33,7 @@ namespace FlashpointSecurePlayer {
             return comparableName;
         }
 
-        private string GetModifiedValue(EnvironmentVariablesElement environmentVariablesElement) {
+        private string GetValue(EnvironmentVariablesElement environmentVariablesElement) {
             if (String.IsNullOrEmpty(environmentVariablesElement.Find)) {
                 return environmentVariablesElement.Value;
             }
@@ -44,10 +44,10 @@ namespace FlashpointSecurePlayer {
                 throw new EnvironmentVariablesFailedException("Find and replace with the " + __COMPAT_LAYER + " Environment Variable is not supported.");
             }
 
-            string modifiedValue = null;
+            string value = null;
 
             try {
-                modifiedValue = Environment.GetEnvironmentVariable(environmentVariablesElement.Name, EnvironmentVariableTarget.Process);
+                value = Environment.GetEnvironmentVariable(environmentVariablesElement.Name, EnvironmentVariableTarget.Process);
             } catch (ArgumentException) {
                 throw new EnvironmentVariablesFailedException("Failed to get the " + environmentVariablesElement.Name + " Environment Variable.");
             } catch (SecurityException) {
@@ -63,24 +63,26 @@ namespace FlashpointSecurePlayer {
             }
 
             try {
-                modifiedValue = regex.Replace(modifiedValue, environmentVariablesElement.Replace);
+                value = regex.Replace(value, environmentVariablesElement.Replace);
             } catch (ArgumentNullException) {
                 // value was not defined
                 // Fail silently.
             } catch (RegexMatchTimeoutException) {
                 throw new EnvironmentVariablesFailedException("The Regex Match timed out.");
             }
-            return modifiedValue;
+            return value;
         }
 
-        public void Activate(string templateName) {
+        new public void Activate(string templateName) {
             base.Activate(templateName);
 
-            if (String.IsNullOrEmpty(templateName)) {
+            // validation
+            if (String.IsNullOrEmpty(TemplateName)) {
                 // no argument
                 return;
             }
 
+            // initialize templates
             TemplateElement templateElement = GetTemplateElement(false, TemplateName);
 
             if (templateElement == null) {
@@ -94,13 +96,17 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
+            TemplateElement activeTemplateElement = GetActiveTemplateElement(true, TemplateName);
+            ModificationsElement activeModificationsElement = activeTemplateElement.Modifications;
+
+            // initialize variables
             string comparableName = null;
-            string modifiedValue = null;
-            List<string> modifiedValues = null;
+            string value = null;
+            List<string> values = null;
             string compatibilityLayerValue = null;
             List<string> compatibilityLayerValues = new List<string>();
-            string unmodifiedValue = null;
 
+            // compatibility settings
             try {
                 // we need to find the compatibility layers so we can check later if the ones we want are already set
                 compatibilityLayerValue = Environment.GetEnvironmentVariable(__COMPAT_LAYER, EnvironmentVariableTarget.Process);
@@ -110,61 +116,59 @@ namespace FlashpointSecurePlayer {
                 throw new TaskRequiresElevationException("Getting the " + __COMPAT_LAYER + " Environment Variable requires elevation.");
             }
 
-            ProgressManager.CurrentGoal.Start(modificationsElement.EnvironmentVariables.Count);
+            ProgressManager.CurrentGoal.Start(modificationsElement.EnvironmentVariables.Count * 2);
 
             try {
+                EnvironmentVariablesElement activeEnvironmentVariablesElement = null;
                 EnvironmentVariablesElement environmentVariablesElement = null;
 
+                // set active configuration
                 for (int i = 0;i < modificationsElement.EnvironmentVariables.Count;i++) {
                     environmentVariablesElement = modificationsElement.EnvironmentVariables.Get(i) as EnvironmentVariablesElement;
 
                     if (environmentVariablesElement == null) {
                         throw new System.Configuration.ConfigurationErrorsException("The Environment Variables Element (" + i + ") is null.");
                     }
-                    
+
                     comparableName = GetComparableName(environmentVariablesElement.Name);
 
                     if (UnmodifiableComparableNames.Contains(comparableName)) {
                         throw new EnvironmentVariablesFailedException("The " + environmentVariablesElement.Name + " Environment Variable cannot be modified at this time.");
                     }
 
-                    unmodifiedValue = null;
-
                     try {
-                        unmodifiedValue = Environment.GetEnvironmentVariable(environmentVariablesElement.Name, EnvironmentVariableTarget.User);
-
-                        if (unmodifiedValue == null) {
-                            unmodifiedValue = Environment.GetEnvironmentVariable(environmentVariablesElement.Name, EnvironmentVariableTarget.Machine);
-                        }
+                        activeEnvironmentVariablesElement = new EnvironmentVariablesElement {
+                            Name = environmentVariablesElement.Name,
+                            Find = environmentVariablesElement.Find,
+                            Value = Environment.GetEnvironmentVariable(environmentVariablesElement.Name, EnvironmentVariableTarget.Process)
+                        };
                     } catch (ArgumentException) {
-                        throw new EnvironmentVariablesFailedException("Failed to get the " + environmentVariablesElement.Name + " Environment Variable for user or machine.");
+                        throw new EnvironmentVariablesFailedException("Failed to get the " + environmentVariablesElement.Name + " Environment Variable.");
                     } catch (SecurityException) {
-                        throw new TaskRequiresElevationException("Getting the " + environmentVariablesElement.Name + " Environment Variable for user or machine requires elevation.");
+                        throw new TaskRequiresElevationException("Getting the " + environmentVariablesElement.Name + " Environment Variable requires elevation.");
                     }
 
-                    try {
-                        Environment.SetEnvironmentVariable(environmentVariablesElement.Name, unmodifiedValue, EnvironmentVariableTarget.Process);
-                    } catch (ArgumentException) {
-                        throw new EnvironmentVariablesFailedException("Failed to set the " + environmentVariablesElement.Name + " Environment Variable.");
-                    } catch (SecurityException) {
-                        throw new TaskRequiresElevationException("Setting the " + environmentVariablesElement.Name + " Environment Variable requires elevation.");
-                    }
+                    activeModificationsElement.EnvironmentVariables.Set(activeEnvironmentVariablesElement);
+                    ProgressManager.CurrentGoal.Steps++;
+                }
 
-                    modifiedValue = GetModifiedValue(environmentVariablesElement);
+                SetFlashpointSecurePlayerSection(TemplateName);
+
+                // set environment variables
+                for (int i = 0;i < modificationsElement.EnvironmentVariables.Count;i++) {
+                    value = GetValue(environmentVariablesElement);
 
                     try {
-                        Environment.SetEnvironmentVariable(environmentVariablesElement.Name, Environment.ExpandEnvironmentVariables(modifiedValue), EnvironmentVariableTarget.Process);
+                        Environment.SetEnvironmentVariable(environmentVariablesElement.Name, Environment.ExpandEnvironmentVariables(value), EnvironmentVariableTarget.Process);
                     } catch (ArgumentException) {
                         throw new EnvironmentVariablesFailedException("Failed to set the " + environmentVariablesElement.Name + " Environment Variable.");
                     } catch (SecurityException) {
                         throw new TaskRequiresElevationException("Setting the " + environmentVariablesElement.Name + " Environment Variable requires elevation.");
                     }
 
-                    // if this is the compatibility layer variable
-                    // and the value is not what we want to set it to
-                    // and we're in server mode...
+                    // now throw up a restart in Web Browser Mode for Compatibility Settings
                     if (comparableName == __COMPAT_LAYER && modeElement.Name == ModeElement.NAME.WEB_BROWSER) {
-                        modifiedValues = new List<string>();
+                        values = new List<string>();
 
                         // the compatibility layers may contain more values
                         // but we're only concerned if it contains the values we want
@@ -172,15 +176,15 @@ namespace FlashpointSecurePlayer {
                             compatibilityLayerValues = compatibilityLayerValue.ToUpperInvariant().Split(' ').ToList();
                         }
 
-                        if (modifiedValue != null) {
-                            modifiedValues = modifiedValue.ToUpperInvariant().Split(' ').ToList();
+                        if (value != null) {
+                            values = value.ToUpperInvariant().Split(' ').ToList();
                         }
 
                         // we have to restart in this case in server mode
                         // because the compatibility layers only take effect
                         // on process start
-                        if (modifiedValues.Except(compatibilityLayerValues).Any()) {
-                            throw new CompatibilityLayersException("The Compatibility Layers (" + modifiedValue + ") cannot be set.");
+                        if (values.Except(compatibilityLayerValues).Any()) {
+                            throw new CompatibilityLayersException("The Compatibility Layers (" + value + ") cannot be set.");
                         }
                     }
 
@@ -191,35 +195,56 @@ namespace FlashpointSecurePlayer {
             }
         }
         
-        public void Deactivate() {
+        new public void Deactivate() {
             // do the reverse of activation because we can
             base.Deactivate();
+            TemplateElement activeTemplateElement = GetActiveTemplateElement(false);
 
-            if (String.IsNullOrEmpty(TemplateName)) {
+            // if the activation backup doesn't exist, we don't need to do stuff
+            if (activeTemplateElement == null) {
                 return;
             }
 
-            // don't need to get active name, we're only deactivating for this process
-            TemplateElement templateElement = GetTemplateElement(false, TemplateName);
+            ModificationsElement activeModificationsElement = activeTemplateElement.Modifications;
 
-            if (templateElement == null) {
+            // if the activation backup exists, but no key is marked as active...
+            // we assume the registry has changed, and don't revert the changes, to be safe
+            // (it should never happen unless the user tampered with the config file)
+            string templateElementName = activeTemplateElement.Active;
+
+            // don't allow infinite recursion!
+            if (String.IsNullOrEmpty(templateElementName)) {
+                activeModificationsElement.RegistryBackups.Clear();
+                SetFlashpointSecurePlayerSection(TemplateName);
                 return;
             }
 
+            TemplateElement templateElement = GetTemplateElement(false, templateElementName);
             ModeElement modeElement = templateElement.Mode;
-            ModificationsElement modificationsElement = templateElement.Modifications;
+            ModificationsElement modificationsElement = null;
 
-            if (!modificationsElement.ElementInformation.IsPresent) {
+            // if the active element pointed to doesn't exist... same assumption
+            // and another safeguard against recursion
+            if (templateElement != null && templateElement != activeTemplateElement) {
+                if (templateElement.Modifications.ElementInformation.IsPresent) {
+                    modificationsElement = templateElement.Modifications;
+                }
+            }
+
+            if (modificationsElement == null) {
+                activeModificationsElement.EnvironmentVariables.Clear();
+                SetFlashpointSecurePlayerSection(TemplateName);
                 return;
             }
 
+            // initialize variables
             string comparableName = null;
-            string modifiedValue = null;
-            List<string> modifiedValues = null;
+            string value = null;
+            List<string> values = null;
             string compatibilityLayerValue = null;
             List<string> compatibilityLayerValues = new List<string>();
-            string unmodifiedValue = null;
 
+            // compatibility settings
             try {
                 compatibilityLayerValue = Environment.GetEnvironmentVariable(__COMPAT_LAYER, EnvironmentVariableTarget.Process);
             } catch (ArgumentException) {
@@ -238,56 +263,43 @@ namespace FlashpointSecurePlayer {
 
             try {
                 EnvironmentVariablesElement environmentVariablesElement = null;
+                EnvironmentVariablesElement activeEnvironmentVariablesElement = null;
 
-                for (int i = 0;i < modificationsElement.EnvironmentVariables.Count;i++) {
+                for (int i = 0;i < activeModificationsElement.EnvironmentVariables.Count;i++) {
                     environmentVariablesElement = modificationsElement.EnvironmentVariables.Get(i) as EnvironmentVariablesElement;
+                    activeEnvironmentVariablesElement = activeModificationsElement.EnvironmentVariables.Get(i) as EnvironmentVariablesElement;
 
-                    if (environmentVariablesElement == null) {
-                        throw new System.Configuration.ConfigurationErrorsException("The Environment Variables Element (" + i + ") is null.");
-                    }
+                    if (activeEnvironmentVariablesElement != null) {
+                        comparableName = GetComparableName(activeEnvironmentVariablesElement.Name);
 
-                    comparableName = GetComparableName(environmentVariablesElement.Name);
+                        if (UnmodifiableComparableNames.Contains(comparableName)) {
+                            throw new EnvironmentVariablesFailedException("The " + activeEnvironmentVariablesElement.Name + " Environment Variable cannot be modified at this time.");
+                        }
 
-                    if (UnmodifiableComparableNames.Contains(comparableName)) {
-                        throw new EnvironmentVariablesFailedException("The " + environmentVariablesElement.Name + " Environment Variable cannot be modified at this time.");
-                    }
+                        value = environmentVariablesElement.Value;
+                        values = new List<string>();
 
-                    modifiedValue = environmentVariablesElement.Value;
-                    modifiedValues = new List<string>();
+                        if (value != null) {
+                            values = value.ToUpperInvariant().Split(' ').ToList();
+                        }
 
-                    if (modifiedValue != null) {
-                        modifiedValues = modifiedValue.ToUpperInvariant().Split(' ').ToList();
-                    }
-
-                    // if this isn't the compatibility layer variable
-                    // or the value isn't what we want to set it to
-                    // or we're not in server mode...
-                    if (comparableName != __COMPAT_LAYER || modifiedValues.Except(compatibilityLayerValues).Any() || modeElement.Name != ModeElement.NAME.WEB_BROWSER) {
-                        unmodifiedValue = null;
-
-                        try {
-                            unmodifiedValue = Environment.GetEnvironmentVariable(environmentVariablesElement.Name, EnvironmentVariableTarget.User);
-
-                            if (unmodifiedValue == null) {
-                                unmodifiedValue = Environment.GetEnvironmentVariable(environmentVariablesElement.Name, EnvironmentVariableTarget.Machine);
+                        // don't reset Compatibility Settings if we're restarting for Web Browser Mode
+                        if (comparableName != __COMPAT_LAYER || values.Except(compatibilityLayerValues).Any() || modeElement.Name != ModeElement.NAME.WEB_BROWSER) {
+                            try {
+                                Environment.SetEnvironmentVariable(activeEnvironmentVariablesElement.Name, activeEnvironmentVariablesElement.Value, EnvironmentVariableTarget.Process);
+                            } catch (ArgumentException) {
+                                throw new EnvironmentVariablesFailedException("Failed to set the " + environmentVariablesElement.Name + " Environment Variable.");
+                            } catch (SecurityException) {
+                                throw new TaskRequiresElevationException("Setting the " + environmentVariablesElement.Name + " Environment Variable requires elevation.");
                             }
-                        } catch (ArgumentException) {
-                            throw new EnvironmentVariablesFailedException("Failed to get the " + environmentVariablesElement.Name + " Environment Variable for user or machine.");
-                        } catch (SecurityException) {
-                            throw new TaskRequiresElevationException("Getting the " + environmentVariablesElement.Name + " Environment Variable for user or machine requires elevation.");
                         }
 
-                        try {
-                            Environment.SetEnvironmentVariable(environmentVariablesElement.Name, unmodifiedValue, EnvironmentVariableTarget.Process);
-                        } catch (ArgumentException) {
-                            throw new EnvironmentVariablesFailedException("Failed to set the " + environmentVariablesElement.Name + " Environment Variable.");
-                        } catch (SecurityException) {
-                            throw new TaskRequiresElevationException("Setting the " + environmentVariablesElement.Name + " Environment Variable requires elevation.");
-                        }
+                        ProgressManager.CurrentGoal.Steps++;
                     }
-
-                    ProgressManager.CurrentGoal.Steps++;
                 }
+
+                activeModificationsElement.EnvironmentVariables.Clear();
+                SetFlashpointSecurePlayerSection(TemplateName);
             } finally {
                 ProgressManager.CurrentGoal.Stop();
             }

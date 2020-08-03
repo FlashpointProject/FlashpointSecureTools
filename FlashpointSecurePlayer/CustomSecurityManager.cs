@@ -18,7 +18,7 @@ namespace FlashpointSecurePlayer {
         private const string FLASH_EXTENSION = ".SWF";
 
         // https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/platform-apis/ms537182(v=vs.85)?redirectedfrom=MSDN
-        public CustomSecurityManager(WebBrowser _WebBrowser) {
+        public CustomSecurityManager(System.Windows.Forms.WebBrowser _WebBrowser) {
             InternetInterfaces.IServiceProvider webBrowserServiceProviderInterface = _WebBrowser.ActiveXInstance as InternetInterfaces.IServiceProvider;
             IntPtr profferServiceInterfacePointer = IntPtr.Zero;
 

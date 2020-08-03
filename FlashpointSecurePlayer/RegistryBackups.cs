@@ -27,7 +27,6 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Templat
 namespace FlashpointSecurePlayer {
     public class RegistryBackups : Modifications {
         // https://social.msdn.microsoft.com/Forums/vstudio/en-US/0f3557ee-16bd-4a36-a4f3-00efbeae9b0d/app-config-multiple-sections-in-sectiongroup-with-same-name?forum=csharpgeneral
-
         private class WOW64Key {
             public enum EFFECT {
                 SHARED,
@@ -809,6 +808,22 @@ namespace FlashpointSecurePlayer {
                 }
 
                 this.kernelSession.Stop();
+                this.kernelSession.Source.Kernel.RegistryQueryValue -= GotValue;
+
+                this.kernelSession.Source.Kernel.RegistryCreate -= ModificationAdded;
+                this.kernelSession.Source.Kernel.RegistrySetValue -= ModificationAdded;
+                this.kernelSession.Source.Kernel.RegistrySetInformation -= ModificationAdded;
+
+                this.kernelSession.Source.Kernel.RegistryDelete -= ModificationRemoved;
+                this.kernelSession.Source.Kernel.RegistryDeleteValue -= ModificationRemoved;
+
+                //this.KernelSession.Source.Kernel.RegistryFlush -= RegistryModified;
+                
+                this.kernelSession.Source.Kernel.RegistryKCBCreate -= KCBStarted;
+                this.kernelSession.Source.Kernel.RegistryKCBRundownBegin -= KCBStarted;
+
+                this.kernelSession.Source.Kernel.RegistryKCBDelete -= KCBStopped;
+                this.kernelSession.Source.Kernel.RegistryKCBRundownEnd -= KCBStopped;
                 SetFlashpointSecurePlayerSection(TemplateName);
             } finally {
                 this.kernelSession.Dispose();
@@ -829,7 +844,7 @@ namespace FlashpointSecurePlayer {
         new public void Activate(string templateName) {
             base.Activate(templateName);
 
-            if (String.IsNullOrEmpty(templateName)) {
+            if (String.IsNullOrEmpty(TemplateName)) {
                 // no argument
                 return;
             }

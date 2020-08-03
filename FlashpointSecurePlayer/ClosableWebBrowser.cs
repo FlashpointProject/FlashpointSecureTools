@@ -12,8 +12,8 @@ using static FlashpointSecurePlayer.Shared;
 using static FlashpointSecurePlayer.Shared.Exceptions;
 
 namespace FlashpointSecurePlayer {
-    public partial class ClosableWebBrowser : WebBrowser {
-        protected readonly Form form = null;
+    public partial class ClosableWebBrowser : System.Windows.Forms.WebBrowser {
+        protected readonly Form form;
 
         public ClosableWebBrowser(Form form) {
             this.form = form;

@@ -189,6 +189,9 @@ If you choose No, the application will exit.</value>
   <data name="OldCPUSimulatorFailed" xml:space="preserve">
     <value>The Old CPU Simulator failed. The Target Rate may be invalid.</value>
   </data>
+  <data name="OldCPUSimulatorSlow" xml:space="preserve">
+    <value>With Old CPU Simulator, the game may load slowly. Please wait for the game to load.</value>
+  </data>
   <data name="OpenFlashpointLauncher" xml:space="preserve">
     <value>Open the Flashpoint Launcher by opening the Start Flashpoint shortcut in the Flashpoint folder.</value>
   </data>

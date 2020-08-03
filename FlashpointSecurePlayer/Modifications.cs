@@ -12,7 +12,7 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 namespace FlashpointSecurePlayer {
     // virtual class for modifications
     public abstract class Modifications {
-        protected readonly Form form = null;
+        protected readonly Form form;
         private readonly object importPausedLock = new object();
         private bool importPaused = true;
 

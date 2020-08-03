@@ -46,7 +46,7 @@ namespace FlashpointSecurePlayer {
 
             base.Activate(templateName);
 
-            if (String.IsNullOrEmpty(templateName)) {
+            if (String.IsNullOrEmpty(TemplateName)) {
                 // no argument
                 return;
             }

@@ -43,10 +43,10 @@ C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\Fla
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\Interop.SHDocVw.dll
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.csproj.ResolveComReference.cache
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.FlashpointSecurePlayer.resources
-C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.Server.resources
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.Properties.Resources.resources
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.csproj.GenerateResource.cache
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.csproj.CoreCompileInputs.cache
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.csproj.CopyComplete
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.exe
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.pdb
+C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.WebBrowser.resources
