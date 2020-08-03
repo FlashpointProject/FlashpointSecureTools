@@ -35,7 +35,7 @@ namespace FlashpointSecurePlayer {
         private readonly OldCPUSimulator oldCPUSimulator;
 
         private bool activeX = false;
-        Server serverForm = null;
+        WebBrowser webBrowserForm = null;
         private ProcessStartInfo softwareProcessStartInfo = null;
         private bool softwareIsOldCPUSimulator = false;
 
@@ -112,9 +112,15 @@ namespace FlashpointSecurePlayer {
             Application.Exit();
         }
 
-        private void AskLaunch(string applicationRestartMessage) {
+        private void AskLaunch(string applicationRestartMessage, string descriptionMessage = null) {
             ProgressManager.ShowOutput();
-            DialogResult dialogResult = MessageBox.Show(String.Format(Properties.Resources.LaunchGame, applicationRestartMessage), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.YesNo, MessageBoxIcon.None);
+            string message = String.Format(Properties.Resources.LaunchGame, applicationRestartMessage);
+
+            if (!String.IsNullOrEmpty(descriptionMessage)) {
+                message += "\n\n" + descriptionMessage;
+            }
+
+            DialogResult dialogResult = MessageBox.Show(message, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.YesNo, MessageBoxIcon.None);
 
             if (dialogResult == DialogResult.No) {
                 Application.Exit();
@@ -199,7 +205,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            AskLaunch(Properties.Resources.WithOldCPUSimulator);
+            AskLaunch(Properties.Resources.WithOldCPUSimulator, Properties.Resources.OldCPUSimulatorSlow);
             string fullPath = null;
 
             // Old CPU Simulator needs to be on top, not us
@@ -405,13 +411,13 @@ namespace FlashpointSecurePlayer {
                             throw new InvalidModeException("The address (" + URL + ") was not understood by the Mode.");
                         }
 
-                        serverForm = new Server(webBrowserURL) {
+                        webBrowserForm = new WebBrowser(webBrowserURL) {
                             WindowState = FormWindowState.Maximized
                         };
 
-                        serverForm.FormClosing += serverForm_FormClosing;
+                        webBrowserForm.FormClosing += webBrowserForm_FormClosing;
                         Hide();
-                        serverForm.Show();
+                        webBrowserForm.Show();
                         return;
                         case ModeElement.NAME.SOFTWARE:
                         try {
@@ -549,10 +555,10 @@ namespace FlashpointSecurePlayer {
                 }
 
                 try {
-                    if (serverForm != null) {
-                        serverForm.FormClosing -= serverForm_FormClosing;
-                        serverForm.Close();
-                        serverForm = null;
+                    if (webBrowserForm != null) {
+                        webBrowserForm.FormClosing -= webBrowserForm_FormClosing;
+                        webBrowserForm.Close();
+                        webBrowserForm = null;
                     }
                 } finally {
                     modeMutex.ReleaseMutex();
@@ -593,7 +599,7 @@ namespace FlashpointSecurePlayer {
 
                         if (activeTemplateElement != null) {
                             if (!String.IsNullOrEmpty(activeTemplateElement.Active)) {
-                                throw new InvalidModificationException("The Modifications Element (" + activeTemplateElement.Active + ") is active.");
+                                throw new InvalidModificationException("The Template Element (" + activeTemplateElement.Active + ") is active.");
                             }
                         }
 
@@ -1344,11 +1350,11 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private void serverForm_FormClosing(object sender, FormClosingEventArgs e) {
+        private void webBrowserForm_FormClosing(object sender, FormClosingEventArgs e) {
             // stop form closing recursion
-            if (serverForm != null) {
-                serverForm.FormClosing -= serverForm_FormClosing;
-                serverForm = null;
+            if (webBrowserForm != null) {
+                webBrowserForm.FormClosing -= webBrowserForm_FormClosing;
+                webBrowserForm = null;
             }
 
             Application.Exit();
