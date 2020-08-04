@@ -38,6 +38,7 @@
             this.closableWebBrowser1.Size = new System.Drawing.Size(640, 480);
             this.closableWebBrowser1.TabIndex = 0;
             this.closableWebBrowser1.Url = new System.Uri("about:blank", System.UriKind.Absolute);
+            this.closableWebBrowser1.ProgressChanged += new System.Windows.Forms.WebBrowserProgressChangedEventHandler(this.closableWebBrowser1_ProgressChanged);
             // 
             // WebBrowser
             // 

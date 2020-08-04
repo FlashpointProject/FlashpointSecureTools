@@ -890,7 +890,7 @@ namespace FlashpointSecurePlayer {
                 registryView = RegistryView.Registry64;
             }
 
-            ProgressManager.CurrentGoal.Start(modificationsElement.RegistryBackups.Count * 2);
+            ProgressManager.CurrentGoal.Start(modificationsElement.RegistryBackups.Count + modificationsElement.RegistryBackups.Count);
 
             try {
                 // populate active modifications
@@ -1028,7 +1028,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        new public void Deactivate() {
+        public void Deactivate(uint time = 0) {
             base.Deactivate();
             TemplateElement activeTemplateElement = GetActiveTemplateElement(false);
 
@@ -1085,7 +1085,7 @@ namespace FlashpointSecurePlayer {
                 registryView = RegistryView.Registry64;
             }
 
-            ProgressManager.CurrentGoal.Start(activeModificationsElement.RegistryBackups.Count * 2);
+            ProgressManager.CurrentGoal.Start(activeModificationsElement.RegistryBackups.Count + activeModificationsElement.RegistryBackups.Count, time);
 
             try {
                 // check if any key has been modified from the modification element

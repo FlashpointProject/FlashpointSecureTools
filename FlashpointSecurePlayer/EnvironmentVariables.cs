@@ -116,7 +116,7 @@ namespace FlashpointSecurePlayer {
                 throw new TaskRequiresElevationException("Getting the " + __COMPAT_LAYER + " Environment Variable requires elevation.");
             }
 
-            ProgressManager.CurrentGoal.Start(modificationsElement.EnvironmentVariables.Count * 2);
+            ProgressManager.CurrentGoal.Start(modificationsElement.EnvironmentVariables.Count + modificationsElement.EnvironmentVariables.Count);
 
             try {
                 EnvironmentVariablesElement activeEnvironmentVariablesElement = null;
@@ -195,7 +195,7 @@ namespace FlashpointSecurePlayer {
             }
         }
         
-        new public void Deactivate() {
+        public void Deactivate(uint time = 0) {
             // do the reverse of activation because we can
             base.Deactivate();
             TemplateElement activeTemplateElement = GetActiveTemplateElement(false);
@@ -259,7 +259,7 @@ namespace FlashpointSecurePlayer {
                 compatibilityLayerValues = compatibilityLayerValue.ToUpperInvariant().Split(' ').ToList();
             }
 
-            ProgressManager.CurrentGoal.Start(modificationsElement.EnvironmentVariables.Count);
+            ProgressManager.CurrentGoal.Start(modificationsElement.EnvironmentVariables.Count, time);
 
             try {
                 EnvironmentVariablesElement environmentVariablesElement = null;
