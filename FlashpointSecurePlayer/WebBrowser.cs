@@ -51,7 +51,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private CustomSecurityManager customSecurityManager;
+        private CustomSecurityManager customSecurityManager = null;
         private Uri webBrowserURL = null;
         private MessageFilter messageFilter = null;
 
@@ -63,11 +63,13 @@ namespace FlashpointSecurePlayer {
 
         public WebBrowser() {
             InitializeComponent();
+            closableWebBrowser1.DocumentTitleChanged += closableWebBrowser1_DocumentTitleChanged;
             this.messageFilter = new MessageFilter(this, new EventHandler(OnBack), new EventHandler(OnForward));
         }
 
         public WebBrowser(Uri WebBrowserURL) {
             InitializeComponent();
+            closableWebBrowser1.DocumentTitleChanged += closableWebBrowser1_DocumentTitleChanged;
             this.messageFilter = new MessageFilter(this, new EventHandler(OnBack), new EventHandler(OnForward));
             this.webBrowserURL = WebBrowserURL;
         }
@@ -154,6 +156,30 @@ namespace FlashpointSecurePlayer {
 
         private void WebBrowser_Deactivate(object sender, EventArgs e) {
             Application.RemoveMessageFilter(messageFilter);
+        }
+        
+
+        private void closableWebBrowser1_ProgressChanged(object sender, WebBrowserProgressChangedEventArgs e) {
+            // get Progress HTML Style Element DOM Node
+            Control closableWebBrowser1Control = closableWebBrowser1 as Control;
+
+            if (e.CurrentProgress == -1) {
+                closableWebBrowser1Control.Enabled = true;
+                UseWaitCursor = false;
+                return;
+            }
+
+            UseWaitCursor = false;
+            closableWebBrowser1Control.Enabled = true;
+        }
+
+        private void closableWebBrowser1_DocumentTitleChanged(object sender, EventArgs e) {
+            if (String.IsNullOrEmpty(closableWebBrowser1.DocumentTitle)) {
+                Text = "Flashpoint Secure Player";
+                return;
+            }
+
+            Text = closableWebBrowser1.DocumentTitle + " - Flashpoint Secure Player";
         }
 
         private void dWebBrowserEvents2_NewWindow2(ref object ppDisp, ref bool Cancel) {

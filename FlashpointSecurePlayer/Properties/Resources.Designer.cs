@@ -134,6 +134,15 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The Environment Variables timed out..
+        /// </summary>
+        internal static string EnvironmentVariablesTimeout {
+            get {
+                return ResourceManager.GetString("EnvironmentVariablesTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to create a Custom Security Manager..
         /// </summary>
         internal static string FailedCreateCustomSecurityManager {
@@ -339,6 +348,15 @@ namespace FlashpointSecurePlayer.Properties {
         internal static string RegistryBackupNotInProgress {
             get {
                 return ResourceManager.GetString("RegistryBackupNotInProgress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Registry Backup timed out..
+        /// </summary>
+        internal static string RegistryBackupTimeout {
+            get {
+                return ResourceManager.GetString("RegistryBackupTimeout", resourceCulture);
             }
         }
         

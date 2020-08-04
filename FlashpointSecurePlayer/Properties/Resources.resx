@@ -142,6 +142,9 @@ Please ensure Flashpoint is not corrupted, was extracted correctly, and is not r
   <data name="EnvironmentVariablesFailed" xml:space="preserve">
     <value>The Environment Variables failed.</value>
   </data>
+  <data name="EnvironmentVariablesTimeout" xml:space="preserve">
+    <value>The Environment Variables timed out.</value>
+  </data>
   <data name="FailedCreateCustomSecurityManager" xml:space="preserve">
     <value>Failed to create a Custom Security Manager.</value>
   </data>
@@ -212,6 +215,9 @@ If you choose No, the application will exit.</value>
   </data>
   <data name="RegistryBackupNotInProgress" xml:space="preserve">
     <value>The Registry Backup cannot be stopped because no Registry Backup was in progress.</value>
+  </data>
+  <data name="RegistryBackupTimeout" xml:space="preserve">
+    <value>The Registry Backup timed out.</value>
   </data>
   <data name="RegistryBackupWasSuccessful" xml:space="preserve">
     <value>The Registry Backup was successful.</value>

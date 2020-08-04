@@ -818,7 +818,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private async Task DeactivateModificationsAsync(ErrorDelegate errorDelegate) {
+        private async Task DeactivateModificationsAsync(ErrorDelegate errorDelegate, uint time = 0) {
             bool createdNew = false;
 
             using (Mutex modificationsMutex = new Mutex(true, MODIFICATIONS_MUTEX_NAME, out createdNew)) {
@@ -848,7 +848,7 @@ namespace FlashpointSecurePlayer {
                         try {
                             // this one really needs to work
                             // we can't continue if it does not
-                            registryBackup.Deactivate();
+                            registryBackup.Deactivate(time);
                         } catch (RegistryBackupFailedException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.RegistryBackupFailed);
@@ -864,12 +864,15 @@ namespace FlashpointSecurePlayer {
                         } catch (InvalidOperationException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.ModificationsFailedImport);
+                        } catch (TimeoutException ex) {
+                            LogExceptionToLauncher(ex);
+                            errorDelegate(Properties.Resources.RegistryBackupTimeout);
                         }
 
                         ProgressManager.CurrentGoal.Steps++;
                         
                         try {
-                            environmentVariables.Deactivate();
+                            environmentVariables.Deactivate(time);
                         } catch (EnvironmentVariablesFailedException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.EnvironmentVariablesFailed);
@@ -882,6 +885,9 @@ namespace FlashpointSecurePlayer {
                         } catch (CompatibilityLayersException ex) {
                             LogExceptionToLauncher(ex);
                             AskLaunchWithCompatibilitySettings();
+                        } catch (TimeoutException ex) {
+                            LogExceptionToLauncher(ex);
+                            errorDelegate(Properties.Resources.EnvironmentVariablesTimeout);
                         }
 
                         ProgressManager.CurrentGoal.Steps++;
@@ -973,7 +979,7 @@ namespace FlashpointSecurePlayer {
                     // And God forbid I should fail, one touch of the button on my remote detonator...
                     // will be enough to end it all, obliterating Caldoria...
                     // and this foul infestation along with it!
-                }).ConfigureAwait(false);
+                }, 5000).ConfigureAwait(false);
             } catch (InvalidModificationException ex) {
                 LogExceptionToLauncher(ex);
                 // delegate handles error
@@ -1357,6 +1363,7 @@ namespace FlashpointSecurePlayer {
                 webBrowserForm = null;
             }
 
+            Show();
             Application.Exit();
         }
     }
