@@ -204,27 +204,27 @@ The Downloads Before Modification may be used to download files from the Flashpo
 </template>
 ```
 
-## <a name="registry-backups"></a>Registry Backups
+## <a name="registry-states"></a>Registry States
 Set Via:
- - Configuration File: `registryBackups` element
+ - Configuration File: `registryStates` element
 
-The Registry Backups Modification allows for specifying registry keys and values to be set temporarily and reverted when the player is exited. This allows for registry keys and values to only be set for the duration of time required. Environment variables may be used in values, which will be expanded.
+The Registry States Modification allows for specifying registry keys and values to be set temporarily and reverted when the player is exited. This allows for registry keys and values to only be set for the duration of time required. Environment variables may be used in values, which will be expanded.
 
 Here is a `template` element which temporarily changes the Unity directory.
 
 ```
 <template name="unitywebplayer5">
 	<modifications>
-		<registryBackups binaryType="SCS_32BIT_BINARY">
-			<registryBackup type="VALUE" keyName="HKEY_CURRENT_USER\SOFTWARE\UNITY\WEBPLAYER"
+		<registryStates binaryType="SCS_32BIT_BINARY">
+			<registryState type="VALUE" keyName="HKEY_CURRENT_USER\SOFTWARE\UNITY\WEBPLAYER"
 				valueName="DIRECTORY" value="%FP_STARTUP_PATH%\BrowserPlugins\UnityWebPlayer\Unity3d5.x"
 				valueKind="String" />
-		</registryBackups>
+		</registryStates>
 	</modifications>
 </template>
 ```
 
-The `type` attribute of the `registryBackup` element specifies whether the element represents a `KEY` or `VALUE`. If not specified, the default is `KEY`.
+The `type` attribute of the `registryState` element specifies whether the element represents a `KEY` or `VALUE`. If not specified, the default is `KEY`.
 
 The `keyName` and `valueName` attributes specify the location of the registry key and value.
 
@@ -238,21 +238,21 @@ Furthermore, the player may set an `_administrator` attribute, for internal use 
 
 **binaryType Attribute and WOW64 Keys**
 
-*You do not need to include the WOW6432Node or WOW64AANode subkeys when creating a Registry Backup.* If the `binaryType` attribute of the `registryBackups` element is not set to `SCS_64BIT_BINARY`, the 32-bit registry view is used, so the WOW6432Node and WOW64AANode subkeys will be used automatically where necessary.
+*You do not need to include the WOW6432Node or WOW64AANode subkeys when creating a Registry State.* If the `binaryType` attribute of the `registryStates` element is not set to `SCS_64BIT_BINARY`, the 32-bit registry view is used, so the WOW6432Node and WOW64AANode subkeys will be used automatically where necessary.
 
 **ActiveX Imports**
 
 *For curator use only.*
 
-The ActiveX Imports feature imports a Registry Backup from an ActiveX Control. After the Registry Backup is created, the ActiveX Control may be used in curations.
+The ActiveX Imports feature imports a Registry State from an ActiveX Control. After the Registry State is created, the ActiveX Control may be used in curations.
 
-As a curator using the ActiveX Imports, the ActiveX Control will be uninstalled on your machine if it was installed before. However, the benefit to this feature is that after the Registry Backup has been created, ActiveX Controls will only be uninstalled if they had not previously been installed on the user's machine.
+As a curator using the ActiveX Imports, the ActiveX Control will be uninstalled on your machine if it was installed before. However, the benefit to this feature is that after the Registry State has been created, ActiveX Controls will only be uninstalled if they had not previously been installed on the user's machine.
 
 To use ActiveX Imports, simply add `--activex` at the end of your command line for the game.
 
 `FlashpointSecurePlayer "ActiveX\AstroAvenger2Loader\AstroAvenger2Loader.ocx" "http://www.shockwave.com/content/astroavenger2/sis/index.html" --activex`
 
-Please note that you should NOT include `--activex` at the end of your command line in your final curation. The ActiveX Imports feature is only for curators to use to create a Registry Backup. Once the Registry Backup has been created using the command line above, which only needs to be done once, ever, per ActiveX Control, it will appear in the config folder with the same name, after which point it may be referenced in curations using Web Browser Mode as follows.
+Please note that you should NOT include `--activex` at the end of your command line in your final curation. The ActiveX Imports feature is only for curators to use to create a Registry State. Once the Registry State has been created using the command line above, which only needs to be done once, ever, per ActiveX Control, it will appear in the config folder with the same name, after which point it may be referenced in curations using Web Browser Mode as follows.
 
 `FlashpointSecurePlayer "ActiveX\AstroAvenger2Loader\AstroAvenger2Loader.ocx" "http://www.shockwave.com/content/astroavenger2/sis/index.html"`
 
@@ -269,7 +269,7 @@ There are four possible scenarios.
 3. Flashpoint Secure Player is exited using the close button.
 4. Flashpoint Secure Player crashes, is killed in Task Manager, or a shutdown or power outage occurs.
 
-In scenarios one and two, Flashpoint Secure Player reverts the active Registry Backups Modification because the software is no longer open. In scenario three, Flashpoint Secure Player reverts the active Registry Backups Modification and any software opened using Software Mode is killed. In scenario four, Flashpoint Secure Player will revert the active Registry Backups Modification whenever the application is next run, regardless of what Modes or Modifications are specified.
+In scenarios one and two, Flashpoint Secure Player reverts the active Registry States Modification because the software is no longer open. In scenario three, Flashpoint Secure Player reverts the active Registry States Modification and any software opened using Software Mode is killed. In scenario four, Flashpoint Secure Player will revert the active Registry States Modification whenever the application is next run, regardless of what Modes or Modifications are specified.
 
 If the Registry Backups Modification cannot be reverted, an error occurs and the application will exit, and not do anything else regardless of what Modes or Modifications are specified until the issue is resolved. If the registry has been modified by a different application outside of Flashpoint Secure Player, the player no longer assumes control of those registry keys and values, and the active Registry Backups Modification is silently discarded.
 
