@@ -109,9 +109,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            SHDocVw.WebBrowser shDocVwWebBrowser = closableWebBrowser1.ActiveXInstance as SHDocVw.WebBrowser;
-
-            if (shDocVwWebBrowser != null) {
+            if (closableWebBrowser1.ActiveXInstance is SHDocVw.WebBrowser shDocVwWebBrowser) {
                 // IE5
                 shDocVwWebBrowser.NewWindow2 += dWebBrowserEvents2_NewWindow2;
                 // IE6
@@ -135,9 +133,8 @@ namespace FlashpointSecurePlayer {
         
         private void WebBrowser_FormClosing(object sender, FormClosingEventArgs e) {
             //Application.Exit();
-            SHDocVw.WebBrowser shDocVwWebBrowser = closableWebBrowser1.ActiveXInstance as SHDocVw.WebBrowser;
 
-            if (shDocVwWebBrowser != null) {
+            if (closableWebBrowser1.ActiveXInstance is SHDocVw.WebBrowser shDocVwWebBrowser) {
                 // IE5
                 shDocVwWebBrowser.NewWindow2 -= dWebBrowserEvents2_NewWindow2;
                 // IE6

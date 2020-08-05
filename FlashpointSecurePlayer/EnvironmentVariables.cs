@@ -259,7 +259,7 @@ namespace FlashpointSecurePlayer {
                 compatibilityLayerValues = compatibilityLayerValue.ToUpperInvariant().Split(' ').ToList();
             }
 
-            ProgressManager.CurrentGoal.Start(modificationsElement.EnvironmentVariables.Count, time);
+            ProgressManager.CurrentGoal.Start(activeModificationsElement.EnvironmentVariables.Count, time);
 
             try {
                 EnvironmentVariablesElement environmentVariablesElement = null;

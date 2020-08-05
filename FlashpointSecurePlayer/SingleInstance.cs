@@ -55,7 +55,7 @@ namespace FlashpointSecurePlayer {
             return ShowClosableMessageBox(new Task[] { task }, text, caption, messageBoxButtons, messageBoxIcon);
         }
 
-        public void Activate(string templateName) {
+        new public void Activate(string templateName) {
             base.Activate(templateName);
 
             if (String.IsNullOrEmpty(TemplateName)) {
