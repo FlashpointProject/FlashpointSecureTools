@@ -30,7 +30,7 @@ namespace FlashpointSecurePlayer {
         private readonly RunAsAdministrator runAsAdministrator;
         private readonly EnvironmentVariables environmentVariables;
         private readonly DownloadsBefore downloadsBefore;
-        private readonly RegistryBackups registryBackup;
+        private readonly RegistryStates registryState;
         private readonly SingleInstance singleInstance;
         private readonly OldCPUSimulator oldCPUSimulator;
 
@@ -52,7 +52,7 @@ namespace FlashpointSecurePlayer {
             runAsAdministrator = new RunAsAdministrator(this);
             environmentVariables = new EnvironmentVariables(this);
             downloadsBefore = new DownloadsBefore(this);
-            registryBackup = new RegistryBackups(this);
+            registryState = new RegistryStates(this);
             singleInstance = new SingleInstance(this);
             oldCPUSimulator = new OldCPUSimulator(this);
         }
@@ -255,7 +255,7 @@ namespace FlashpointSecurePlayer {
                     }
 
                     ProgressManager.Reset();
-                    ShowOutput(Properties.Resources.RegistryBackupInProgress);
+                    ShowOutput(Properties.Resources.RegistryStateInProgress);
                     ProgressManager.CurrentGoal.Start(6);
 
                     try {
@@ -275,7 +275,7 @@ namespace FlashpointSecurePlayer {
 
                         GetBinaryType(TemplateName, out BINARY_TYPE binaryType);
 
-                        // first, we install the control without a registry backup running
+                        // first, we install the control without a registry state running
                         // this is so we can be sure we can uninstall the control
                         try {
                             activeXControl.Install();
@@ -290,7 +290,7 @@ namespace FlashpointSecurePlayer {
                         // next, uninstall the control
                         // in case it was already installed before this whole process
                         // this is to ensure an existing install
-                        // doesn't interfere with our registry backup results
+                        // doesn't interfere with our registry state results
                         try {
                             activeXControl.Uninstall();
                         } catch (Win32Exception ex) {
@@ -303,11 +303,11 @@ namespace FlashpointSecurePlayer {
 
                         try {
                             try {
-                                await registryBackup.StartImportAsync(TemplateName, binaryType).ConfigureAwait(true);
-                            } catch (RegistryBackupFailedException ex) {
+                                await registryState.StartImportAsync(TemplateName, binaryType).ConfigureAwait(true);
+                            } catch (RegistryStateFailedException ex) {
                                 LogExceptionToLauncher(ex);
-                                errorDelegate(Properties.Resources.RegistryBackupFailed);
-                                throw new ActiveXImportFailedException("The ActiveX Import failed because the Registry Backup failed when the ActiveX Import was started.");
+                                errorDelegate(Properties.Resources.RegistryStateFailed);
+                                throw new ActiveXImportFailedException("The ActiveX Import failed because the Registry States failed when the ActiveX Import was started.");
                             } catch (System.Configuration.ConfigurationErrorsException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.ConfigurationFailedLoad);
@@ -323,13 +323,13 @@ namespace FlashpointSecurePlayer {
                                 throw new ActiveXImportFailedException("The ActiveX Import failed running as Administrator User.");
                             } catch (InvalidOperationException ex) {
                                 LogExceptionToLauncher(ex);
-                                errorDelegate(Properties.Resources.RegistryBackupAlreadyInProgress);
-                                throw new ActiveXImportFailedException("The ActiveX Import failed because a Registry Backup is already in progress.");
+                                errorDelegate(Properties.Resources.RegistryStateAlreadyInProgress);
+                                throw new ActiveXImportFailedException("The ActiveX Import failed because a Registry States is already in progress.");
                             }
 
                             ProgressManager.CurrentGoal.Steps++;
 
-                            // a registry backup is running, install the control
+                            // a registry states is running, install the control
                             try {
                                 activeXControl.Install();
                             } catch (Win32Exception ex) {
@@ -341,19 +341,19 @@ namespace FlashpointSecurePlayer {
                             ProgressManager.CurrentGoal.Steps++;
 
                             try {
-                                await registryBackup.StopImportAsync().ConfigureAwait(true);
-                            } catch (RegistryBackupFailedException ex) {
+                                await registryState.StopImportAsync().ConfigureAwait(true);
+                            } catch (RegistryStateFailedException ex) {
                                 LogExceptionToLauncher(ex);
-                                errorDelegate(Properties.Resources.RegistryBackupFailed);
-                                throw new ActiveXImportFailedException("The ActiveX Import failed because the Registry Backup failed when the ActiveX Import was stopped.");
+                                errorDelegate(Properties.Resources.RegistryStateFailed);
+                                throw new ActiveXImportFailedException("The ActiveX Import failed because the Registry States failed when the ActiveX Import was stopped.");
                             } catch (System.Configuration.ConfigurationErrorsException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                                 throw new ActiveXImportFailedException("The ActiveX Import failed because the configuration failed to load when the ActiveX Import was stopped.");
                             } catch (InvalidOperationException ex) {
                                 LogExceptionToLauncher(ex);
-                                errorDelegate(Properties.Resources.RegistryBackupNotInProgress);
-                                throw new ActiveXImportFailedException("The ActiveX Import failed because the Registry Backup is not in progress.");
+                                errorDelegate(Properties.Resources.RegistryStateNotInProgress);
+                                throw new ActiveXImportFailedException("The ActiveX Import failed because the Registry States is not in progress.");
                             }
                         } finally {
                             // we do this to ensure the user can exit in the case of an error
@@ -362,10 +362,10 @@ namespace FlashpointSecurePlayer {
 
                         ProgressManager.CurrentGoal.Steps++;
 
-                        // the registry backup is stopped, uninstall the control
+                        // the registry state is stopped, uninstall the control
                         // this will leave the control uninstalled on the system
                         // there is no way to tell if it was installed before
-                        // (which is the point of creating the backup so we can)
+                        // (which is the point of creating the state so we can)
                         try {
                             activeXControl.Uninstall();
                         } catch (Win32Exception ex) {
@@ -379,7 +379,7 @@ namespace FlashpointSecurePlayer {
                         ProgressManager.CurrentGoal.Stop();
                     }
 
-                    ShowOutput(Properties.Resources.RegistryBackupWasSuccessful);
+                    ShowOutput(Properties.Resources.RegistryStateWasSuccessful);
                 } finally {
                     modificationsMutex.ReleaseMutex();
                 }
@@ -737,12 +737,12 @@ namespace FlashpointSecurePlayer {
                         ProgressManager.CurrentGoal.Steps++;
 
                         if (modificationsElement.ElementInformation.IsPresent) {
-                            if (modificationsElement.RegistryBackups.Count > 0) {
+                            if (modificationsElement.RegistryStates.Count > 0) {
                                 try {
-                                    registryBackup.Activate(TemplateName);
-                                } catch (RegistryBackupFailedException ex) {
+                                    registryState.Activate(TemplateName);
+                                } catch (RegistryStateFailedException ex) {
                                     LogExceptionToLauncher(ex);
-                                    errorDelegate(Properties.Resources.RegistryBackupFailed);
+                                    errorDelegate(Properties.Resources.RegistryStateFailed);
                                 } catch (System.Configuration.ConfigurationErrorsException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.ConfigurationFailedLoad);
@@ -848,10 +848,10 @@ namespace FlashpointSecurePlayer {
                         try {
                             // this one really needs to work
                             // we can't continue if it does not
-                            registryBackup.Deactivate(time);
-                        } catch (RegistryBackupFailedException ex) {
+                            registryState.Deactivate(time);
+                        } catch (RegistryStateFailedException ex) {
                             LogExceptionToLauncher(ex);
-                            errorDelegate(Properties.Resources.RegistryBackupFailed);
+                            errorDelegate(Properties.Resources.RegistryStateFailed);
                         } catch (System.Configuration.ConfigurationErrorsException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.ConfigurationFailedLoad);
@@ -866,7 +866,7 @@ namespace FlashpointSecurePlayer {
                             errorDelegate(Properties.Resources.ModificationsFailedImport);
                         } catch (TimeoutException ex) {
                             LogExceptionToLauncher(ex);
-                            errorDelegate(Properties.Resources.RegistryBackupTimeout);
+                            errorDelegate(Properties.Resources.RegistryStateTimeout);
                         }
 
                         ProgressManager.CurrentGoal.Steps++;

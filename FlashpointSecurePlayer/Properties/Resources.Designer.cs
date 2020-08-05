@@ -316,56 +316,56 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Registry Backup cannot start because another one is already in progress..
+        ///   Looks up a localized string similar to The Registry States cannot start because another one is already in progress..
         /// </summary>
-        internal static string RegistryBackupAlreadyInProgress {
+        internal static string RegistryStateAlreadyInProgress {
             get {
-                return ResourceManager.GetString("RegistryBackupAlreadyInProgress", resourceCulture);
+                return ResourceManager.GetString("RegistryStateAlreadyInProgress", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Registry Backup failed..
+        ///   Looks up a localized string similar to The Registry States failed..
         /// </summary>
-        internal static string RegistryBackupFailed {
+        internal static string RegistryStateFailed {
             get {
-                return ResourceManager.GetString("RegistryBackupFailed", resourceCulture);
+                return ResourceManager.GetString("RegistryStateFailed", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A Registry Backup is in progress. Please do not turn off your computer..
+        ///   Looks up a localized string similar to The Registry States are in progress. Please do not turn off your computer..
         /// </summary>
-        internal static string RegistryBackupInProgress {
+        internal static string RegistryStateInProgress {
             get {
-                return ResourceManager.GetString("RegistryBackupInProgress", resourceCulture);
+                return ResourceManager.GetString("RegistryStateInProgress", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Registry Backup cannot be stopped because no Registry Backup was in progress..
+        ///   Looks up a localized string similar to The Registry States cannot be stopped because no Registry State was in progress..
         /// </summary>
-        internal static string RegistryBackupNotInProgress {
+        internal static string RegistryStateNotInProgress {
             get {
-                return ResourceManager.GetString("RegistryBackupNotInProgress", resourceCulture);
+                return ResourceManager.GetString("RegistryStateNotInProgress", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Registry Backup timed out..
+        ///   Looks up a localized string similar to The Registry State timed out..
         /// </summary>
-        internal static string RegistryBackupTimeout {
+        internal static string RegistryStateTimeout {
             get {
-                return ResourceManager.GetString("RegistryBackupTimeout", resourceCulture);
+                return ResourceManager.GetString("RegistryStateTimeout", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Registry Backup was successful..
+        ///   Looks up a localized string similar to The Registry State was successful..
         /// </summary>
-        internal static string RegistryBackupWasSuccessful {
+        internal static string RegistryStateWasSuccessful {
             get {
-                return ResourceManager.GetString("RegistryBackupWasSuccessful", resourceCulture);
+                return ResourceManager.GetString("RegistryStateWasSuccessful", resourceCulture);
             }
         }
         

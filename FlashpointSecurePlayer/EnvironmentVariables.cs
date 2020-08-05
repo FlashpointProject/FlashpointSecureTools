@@ -214,7 +214,7 @@ namespace FlashpointSecurePlayer {
 
             // don't allow infinite recursion!
             if (String.IsNullOrEmpty(templateElementName)) {
-                activeModificationsElement.RegistryBackups.Clear();
+                activeModificationsElement.EnvironmentVariables.Clear();
                 SetFlashpointSecurePlayerSection(TemplateName);
                 return;
             }
