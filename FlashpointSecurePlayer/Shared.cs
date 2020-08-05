@@ -110,10 +110,10 @@ namespace FlashpointSecurePlayer {
                 public EnvironmentVariablesFailedException(string message, Exception inner) : base(message, inner) { }
             }
 
-            public class RegistryBackupFailedException : InvalidModificationException {
-                public RegistryBackupFailedException() { }
-                public RegistryBackupFailedException(string message) : base(message) { }
-                public RegistryBackupFailedException(string message, Exception inner) : base(message, inner) { }
+            public class RegistryStateFailedException : InvalidModificationException {
+                public RegistryStateFailedException() { }
+                public RegistryStateFailedException(string message) : base(message) { }
+                public RegistryStateFailedException(string message, Exception inner) : base(message, inner) { }
             }
 
             public static void LogExceptionToLauncher(Exception ex) {
@@ -791,12 +791,12 @@ namespace FlashpointSecurePlayer {
                             }
                         }
 
-                        public class RegistryBackupElementCollection : TemplatesConfigurationElementCollection {
+                        public class RegistryStateElementCollection : TemplatesConfigurationElementCollection {
                             protected ConfigurationPropertyCollection _properties = null;
                             protected ConfigurationProperty _binaryType = null;
                             protected ConfigurationProperty _administrator = null;
 
-                            public RegistryBackupElementCollection() {
+                            public RegistryStateElementCollection() {
                                 _properties = new ConfigurationPropertyCollection();
 
                                 _binaryType = new ConfigurationProperty("binaryType",
@@ -810,7 +810,7 @@ namespace FlashpointSecurePlayer {
                                 //}
                             }
 
-                            public class RegistryBackupElement : ConfigurationElement {
+                            public class RegistryStateElement : ConfigurationElement {
                                 protected ConfigurationPropertyCollection _properties = null;
                                 protected ConfigurationProperty _type = null;
                                 protected ConfigurationProperty _keyName = null;
@@ -820,12 +820,12 @@ namespace FlashpointSecurePlayer {
                                 protected ConfigurationProperty _deleted = null;
                                 protected ConfigurationProperty _valueExpanded = null;
 
-                                public RegistryBackupElement() {
+                                public RegistryStateElement() {
                                     _properties = new ConfigurationPropertyCollection();
 
                                     _type = new ConfigurationProperty("type",
-                                        typeof(global::FlashpointSecurePlayer.RegistryBackups.TYPE),
-                                        global::FlashpointSecurePlayer.RegistryBackups.TYPE.KEY, ConfigurationPropertyOptions.None);
+                                        typeof(global::FlashpointSecurePlayer.RegistryStates.TYPE),
+                                        global::FlashpointSecurePlayer.RegistryStates.TYPE.KEY, ConfigurationPropertyOptions.None);
                                     _properties.Add(_type);
 
                                     _keyName = new ConfigurationProperty("keyName",
@@ -841,7 +841,7 @@ namespace FlashpointSecurePlayer {
                                     _properties.Add(_valueKind);
 
                                     /*
-                                    if (Type == global::FlashpointSecurePlayer.RegistryBackups.TYPE.VALUE) {
+                                    if (Type == global::FlashpointSecurePlayer.RegistryStates.TYPE.VALUE) {
                                         _valueName = new ConfigurationProperty("valueName",
                                             typeof(string), null, ConfigurationPropertyOptions.IsRequired);
                                         _properties.Add(_valueName);
@@ -863,14 +863,14 @@ namespace FlashpointSecurePlayer {
                                     //}
                                 }
                                 
-                                public RegistryBackups.TYPE Type {
+                                public RegistryStates.TYPE Type {
                                     get {
-                                        return (RegistryBackups.TYPE)base[_type];
+                                        return (RegistryStates.TYPE)base[_type];
                                     }
 
                                     set {
                                         /*
-                                        if (value != global::FlashpointSecurePlayer.RegistryBackups.TYPE.VALUE) {
+                                        if (value != global::FlashpointSecurePlayer.RegistryStates.TYPE.VALUE) {
                                             base[_valueName] = null;
                                         }
                                         */
@@ -900,7 +900,7 @@ namespace FlashpointSecurePlayer {
                                 public string ValueName {
                                     get {
                                         /*
-                                        if (Type != global::FlashpointSecurePlayer.RegistryBackups.TYPE.VALUE || _valueName == null) {
+                                        if (Type != global::FlashpointSecurePlayer.RegistryStates.TYPE.VALUE || _valueName == null) {
                                             return null;
                                         }
                                         */
@@ -913,7 +913,7 @@ namespace FlashpointSecurePlayer {
 
                                     set {
                                         /*
-                                        if (Type != global::FlashpointSecurePlayer.RegistryBackups.TYPE.VALUE || _valueName == null) {
+                                        if (Type != global::FlashpointSecurePlayer.RegistryStates.TYPE.VALUE || _valueName == null) {
                                             return;
                                         }
                                         */
@@ -1005,12 +1005,12 @@ namespace FlashpointSecurePlayer {
                             }
 
                             protected override object GetElementKey(ConfigurationElement configurationElement) {
-                                RegistryBackupElement registryBackupElement = configurationElement as RegistryBackupElement;
-                                return registryBackupElement.Name;
+                                RegistryStateElement registryStateElement = configurationElement as RegistryStateElement;
+                                return registryStateElement.Name;
                             }
 
                             protected override ConfigurationElement CreateNewElement() {
-                                return new RegistryBackupElement();
+                                return new RegistryStateElement();
                             }
 
                             new public ConfigurationElement Get(string name) {
@@ -1058,15 +1058,15 @@ namespace FlashpointSecurePlayer {
                             }
                         }
 
-                        [ConfigurationProperty("registryBackups", IsRequired = false)]
-                        [ConfigurationCollection(typeof(RegistryBackupElementCollection), AddItemName = "registryBackup")]
-                        public RegistryBackupElementCollection RegistryBackups {
+                        [ConfigurationProperty("registryStates", IsRequired = false)]
+                        [ConfigurationCollection(typeof(RegistryStateElementCollection), AddItemName = "registryState")]
+                        public RegistryStateElementCollection RegistryStates {
                             get {
-                                return (RegistryBackupElementCollection)base["registryBackups"];
+                                return (RegistryStateElementCollection)base["registryStates"];
                             }
 
                             set {
-                                base["registryBackups"] = value;
+                                base["registryStates"] = value;
                             }
                         }
 
@@ -1646,7 +1646,7 @@ namespace FlashpointSecurePlayer {
             }
 
             activeTemplateElement.LockItem = false;
-            //activeTemplateElement.RegistryBackups.LockItem = false;
+            //activeTemplateElement.RegistryStates.LockItem = false;
         }
 
         public static string RemoveTrailingSlash(string path) {

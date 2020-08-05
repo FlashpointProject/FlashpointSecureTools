@@ -204,23 +204,23 @@ If you choose No, the application will exit.</value>
   <data name="ProcessFailedStart" xml:space="preserve">
     <value>The process failed to start.</value>
   </data>
-  <data name="RegistryBackupAlreadyInProgress" xml:space="preserve">
-    <value>The Registry Backup cannot start because another one is already in progress.</value>
+  <data name="RegistryStateAlreadyInProgress" xml:space="preserve">
+    <value>The Registry States cannot start because another one is already in progress.</value>
   </data>
-  <data name="RegistryBackupFailed" xml:space="preserve">
-    <value>The Registry Backup failed.</value>
+  <data name="RegistryStateFailed" xml:space="preserve">
+    <value>The Registry States failed.</value>
   </data>
-  <data name="RegistryBackupInProgress" xml:space="preserve">
-    <value>A Registry Backup is in progress. Please do not turn off your computer.</value>
+  <data name="RegistryStateInProgress" xml:space="preserve">
+    <value>The Registry States are in progress. Please do not turn off your computer.</value>
   </data>
-  <data name="RegistryBackupNotInProgress" xml:space="preserve">
-    <value>The Registry Backup cannot be stopped because no Registry Backup was in progress.</value>
+  <data name="RegistryStateNotInProgress" xml:space="preserve">
+    <value>The Registry States cannot be stopped because no Registry State was in progress.</value>
   </data>
-  <data name="RegistryBackupTimeout" xml:space="preserve">
-    <value>The Registry Backup timed out.</value>
+  <data name="RegistryStateTimeout" xml:space="preserve">
+    <value>The Registry State timed out.</value>
   </data>
-  <data name="RegistryBackupWasSuccessful" xml:space="preserve">
-    <value>The Registry Backup was successful.</value>
+  <data name="RegistryStateWasSuccessful" xml:space="preserve">
+    <value>The Registry State was successful.</value>
   </data>
   <data name="RequiredComponentsAreLoading" xml:space="preserve">
     <value>The required components are loading. Please do not turn off your computer.</value>

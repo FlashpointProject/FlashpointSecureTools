@@ -103,7 +103,7 @@
     <Compile Include="Shared.cs" />
     <Compile Include="SingleInstance.cs" />
     <Compile Include="ProcessSync.cs" />
-    <Compile Include="RegistryBackups.cs" />
+    <Compile Include="RegistryStates.cs" />
     <Compile Include="WebBrowser.cs">
       <SubType>Form</SubType>
     </Compile>

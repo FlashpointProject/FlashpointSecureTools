@@ -22,10 +22,10 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection;
 using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement;
 using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement;
-using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement.RegistryBackupElementCollection;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement.RegistryStateElementCollection;
 
 namespace FlashpointSecurePlayer {
-    public class RegistryBackups : Modifications {
+    public class RegistryStates : Modifications {
         // https://social.msdn.microsoft.com/Forums/vstudio/en-US/0f3557ee-16bd-4a36-a4f3-00efbeae9b0d/app-config-multiple-sections-in-sectiongroup-with-same-name?forum=csharpgeneral
         private class WOW64Key {
             public enum EFFECT {
@@ -52,11 +52,11 @@ namespace FlashpointSecurePlayer {
         };
 
         private const int IMPORT_TIMEOUT = 5;
-        private const string IMPORT_RESUME = "FLASHPOINTSECUREPLAYERREGISTRYBACKUPIMPORTRESUME";
-        private const string IMPORT_PAUSE = "FLASHPOINTSECUREPLAYERREGISTRYBACKUPIMPORTPAUSE";
+        private const string IMPORT_RESUME = "FLASHPOINTSECUREPLAYERREGISTRYSTATEIMPORTRESUME";
+        private const string IMPORT_PAUSE = "FLASHPOINTSECUREPLAYERREGISTRYSTATEIMPORTPAUSE";
         private string fullPath = null;
         private EventWaitHandle resumeEventWaitHandle = new ManualResetEvent(false);
-        private Dictionary<ulong, SortedList<DateTime, RegistryBackupElement>> modificationsQueue = null;
+        private Dictionary<ulong, SortedList<DateTime, RegistryStateElement>> modificationsQueue = null;
         private Dictionary<ulong, string> kcbModificationKeyNames = null;
         private TraceEventSession kernelSession;
         private Dictionary<string, List<WOW64Key>> wow64KeyLists = null;
@@ -180,13 +180,13 @@ namespace FlashpointSecurePlayer {
             }
         }
         
-        public RegistryBackups(Form form) : base(form) { }
+        public RegistryStates(Form form) : base(form) { }
 
-        ~RegistryBackups() {
+        ~RegistryStates() {
             if (ImportStarted) {
                 try {
                     StopImport();
-                } catch (RegistryBackupFailedException) {
+                } catch (RegistryStateFailedException) {
                     // Fail silently.
                 } catch (System.Configuration.ConfigurationErrorsException) {
                     // Fail silently.
@@ -197,7 +197,7 @@ namespace FlashpointSecurePlayer {
 
             try {
                 Deactivate();
-            } catch (RegistryBackupFailedException) {
+            } catch (RegistryStateFailedException) {
                 // Fail silently.
             } catch (System.Configuration.ConfigurationErrorsException) {
                 // Fail silently.
@@ -688,9 +688,9 @@ namespace FlashpointSecurePlayer {
             ModificationsElement modificationsElement = templateElement.Modifications;
 
             // this happens here since this check doesn't need to occur to activate
-            if (modificationsElement.RegistryBackups.Get(TemplateName) != null) {
+            if (modificationsElement.RegistryStates.Get(TemplateName) != null) {
                 // preset already exists with this name
-                // prevent a registry backup from running for a non-curator
+                // prevent a registry state from running for a non-curator
                 throw new InvalidTemplateException("A Template with the name " + TemplateName + " exists.");
             }
 
@@ -718,9 +718,9 @@ namespace FlashpointSecurePlayer {
             SetControlBox();
 
             try {
-                modificationsElement.RegistryBackups.BinaryType = binaryType;
+                modificationsElement.RegistryStates.BinaryType = binaryType;
                 resumeEventWaitHandle.Reset();
-                modificationsQueue = new Dictionary<ulong, SortedList<DateTime, RegistryBackupElement>>();
+                modificationsQueue = new Dictionary<ulong, SortedList<DateTime, RegistryStateElement>>();
                 kcbModificationKeyNames = new Dictionary<ulong, string>();
 
                 this.kernelSession = new TraceEventSession(KernelTraceEventParser.KernelSessionName);
@@ -768,7 +768,7 @@ namespace FlashpointSecurePlayer {
                     }
 
                     if (ImportPaused) {
-                        throw new RegistryBackupFailedException("A timeout occured while starting the Import.");
+                        throw new RegistryStateFailedException("A timeout occured while starting the Import.");
                     }
                 } catch {
                     this.kernelSession.Dispose();
@@ -787,7 +787,7 @@ namespace FlashpointSecurePlayer {
                 resumeEventWaitHandle.Set();
 
                 // stop this.kernelSession
-                // we give the registry backup a ten second
+                // we give the registry state a ten second
                 // timeout, which should be enough
                 for (int i = 0;i < IMPORT_TIMEOUT;i++) {
                     Registry.GetValue("HKEY_LOCAL_MACHINE", IMPORT_PAUSE, null);
@@ -804,7 +804,7 @@ namespace FlashpointSecurePlayer {
                 }
 
                 if (!ImportPaused) {
-                    throw new RegistryBackupFailedException("A timeout occured while stopping the Import.");
+                    throw new RegistryStateFailedException("A timeout occured while stopping the Import.");
                 }
 
                 this.kernelSession.Stop();
@@ -863,8 +863,8 @@ namespace FlashpointSecurePlayer {
 
             TemplateElement activeTemplateElement = GetActiveTemplateElement(true, TemplateName);
             ModificationsElement activeModificationsElement = activeTemplateElement.Modifications;
-            RegistryBackupElement registryBackupElement = null;
-            RegistryBackupElement activeRegistryBackupElement = null;
+            RegistryStateElement registryStateElement = null;
+            RegistryStateElement activeRegistryStateElement = null;
             string keyName = null;
             object value = null;
             string keyDeleted = null;
@@ -883,24 +883,24 @@ namespace FlashpointSecurePlayer {
             */
 
             // to prevent issues with HKEY_LOCAL_MACHINE and crash recovery
-            activeModificationsElement.RegistryBackups._Administrator = TestLaunchedAsAdministratorUser();
+            activeModificationsElement.RegistryStates._Administrator = TestLaunchedAsAdministratorUser();
             RegistryView registryView = RegistryView.Registry32;
 
-            if (modificationsElement.RegistryBackups.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) {
+            if (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) {
                 registryView = RegistryView.Registry64;
             }
 
-            ProgressManager.CurrentGoal.Start(modificationsElement.RegistryBackups.Count + modificationsElement.RegistryBackups.Count);
+            ProgressManager.CurrentGoal.Start(modificationsElement.RegistryStates.Count + modificationsElement.RegistryStates.Count);
 
             try {
                 // populate active modifications
-                for (int i = 0;i < modificationsElement.RegistryBackups.Count;i++) {
+                for (int i = 0;i < modificationsElement.RegistryStates.Count;i++) {
                     // the "active" one is the one that doesn't have a name (it has the "active" attribute)
-                    registryBackupElement = modificationsElement.RegistryBackups.Get(i) as RegistryBackupElement;
+                    registryStateElement = modificationsElement.RegistryStates.Get(i) as RegistryStateElement;
 
-                    if (registryBackupElement == null) {
+                    if (registryStateElement == null) {
                         Deactivate();
-                        throw new System.Configuration.ConfigurationErrorsException("The Registry Backup Element (" + i + ") is null.");
+                        throw new System.Configuration.ConfigurationErrorsException("The Registry State Element (" + i + ") is null.");
                     }
 
                     // GOAL: find the CURRENT value in the REAL REGISTRY
@@ -908,40 +908,40 @@ namespace FlashpointSecurePlayer {
                     // DELETED = DELETED in REAL REGISTRY
                     // this keyName variable is a temp variable specific to this user
                     // it should not get saved
-                    keyName = GetUserKeyValueName(registryBackupElement.KeyName);
+                    keyName = GetUserKeyValueName(registryStateElement.KeyName);
                     value = null;
 
-                    activeRegistryBackupElement = new RegistryBackupElement {
-                        Type = registryBackupElement.Type,
-                        KeyName = registryBackupElement.KeyName,
-                        ValueName = registryBackupElement.ValueName,
-                        ValueKind = GetValueKindInRegistryView(keyName, registryBackupElement.ValueName, registryView),
+                    activeRegistryStateElement = new RegistryStateElement {
+                        Type = registryStateElement.Type,
+                        KeyName = registryStateElement.KeyName,
+                        ValueName = registryStateElement.ValueName,
+                        ValueKind = GetValueKindInRegistryView(keyName, registryStateElement.ValueName, registryView),
                         _Deleted = String.Empty
                     };
 
-                    switch (activeRegistryBackupElement.Type) {
+                    switch (activeRegistryStateElement.Type) {
                         case TYPE.KEY:
-                        activeRegistryBackupElement._Deleted = TestKeyDeletedInRegistryView(keyName, registryView);
+                        activeRegistryStateElement._Deleted = TestKeyDeletedInRegistryView(keyName, registryView);
                         break;
                         case TYPE.VALUE:
                         try {
-                            valueExpanded = Environment.ExpandEnvironmentVariables(registryBackupElement.Value);
+                            valueExpanded = Environment.ExpandEnvironmentVariables(registryStateElement.Value);
 
-                            if (valueExpanded != registryBackupElement.Value) {
-                                activeRegistryBackupElement._ValueExpanded = valueExpanded;
+                            if (valueExpanded != registryStateElement.Value) {
+                                activeRegistryStateElement._ValueExpanded = valueExpanded;
                             }
                         } catch (ArgumentNullException) {
                             // Fail silently.
                         }
 
                         try {
-                            value = /*ReplaceStartupPathEnvironmentVariable(LengthenValue(*/GetValueInRegistryView(keyName, registryBackupElement.ValueName, registryView)/*, fullPath))*/;
+                            value = /*ReplaceStartupPathEnvironmentVariable(LengthenValue(*/GetValueInRegistryView(keyName, registryStateElement.ValueName, registryView)/*, fullPath))*/;
                         } catch (ArgumentException) {
                             // value doesn't exist
                             value = null;
                         } catch (SecurityException) {
                             // value exists but we can't get it
-                            throw new TaskRequiresElevationException("The value " + registryBackupElement.ValueName + " cannot be accessed by the user.");
+                            throw new TaskRequiresElevationException("The value " + registryStateElement.ValueName + " cannot be accessed by the user.");
                         }
 
                         if (value == null) {
@@ -949,47 +949,47 @@ namespace FlashpointSecurePlayer {
 
                             // if not just the value, but the entire key, is deleted, treat this as a key type
                             if (String.IsNullOrEmpty(keyDeleted)) {
-                                activeRegistryBackupElement.Type = TYPE.VALUE;
-                                activeRegistryBackupElement._Deleted = registryBackupElement.ValueName;
+                                activeRegistryStateElement.Type = TYPE.VALUE;
+                                activeRegistryStateElement._Deleted = registryStateElement.ValueName;
                             } else {
-                                activeRegistryBackupElement.Type = TYPE.KEY;
-                                activeRegistryBackupElement._Deleted = keyDeleted;
+                                activeRegistryStateElement.Type = TYPE.KEY;
+                                activeRegistryStateElement._Deleted = keyDeleted;
                             }
                         } else {
-                            activeRegistryBackupElement.Type = TYPE.VALUE;
-                            activeRegistryBackupElement.Value = value.ToString();
+                            activeRegistryStateElement.Type = TYPE.VALUE;
+                            activeRegistryStateElement.Value = value.ToString();
                         }
                         break;
                     }
                     
-                    activeModificationsElement.RegistryBackups.Set(activeRegistryBackupElement);
+                    activeModificationsElement.RegistryStates.Set(activeRegistryStateElement);
                     ProgressManager.CurrentGoal.Steps++;
                 }
 
                 SetFlashpointSecurePlayerSection(TemplateName);
 
-                for (int i = 0;i < modificationsElement.RegistryBackups.Count;i++) {
+                for (int i = 0;i < modificationsElement.RegistryStates.Count;i++) {
                     // the "active" one is the one that doesn't have a name (it has the "active" attribute)
-                    registryBackupElement = modificationsElement.RegistryBackups.Get(i) as RegistryBackupElement;
-                    activeRegistryBackupElement = activeModificationsElement.RegistryBackups.Get(i) as RegistryBackupElement;
+                    registryStateElement = modificationsElement.RegistryStates.Get(i) as RegistryStateElement;
+                    activeRegistryStateElement = activeModificationsElement.RegistryStates.Get(i) as RegistryStateElement;
 
-                    if (registryBackupElement == null) {
+                    if (registryStateElement == null) {
                         Deactivate();
-                        throw new System.Configuration.ConfigurationErrorsException("The Registry Backup Element (" + i + ") is null.");
+                        throw new System.Configuration.ConfigurationErrorsException("The Registry State Element (" + i + ") is null.");
                     }
 
-                    keyName = GetUserKeyValueName(registryBackupElement.KeyName);
+                    keyName = GetUserKeyValueName(registryStateElement.KeyName);
 
                     // we don't delete existing keys/values, since the program just won't use deleted keys/values
-                    // therefore, _Deleted is ignored on all but the active registry backup
-                    switch (registryBackupElement.Type) {
+                    // therefore, _Deleted is ignored on all but the active registry state
+                    switch (registryStateElement.Type) {
                         case TYPE.KEY:
                         try {
                             SetKeyInRegistryView(keyName, registryView);
                         } catch (InvalidOperationException) {
                             // key marked for deletion
                             Deactivate();
-                            throw new RegistryBackupFailedException("The key " + keyName + " is marked for deletion.");
+                            throw new RegistryStateFailedException("The key " + keyName + " is marked for deletion.");
                         } catch (ArgumentException) {
                             // key doesn't exist and can't be created
                             Deactivate();
@@ -1000,23 +1000,23 @@ namespace FlashpointSecurePlayer {
                         break;
                         case TYPE.VALUE:
                         try {
-                            SetValueInRegistryView(keyName, registryBackupElement.ValueName, String.IsNullOrEmpty(activeRegistryBackupElement._ValueExpanded) ? registryBackupElement.Value : activeRegistryBackupElement._ValueExpanded, registryBackupElement.ValueKind.GetValueOrDefault(), registryView);
+                            SetValueInRegistryView(keyName, registryStateElement.ValueName, String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded) ? registryStateElement.Value : activeRegistryStateElement._ValueExpanded, registryStateElement.ValueKind.GetValueOrDefault(), registryView);
                         } catch (FormatException) {
                             // value marked for deletion
                             Deactivate();
-                            throw new RegistryBackupFailedException("The value " + registryBackupElement.ValueName + " must be Base64.");
+                            throw new RegistryStateFailedException("The value " + registryStateElement.ValueName + " must be Base64.");
                         } catch (InvalidOperationException) {
                             // value marked for deletion
                             Deactivate();
-                            throw new RegistryBackupFailedException("The value " + registryBackupElement.ValueName + " is marked for deletion.");
+                            throw new RegistryStateFailedException("The value " + registryStateElement.ValueName + " is marked for deletion.");
                         } catch (ArgumentException) {
                             // value doesn't exist and can't be created
                             Deactivate();
-                            throw new TaskRequiresElevationException("Creating the value " + registryBackupElement.ValueName + " requires elevation.");
+                            throw new TaskRequiresElevationException("Creating the value " + registryStateElement.ValueName + " requires elevation.");
                         } catch (SecurityException) {
                             // value exists and we can't modify it
                             Deactivate();
-                            throw new TaskRequiresElevationException("Modifying the value " + registryBackupElement.ValueName + " requires elevation.");
+                            throw new TaskRequiresElevationException("Modifying the value " + registryStateElement.ValueName + " requires elevation.");
                         }
                         break;
                     }
@@ -1032,21 +1032,21 @@ namespace FlashpointSecurePlayer {
             base.Deactivate();
             TemplateElement activeTemplateElement = GetActiveTemplateElement(false);
 
-            // if the activation backup doesn't exist, we don't need to do stuff
+            // if the activation state doesn't exist, we don't need to do stuff
             if (activeTemplateElement == null) {
                 return;
             }
 
             ModificationsElement activeModificationsElement = activeTemplateElement.Modifications;
 
-            // if the activation backup exists, but no key is marked as active...
+            // if the activation state exists, but no key is marked as active...
             // we assume the registry has changed, and don't revert the changes, to be safe
             // (it should never happen unless the user tampered with the config file)
             string templateElementName = activeTemplateElement.Active;
 
             // don't allow infinite recursion!
             if (String.IsNullOrEmpty(templateElementName)) {
-                activeModificationsElement.RegistryBackups.Clear();
+                activeModificationsElement.RegistryStates.Clear();
                 SetFlashpointSecurePlayerSection(TemplateName);
                 return;
             }
@@ -1063,83 +1063,83 @@ namespace FlashpointSecurePlayer {
             }
             
             if (modificationsElement == null) {
-                activeModificationsElement.RegistryBackups.Clear();
+                activeModificationsElement.RegistryStates.Clear();
                 SetFlashpointSecurePlayerSection(TemplateName);
                 return;
             }
 
-            RegistryBackupElement registryBackupElement = null;
-            RegistryBackupElement activeRegistryBackupElement = null;
+            RegistryStateElement registryStateElement = null;
+            RegistryStateElement activeRegistryStateElement = null;
             object value = null;
             bool clear = false;
 
-            if (activeModificationsElement.RegistryBackups._Administrator != TestLaunchedAsAdministratorUser()) {
+            if (activeModificationsElement.RegistryStates._Administrator != TestLaunchedAsAdministratorUser()) {
                 // TODO: lame
-                throw new TaskRequiresElevationException("Deactivating the Registry Backup requires elevation.");
+                throw new TaskRequiresElevationException("Deactivating the Registry State requires elevation.");
             }
 
             RegistryView registryView = RegistryView.Registry32;
 
-            if (modificationsElement.RegistryBackups.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) {
+            if (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) {
                 // Super Registry 64 DS
                 registryView = RegistryView.Registry64;
             }
 
-            ProgressManager.CurrentGoal.Start(activeModificationsElement.RegistryBackups.Count + activeModificationsElement.RegistryBackups.Count, time);
+            ProgressManager.CurrentGoal.Start(activeModificationsElement.RegistryStates.Count + activeModificationsElement.RegistryStates.Count, time);
 
             try {
                 // check if any key has been modified from the modification element
-                for (int i = 0;i < activeModificationsElement.RegistryBackups.Count;i++) {
+                for (int i = 0;i < activeModificationsElement.RegistryStates.Count;i++) {
                     // the "active" one is the one that doesn't have a name (it has the "active" attribute)
-                    activeRegistryBackupElement = activeModificationsElement.RegistryBackups.Get(i) as RegistryBackupElement;
+                    activeRegistryStateElement = activeModificationsElement.RegistryStates.Get(i) as RegistryStateElement;
 
-                    if (activeRegistryBackupElement != null) {
-                        registryBackupElement = modificationsElement.RegistryBackups.Get(activeRegistryBackupElement.Name) as RegistryBackupElement;
+                    if (activeRegistryStateElement != null) {
+                        registryStateElement = modificationsElement.RegistryStates.Get(activeRegistryStateElement.Name) as RegistryStateElement;
 
-                        // registryBackupElement represents the value the key SHOULD have *right now*
+                        // registryStateElement represents the value the key SHOULD have *right now*
                         // what to do if modification was recorded, but not in config?
                         // ignore... it's not part of our record
-                        if (registryBackupElement != null) {
+                        if (registryStateElement != null) {
                             value = null;
                             clear = false;
 
                             // yes this is supposed to be active, it's PC specific
-                            switch (activeRegistryBackupElement.Type) {
+                            switch (activeRegistryStateElement.Type) {
                                 case TYPE.KEY:
-                                // check the key is set (like how in registryBackupElement it must be set)
-                                if (!String.IsNullOrEmpty(TestKeyDeletedInRegistryView(GetUserKeyValueName(registryBackupElement.KeyName), registryView))) {
+                                // check the key is set (like how in registryStateElement it must be set)
+                                if (!String.IsNullOrEmpty(TestKeyDeletedInRegistryView(GetUserKeyValueName(registryStateElement.KeyName), registryView))) {
                                     clear = true;
                                 }
                                 break;
                                 case TYPE.VALUE:
                                 try {
-                                    value = GetValueInRegistryView(GetUserKeyValueName(registryBackupElement.KeyName), registryBackupElement.ValueName, registryView);
+                                    value = GetValueInRegistryView(GetUserKeyValueName(registryStateElement.KeyName), registryStateElement.ValueName, registryView);
                                 } catch (ArgumentException) {
                                     // value doesn't exist
                                     value = null;
                                 } catch (SecurityException) {
                                     // value exists but we can't get it
-                                    throw new TaskRequiresElevationException("Getting the value " + registryBackupElement.ValueName + " requires elevation.");
+                                    throw new TaskRequiresElevationException("Getting the value " + registryStateElement.ValueName + " requires elevation.");
                                 }
 
-                                // check the value is the same as in registryBackupElement (can't be deleted, only active deletes)
+                                // check the value is the same as in registryStateElement (can't be deleted, only active deletes)
                                 if (value == null) {
                                     clear = true;
                                 } else {
-                                    if (value.ToString() != (String.IsNullOrEmpty(activeRegistryBackupElement._ValueExpanded) ? registryBackupElement.Value : activeRegistryBackupElement._ValueExpanded)) {
+                                    if (value.ToString() != (String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded) ? registryStateElement.Value : activeRegistryStateElement._ValueExpanded)) {
                                         clear = true;
                                     }
                                 }
 
-                                // check the ValueKind is the same as in registryBackupElement
-                                if (GetValueKindInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView) != registryBackupElement.ValueKind) {
+                                // check the ValueKind is the same as in registryStateElement
+                                if (GetValueKindInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView) != registryStateElement.ValueKind) {
                                     clear = true;
                                 }
                                 break;
                             }
 
                             if (clear) {
-                                activeModificationsElement.RegistryBackups.Clear();
+                                activeModificationsElement.RegistryStates.Clear();
                                 SetFlashpointSecurePlayerSection(TemplateName);
                                 return;
                             }
@@ -1150,52 +1150,52 @@ namespace FlashpointSecurePlayer {
                 }
 
                 // our records match, revert keys
-                while (activeModificationsElement.RegistryBackups.Count > 0) {
-                    activeRegistryBackupElement = activeModificationsElement.RegistryBackups.Get(0) as RegistryBackupElement;
+                while (activeModificationsElement.RegistryStates.Count > 0) {
+                    activeRegistryStateElement = activeModificationsElement.RegistryStates.Get(0) as RegistryStateElement;
 
                     // how can it be deleted already?? just paranoia
-                    if (activeRegistryBackupElement != null) {
-                        switch (activeRegistryBackupElement.Type) {
+                    if (activeRegistryStateElement != null) {
+                        switch (activeRegistryStateElement.Type) {
                             case TYPE.KEY:
-                            if (!String.IsNullOrEmpty(activeRegistryBackupElement._Deleted)) {
+                            if (!String.IsNullOrEmpty(activeRegistryStateElement._Deleted)) {
                                 try {
                                     // key didn't exist before
-                                    DeleteKeyInRegistryView(GetUserKeyValueName(activeRegistryBackupElement._Deleted), registryView);
+                                    DeleteKeyInRegistryView(GetUserKeyValueName(activeRegistryStateElement._Deleted), registryView);
                                 } catch (SecurityException) {
                                     // value exists and we can't modify it
-                                    throw new TaskRequiresElevationException("Deleting the key " + activeRegistryBackupElement._Deleted + " requires elevation.");
+                                    throw new TaskRequiresElevationException("Deleting the key " + activeRegistryStateElement._Deleted + " requires elevation.");
                                 }
                             }
                             break;
                             case TYPE.VALUE:
-                            if (String.IsNullOrEmpty(activeRegistryBackupElement._Deleted)) {
+                            if (String.IsNullOrEmpty(activeRegistryStateElement._Deleted)) {
                                 try {
                                     // value was different before
-                                    SetValueInRegistryView(GetUserKeyValueName(activeRegistryBackupElement.KeyName), activeRegistryBackupElement.ValueName, /*RemoveVariablesFromLengthenedValue(*/activeRegistryBackupElement.Value/*)*/, activeRegistryBackupElement.ValueKind.GetValueOrDefault(), registryView);
+                                    SetValueInRegistryView(GetUserKeyValueName(activeRegistryStateElement.KeyName), activeRegistryStateElement.ValueName, /*RemoveVariablesFromLengthenedValue(*/activeRegistryStateElement.Value/*)*/, activeRegistryStateElement.ValueKind.GetValueOrDefault(), registryView);
                                 } catch (InvalidOperationException) {
                                     // value doesn't exist and can't be created
-                                    throw new RegistryBackupFailedException("The value " + activeRegistryBackupElement.ValueName + " cannot be created.");
+                                    throw new RegistryStateFailedException("The value " + activeRegistryStateElement.ValueName + " cannot be created.");
                                 } catch (ArgumentException) {
                                     // value doesn't exist and can't be created
-                                    throw new RegistryBackupFailedException("The value " + activeRegistryBackupElement.ValueName + " cannot be created.");
+                                    throw new RegistryStateFailedException("The value " + activeRegistryStateElement.ValueName + " cannot be created.");
                                 } catch (SecurityException) {
                                     // value exists and we can't modify it
-                                    throw new TaskRequiresElevationException("Setting the value " + activeRegistryBackupElement.ValueName + " requires elevation.");
+                                    throw new TaskRequiresElevationException("Setting the value " + activeRegistryStateElement.ValueName + " requires elevation.");
                                 }
                             } else {
                                 try {
                                     // value didn't exist before
-                                    DeleteValueInRegistryView(GetUserKeyValueName(activeRegistryBackupElement.KeyName), activeRegistryBackupElement.ValueName, registryView);
+                                    DeleteValueInRegistryView(GetUserKeyValueName(activeRegistryStateElement.KeyName), activeRegistryStateElement.ValueName, registryView);
                                 } catch (SecurityException) {
                                     // value exists and we can't modify it
-                                    throw new TaskRequiresElevationException("Deleting the value " + activeRegistryBackupElement.ValueName + " requires elevation.");
+                                    throw new TaskRequiresElevationException("Deleting the value " + activeRegistryStateElement.ValueName + " requires elevation.");
                                 }
                             }
                             break;
                         }
 
                         // save as we go along to handle failure
-                        activeModificationsElement.RegistryBackups.RemoveAt(0);
+                        activeModificationsElement.RegistryStates.RemoveAt(0);
                         SetFlashpointSecurePlayerSection(TemplateName);
                     }
 
@@ -1258,7 +1258,7 @@ namespace FlashpointSecurePlayer {
                 //return;
             //}
 
-            RegistryBackupElement registryBackupElement = new RegistryBackupElement {
+            RegistryStateElement registryStateElement = new RegistryStateElement {
                 KeyName = registryTraceData.KeyName,
                 ValueName = registryTraceData.ValueName
             };
@@ -1267,19 +1267,19 @@ namespace FlashpointSecurePlayer {
             object value = null;
             RegistryView registryView = RegistryView.Registry32;
 
-            if (modificationsElement.RegistryBackups.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) {
+            if (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) {
                 registryView = RegistryView.Registry64;
             }
 
             if (safeKeyHandle == 0) {
                 // we don't need to queue it, we can just add the key right here
-                registryBackupElement.KeyName = GetRedirectedKeyValueName(GetKeyValueNameFromKernelRegistryString(registryBackupElement.KeyName), modificationsElement.RegistryBackups.BinaryType);
+                registryStateElement.KeyName = GetRedirectedKeyValueName(GetKeyValueNameFromKernelRegistryString(registryStateElement.KeyName), modificationsElement.RegistryStates.BinaryType);
                 
-                registryBackupElement.ValueKind = GetValueKindInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView);
+                registryStateElement.ValueKind = GetValueKindInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView);
                 value = null;
 
                 try {
-                    value = ReplaceStartupPathEnvironmentVariable(LengthenValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView), fullPath));
+                    value = ReplaceStartupPathEnvironmentVariable(LengthenValue(GetValueInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView), fullPath));
                 } catch (ArgumentException) {
                     // value doesn't exist
                     value = null;
@@ -1290,22 +1290,22 @@ namespace FlashpointSecurePlayer {
                 }
                 
                 if (value == null) {
-                    if (String.IsNullOrEmpty(registryBackupElement.ValueName) && String.IsNullOrEmpty(TestKeyDeletedInRegistryView(registryBackupElement.KeyName, registryView))) {
-                        registryBackupElement.Type = TYPE.KEY;
+                    if (String.IsNullOrEmpty(registryStateElement.ValueName) && String.IsNullOrEmpty(TestKeyDeletedInRegistryView(registryStateElement.KeyName, registryView))) {
+                        registryStateElement.Type = TYPE.KEY;
                     } else {
-                        registryBackupElement.Type = TYPE.VALUE;
+                        registryStateElement.Type = TYPE.VALUE;
                     }
 
-                    if (registryBackupElement.Type == TYPE.VALUE) {
+                    if (registryStateElement.Type == TYPE.VALUE) {
                         ModificationRemoved(registryTraceData);
                         return;
                     }
                 } else {
-                    registryBackupElement.Type = TYPE.VALUE;
-                    registryBackupElement.Value = value.ToString();
+                    registryStateElement.Type = TYPE.VALUE;
+                    registryStateElement.Value = value.ToString();
                 }
 
-                modificationsElement.RegistryBackups.Set(registryBackupElement);
+                modificationsElement.RegistryStates.Set(registryStateElement);
                 SetFlashpointSecurePlayerSection(TemplateName);
                 return;
             }
@@ -1313,13 +1313,13 @@ namespace FlashpointSecurePlayer {
             // need to deal with KCB
             // well, we already know the base key name from before, so we can wrap this up now
             if (kcbModificationKeyNames.ContainsKey(safeKeyHandle)) {
-                registryBackupElement.KeyName = GetRedirectedKeyValueName(GetKeyValueNameFromKernelRegistryString(kcbModificationKeyNames[safeKeyHandle] + "\\" + registryBackupElement.KeyName), modificationsElement.RegistryBackups.BinaryType);
+                registryStateElement.KeyName = GetRedirectedKeyValueName(GetKeyValueNameFromKernelRegistryString(kcbModificationKeyNames[safeKeyHandle] + "\\" + registryStateElement.KeyName), modificationsElement.RegistryStates.BinaryType);
 
-                registryBackupElement.ValueKind = GetValueKindInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView);
+                registryStateElement.ValueKind = GetValueKindInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView);
                 value = null;
 
                 try {
-                    value = ReplaceStartupPathEnvironmentVariable(LengthenValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView), fullPath));
+                    value = ReplaceStartupPathEnvironmentVariable(LengthenValue(GetValueInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView), fullPath));
                 } catch (ArgumentException) {
                 } catch (SecurityException) {
                     // we have permission to access the key at this point so this must not be important
@@ -1327,22 +1327,22 @@ namespace FlashpointSecurePlayer {
 
                 if (value == null) {
                     // if not just the value, but the entire key, is deleted, treat this as a key type
-                    if (String.IsNullOrEmpty(registryBackupElement.ValueName) && String.IsNullOrEmpty(TestKeyDeletedInRegistryView(registryBackupElement.KeyName, registryView))) {
-                        registryBackupElement.Type = TYPE.KEY;
+                    if (String.IsNullOrEmpty(registryStateElement.ValueName) && String.IsNullOrEmpty(TestKeyDeletedInRegistryView(registryStateElement.KeyName, registryView))) {
+                        registryStateElement.Type = TYPE.KEY;
                     } else {
-                        registryBackupElement.Type = TYPE.VALUE;
+                        registryStateElement.Type = TYPE.VALUE;
                     }
 
-                    if (registryBackupElement.Type == TYPE.VALUE) {
+                    if (registryStateElement.Type == TYPE.VALUE) {
                         ModificationRemoved(registryTraceData);
                         return;
                     }
                 } else {
-                    registryBackupElement.Type = TYPE.VALUE;
-                    registryBackupElement.Value = value.ToString();
+                    registryStateElement.Type = TYPE.VALUE;
+                    registryStateElement.Value = value.ToString();
                 }
 
-                modificationsElement.RegistryBackups.Set(registryBackupElement);
+                modificationsElement.RegistryStates.Set(registryStateElement);
                 SetFlashpointSecurePlayerSection(TemplateName);
                 return;
             }
@@ -1350,11 +1350,11 @@ namespace FlashpointSecurePlayer {
             // worst case scenario: now we need to watch for when we get info on that handle
             if (!modificationsQueue.ContainsKey(safeKeyHandle)) {
                 // create queue if does not exist (might be multiple keys waiting on it)
-                modificationsQueue[safeKeyHandle] = new SortedList<DateTime, RegistryBackupElement>();
+                modificationsQueue[safeKeyHandle] = new SortedList<DateTime, RegistryStateElement>();
             }
 
             // add key to the queue for that handle
-            modificationsQueue[safeKeyHandle][registryTraceData.TimeStamp] = registryBackupElement;
+            modificationsQueue[safeKeyHandle][registryTraceData.TimeStamp] = registryStateElement;
         }
 
         private void ModificationRemoved(RegistryTraceData registryTraceData) {
@@ -1389,7 +1389,7 @@ namespace FlashpointSecurePlayer {
             //}
 
             // create filler element to get name
-            RegistryBackupElement registryBackupElement = new RegistryBackupElement {
+            RegistryStateElement registryStateElement = new RegistryStateElement {
                 KeyName = registryTraceData.KeyName,
                 ValueName = registryTraceData.ValueName
             };
@@ -1397,19 +1397,19 @@ namespace FlashpointSecurePlayer {
             ulong safeKeyHandle = registryTraceData.KeyHandle & 0x00000000FFFFFFFF;
 
             if (safeKeyHandle == 0) {
-                registryBackupElement.KeyName = GetRedirectedKeyValueName(GetKeyValueNameFromKernelRegistryString(registryBackupElement.KeyName), modificationsElement.RegistryBackups.BinaryType);
+                registryStateElement.KeyName = GetRedirectedKeyValueName(GetKeyValueNameFromKernelRegistryString(registryStateElement.KeyName), modificationsElement.RegistryStates.BinaryType);
 
                 // key was deleted - don't need to find its value, just enough info for the name
-                modificationsElement.RegistryBackups.Remove(registryBackupElement.Name);
+                modificationsElement.RegistryStates.Remove(registryStateElement.Name);
                 //SetModificationsElement(modificationsElement, Name);
                 return;
             }
 
             if (kcbModificationKeyNames.ContainsKey(safeKeyHandle)) {
                 // we have info from the handle already to get the name
-                registryBackupElement.KeyName = GetRedirectedKeyValueName(GetKeyValueNameFromKernelRegistryString(kcbModificationKeyNames[safeKeyHandle] + "\\" + registryBackupElement.KeyName), modificationsElement.RegistryBackups.BinaryType);
+                registryStateElement.KeyName = GetRedirectedKeyValueName(GetKeyValueNameFromKernelRegistryString(kcbModificationKeyNames[safeKeyHandle] + "\\" + registryStateElement.KeyName), modificationsElement.RegistryStates.BinaryType);
 
-                modificationsElement.RegistryBackups.Remove(registryBackupElement.Name);
+                modificationsElement.RegistryStates.Remove(registryStateElement.Name);
                 //SetModificationsElement(modificationsElement, Name);
                 return;
             }
@@ -1417,11 +1417,11 @@ namespace FlashpointSecurePlayer {
             // worst case scenario: now we need to watch for when we get info on that handle
             if (!modificationsQueue.ContainsKey(safeKeyHandle)) {
                 // create queue if does not exist (might be multiple keys waiting on it)
-                modificationsQueue[safeKeyHandle] = new SortedList<DateTime, RegistryBackupElement>();
+                modificationsQueue[safeKeyHandle] = new SortedList<DateTime, RegistryStateElement>();
             }
 
             // TODO: how do we handle this for deletion? (see also KCBStopped)
-            modificationsQueue[safeKeyHandle][registryTraceData.TimeStamp] = registryBackupElement;
+            modificationsQueue[safeKeyHandle][registryTraceData.TimeStamp] = registryStateElement;
         }
 
         private void KCBStarted(RegistryTraceData registryTraceData) {
@@ -1474,13 +1474,13 @@ namespace FlashpointSecurePlayer {
             kcbModificationKeyNames.Remove(safeKeyHandle);
 
             // we'll be finding these in a second
-            KeyValuePair<DateTime, RegistryBackupElement> queuedModification;
-            RegistryBackupElement registryBackupElement;
+            KeyValuePair<DateTime, RegistryStateElement> queuedModification;
+            RegistryStateElement registryStateElement;
             object value = null;
 
             RegistryView registryView = RegistryView.Registry32;
 
-            if (modificationsElement.RegistryBackups.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) {
+            if (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) {
                 registryView = RegistryView.Registry64;
             }
 
@@ -1492,14 +1492,14 @@ namespace FlashpointSecurePlayer {
                     queuedModification = modificationsQueue[safeKeyHandle].First();
 
                     // add its BaseKeyName
-                    registryBackupElement = queuedModification.Value;
-                    registryBackupElement.KeyName = GetRedirectedKeyValueName(GetKeyValueNameFromKernelRegistryString(registryTraceData.KeyName + "\\" + registryBackupElement.KeyName), modificationsElement.RegistryBackups.BinaryType);
-                    registryBackupElement.ValueKind = GetValueKindInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView);
+                    registryStateElement = queuedModification.Value;
+                    registryStateElement.KeyName = GetRedirectedKeyValueName(GetKeyValueNameFromKernelRegistryString(registryTraceData.KeyName + "\\" + registryStateElement.KeyName), modificationsElement.RegistryStates.BinaryType);
+                    registryStateElement.ValueKind = GetValueKindInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView);
                     value = null;
 
                     // value
                     try {
-                        value = ReplaceStartupPathEnvironmentVariable(LengthenValue(GetValueInRegistryView(registryBackupElement.KeyName, registryBackupElement.ValueName, registryView), fullPath));
+                        value = ReplaceStartupPathEnvironmentVariable(LengthenValue(GetValueInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView), fullPath));
                     } catch (ArgumentException) {
                         // value doesn't exist
                         value = null;
@@ -1511,17 +1511,17 @@ namespace FlashpointSecurePlayer {
                     // TODO: is this the best way to handle deletion?
                     // move it into the normal registry modifications
                     if (value == null) {
-                        if (String.IsNullOrEmpty(registryBackupElement.ValueName) && String.IsNullOrEmpty(TestKeyDeletedInRegistryView(registryBackupElement.KeyName, registryView))) {
-                            registryBackupElement.Type = TYPE.KEY;
-                            modificationsElement.RegistryBackups.Set(registryBackupElement);
+                        if (String.IsNullOrEmpty(registryStateElement.ValueName) && String.IsNullOrEmpty(TestKeyDeletedInRegistryView(registryStateElement.KeyName, registryView))) {
+                            registryStateElement.Type = TYPE.KEY;
+                            modificationsElement.RegistryStates.Set(registryStateElement);
                         } else {
-                            registryBackupElement.Type = TYPE.VALUE;
-                            modificationsElement.RegistryBackups.Remove(registryBackupElement.Name);
+                            registryStateElement.Type = TYPE.VALUE;
+                            modificationsElement.RegistryStates.Remove(registryStateElement.Name);
                         }
                     } else {
-                        registryBackupElement.Type = TYPE.VALUE;
-                        registryBackupElement.Value = value.ToString();
-                        modificationsElement.RegistryBackups.Set(registryBackupElement);
+                        registryStateElement.Type = TYPE.VALUE;
+                        registryStateElement.Value = value.ToString();
+                        modificationsElement.RegistryStates.Set(registryStateElement);
                     }
 
                     // and out of the queue
