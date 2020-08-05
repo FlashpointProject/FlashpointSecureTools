@@ -55,11 +55,11 @@ This may either be set explicitly or implicitly. It may be set explicitly by add
 
 **FP_HTDOCS_FILE**
 
-This is the path to the file downloaded from the URL within the Flashpoint Server's local HTDOCS folder.
+This is the path to the local file from the URL. The path is relative to Flashpoint's HTDOCS folder.
 
 **FP_HTDOCS_FILE_DIR**
 
-This is the path to the directory with the file downloaded from the URL within the Flashpoint Server's local HTDOCS folder.
+This is the path to the directory with the local file from the URL. The path is relative to Flashpoint's HTDOCS folder.
 
 # Modes
 The Mode determines what action Flashpoint Secure Player will perform after all of the Modifications are made. For example, the end goal may be to open a browser, or a specific software. Modes are exclusive - there may only be one set at a time.
