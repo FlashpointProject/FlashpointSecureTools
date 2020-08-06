@@ -138,12 +138,20 @@ namespace FlashpointSecurePlayer {
 
         public object PPDisp {
             get {
+                if (closableWebBrowser1 == null) {
+                    return null;
+                }
                 return closableWebBrowser1.ActiveXInstance;
             }
         }
 
         private void _WebBrowser() {
             InitializeComponent();
+
+            if (closableWebBrowser1 == null) {
+                return;
+            }
+            
             closableWebBrowser1.DocumentTitleChanged += closableWebBrowser1_DocumentTitleChanged;
             messageFilter = new MessageFilter(this, new EventHandler(OnBack), new EventHandler(OnForward));
         }
@@ -176,6 +184,10 @@ namespace FlashpointSecurePlayer {
                 catch (OverflowException) { }
             }
             */
+
+            if (closableWebBrowser1 == null) {
+                return;
+            }
 
             try {
                 //string portString = port.ToString();
@@ -213,13 +225,19 @@ namespace FlashpointSecurePlayer {
         }
 
         private void WebBrowser_Shown(object sender, EventArgs e) {
-            if (webBrowserURL != null) {
-                closableWebBrowser1.Url = webBrowserURL;
+            if (closableWebBrowser1 == null || webBrowserURL == null) {
+                return;
             }
+            
+            closableWebBrowser1.Url = webBrowserURL;
         }
         
         private void WebBrowser_FormClosing(object sender, FormClosingEventArgs e) {
             //Application.Exit();
+
+            if (closableWebBrowser1 == null) {
+                return;
+            }
 
             if (closableWebBrowser1.ActiveXInstance is SHDocVw.WebBrowser shDocVwWebBrowser) {
                 // IE5
@@ -234,6 +252,8 @@ namespace FlashpointSecurePlayer {
                 shDocVwWebBrowser.DownloadBegin -= ShDocVwWebBrowser_DownloadBegin;
                 shDocVwWebBrowser.DownloadComplete -= ShDocVwWebBrowser_DownloadComplete;
             }
+
+            closableWebBrowser1.Dispose();
         }
 
         private void WebBrowser_Activated(object sender, EventArgs e) {
@@ -257,6 +277,10 @@ namespace FlashpointSecurePlayer {
         }
 
         private void closableWebBrowser1_DocumentTitleChanged(object sender, EventArgs e) {
+            if (closableWebBrowser1 == null) {
+                return;
+            }
+
             webBrowserTitle.DocumentTitle = closableWebBrowser1.DocumentTitle;
         }
 
@@ -280,10 +304,18 @@ namespace FlashpointSecurePlayer {
         }
 
         private void ShDocVwWebBrowser_WindowSetWidth(int Width) {
+            if (closableWebBrowser1 == null) {
+                return;
+            }
+
             this.Width = this.Width - closableWebBrowser1.Width + Width;
         }
 
         private void ShDocVwWebBrowser_WindowSetHeight(int Height) {
+            if (closableWebBrowser1 == null) {
+                return;
+            }
+
             this.Height = this.Height - closableWebBrowser1.Height + Height;
         }
 
@@ -292,6 +324,10 @@ namespace FlashpointSecurePlayer {
         }
 
         private void ShDocVwWebBrowser_DownloadBegin() {
+            if (closableWebBrowser1 == null) {
+                return;
+            }
+
             Control closableWebBrowser1Control = closableWebBrowser1 as Control;
 
             if (closableWebBrowser1Control == null) {
@@ -305,6 +341,10 @@ namespace FlashpointSecurePlayer {
         }
 
         private void ShDocVwWebBrowser_DownloadComplete() {
+            if (closableWebBrowser1 == null) {
+                return;
+            }
+
             Control closableWebBrowser1Control = closableWebBrowser1 as Control;
 
             if (closableWebBrowser1Control == null) {
@@ -318,12 +358,20 @@ namespace FlashpointSecurePlayer {
         }
 
         private void OnBack(object sender, EventArgs e) {
+            if (closableWebBrowser1 == null) {
+                return;
+            }
+
             if (closableWebBrowser1.CanGoBack) {
                 closableWebBrowser1.GoBack();
             }
         }
 
         private void OnForward(object sender, EventArgs e) {
+            if (closableWebBrowser1 == null) {
+                return;
+            }
+
             if (closableWebBrowser1.CanGoForward) {
                 closableWebBrowser1.GoForward();
             }
