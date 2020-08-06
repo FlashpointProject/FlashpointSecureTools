@@ -156,6 +156,18 @@ namespace FlashpointSecurePlayer {
 
                 // set environment variables
                 for (int i = 0;i < modificationsElement.EnvironmentVariables.Count;i++) {
+                    environmentVariablesElement = modificationsElement.EnvironmentVariables.Get(i) as EnvironmentVariablesElement;
+
+                    if (environmentVariablesElement == null) {
+                        throw new System.Configuration.ConfigurationErrorsException("The Environment Variables Element (" + i + ") is null.");
+                    }
+
+                    comparableName = GetComparableName(environmentVariablesElement.Name);
+
+                    if (UnmodifiableComparableNames.Contains(comparableName)) {
+                        throw new EnvironmentVariablesFailedException("The " + environmentVariablesElement.Name + " Environment Variable cannot be modified at this time.");
+                    }
+
                     value = GetValue(environmentVariablesElement);
 
                     try {
