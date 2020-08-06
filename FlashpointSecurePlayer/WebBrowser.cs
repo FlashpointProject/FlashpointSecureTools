@@ -100,6 +100,7 @@ namespace FlashpointSecurePlayer {
         private readonly WebBrowserTitle webBrowserTitle;
         private Uri webBrowserURL = null;
         private MessageFilter messageFilter = null;
+        private bool resizable = true;
         private object downloadCompletedLock = new object();
         private bool downloadCompleted = false;
 
@@ -113,6 +114,24 @@ namespace FlashpointSecurePlayer {
             set {
                 lock (downloadCompletedLock) {
                     downloadCompleted = value;
+                }
+            }
+        }
+
+        private bool Resizable {
+            get {
+                return resizable;
+            }
+
+            set {
+                resizable = value;
+
+                if (resizable) {
+                    FormBorderStyle = FormBorderStyle.Sizable;
+                    MaximizeBox = true;
+                } else {
+                    FormBorderStyle = FormBorderStyle.FixedSingle;
+                    MaximizeBox = false;
                 }
             }
         }
@@ -225,7 +244,6 @@ namespace FlashpointSecurePlayer {
             Application.RemoveMessageFilter(messageFilter);
         }
 
-
         private void closableWebBrowser1_ProgressChanged(object sender, WebBrowserProgressChangedEventArgs e) {
             if (e.CurrentProgress == -1) {
                 DownloadCompleted = true;
@@ -270,13 +288,7 @@ namespace FlashpointSecurePlayer {
         }
 
         private void ShDocVwWebBrowser_WindowSetResizable(bool Resizable) {
-            if (Resizable) {
-                FormBorderStyle = FormBorderStyle.Sizable;
-                MaximizeBox = true;
-            } else {
-                FormBorderStyle = FormBorderStyle.FixedSingle;
-                MaximizeBox = false;
-            }
+            this.Resizable = Resizable;
         }
 
         private void ShDocVwWebBrowser_DownloadBegin() {
@@ -320,13 +332,22 @@ namespace FlashpointSecurePlayer {
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
             if (keyData == Keys.F11 || keyData == (Keys.Alt | Keys.Enter)) {
                 if (TopMost) {
+                    // allow other windows over this one
                     TopMost = false;
+                    // need to do this now to reset the window to its set size
                     FormBorderStyle = FormBorderStyle.Sizable;
+                    // exit fullscreen
                     WindowState = FormWindowState.Normal;
+                    // show resizable if this is a resizable window
+                    Resizable = resizable;
                 } else {
+                    // need to do this first to have an effect if starting maximized
                     WindowState = FormWindowState.Normal;
+                    // knock out borders, temporarily disabling resizing
                     FormBorderStyle = FormBorderStyle.None;
+                    // enter fullscreen
                     WindowState = FormWindowState.Maximized;
+                    // don't allow other windows over this one
                     TopMost = true;
                 }
             }
