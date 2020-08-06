@@ -480,6 +480,7 @@ namespace FlashpointSecurePlayer {
                             }
 
                             Show();
+                            Refresh();
 
                             string softwareProcessStandardError = null;
                             string softwareProcessStandardOutput = null;
@@ -526,6 +527,7 @@ namespace FlashpointSecurePlayer {
                             }
                         } catch {
                             Show();
+                            Refresh();
                             errorDelegate(Properties.Resources.ProcessFailedStart);
                             throw new InvalidModeException("The Mode failed to start the Process.");
                         }
@@ -918,6 +920,7 @@ namespace FlashpointSecurePlayer {
             // switch to synced process
             ProgressManager.Reset();
             ShowOutput(Properties.Resources.RequiredComponentsAreLoading);
+            Refresh();
 
             try {
                 await ActivateModificationsAsync(templateElement, delegate (string text) {
@@ -963,7 +966,8 @@ namespace FlashpointSecurePlayer {
             // only if closing...
             ProgressManager.Reset();
             ShowOutput(Properties.Resources.RequiredComponentsAreUnloading);
-            
+            Refresh();
+
             try {
                 DeactivateMode(templateElement, delegate (string text) {
                     // I will assassinate the Cyrollan delegate myself...
@@ -1031,6 +1035,7 @@ namespace FlashpointSecurePlayer {
             BringToFront();
             Activate();
             ShowOutput(Properties.Resources.RequiredComponentsAreUnloading);
+            Refresh();
 
             try {
                 // Set Current Directory
@@ -1121,6 +1126,7 @@ namespace FlashpointSecurePlayer {
             try {
                 //Show();
                 ShowOutput(Properties.Resources.GameDownloading);
+                Refresh();
                 // get Template Element
                 TemplateElement templateElement = null;
 
@@ -1364,6 +1370,7 @@ namespace FlashpointSecurePlayer {
             }
 
             Show();
+            Refresh();
             Application.Exit();
         }
     }
