@@ -234,6 +234,7 @@ namespace FlashpointSecurePlayer {
         
         private void WebBrowser_FormClosing(object sender, FormClosingEventArgs e) {
             //Application.Exit();
+            Hide();
 
             if (closableWebBrowser1 == null) {
                 return;
