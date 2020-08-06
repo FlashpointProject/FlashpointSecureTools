@@ -29,6 +29,10 @@ namespace FlashpointSecurePlayer {
             }
 
             private void Show() {
+                if (form == null) {
+                    return;
+                }
+
                 StringBuilder text = new StringBuilder();
 
                 if (!String.IsNullOrEmpty(documentTitle)) {
