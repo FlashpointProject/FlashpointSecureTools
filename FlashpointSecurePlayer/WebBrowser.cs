@@ -318,7 +318,7 @@ namespace FlashpointSecurePlayer {
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
-            if (keyData == Keys.F11 || (keyData == (Keys.Alt | Keys.Enter))) {
+            if (keyData == Keys.F11 || keyData == (Keys.Alt | Keys.Enter)) {
                 if (TopMost) {
                     TopMost = false;
                     FormBorderStyle = FormBorderStyle.Sizable;
