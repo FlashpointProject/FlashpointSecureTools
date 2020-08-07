@@ -49,12 +49,41 @@ namespace FlashpointSecurePlayer {
 
         public FlashpointSecurePlayer() {
             InitializeComponent();
+
+            // default to false in case of error
+            bool createdNew = false;
+
+            // test multiple instances
+            try {
+                // signals the Mutex if it has not been
+                applicationMutex = new Mutex(true, APPLICATION_MUTEX_NAME, out createdNew);
+
+                if (!createdNew) {
+                    // multiple instances open, blow up immediately
+                    applicationMutex = null;
+                    throw new InvalidOperationException("You cannot run multiple instances of Flashpoint Secure Player.");
+                }
+            } catch (InvalidOperationException ex) {
+                LogExceptionToLauncher(ex);
+            } finally {
+                if (!createdNew) {
+                    Environment.Exit(-2);
+                }
+            }
+
             runAsAdministrator = new RunAsAdministrator(this);
             environmentVariables = new EnvironmentVariables(this);
             downloadsBefore = new DownloadsBefore(this);
             registryState = new RegistryStates(this);
             singleInstance = new SingleInstance(this);
             oldCPUSimulator = new OldCPUSimulator(this);
+        }
+
+        ~FlashpointSecurePlayer() {
+            if (applicationMutex != null) {
+                applicationMutex.ReleaseMutex();
+                applicationMutex = null;
+            }
         }
 
         private void ShowOutput(string errorLabelText) {
@@ -992,27 +1021,6 @@ namespace FlashpointSecurePlayer {
         }
 
         private async void FlashpointSecurePlayer_Load(object sender, EventArgs e) {
-            // default to false in case of error
-            bool createdNew = false;
-
-            // test multiple instances
-            try {
-                // signals the Mutex if it has not been
-                applicationMutex = new Mutex(true, APPLICATION_MUTEX_NAME, out createdNew);
-
-                if (!createdNew) {
-                    // multiple instances open, blow up immediately
-                    applicationMutex = null;
-                    throw new InvalidOperationException("You cannot run multiple instances of Flashpoint Secure Player.");
-                }
-            } catch (InvalidOperationException ex) {
-                LogExceptionToLauncher(ex);
-            } finally {
-                if (!createdNew) {
-                    Environment.Exit(-2);
-                }
-            }
-
             ProgressManager.ProgressBar = securePlaybackProgressBar;
             string windowsVersionName = GetWindowsVersionName(false, false, false);
 
@@ -1354,11 +1362,6 @@ namespace FlashpointSecurePlayer {
             } catch (InvalidTemplateException ex) {
                 LogExceptionToLauncher(ex);
                 // Fail silently.
-            }
-            
-            if (applicationMutex != null) {
-                applicationMutex.ReleaseMutex();
-                applicationMutex = null;
             }
         }
 
