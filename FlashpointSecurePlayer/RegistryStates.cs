@@ -1177,7 +1177,7 @@ namespace FlashpointSecurePlayer {
                             if (String.IsNullOrEmpty(activeRegistryStateElement._Deleted)) {
                                 try {
                                     // value was different before
-                                    SetValueInRegistryView(GetUserKeyValueName(activeRegistryStateElement.KeyName), activeRegistryStateElement.ValueName, /*RemoveVariablesFromLengthenedValue(*/activeRegistryStateElement.Value/*)*/, activeRegistryStateElement.ValueKind.GetValueOrDefault(), registryView);
+                                    SetValueInRegistryView(GetUserKeyValueName(activeRegistryStateElement.KeyName), activeRegistryStateElement.ValueName, String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded) ? registryStateElement.Value : activeRegistryStateElement._ValueExpanded, activeRegistryStateElement.ValueKind.GetValueOrDefault(), registryView);
                                 } catch (InvalidOperationException) {
                                     // value doesn't exist and can't be created
                                     throw new RegistryStateFailedException("The value " + activeRegistryStateElement.ValueName + " cannot be created.");
