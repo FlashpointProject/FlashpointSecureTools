@@ -79,13 +79,6 @@ namespace FlashpointSecurePlayer {
             oldCPUSimulator = new OldCPUSimulator(this);
         }
 
-        ~FlashpointSecurePlayer() {
-            if (applicationMutex != null) {
-                applicationMutex.ReleaseMutex();
-                applicationMutex = null;
-            }
-        }
-
         private void ShowOutput(string errorLabelText) {
             ProgressManager.ShowOutput();
             this.errorLabel.Text = errorLabelText;
@@ -1362,6 +1355,11 @@ namespace FlashpointSecurePlayer {
             } catch (InvalidTemplateException ex) {
                 LogExceptionToLauncher(ex);
                 // Fail silently.
+            }
+
+            if (applicationMutex != null) {
+                applicationMutex.ReleaseMutex();
+                applicationMutex = null;
             }
         }
 
