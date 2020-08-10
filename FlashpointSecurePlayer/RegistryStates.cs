@@ -1047,6 +1047,8 @@ namespace FlashpointSecurePlayer {
             // don't allow infinite recursion!
             if (String.IsNullOrEmpty(templateElementName)) {
                 activeModificationsElement.RegistryStates.Clear();
+                activeModificationsElement.RegistryStates.BinaryType = BINARY_TYPE.SCS_64BIT_BINARY;
+                activeModificationsElement.RegistryStates._Administrator = false;
                 SetFlashpointSecurePlayerSection(TemplateName);
                 return;
             }
@@ -1064,6 +1066,8 @@ namespace FlashpointSecurePlayer {
             
             if (modificationsElement == null) {
                 activeModificationsElement.RegistryStates.Clear();
+                activeModificationsElement.RegistryStates.BinaryType = BINARY_TYPE.SCS_64BIT_BINARY;
+                activeModificationsElement.RegistryStates._Administrator = false;
                 SetFlashpointSecurePlayerSection(TemplateName);
                 return;
             }
@@ -1140,6 +1144,8 @@ namespace FlashpointSecurePlayer {
 
                             if (clear) {
                                 activeModificationsElement.RegistryStates.Clear();
+                                activeModificationsElement.RegistryStates.BinaryType = BINARY_TYPE.SCS_64BIT_BINARY;
+                                activeModificationsElement.RegistryStates._Administrator = false;
                                 SetFlashpointSecurePlayerSection(TemplateName);
                                 return;
                             }
@@ -1201,6 +1207,10 @@ namespace FlashpointSecurePlayer {
 
                     ProgressManager.CurrentGoal.Steps++;
                 }
+
+                activeModificationsElement.RegistryStates.BinaryType = BINARY_TYPE.SCS_64BIT_BINARY;
+                activeModificationsElement.RegistryStates._Administrator = false;
+                SetFlashpointSecurePlayerSection(TemplateName);
             } finally {
                 ProgressManager.CurrentGoal.Stop();
             }

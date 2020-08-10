@@ -1482,7 +1482,11 @@ namespace FlashpointSecurePlayer {
                     // Fail silently.
                 } catch (ConfigurationErrorsException) {
                     // Fail silently.
+                } catch (IOException) {
+                    throw new ConfigurationErrorsException("The EXE Configuration is in use.");
                 }
+            } catch (IOException) {
+                throw new ConfigurationErrorsException("The EXE Configuration is in use.");
             }
 
             if (exeConfiguration == null) {
