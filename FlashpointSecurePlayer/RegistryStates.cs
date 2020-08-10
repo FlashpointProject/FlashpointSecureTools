@@ -1136,7 +1136,7 @@ namespace FlashpointSecurePlayer {
                                 }
 
                                 // check the ValueKind is the same as in registryStateElement
-                                if (GetValueKindInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView) != registryStateElement.ValueKind) {
+                                if (GetValueKindInRegistryView(GetUserKeyValueName(registryStateElement.KeyName), registryStateElement.ValueName, registryView) != registryStateElement.ValueKind) {
                                     clear = true;
                                 }
                                 break;
