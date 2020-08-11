@@ -1886,6 +1886,7 @@ namespace FlashpointSecurePlayer {
             
             if (applicationMutex != null) {
                 applicationMutex.ReleaseMutex();
+                applicationMutex.Dispose();
                 applicationMutex = null;
             }
 
