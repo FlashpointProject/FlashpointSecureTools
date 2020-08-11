@@ -899,6 +899,7 @@ namespace FlashpointSecurePlayer {
                         };
 
                         if (registryStateElement.Type == TYPE.KEY) {
+                            // we create a key
                             activeRegistryStateElement.Type = TYPE.KEY;
                             activeRegistryStateElement._Deleted = TestKeyDeletedInRegistryView(keyName, registryView);
                         } else {
