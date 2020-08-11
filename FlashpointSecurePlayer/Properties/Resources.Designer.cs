@@ -179,6 +179,15 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This will force the deletion of the modification from your system. You should not do this unless instructed to by Flashpoint staff. Continue?.
+        /// </summary>
+        internal static string ForceDeleteAllWarning {
+            get {
+                return ResourceManager.GetString("ForceDeleteAllWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The game is downloading..
         /// </summary>
         internal static string GameDownloading {

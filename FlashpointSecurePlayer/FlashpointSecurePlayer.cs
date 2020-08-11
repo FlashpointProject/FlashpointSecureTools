@@ -34,6 +34,7 @@ namespace FlashpointSecurePlayer {
         private readonly SingleInstance singleInstance;
         private readonly OldCPUSimulator oldCPUSimulator;
 
+        bool forceDeleteAll = false;
         private bool activeX = false;
         WebBrowser webBrowserForm = null;
         private ProcessStartInfo softwareProcessStartInfo = null;
@@ -842,7 +843,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private async Task DeactivateModificationsAsync(ErrorDelegate errorDelegate, uint time = 0) {
+        private async Task DeactivateModificationsAsync(ErrorDelegate errorDelegate, bool forceDeleteAll) {
             bool createdNew = false;
 
             using (Mutex modificationsMutex = new Mutex(true, MODIFICATIONS_MUTEX_NAME, out createdNew)) {
@@ -872,7 +873,7 @@ namespace FlashpointSecurePlayer {
                         try {
                             // this one really needs to work
                             // we can't continue if it does not
-                            registryState.Deactivate(time);
+                            registryState.Deactivate(forceDeleteAll);
                         } catch (RegistryStateFailedException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.RegistryStateFailed);
@@ -896,7 +897,7 @@ namespace FlashpointSecurePlayer {
                         ProgressManager.CurrentGoal.Steps++;
                         
                         try {
-                            environmentVariables.Deactivate(time);
+                            environmentVariables.Deactivate();
                         } catch (EnvironmentVariablesFailedException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.EnvironmentVariablesFailed);
@@ -1005,7 +1006,7 @@ namespace FlashpointSecurePlayer {
                     // And God forbid I should fail, one touch of the button on my remote detonator...
                     // will be enough to end it all, obliterating Caldoria...
                     // and this foul infestation along with it!
-                }, 5000).ConfigureAwait(false);
+                }, forceDeleteAll).ConfigureAwait(false);
             } catch (InvalidModificationException ex) {
                 LogExceptionToLauncher(ex);
                 // delegate handles error
@@ -1069,6 +1070,8 @@ namespace FlashpointSecurePlayer {
                         activeX = true;
                     } else if (arg == "--run-as-administrator" || arg == "-a") {
                         RunAsAdministratorModification = true;
+                    } else if (arg == "--dev-force-delete-all" || arg == "-a") {
+                        forceDeleteAll = true;
                     } else {
                         if (i < args.Length - 1) {
                             if (arg == "--arguments" || arg == "-args") {
@@ -1090,6 +1093,13 @@ namespace FlashpointSecurePlayer {
                     }
                 }
 
+                if (forceDeleteAll) {
+                    if (MessageBox.Show(Properties.Resources.ForceDeleteAllWarning, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No) {
+                        Application.Exit();
+                        return;
+                    }
+                }
+
                 // this is where we do crash recovery
                 // we attempt to deactivate whatever was in the config file first
                 // it's important this succeeds
@@ -1099,7 +1109,7 @@ namespace FlashpointSecurePlayer {
                         MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         Application.Exit();
                         throw new InvalidModificationException("An error occured while deactivating the Modification.");
-                    }).ConfigureAwait(false);
+                    }, forceDeleteAll).ConfigureAwait(false);
                 } catch (InvalidModificationException ex) {
                     LogExceptionToLauncher(ex);
                     // can't proceed since we can't activate without deactivating first

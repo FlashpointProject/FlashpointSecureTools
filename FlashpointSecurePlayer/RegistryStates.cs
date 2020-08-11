@@ -54,6 +54,8 @@ namespace FlashpointSecurePlayer {
         private const int IMPORT_TIMEOUT = 5;
         private const string IMPORT_RESUME = "FLASHPOINTSECUREPLAYERREGISTRYSTATEIMPORTRESUME";
         private const string IMPORT_PAUSE = "FLASHPOINTSECUREPLAYERREGISTRYSTATEIMPORTPAUSE";
+        private object activationLock = new object();
+        private object deactivationLock = new object();
         private string fullPath = null;
         private EventWaitHandle resumeEventWaitHandle = new ManualResetEvent(false);
         private Dictionary<ulong, SortedList<DateTime, RegistryStateElement>> modificationsQueue = null;
@@ -181,32 +183,6 @@ namespace FlashpointSecurePlayer {
         }
         
         public RegistryStates(Form form) : base(form) { }
-
-        ~RegistryStates() {
-            if (ImportStarted) {
-                try {
-                    StopImport();
-                } catch (RegistryStateFailedException) {
-                    // Fail silently.
-                } catch (System.Configuration.ConfigurationErrorsException) {
-                    // Fail silently.
-                } catch (InvalidOperationException) {
-                    // Fail silently.
-                }
-            }
-
-            try {
-                Deactivate();
-            } catch (RegistryStateFailedException) {
-                // Fail silently.
-            } catch (System.Configuration.ConfigurationErrorsException) {
-                // Fail silently.
-            } catch (TaskRequiresElevationException) {
-                // Fail silently.
-            } catch (InvalidOperationException) {
-                // Fail silently.
-            }
-        }
 
         private string GetUserKeyValueName(string keyValueName) {
             // can be empty, but not null
@@ -523,6 +499,8 @@ namespace FlashpointSecurePlayer {
                     throw new ArgumentException("The key " + keyName + " represents a root node.");
                 } catch (UnauthorizedAccessException) {
                     throw new SecurityException("The value " + valueName + " cannot be accessed by the user.");
+                } catch (ArgumentException) {
+                    throw new SecurityException("The value " + valueName + " has the wrong type.");
                 }
             } finally {
                 if (registryKey != null) {
@@ -842,377 +820,446 @@ namespace FlashpointSecurePlayer {
         }
 
         new public void Activate(string templateName) {
-            base.Activate(templateName);
+            lock (activationLock) {
+                base.Activate(templateName);
 
-            if (String.IsNullOrEmpty(TemplateName)) {
-                // no argument
-                return;
-            }
-
-            TemplateElement templateElement = GetTemplateElement(false, TemplateName);
-
-            if (templateElement == null) {
-                return;
-            }
-
-            ModificationsElement modificationsElement = templateElement.Modifications;
-
-            if (!modificationsElement.ElementInformation.IsPresent) {
-                return;
-            }
-
-            TemplateElement activeTemplateElement = GetActiveTemplateElement(true, TemplateName);
-            ModificationsElement activeModificationsElement = activeTemplateElement.Modifications;
-            RegistryStateElement registryStateElement = null;
-            RegistryStateElement activeRegistryStateElement = null;
-            string keyName = null;
-            object value = null;
-            string keyDeleted = null;
-            string valueExpanded = null;
-
-            /*
-            try {
-                fullPath = Path.GetFullPath(TemplateName);
-            } catch (PathTooLongException) {
-                throw new ArgumentException("The path is too long to " + TemplateName + ".");
-            } catch (SecurityException) {
-                throw new TaskRequiresElevationException("Getting the Full Path to " + TemplateName + " requires elevation.");
-            } catch (NotSupportedException) {
-                throw new ArgumentException("The path to " + TemplateName + " is not supported.");
-            }
-            */
-
-            // to prevent issues with HKEY_LOCAL_MACHINE and crash recovery
-            activeModificationsElement.RegistryStates._Administrator = TestLaunchedAsAdministratorUser();
-            RegistryView registryView = RegistryView.Registry32;
-
-            if (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) {
-                registryView = RegistryView.Registry64;
-            }
-
-            ProgressManager.CurrentGoal.Start(modificationsElement.RegistryStates.Count + modificationsElement.RegistryStates.Count);
-
-            try {
-                // populate active modifications
-                for (int i = 0;i < modificationsElement.RegistryStates.Count;i++) {
-                    // the "active" one is the one that doesn't have a name (it has the "active" attribute)
-                    registryStateElement = modificationsElement.RegistryStates.Get(i) as RegistryStateElement;
-
-                    if (registryStateElement == null) {
-                        Deactivate();
-                        throw new System.Configuration.ConfigurationErrorsException("The Registry State Element (" + i + ") is null.");
-                    }
-
-                    // GOAL: find the CURRENT value in the REAL REGISTRY
-                    // ACTIVE REGISTRY ELEMENT should reflect real registry
-                    // DELETED = DELETED in REAL REGISTRY
-                    // this keyName variable is a temp variable specific to this user
-                    // it should not get saved
-                    keyName = GetUserKeyValueName(registryStateElement.KeyName);
-                    value = null;
-
-                    activeRegistryStateElement = new RegistryStateElement {
-                        Type = registryStateElement.Type,
-                        KeyName = registryStateElement.KeyName,
-                        ValueName = registryStateElement.ValueName,
-                        ValueKind = GetValueKindInRegistryView(keyName, registryStateElement.ValueName, registryView),
-                        _Deleted = String.Empty
-                    };
-
-                    switch (activeRegistryStateElement.Type) {
-                        case TYPE.KEY:
-                        activeRegistryStateElement._Deleted = TestKeyDeletedInRegistryView(keyName, registryView);
-                        break;
-                        case TYPE.VALUE:
-                        try {
-                            valueExpanded = Environment.ExpandEnvironmentVariables(registryStateElement.Value);
-
-                            if (valueExpanded != registryStateElement.Value) {
-                                activeRegistryStateElement._ValueExpanded = valueExpanded;
-                            }
-                        } catch (ArgumentNullException) {
-                            // Fail silently.
-                        }
-
-                        try {
-                            value = /*ReplaceStartupPathEnvironmentVariable(LengthenValue(*/GetValueInRegistryView(keyName, registryStateElement.ValueName, registryView)/*, fullPath))*/;
-                        } catch (ArgumentException) {
-                            // value doesn't exist
-                            value = null;
-                        } catch (SecurityException) {
-                            // value exists but we can't get it
-                            throw new TaskRequiresElevationException("The value " + registryStateElement.ValueName + " cannot be accessed by the user.");
-                        }
-
-                        if (value == null) {
-                            keyDeleted = TestKeyDeletedInRegistryView(keyName, registryView);
-
-                            // if not just the value, but the entire key, is deleted, treat this as a key type
-                            if (String.IsNullOrEmpty(keyDeleted)) {
-                                activeRegistryStateElement.Type = TYPE.VALUE;
-                                activeRegistryStateElement._Deleted = registryStateElement.ValueName;
-                            } else {
-                                activeRegistryStateElement.Type = TYPE.KEY;
-                                activeRegistryStateElement._Deleted = keyDeleted;
-                            }
-                        } else {
-                            activeRegistryStateElement.Type = TYPE.VALUE;
-                            activeRegistryStateElement.Value = value.ToString();
-                        }
-                        break;
-                    }
-                    
-                    activeModificationsElement.RegistryStates.Set(activeRegistryStateElement);
-                    ProgressManager.CurrentGoal.Steps++;
+                if (String.IsNullOrEmpty(TemplateName)) {
+                    // no argument
+                    return;
                 }
 
-                SetFlashpointSecurePlayerSection(TemplateName);
+                TemplateElement templateElement = GetTemplateElement(false, TemplateName);
 
-                for (int i = 0;i < modificationsElement.RegistryStates.Count;i++) {
-                    // the "active" one is the one that doesn't have a name (it has the "active" attribute)
-                    registryStateElement = modificationsElement.RegistryStates.Get(i) as RegistryStateElement;
-                    activeRegistryStateElement = activeModificationsElement.RegistryStates.Get(i) as RegistryStateElement;
-
-                    if (registryStateElement == null) {
-                        Deactivate();
-                        throw new System.Configuration.ConfigurationErrorsException("The Registry State Element (" + i + ") is null.");
-                    }
-
-                    keyName = GetUserKeyValueName(registryStateElement.KeyName);
-
-                    // we don't delete existing keys/values, since the program just won't use deleted keys/values
-                    // therefore, _Deleted is ignored on all but the active registry state
-                    switch (registryStateElement.Type) {
-                        case TYPE.KEY:
-                        try {
-                            SetKeyInRegistryView(keyName, registryView);
-                        } catch (InvalidOperationException) {
-                            // key marked for deletion
-                            Deactivate();
-                            throw new RegistryStateFailedException("The key " + keyName + " is marked for deletion.");
-                        } catch (ArgumentException) {
-                            // key doesn't exist and can't be created
-                            Deactivate();
-                            throw new TaskRequiresElevationException("Creating the key " + keyName + " requires elevation.");
-                        } catch (SecurityException) {
-                            // key exists and we can't modify it
-                        }
-                        break;
-                        case TYPE.VALUE:
-                        try {
-                            SetValueInRegistryView(keyName, registryStateElement.ValueName, String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded) ? registryStateElement.Value : activeRegistryStateElement._ValueExpanded, registryStateElement.ValueKind.GetValueOrDefault(), registryView);
-                        } catch (FormatException) {
-                            // value marked for deletion
-                            Deactivate();
-                            throw new RegistryStateFailedException("The value " + registryStateElement.ValueName + " must be Base64.");
-                        } catch (InvalidOperationException) {
-                            // value marked for deletion
-                            Deactivate();
-                            throw new RegistryStateFailedException("The value " + registryStateElement.ValueName + " is marked for deletion.");
-                        } catch (ArgumentException) {
-                            // value doesn't exist and can't be created
-                            Deactivate();
-                            throw new TaskRequiresElevationException("Creating the value " + registryStateElement.ValueName + " requires elevation.");
-                        } catch (SecurityException) {
-                            // value exists and we can't modify it
-                            Deactivate();
-                            throw new TaskRequiresElevationException("Modifying the value " + registryStateElement.ValueName + " requires elevation.");
-                        }
-                        break;
-                    }
-
-                    ProgressManager.CurrentGoal.Steps++;
+                if (templateElement == null) {
+                    return;
                 }
-            } finally {
-                ProgressManager.CurrentGoal.Stop();
-            }
-        }
 
-        public void Deactivate(uint time = 0) {
-            base.Deactivate();
-            TemplateElement activeTemplateElement = GetActiveTemplateElement(false);
+                ModificationsElement modificationsElement = templateElement.Modifications;
 
-            // if the activation state doesn't exist, we don't need to do stuff
-            if (activeTemplateElement == null) {
-                return;
-            }
-
-            ModificationsElement activeModificationsElement = activeTemplateElement.Modifications;
-
-            // if the activation state exists, but no key is marked as active...
-            // we assume the registry has changed, and don't revert the changes, to be safe
-            // (it should never happen unless the user tampered with the config file)
-            string templateElementName = activeTemplateElement.Active;
-
-            // don't allow infinite recursion!
-            if (String.IsNullOrEmpty(templateElementName)) {
-                activeModificationsElement.RegistryStates.Clear();
-                activeModificationsElement.RegistryStates.BinaryType = BINARY_TYPE.SCS_64BIT_BINARY;
-                activeModificationsElement.RegistryStates._Administrator = false;
-                SetFlashpointSecurePlayerSection(TemplateName);
-                return;
-            }
-
-            TemplateElement templateElement = GetTemplateElement(false, templateElementName);
-            ModificationsElement modificationsElement = null;
-
-            // if the active element pointed to doesn't exist... same assumption
-            // and another safeguard against recursion
-            if (templateElement != null && templateElement != activeTemplateElement) {
-                if (templateElement.Modifications.ElementInformation.IsPresent) {
-                    modificationsElement = templateElement.Modifications;
+                if (!modificationsElement.ElementInformation.IsPresent) {
+                    return;
                 }
-            }
-            
-            if (modificationsElement == null) {
-                activeModificationsElement.RegistryStates.Clear();
-                activeModificationsElement.RegistryStates.BinaryType = BINARY_TYPE.SCS_64BIT_BINARY;
-                activeModificationsElement.RegistryStates._Administrator = false;
-                SetFlashpointSecurePlayerSection(TemplateName);
-                return;
-            }
 
-            RegistryStateElement registryStateElement = null;
-            RegistryStateElement activeRegistryStateElement = null;
-            object value = null;
-            bool clear = false;
+                TemplateElement activeTemplateElement = GetActiveTemplateElement(true, TemplateName);
+                ModificationsElement activeModificationsElement = activeTemplateElement.Modifications;
+                RegistryStateElement registryStateElement = null;
+                RegistryStateElement activeRegistryStateElement = null;
+                string keyName = null;
+                object value = null;
+                string keyDeleted = null;
+                string valueExpanded = null;
 
-            if (activeModificationsElement.RegistryStates._Administrator != TestLaunchedAsAdministratorUser()) {
-                // TODO: lame
-                throw new TaskRequiresElevationException("Deactivating the Registry State requires elevation.");
-            }
+                /*
+                try {
+                    fullPath = Path.GetFullPath(TemplateName);
+                } catch (PathTooLongException) {
+                    throw new ArgumentException("The path is too long to " + TemplateName + ".");
+                } catch (SecurityException) {
+                    throw new TaskRequiresElevationException("Getting the Full Path to " + TemplateName + " requires elevation.");
+                } catch (NotSupportedException) {
+                    throw new ArgumentException("The path to " + TemplateName + " is not supported.");
+                }
+                */
 
-            RegistryView registryView = RegistryView.Registry32;
+                // to prevent issues with HKEY_LOCAL_MACHINE and crash recovery
+                activeModificationsElement.RegistryStates._Administrator = TestLaunchedAsAdministratorUser();
+                RegistryView registryView = RegistryView.Registry32;
 
-            if (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) {
-                // Super Registry 64 DS
-                registryView = RegistryView.Registry64;
-            }
+                if (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) {
+                    registryView = RegistryView.Registry64;
+                }
 
-            ProgressManager.CurrentGoal.Start(activeModificationsElement.RegistryStates.Count + activeModificationsElement.RegistryStates.Count, time);
+                ProgressManager.CurrentGoal.Start(modificationsElement.RegistryStates.Count + modificationsElement.RegistryStates.Count);
 
-            try {
-                // check if any key has been modified from the modification element
-                for (int i = 0;i < activeModificationsElement.RegistryStates.Count;i++) {
-                    // the "active" one is the one that doesn't have a name (it has the "active" attribute)
-                    activeRegistryStateElement = activeModificationsElement.RegistryStates.Get(i) as RegistryStateElement;
+                try {
+                    // populate active modifications
+                    for (int i = 0; i < modificationsElement.RegistryStates.Count; i++) {
+                        // the "active" one is the one that doesn't have a name (it has the "active" attribute)
+                        registryStateElement = modificationsElement.RegistryStates.Get(i) as RegistryStateElement;
 
-                    if (activeRegistryStateElement != null) {
-                        registryStateElement = modificationsElement.RegistryStates.Get(activeRegistryStateElement.Name) as RegistryStateElement;
+                        if (registryStateElement == null) {
+                            Deactivate();
+                            throw new System.Configuration.ConfigurationErrorsException("The Registry State Element (" + i + ") is null.");
+                        }
 
-                        // registryStateElement represents the value the key SHOULD have *right now*
-                        // what to do if modification was recorded, but not in config?
-                        // ignore... it's not part of our record
-                        if (registryStateElement != null) {
-                            value = null;
-                            clear = false;
+                        // GOAL: find the CURRENT value in the REAL REGISTRY
+                        // ACTIVE REGISTRY ELEMENT should reflect real registry
+                        // DELETED = DELETED in REAL REGISTRY
+                        // this keyName variable is a temp variable specific to this user
+                        // it should not get saved
+                        keyName = GetUserKeyValueName(registryStateElement.KeyName);
+                        value = null;
 
-                            // yes this is supposed to be active, it's PC specific
-                            switch (activeRegistryStateElement.Type) {
-                                case TYPE.KEY:
-                                // check the key is set (like how in registryStateElement it must be set)
-                                if (!String.IsNullOrEmpty(TestKeyDeletedInRegistryView(GetUserKeyValueName(registryStateElement.KeyName), registryView))) {
-                                    clear = true;
-                                }
+                        activeRegistryStateElement = new RegistryStateElement {
+                            Type = registryStateElement.Type,
+                            KeyName = registryStateElement.KeyName,
+                            ValueName = registryStateElement.ValueName,
+                            ValueKind = GetValueKindInRegistryView(keyName, registryStateElement.ValueName, registryView),
+                            _Deleted = String.Empty
+                        };
+
+                        switch (activeRegistryStateElement.Type) {
+                            case TYPE.KEY:
+                                activeRegistryStateElement._Deleted = TestKeyDeletedInRegistryView(keyName, registryView);
                                 break;
-                                case TYPE.VALUE:
+                            case TYPE.VALUE:
                                 try {
-                                    value = GetValueInRegistryView(GetUserKeyValueName(registryStateElement.KeyName), registryStateElement.ValueName, registryView);
+                                    valueExpanded = Environment.ExpandEnvironmentVariables(registryStateElement.Value);
+
+                                    if (valueExpanded != registryStateElement.Value) {
+                                        activeRegistryStateElement._ValueExpanded = valueExpanded;
+                                    }
+                                } catch (ArgumentNullException) {
+                                    // Fail silently.
+                                }
+
+                                try {
+                                    value = /*ReplaceStartupPathEnvironmentVariable(LengthenValue(*/GetValueInRegistryView(keyName, registryStateElement.ValueName, registryView)/*, fullPath))*/;
                                 } catch (ArgumentException) {
                                     // value doesn't exist
                                     value = null;
                                 } catch (SecurityException) {
                                     // value exists but we can't get it
-                                    throw new TaskRequiresElevationException("Getting the value " + registryStateElement.ValueName + " requires elevation.");
+                                    throw new TaskRequiresElevationException("The value " + registryStateElement.ValueName + " cannot be accessed by the user.");
                                 }
 
-                                // check the value is the same as in registryStateElement (can't be deleted, only active deletes)
                                 if (value == null) {
-                                    clear = true;
-                                } else {
-                                    if (value.ToString() != (String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded) ? registryStateElement.Value : activeRegistryStateElement._ValueExpanded)) {
-                                        clear = true;
-                                    }
-                                }
+                                    keyDeleted = TestKeyDeletedInRegistryView(keyName, registryView);
 
-                                // check the ValueKind is the same as in registryStateElement
-                                if (GetValueKindInRegistryView(GetUserKeyValueName(registryStateElement.KeyName), registryStateElement.ValueName, registryView) != registryStateElement.ValueKind) {
-                                    clear = true;
+                                    // if not just the value, but the entire key, is deleted, treat this as a key type
+                                    if (String.IsNullOrEmpty(keyDeleted)) {
+                                        activeRegistryStateElement.Type = TYPE.VALUE;
+                                        activeRegistryStateElement._Deleted = registryStateElement.ValueName;
+                                    } else {
+                                        activeRegistryStateElement.Type = TYPE.KEY;
+                                        activeRegistryStateElement._Deleted = keyDeleted;
+                                    }
+                                } else {
+                                    activeRegistryStateElement.Type = TYPE.VALUE;
+                                    activeRegistryStateElement.Value = value.ToString();
                                 }
                                 break;
-                            }
-
-                            if (clear) {
-                                activeModificationsElement.RegistryStates.Clear();
-                                activeModificationsElement.RegistryStates.BinaryType = BINARY_TYPE.SCS_64BIT_BINARY;
-                                activeModificationsElement.RegistryStates._Administrator = false;
-                                SetFlashpointSecurePlayerSection(TemplateName);
-                                return;
-                            }
                         }
+
+                        activeModificationsElement.RegistryStates.Set(activeRegistryStateElement);
+                        ProgressManager.CurrentGoal.Steps++;
                     }
 
-                    ProgressManager.CurrentGoal.Steps++;
-                }
+                    SetFlashpointSecurePlayerSection(TemplateName);
 
-                // our records match, revert keys
-                while (activeModificationsElement.RegistryStates.Count > 0) {
-                    activeRegistryStateElement = activeModificationsElement.RegistryStates.Get(0) as RegistryStateElement;
+                    for (int i = 0; i < modificationsElement.RegistryStates.Count; i++) {
+                        // the "active" one is the one that doesn't have a name (it has the "active" attribute)
+                        registryStateElement = modificationsElement.RegistryStates.Get(i) as RegistryStateElement;
 
-                    // how can it be deleted already?? just paranoia
-                    if (activeRegistryStateElement != null) {
-                        switch (activeRegistryStateElement.Type) {
+                        if (registryStateElement == null) {
+                            Deactivate();
+                            throw new System.Configuration.ConfigurationErrorsException("The Registry State Element (" + i + ") is null.");
+                        }
+
+                        activeRegistryStateElement = activeModificationsElement.RegistryStates.Get(registryStateElement.Name) as RegistryStateElement;
+
+                        if (activeRegistryStateElement == null) {
+                            Deactivate();
+                            throw new System.Configuration.ConfigurationErrorsException("The Active Registry State Element (" + registryStateElement.Name + ") is null.");
+                        }
+
+                        keyName = GetUserKeyValueName(registryStateElement.KeyName);
+
+                        // we don't delete existing keys/values, since the program just won't use deleted keys/values
+                        // therefore, _Deleted is ignored on all but the active registry state
+                        switch (registryStateElement.Type) {
                             case TYPE.KEY:
-                            if (!String.IsNullOrEmpty(activeRegistryStateElement._Deleted)) {
                                 try {
-                                    // key didn't exist before
-                                    DeleteKeyInRegistryView(GetUserKeyValueName(activeRegistryStateElement._Deleted), registryView);
-                                } catch (SecurityException) {
-                                    // value exists and we can't modify it
-                                    throw new TaskRequiresElevationException("Deleting the key " + activeRegistryStateElement._Deleted + " requires elevation.");
-                                }
-                            }
-                            break;
-                            case TYPE.VALUE:
-                            if (String.IsNullOrEmpty(activeRegistryStateElement._Deleted)) {
-                                try {
-                                    // value was different before
-                                    SetValueInRegistryView(GetUserKeyValueName(activeRegistryStateElement.KeyName), activeRegistryStateElement.ValueName, String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded) ? registryStateElement.Value : activeRegistryStateElement._ValueExpanded, activeRegistryStateElement.ValueKind.GetValueOrDefault(), registryView);
+                                    SetKeyInRegistryView(keyName, registryView);
                                 } catch (InvalidOperationException) {
-                                    // value doesn't exist and can't be created
-                                    throw new RegistryStateFailedException("The value " + activeRegistryStateElement.ValueName + " cannot be created.");
+                                    // key marked for deletion
+                                    Deactivate();
+                                    throw new RegistryStateFailedException("The key " + keyName + " is marked for deletion.");
+                                } catch (ArgumentException) {
+                                    // key doesn't exist and can't be created
+                                    Deactivate();
+                                    throw new TaskRequiresElevationException("Creating the key " + keyName + " requires elevation.");
+                                } catch (SecurityException) {
+                                    // key exists and we can't modify it
+                                }
+                                break;
+                            case TYPE.VALUE:
+                                try {
+                                    SetValueInRegistryView(keyName, registryStateElement.ValueName, String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded) ? registryStateElement.Value : activeRegistryStateElement._ValueExpanded, registryStateElement.ValueKind.GetValueOrDefault(), registryView);
+                                } catch (FormatException) {
+                                    // value marked for deletion
+                                    Deactivate();
+                                    throw new RegistryStateFailedException("The value " + registryStateElement.ValueName + " must be Base64.");
+                                } catch (InvalidOperationException) {
+                                    // value marked for deletion
+                                    Deactivate();
+                                    throw new RegistryStateFailedException("The value " + registryStateElement.ValueName + " is marked for deletion.");
                                 } catch (ArgumentException) {
                                     // value doesn't exist and can't be created
-                                    throw new RegistryStateFailedException("The value " + activeRegistryStateElement.ValueName + " cannot be created.");
+                                    Deactivate();
+                                    throw new TaskRequiresElevationException("Creating the value " + registryStateElement.ValueName + " requires elevation.");
                                 } catch (SecurityException) {
                                     // value exists and we can't modify it
-                                    throw new TaskRequiresElevationException("Setting the value " + activeRegistryStateElement.ValueName + " requires elevation.");
+                                    Deactivate();
+                                    throw new TaskRequiresElevationException("Modifying the value " + registryStateElement.ValueName + " requires elevation.");
                                 }
-                            } else {
-                                try {
-                                    // value didn't exist before
-                                    DeleteValueInRegistryView(GetUserKeyValueName(activeRegistryStateElement.KeyName), activeRegistryStateElement.ValueName, registryView);
-                                } catch (SecurityException) {
-                                    // value exists and we can't modify it
-                                    throw new TaskRequiresElevationException("Deleting the value " + activeRegistryStateElement.ValueName + " requires elevation.");
-                                }
-                            }
-                            break;
+                                break;
                         }
 
-                        // save as we go along to handle failure
-                        activeModificationsElement.RegistryStates.RemoveAt(0);
-                        SetFlashpointSecurePlayerSection(TemplateName);
+                        ProgressManager.CurrentGoal.Steps++;
                     }
-
-                    ProgressManager.CurrentGoal.Steps++;
+                } finally {
+                    ProgressManager.CurrentGoal.Stop();
                 }
 
-                activeModificationsElement.RegistryStates.BinaryType = BINARY_TYPE.SCS_64BIT_BINARY;
-                activeModificationsElement.RegistryStates._Administrator = false;
-                SetFlashpointSecurePlayerSection(TemplateName);
-            } finally {
-                ProgressManager.CurrentGoal.Stop();
+            }
+        }
+
+        public void Deactivate(bool forceDeleteAll) {
+            lock (deactivationLock) {
+                base.Deactivate();
+                TemplateElement activeTemplateElement = GetActiveTemplateElement(false);
+
+                // if the activation state doesn't exist, we don't need to do stuff
+                if (activeTemplateElement == null) {
+                    return;
+                }
+
+                ModificationsElement activeModificationsElement = activeTemplateElement.Modifications;
+
+                // if the activation state exists, but no key is marked as active...
+                // we assume the registry has changed, and don't revert the changes, to be safe
+                // (it should never happen unless the user tampered with the config file)
+                string templateElementName = activeTemplateElement.Active;
+
+                // don't allow infinite recursion!
+                if (String.IsNullOrEmpty(templateElementName)) {
+                    activeModificationsElement.RegistryStates.Clear();
+                    activeModificationsElement.RegistryStates.BinaryType = BINARY_TYPE.SCS_64BIT_BINARY;
+                    activeModificationsElement.RegistryStates._Administrator = false;
+                    SetFlashpointSecurePlayerSection(TemplateName);
+                    return;
+                }
+
+                TemplateElement templateElement = GetTemplateElement(false, templateElementName);
+                ModificationsElement modificationsElement = null;
+
+                // if the active element pointed to doesn't exist... same assumption
+                // and another safeguard against recursion
+                if (templateElement != null && templateElement != activeTemplateElement) {
+                    if (templateElement.Modifications.ElementInformation.IsPresent) {
+                        modificationsElement = templateElement.Modifications;
+                    }
+                }
+
+                if (modificationsElement == null) {
+                    activeModificationsElement.RegistryStates.Clear();
+                    activeModificationsElement.RegistryStates.BinaryType = BINARY_TYPE.SCS_64BIT_BINARY;
+                    activeModificationsElement.RegistryStates._Administrator = false;
+                    SetFlashpointSecurePlayerSection(TemplateName);
+                    return;
+                }
+
+                RegistryStateElement registryStateElement = null;
+                RegistryStateElement activeRegistryStateElement = null;
+                object value = null;
+                bool clear = false;
+
+                if (activeModificationsElement.RegistryStates._Administrator != TestLaunchedAsAdministratorUser()) {
+                    // TODO: lame
+                    throw new TaskRequiresElevationException("Deactivating the Registry State requires elevation.");
+                }
+
+                RegistryView registryView = RegistryView.Registry32;
+
+                if (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) {
+                    // Super Registry 64 DS
+                    registryView = RegistryView.Registry64;
+                }
+
+                ProgressManager.CurrentGoal.Start(activeModificationsElement.RegistryStates.Count + activeModificationsElement.RegistryStates.Count);
+
+                try {
+                    if (!forceDeleteAll) {
+                        // check if any key has been modified from the modification element
+                        for (int i = 0; i < activeModificationsElement.RegistryStates.Count; i++) {
+                            // the "active" one is the one that doesn't have a name (it has the "active" attribute)
+                            activeRegistryStateElement = activeModificationsElement.RegistryStates.Get(i) as RegistryStateElement;
+
+                            if (activeRegistryStateElement != null) {
+                                registryStateElement = modificationsElement.RegistryStates.Get(activeRegistryStateElement.Name) as RegistryStateElement;
+
+                                // registryStateElement represents the value the key SHOULD have *right now*
+                                // but if there was a partial move, it may instead be the active value
+                                if (registryStateElement != null) {
+                                    value = null;
+                                    clear = false;
+
+                                    // yes this is supposed to be active, it's PC specific
+                                    switch (activeRegistryStateElement.Type) {
+                                        case TYPE.KEY:
+                                        switch (registryStateElement.Type) {
+                                            case TYPE.KEY:
+                                            // we previously created a key
+                                            // it may or may not have existed before
+                                            // so it may or may not need to exist
+                                            if (String.IsNullOrEmpty(activeRegistryStateElement._Deleted)) {
+                                                // key did exist before
+                                                // that means it should still exist
+                                                if (!String.IsNullOrEmpty(TestKeyDeletedInRegistryView(GetUserKeyValueName(registryStateElement.KeyName), registryView))) {
+                                                    // key no longer exists, bad state
+                                                    clear = true;
+                                                }
+                                            }
+                                            break;
+                                            case TYPE.VALUE:
+                                            // we previously created a value
+                                            // the value, and the key it belonged to, did not exist before
+                                            // it may or may not exist now
+                                            // if the value still exists, we need to check it's not edited
+                                            try {
+                                                value = GetValueInRegistryView(GetUserKeyValueName(registryStateElement.KeyName), registryStateElement.ValueName, registryView);
+                                            } catch (ArgumentException) {
+                                                // value doesn't exist
+                                                value = null;
+                                            } catch (SecurityException) {
+                                                // value exists but we can't get it
+                                                throw new TaskRequiresElevationException("Getting the value " + registryStateElement.ValueName + " requires elevation.");
+                                            }
+
+                                            if (value != null) {
+                                                // the value still exists
+                                                // check it's not edited
+                                                if (value.ToString() != (String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded) ? registryStateElement.Value : activeRegistryStateElement._ValueExpanded)) {
+                                                    clear = true;
+                                                }
+
+                                                RegistryValueKind? registryValueKind = GetValueKindInRegistryView(GetUserKeyValueName(registryStateElement.KeyName), registryStateElement.ValueName, registryView);
+
+                                                if (registryValueKind != registryStateElement.ValueKind) {
+                                                    clear = true;
+                                                }
+                                            }
+                                            break;
+                                        }
+                                        break;
+                                        case TYPE.VALUE:
+                                        // we previously edited a value that existed before
+                                        // we need to check it still exists in one of the two valid states
+                                        try {
+                                            value = GetValueInRegistryView(GetUserKeyValueName(registryStateElement.KeyName), registryStateElement.ValueName, registryView);
+                                        } catch (ArgumentException) {
+                                            // value doesn't exist
+                                            value = null;
+                                        } catch (SecurityException) {
+                                            // value exists but we can't get it
+                                            throw new TaskRequiresElevationException("Getting the value " + registryStateElement.ValueName + " requires elevation.");
+                                        }
+
+                                        if (value == null) {
+                                            clear = true;
+                                        } else {
+                                            // check the value hasn't been edited
+                                            if (value.ToString() != (String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded) ? registryStateElement.Value : activeRegistryStateElement._ValueExpanded) && value.ToString() != activeRegistryStateElement.Value) {
+                                                clear = true;
+                                            }
+
+                                            // check the ValueKind is the same as in registryStateElement
+                                            RegistryValueKind? registryValueKind = GetValueKindInRegistryView(GetUserKeyValueName(registryStateElement.KeyName), registryStateElement.ValueName, registryView);
+
+                                            if (registryValueKind != registryStateElement.ValueKind && registryValueKind != activeRegistryStateElement.ValueKind) {
+                                                clear = true;
+                                            }
+                                        }
+                                        break;
+                                    }
+                                    
+                                    if (clear) {
+                                        activeModificationsElement.RegistryStates.Clear();
+                                        activeModificationsElement.RegistryStates.BinaryType = BINARY_TYPE.SCS_64BIT_BINARY;
+                                        activeModificationsElement.RegistryStates._Administrator = false;
+                                        SetFlashpointSecurePlayerSection(TemplateName);
+                                        return;
+                                    }
+                                }
+                            }
+
+                            ProgressManager.CurrentGoal.Steps++;
+                        }
+                    }
+
+                    Exception exception = null;
+
+                    while (activeModificationsElement.RegistryStates.Count > 0) {
+                        try {
+                            activeRegistryStateElement = activeModificationsElement.RegistryStates.Get(0) as RegistryStateElement;
+
+                            // how can it be deleted already?? just paranoia
+                            if (activeRegistryStateElement != null) {
+                                registryStateElement = modificationsElement.RegistryStates.Get(activeRegistryStateElement.Name) as RegistryStateElement;
+
+                                if (registryStateElement != null) {
+                                    switch (activeRegistryStateElement.Type) {
+                                        case TYPE.KEY:
+                                            if (!String.IsNullOrEmpty(activeRegistryStateElement._Deleted) || forceDeleteAll) {
+                                                try {
+                                                    // key didn't exist before
+                                                    DeleteKeyInRegistryView(GetUserKeyValueName(activeRegistryStateElement._Deleted), registryView);
+                                                } catch (SecurityException) {
+                                                    // value exists and we can't modify it
+                                                    throw new TaskRequiresElevationException("Deleting the key " + activeRegistryStateElement._Deleted + " requires elevation.");
+                                                }
+                                            }
+                                            break;
+                                        case TYPE.VALUE:
+                                            if (String.IsNullOrEmpty(activeRegistryStateElement._Deleted) && !forceDeleteAll) {
+                                                try {
+                                                    // value was different before
+                                                    SetValueInRegistryView(GetUserKeyValueName(activeRegistryStateElement.KeyName), activeRegistryStateElement.ValueName, String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded) ? registryStateElement.Value : activeRegistryStateElement._ValueExpanded, activeRegistryStateElement.ValueKind.GetValueOrDefault(), registryView);
+                                                } catch (InvalidOperationException) {
+                                                    // value doesn't exist and can't be created
+                                                    throw new RegistryStateFailedException("The value " + activeRegistryStateElement.ValueName + " cannot be created.");
+                                                } catch (ArgumentException) {
+                                                    // value doesn't exist and can't be created
+                                                    throw new RegistryStateFailedException("The value " + activeRegistryStateElement.ValueName + " cannot be created.");
+                                                } catch (SecurityException) {
+                                                    // value exists and we can't modify it
+                                                    throw new TaskRequiresElevationException("Setting the value " + activeRegistryStateElement.ValueName + " requires elevation.");
+                                                }
+                                            } else {
+                                                try {
+                                                    // value didn't exist before
+                                                    DeleteValueInRegistryView(GetUserKeyValueName(activeRegistryStateElement.KeyName), activeRegistryStateElement.ValueName, registryView);
+                                                } catch (SecurityException) {
+                                                    // value exists and we can't modify it
+                                                    throw new TaskRequiresElevationException("Deleting the value " + activeRegistryStateElement.ValueName + " requires elevation.");
+                                                }
+                                            }
+                                            break;
+                                    }
+
+                                    // save as we go along to handle failure
+                                    activeModificationsElement.RegistryStates.RemoveAt(0);
+                                }
+                            }
+                        } catch (Exception ex) {
+                            exception = ex;
+                            continue;
+                        }
+
+                        ProgressManager.CurrentGoal.Steps++;
+                    }
+
+                    activeModificationsElement.RegistryStates.BinaryType = BINARY_TYPE.SCS_64BIT_BINARY;
+                    activeModificationsElement.RegistryStates._Administrator = false;
+                    SetFlashpointSecurePlayerSection(TemplateName);
+
+                    if (exception != null) {
+                        throw exception;
+                    }
+                } finally {
+                    ProgressManager.CurrentGoal.Stop();
+                }
             }
         }
 
