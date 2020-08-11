@@ -1056,6 +1056,10 @@ namespace FlashpointSecurePlayer {
 
                 ModificationsElement activeModificationsElement = activeTemplateElement.Modifications;
 
+                if (activeModificationsElement.RegistryStates.Count <= 0) {
+                    return;
+                }
+
                 // if the activation state exists, but no key is marked as active...
                 // we assume the registry has changed, and don't revert the changes, to be safe
                 // (it should never happen unless the user tampered with the config file)
