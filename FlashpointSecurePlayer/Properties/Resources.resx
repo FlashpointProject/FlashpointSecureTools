@@ -157,6 +157,9 @@ Please ensure Flashpoint is not corrupted, was extracted correctly, and is not r
   <data name="FlashpointSecurePlayer" xml:space="preserve">
     <value>Flashpoint Secure Player</value>
   </data>
+  <data name="ForceDeleteAllWarning" xml:space="preserve">
+    <value>This will force the deletion of the modification from your system. You should not do this unless instructed to by Flashpoint staff. Continue?</value>
+  </data>
   <data name="GameDownloading" xml:space="preserve">
     <value>The game is downloading.</value>
   </data>

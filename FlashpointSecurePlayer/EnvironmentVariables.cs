@@ -207,7 +207,7 @@ namespace FlashpointSecurePlayer {
             }
         }
         
-        public void Deactivate(uint time = 0) {
+        public void Deactivate() {
             // do the reverse of activation because we can
             base.Deactivate();
             TemplateElement activeTemplateElement = GetActiveTemplateElement(false);
@@ -271,7 +271,7 @@ namespace FlashpointSecurePlayer {
                 compatibilityLayerValues = compatibilityLayerValue.ToUpperInvariant().Split(' ').ToList();
             }
 
-            ProgressManager.CurrentGoal.Start(activeModificationsElement.EnvironmentVariables.Count, time);
+            ProgressManager.CurrentGoal.Start(activeModificationsElement.EnvironmentVariables.Count);
 
             try {
                 EnvironmentVariablesElement environmentVariablesElement = null;
@@ -279,7 +279,7 @@ namespace FlashpointSecurePlayer {
 
                 for (int i = 0;i < activeModificationsElement.EnvironmentVariables.Count;i++) {
                     environmentVariablesElement = modificationsElement.EnvironmentVariables.Get(i) as EnvironmentVariablesElement;
-                    activeEnvironmentVariablesElement = activeModificationsElement.EnvironmentVariables.Get(i) as EnvironmentVariablesElement;
+                    activeEnvironmentVariablesElement = activeModificationsElement.EnvironmentVariables.Get(environmentVariablesElement.Name) as EnvironmentVariablesElement;
 
                     if (activeEnvironmentVariablesElement != null) {
                         comparableName = GetComparableName(activeEnvironmentVariablesElement.Name);
