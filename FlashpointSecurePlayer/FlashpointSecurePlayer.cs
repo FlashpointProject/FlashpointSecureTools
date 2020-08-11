@@ -843,7 +843,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private async Task DeactivateModificationsAsync(ErrorDelegate errorDelegate, bool forceDeleteAll) {
+        private async Task DeactivateModificationsAsync(ErrorDelegate errorDelegate) {
             bool createdNew = false;
 
             using (Mutex modificationsMutex = new Mutex(true, MODIFICATIONS_MUTEX_NAME, out createdNew)) {
@@ -897,7 +897,7 @@ namespace FlashpointSecurePlayer {
                         ProgressManager.CurrentGoal.Steps++;
                         
                         try {
-                            environmentVariables.Deactivate();
+                            environmentVariables.Deactivate(forceDeleteAll);
                         } catch (EnvironmentVariablesFailedException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.EnvironmentVariablesFailed);
@@ -1006,7 +1006,7 @@ namespace FlashpointSecurePlayer {
                     // And God forbid I should fail, one touch of the button on my remote detonator...
                     // will be enough to end it all, obliterating Caldoria...
                     // and this foul infestation along with it!
-                }, forceDeleteAll).ConfigureAwait(false);
+                }).ConfigureAwait(false);
             } catch (InvalidModificationException ex) {
                 LogExceptionToLauncher(ex);
                 // delegate handles error
@@ -1109,7 +1109,7 @@ namespace FlashpointSecurePlayer {
                         MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         Application.Exit();
                         throw new InvalidModificationException("An error occured while deactivating the Modification.");
-                    }, forceDeleteAll).ConfigureAwait(false);
+                    }).ConfigureAwait(false);
                 } catch (InvalidModificationException ex) {
                     LogExceptionToLauncher(ex);
                     // can't proceed since we can't activate without deactivating first
@@ -1333,42 +1333,43 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            // don't show, we don't want two windows at once on restart
-            //Show();
-            ProgressManager.ShowOutput();
-
-            // get template element on stop
-            TemplateElement templateElement = null;
-
-            try {
-                templateElement = GetTemplateElement(false, TemplateName);
-            } catch (System.Configuration.ConfigurationErrorsException ex) {
-                LogExceptionToLauncher(ex);
-                return;
-            }
-
-            if (templateElement == null) {
-                return;
-            }
-
-            try {
-                await StopSecurePlayback(e, templateElement).ConfigureAwait(false);
-            } catch (ActiveXImportFailedException ex) {
-                LogExceptionToLauncher(ex);
-                // Fail silently.
-            } catch (InvalidModeException ex) {
-                LogExceptionToLauncher(ex);
-                // Fail silently.
-            } catch (InvalidModificationException ex) {
-                LogExceptionToLauncher(ex);
-                // Fail silently.
-            } catch (InvalidTemplateException ex) {
-                LogExceptionToLauncher(ex);
-                // Fail silently.
-            }
-
             if (applicationMutex != null) {
+                // don't show, we don't want two windows at once on restart
+                //Show();
+                ProgressManager.ShowOutput();
+
+                // get template element on stop
+                TemplateElement templateElement = null;
+
+                try {
+                    templateElement = GetTemplateElement(false, TemplateName);
+                } catch (System.Configuration.ConfigurationErrorsException ex) {
+                    LogExceptionToLauncher(ex);
+                    return;
+                }
+
+                if (templateElement == null) {
+                    return;
+                }
+
+                try {
+                    await StopSecurePlayback(e, templateElement).ConfigureAwait(false);
+                } catch (ActiveXImportFailedException ex) {
+                    LogExceptionToLauncher(ex);
+                    // Fail silently.
+                } catch (InvalidModeException ex) {
+                    LogExceptionToLauncher(ex);
+                    // Fail silently.
+                } catch (InvalidModificationException ex) {
+                    LogExceptionToLauncher(ex);
+                    // Fail silently.
+                } catch (InvalidTemplateException ex) {
+                    LogExceptionToLauncher(ex);
+                    // Fail silently.
+                }
+
                 applicationMutex.ReleaseMutex();
+                applicationMutex.Dispose();
                 applicationMutex = null;
             }
         }

@@ -184,6 +184,32 @@ namespace FlashpointSecurePlayer {
         
         public RegistryStates(Form form) : base(form) { }
 
+        ~RegistryStates() {
+            if (ImportStarted) {
+                try {
+                    StopImport();
+                } catch (RegistryStateFailedException) {
+                    // Fail silently.
+                } catch (System.Configuration.ConfigurationErrorsException) {
+                    // Fail silently.
+                } catch (InvalidOperationException) {
+                    // Fail silently.
+                }
+            }
+
+            try {
+                Deactivate();
+            } catch (RegistryStateFailedException) {
+                // Fail silently.
+            } catch (System.Configuration.ConfigurationErrorsException) {
+                // Fail silently.
+            } catch (TaskRequiresElevationException) {
+                // Fail silently.
+            } catch (InvalidOperationException) {
+                // Fail silently.
+            }
+        }
+
         private string GetUserKeyValueName(string keyValueName) {
             // can be empty, but not null
             if (TestLaunchedAsAdministratorUser() || keyValueName == null) {
@@ -1018,7 +1044,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        public void Deactivate(bool forceDeleteAll) {
+        public void Deactivate(bool forceDeleteAll = false) {
             lock (deactivationLock) {
                 base.Deactivate();
                 TemplateElement activeTemplateElement = GetActiveTemplateElement(false);
