@@ -545,7 +545,7 @@ namespace FlashpointSecurePlayer {
                         
                         public string WorkingDirectory {
                             get {
-                                if (Name != NAME.SOFTWARE || _workingDirectory == null) {
+                                if (/*Name != NAME.SOFTWARE || */_workingDirectory == null) {
                                     return null;
                                 }
                                 return base[_workingDirectory] as string;

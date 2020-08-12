@@ -73,6 +73,14 @@ The Web Browser Mode opens a URL in an Internet Explorer frame. The Flashpoint P
 </template>
 ```
 
+The Web Browser Mode has an additional attribute: `workingDirectory`. The `workingDirectory` attribute sets the working directory for the player. The default is the path to the Flashpoint Secure Player executable.
+
+```
+<template name="webbrowserexample">
+	<mode name="WEB_BROWSER" workingDirectory="%FP_STARTUP_PATH%\Example" />
+</template>
+```
+
 **Setting The Internet Explorer Version**
 
 By default, the Internet Explorer version used in Web Browser Mode is Internet Explorer 7. Changing the Internet Explorer version to use may be accomplished by means of HTTP headers or meta elements.

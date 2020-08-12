@@ -425,6 +425,18 @@ namespace FlashpointSecurePlayer {
 
                     switch (modeElement.Name) {
                         case ModeElement.NAME.WEB_BROWSER:
+                        if (!String.IsNullOrEmpty(modeElement.WorkingDirectory)) {
+                            try {
+                                Directory.SetCurrentDirectory(modeElement.WorkingDirectory);
+                            } catch (System.Security.SecurityException ex) {
+                                LogExceptionToLauncher(ex);
+                                throw new TaskRequiresElevationException("Setting the Current Directory requires elevation.");
+                            } catch {
+                                errorDelegate(Properties.Resources.FailedSetWorkingDirectory);
+                                throw new InvalidModeException("Setting the Current Directory failed.");
+                            }
+                        }
+
                         Uri webBrowserURL = null;
 
                         try {
@@ -1379,6 +1391,16 @@ namespace FlashpointSecurePlayer {
             if (webBrowserForm != null) {
                 webBrowserForm.FormClosing -= webBrowserForm_FormClosing;
                 webBrowserForm = null;
+            }
+
+            // Set Current Directory
+            try {
+                Directory.SetCurrentDirectory(Application.StartupPath);
+            } catch (System.Security.SecurityException ex) {
+                LogExceptionToLauncher(ex);
+                throw new TaskRequiresElevationException("Setting the Current Directory requires elevation.");
+            } catch {
+                // Fail silently.
             }
 
             Show();
