@@ -151,6 +151,9 @@ Please ensure Flashpoint is not corrupted, was extracted correctly, and is not r
   <data name="FailedGetParentProcessEXEFileName" xml:space="preserve">
     <value>Failed to get the Parent Process EXE File Name.</value>
   </data>
+  <data name="FailedSetWorkingDirectory" xml:space="preserve">
+    <value>Failed to set the Working Directory.</value>
+  </data>
   <data name="FlashpointProxyNotEnabled" xml:space="preserve">
     <value>The Flashpoint Proxy could not be enabled.</value>
   </data>

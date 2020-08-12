@@ -161,6 +161,15 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to set the Working Directory..
+        /// </summary>
+        internal static string FailedSetWorkingDirectory {
+            get {
+                return ResourceManager.GetString("FailedSetWorkingDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The Flashpoint Proxy could not be enabled..
         /// </summary>
         internal static string FlashpointProxyNotEnabled {
