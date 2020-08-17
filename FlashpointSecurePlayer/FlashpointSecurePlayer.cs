@@ -688,6 +688,8 @@ namespace FlashpointSecurePlayer {
                             errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                         }
 
+                        ModificationsRevertMethod = MODIFICATIONS_REVERT_METHOD.REVERT_ALL;
+
                         ProgressManager.CurrentGoal.Steps++;
 
                         try {
@@ -840,8 +842,6 @@ namespace FlashpointSecurePlayer {
                         }
 
                         ProgressManager.CurrentGoal.Steps++;
-
-                        ModificationsRevertMethod = MODIFICATIONS_REVERT_METHOD.REVERT_ALL;
                         /*
                         } finally {
                             try {

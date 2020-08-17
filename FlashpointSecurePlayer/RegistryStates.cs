@@ -713,14 +713,7 @@ namespace FlashpointSecurePlayer {
 
             RegistryValueKind? registryValueKind = GetValueKindInRegistryView(GetUserKeyValueName(registryStateElement.KeyName), registryStateElement.ValueName, registryView);
             string comparableValueString = value.ToString();
-            string comparablePathValueString = null;
             string comparableRegistryStateElementValueString = registryStateElement.Value;
-
-            try {
-                comparablePathValueString = GetComparablePath(comparableValueString);
-            } catch {
-                // Fail silently.
-            }
 
             // if value kind is the same as current value kind
             if (registryValueKind == registryStateElement.ValueKind) {
@@ -736,6 +729,9 @@ namespace FlashpointSecurePlayer {
 
                 // for ActiveX: check if it matches as a path
                 try {
+                    // performance: only get path if it hasn't matched yet
+                    string comparablePathValueString = GetComparablePath(comparableValueString);
+
                     if (comparablePathValueString != null) {
                         if (comparablePathValueString == GetComparablePath(comparableRegistryStateElementValueString)) {
                             return true;
@@ -760,10 +756,16 @@ namespace FlashpointSecurePlayer {
                         }
 
                         // check if it matches as a path
-                        if (comparablePathValueString != null) {
-                            if (comparablePathValueString == GetComparablePath(comparableRegistryStateElementValueString)) {
-                                return true;
+                        try {
+                            string comparablePathValueString = GetComparablePath(comparableValueString);
+
+                            if (comparablePathValueString != null) {
+                                if (comparablePathValueString == GetComparablePath(comparableRegistryStateElementValueString)) {
+                                    return true;
+                                }
                             }
+                        } catch {
+                            // Fail silently.
                         }
                     }
                 }
