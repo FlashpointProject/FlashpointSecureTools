@@ -97,7 +97,7 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to as Administrator User.
+        ///   Looks up a localized string similar to as an Administrator User.
         /// </summary>
         internal static string AsAdministratorUser {
             get {
@@ -252,7 +252,7 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This game will not work unless run {0}. Do you want to launch it {0}?
+        ///   Looks up a localized string similar to This game will not work unless it is run {0}. Do you want to launch it {0}?
         ///If you choose No, the application will exit..
         /// </summary>
         internal static string LaunchGame {
@@ -334,7 +334,7 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Registry States cannot start because another one is already in progress..
+        ///   Looks up a localized string similar to The Registry State cannot be started because another one has already been started..
         /// </summary>
         internal static string RegistryStateAlreadyInProgress {
             get {
@@ -343,7 +343,7 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Registry States failed..
+        ///   Looks up a localized string similar to The Registry State failed to be created..
         /// </summary>
         internal static string RegistryStateFailed {
             get {
@@ -352,7 +352,7 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Registry States are in progress. Please do not turn off your computer..
+        ///   Looks up a localized string similar to The Registry State is being created. Please do not turn off your computer..
         /// </summary>
         internal static string RegistryStateInProgress {
             get {
@@ -361,7 +361,7 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Registry States cannot be stopped because no Registry State was in progress..
+        ///   Looks up a localized string similar to The Registry State cannot be stopped because no Registry State has been started..
         /// </summary>
         internal static string RegistryStateNotInProgress {
             get {
@@ -379,7 +379,7 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Registry State was successful..
+        ///   Looks up a localized string similar to The Registry State was successfully created..
         /// </summary>
         internal static string RegistryStateWasSuccessful {
             get {

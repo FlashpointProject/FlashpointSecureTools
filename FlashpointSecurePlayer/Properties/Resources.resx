@@ -130,7 +130,7 @@
     <value>Another instance of Flashpoint Secure Player is preventing the Template from being activated.</value>
   </data>
   <data name="AsAdministratorUser" xml:space="preserve">
-    <value>as Administrator User</value>
+    <value>as an Administrator User</value>
   </data>
   <data name="ConfigurationFailedLoad" xml:space="preserve">
     <value>The configuration failed to load.
@@ -183,7 +183,7 @@ Please ensure Flashpoint is not corrupted, was extracted correctly, and is not r
     <value>The Job Object could not be created. Is your Windows Version new enough? Flashpoint only supports Windows 7, Windows 8, Windows 8.1, and Windows 10.</value>
   </data>
   <data name="LaunchGame" xml:space="preserve">
-    <value>This game will not work unless run {0}. Do you want to launch it {0}?
+    <value>This game will not work unless it is run {0}. Do you want to launch it {0}?
 If you choose No, the application will exit.</value>
   </data>
   <data name="ModificationsFailedImport" xml:space="preserve">
@@ -211,22 +211,22 @@ If you choose No, the application will exit.</value>
     <value>The process failed to start.</value>
   </data>
   <data name="RegistryStateAlreadyInProgress" xml:space="preserve">
-    <value>The Registry States cannot start because another one is already in progress.</value>
+    <value>The Registry State cannot be started because another one has already been started.</value>
   </data>
   <data name="RegistryStateFailed" xml:space="preserve">
-    <value>The Registry States failed.</value>
+    <value>The Registry State failed to be created.</value>
   </data>
   <data name="RegistryStateInProgress" xml:space="preserve">
-    <value>The Registry States are in progress. Please do not turn off your computer.</value>
+    <value>The Registry State is being created. Please do not turn off your computer.</value>
   </data>
   <data name="RegistryStateNotInProgress" xml:space="preserve">
-    <value>The Registry States cannot be stopped because no Registry State was in progress.</value>
+    <value>The Registry State cannot be stopped because no Registry State has been started.</value>
   </data>
   <data name="RegistryStateTimeout" xml:space="preserve">
     <value>The Registry State timed out.</value>
   </data>
   <data name="RegistryStateWasSuccessful" xml:space="preserve">
-    <value>The Registry State was successful.</value>
+    <value>The Registry State was successfully created.</value>
   </data>
   <data name="RequiredComponentsAreLoading" xml:space="preserve">
     <value>The required components are loading. Please do not turn off your computer.</value>
