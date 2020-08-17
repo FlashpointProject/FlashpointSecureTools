@@ -25,6 +25,12 @@ namespace FlashpointSecurePlayer {
         private const string FLASHPOINT_LAUNCHER_PARENT_PROCESS_FILE_NAME = "CMD.EXE";
         private const string FLASHPOINT_LAUNCHER_PROCESS_NAME = "FLASHPOINT";
 
+        public enum MODIFICATIONS_REVERT_METHOD {
+            CRASH_RECOVERY,
+            REVERT_ALL,
+            DELETE_ALL
+        }
+
         private Mutex applicationMutex = null;
 
         private readonly RunAsAdministrator runAsAdministrator;
@@ -33,8 +39,7 @@ namespace FlashpointSecurePlayer {
         private readonly RegistryStates registryState;
         private readonly SingleInstance singleInstance;
         private readonly OldCPUSimulator oldCPUSimulator;
-
-        bool forceDeleteAll = false;
+        
         private bool activeX = false;
         WebBrowser webBrowserForm = null;
         private ProcessStartInfo softwareProcessStartInfo = null;
@@ -43,6 +48,7 @@ namespace FlashpointSecurePlayer {
         private string URL { get; set; } = String.Empty;
         private string TemplateName { get; set; } = ACTIVE_EXE_CONFIGURATION_NAME;
         private string Arguments { get; set; } = String.Empty;
+        private MODIFICATIONS_REVERT_METHOD ModificationsRevertMethod { get; set; } = MODIFICATIONS_REVERT_METHOD.CRASH_RECOVERY;
         private bool RunAsAdministratorModification { get; set; } = false;
         private List<string> DownloadsBeforeModificationNames { get; set; } = null;
 
@@ -834,6 +840,8 @@ namespace FlashpointSecurePlayer {
                         }
 
                         ProgressManager.CurrentGoal.Steps++;
+
+                        ModificationsRevertMethod = MODIFICATIONS_REVERT_METHOD.REVERT_ALL;
                         /*
                         } finally {
                             try {
@@ -885,7 +893,7 @@ namespace FlashpointSecurePlayer {
                         try {
                             // this one really needs to work
                             // we can't continue if it does not
-                            registryState.Deactivate(forceDeleteAll);
+                            registryState.Deactivate(ModificationsRevertMethod);
                         } catch (RegistryStateFailedException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.RegistryStateFailed);
@@ -909,7 +917,7 @@ namespace FlashpointSecurePlayer {
                         ProgressManager.CurrentGoal.Steps++;
                         
                         try {
-                            environmentVariables.Deactivate(forceDeleteAll);
+                            environmentVariables.Deactivate(ModificationsRevertMethod);
                         } catch (EnvironmentVariablesFailedException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.EnvironmentVariablesFailed);
@@ -1083,7 +1091,7 @@ namespace FlashpointSecurePlayer {
                     } else if (arg == "--run-as-administrator" || arg == "-a") {
                         RunAsAdministratorModification = true;
                     } else if (arg == "--dev-force-delete-all" || arg == "-a") {
-                        forceDeleteAll = true;
+                        ModificationsRevertMethod = MODIFICATIONS_REVERT_METHOD.DELETE_ALL;
                     } else {
                         if (i < args.Length - 1) {
                             if (arg == "--arguments" || arg == "-args") {
@@ -1105,7 +1113,7 @@ namespace FlashpointSecurePlayer {
                     }
                 }
 
-                if (forceDeleteAll) {
+                if (ModificationsRevertMethod == MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
                     if (MessageBox.Show(Properties.Resources.ForceDeleteAllWarning, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No) {
                         Application.Exit();
                         return;
