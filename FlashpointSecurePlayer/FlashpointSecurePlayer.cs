@@ -1184,6 +1184,8 @@ namespace FlashpointSecurePlayer {
                             }
                             throw new ActiveXImportFailedException("An error occured while activating the ActiveX Import.");
                         });
+                    } catch (InvalidModificationException ex) {
+                        LogExceptionToLauncher(ex);
                     } catch (ActiveXImportFailedException ex) {
                         LogExceptionToLauncher(ex);
                         // no need to exit here, error shown in interface
