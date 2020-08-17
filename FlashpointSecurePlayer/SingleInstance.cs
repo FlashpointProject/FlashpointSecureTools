@@ -100,29 +100,7 @@ namespace FlashpointSecurePlayer {
 
             // the paths we'll be comparing to test if the executable is strictly the same
             string comparableExecutablePath = null;
-            string activeComparableExecutablePath = null;
-
-            try {
-                activeComparableExecutablePath = Path.GetFullPath(executable);
-            } catch (PathTooLongException) {
-                throw new ArgumentException("The path is too long to " + executable + ".");
-            } catch (SecurityException) {
-                throw new TaskRequiresElevationException("Getting the Full Path to " + executable + " requires elevation.");
-            } catch (NotSupportedException) {
-                throw new ArgumentException("The path " + executable + " is not supported.");
-            }
-
-            // converting to a Uri canonicalizes the path
-            // making them possible to compare
-            try {
-                activeComparableExecutablePath = new Uri(activeComparableExecutablePath).LocalPath.ToUpperInvariant();
-            } catch (UriFormatException) {
-                throw new ArgumentException("The path " + activeComparableExecutablePath + " is malformed.");
-            } catch (NullReferenceException) {
-                throw new ArgumentNullException("The path is null.");
-            } catch (InvalidOperationException) {
-                throw new ArgumentException("The path " + activeComparableExecutablePath + " is invalid.");
-            }
+            string activeComparableExecutablePath = GetComparablePath(executable);
 
             List<Process> processesByName;
             List<Process> processesByNameStrict;
@@ -140,15 +118,14 @@ namespace FlashpointSecurePlayer {
                         processName = GetProcessName(processesByName[i]);
 
                         try {
-                            comparableExecutablePath = new Uri(processName.ToString()).LocalPath.ToUpperInvariant();
+                            comparableExecutablePath = GetComparablePath(processName);
 
                             if (comparableExecutablePath == activeComparableExecutablePath) {
                                 processesByNameStrict.Add(processesByName[i]);
                             }
-                        } catch (UriFormatException) { }
-                        catch (ArgumentNullException) { }
-                        catch (NullReferenceException) { }
-                        catch (InvalidOperationException) { }
+                        } catch {
+                            // Fail silently.
+                        }
                     }
                 } else {
                     processesByNameStrict = processesByName;

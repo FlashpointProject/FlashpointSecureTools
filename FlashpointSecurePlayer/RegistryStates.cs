@@ -685,6 +685,92 @@ namespace FlashpointSecurePlayer {
             return keyValueName;
         }
 
+        private bool CompareKeys(RegistryView registryView, RegistryStateElement registryStateElement, RegistryStateElement activeRegistryStateElement) {
+            if (registryStateElement == null || activeRegistryStateElement == null) {
+                return true;
+            }
+
+            if (String.IsNullOrEmpty(activeRegistryStateElement._Deleted)) {
+                // key did exist before
+                // that means it should still exist
+                if (!String.IsNullOrEmpty(TestKeyDeletedInRegistryView(GetUserKeyValueName(registryStateElement.KeyName), registryView))) {
+                    // key no longer exists, bad state
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private bool CompareValues(object value, RegistryView registryView, RegistryStateElement registryStateElement, RegistryStateElement activeRegistryStateElement) {
+            // caller needs to decide what to do if value is null
+            if (value == null) {
+                throw new ArgumentNullException("The value is null.");
+            }
+
+            if (registryStateElement == null) {
+                throw new ArgumentNullException("The registryStateElement is null.");
+            }
+
+            RegistryValueKind? registryValueKind = GetValueKindInRegistryView(GetUserKeyValueName(registryStateElement.KeyName), registryStateElement.ValueName, registryView);
+            string comparableValueString = value.ToString();
+            string comparablePathValueString = null;
+            string comparableRegistryStateElementValueString = registryStateElement.Value;
+
+            try {
+                comparablePathValueString = GetComparablePath(comparableValueString);
+            } catch {
+                // Fail silently.
+            }
+
+            // if value kind is the same as current value kind
+            if (registryValueKind == registryStateElement.ValueKind) {
+                if (activeRegistryStateElement != null) {
+                    // account for expanded values
+                    comparableRegistryStateElementValueString = String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded) ? comparableRegistryStateElementValueString : activeRegistryStateElement._ValueExpanded;
+                }
+
+                // check value matches current value/current expanded value
+                if (comparableValueString == comparableRegistryStateElementValueString) {
+                    return true;
+                }
+
+                // for ActiveX: check if it matches as a path
+                try {
+                    if (comparablePathValueString != null) {
+                        if (comparablePathValueString == GetComparablePath(comparableRegistryStateElementValueString)) {
+                            return true;
+                        }
+                    }
+                } catch {
+                    // Fail silently.
+                }
+            }
+
+            if (activeRegistryStateElement != null) {
+                // if value existed before
+                if (!String.IsNullOrEmpty(activeRegistryStateElement._Deleted)) {
+                    // value kind before also matters
+                    if (registryValueKind == activeRegistryStateElement.ValueKind) {
+                        // get value before
+                        comparableRegistryStateElementValueString = activeRegistryStateElement.Value;
+
+                        // check value matches
+                        if (comparableValueString == comparableRegistryStateElementValueString) {
+                            return true;
+                        }
+
+                        // check if it matches as a path
+                        if (comparablePathValueString != null) {
+                            if (comparablePathValueString == GetComparablePath(comparableRegistryStateElementValueString)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
         public async Task StartImportAsync(string templateName, BINARY_TYPE binaryType) {
             base.StartImport(templateName);
 
@@ -1044,7 +1130,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        public void Deactivate(bool forceDeleteAll = false) {
+        public void Deactivate(FlashpointSecurePlayer.MODIFICATIONS_REVERT_METHOD modificationsRevertMethod = FlashpointSecurePlayer.MODIFICATIONS_REVERT_METHOD.CRASH_RECOVERY) {
             lock (deactivationLock) {
                 base.Deactivate();
                 TemplateElement activeTemplateElement = GetActiveTemplateElement(false);
@@ -1113,7 +1199,7 @@ namespace FlashpointSecurePlayer {
                 ProgressManager.CurrentGoal.Start(activeModificationsElement.RegistryStates.Count + activeModificationsElement.RegistryStates.Count);
 
                 try {
-                    if (!forceDeleteAll) {
+                    if (modificationsRevertMethod == FlashpointSecurePlayer.MODIFICATIONS_REVERT_METHOD.CRASH_RECOVERY) {
                         // check if any key has been modified from the modification element
                         for (int i = 0; i < activeModificationsElement.RegistryStates.Count; i++) {
                             // the "active" one is the one that doesn't have a name (it has the "active" attribute)
@@ -1132,13 +1218,8 @@ namespace FlashpointSecurePlayer {
                                         // we previously created a key
                                         // it may or may not have existed before
                                         // so it may or may not need to exist
-                                        if (String.IsNullOrEmpty(activeRegistryStateElement._Deleted)) {
-                                            // key did exist before
-                                            // that means it should still exist
-                                            if (!String.IsNullOrEmpty(TestKeyDeletedInRegistryView(GetUserKeyValueName(registryStateElement.KeyName), registryView))) {
-                                                // key no longer exists, bad state
-                                                clear = true;
-                                            }
+                                        if (!CompareKeys(registryView, registryStateElement, activeRegistryStateElement)) {
+                                            clear = true;
                                         }
                                     } else {
                                         try {
@@ -1157,15 +1238,8 @@ namespace FlashpointSecurePlayer {
                                             // the value may or may not exist now
                                             // if the value still exists, we need to check it's not edited
                                             if (value != null) {
-                                                // the value still exists
-                                                // check it's not edited
-                                                if (value.ToString() != (String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded) ? registryStateElement.Value : activeRegistryStateElement._ValueExpanded)) {
-                                                    clear = true;
-                                                }
-
-                                                RegistryValueKind? registryValueKind = GetValueKindInRegistryView(GetUserKeyValueName(registryStateElement.KeyName), registryStateElement.ValueName, registryView);
-
-                                                if (registryValueKind != registryStateElement.ValueKind) {
+                                                // value still exists
+                                                if (!CompareValues(value, registryView, registryStateElement, activeRegistryStateElement)) {
                                                     clear = true;
                                                 }
                                             }
@@ -1175,15 +1249,7 @@ namespace FlashpointSecurePlayer {
                                             if (value == null) {
                                                 clear = true;
                                             } else {
-                                                // check the value hasn't been edited
-                                                if (value.ToString() != (String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded) ? registryStateElement.Value : activeRegistryStateElement._ValueExpanded) && value.ToString() != activeRegistryStateElement.Value) {
-                                                    clear = true;
-                                                }
-
-                                                // check the ValueKind is the same as in registryStateElement
-                                                RegistryValueKind? registryValueKind = GetValueKindInRegistryView(GetUserKeyValueName(registryStateElement.KeyName), registryStateElement.ValueName, registryView);
-
-                                                if (registryValueKind != registryStateElement.ValueKind && registryValueKind != activeRegistryStateElement.ValueKind) {
+                                                if (!CompareValues(value, registryView, registryStateElement, activeRegistryStateElement)) {
                                                     clear = true;
                                                 }
                                             }
@@ -1217,7 +1283,7 @@ namespace FlashpointSecurePlayer {
                                 if (registryStateElement != null) {
                                     switch (activeRegistryStateElement.Type) {
                                         case TYPE.KEY:
-                                        if (!String.IsNullOrEmpty(activeRegistryStateElement._Deleted) || forceDeleteAll) {
+                                        if (!String.IsNullOrEmpty(activeRegistryStateElement._Deleted) || modificationsRevertMethod == FlashpointSecurePlayer.MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
                                             try {
                                                 // key didn't exist before
                                                 DeleteKeyInRegistryView(GetUserKeyValueName(activeRegistryStateElement._Deleted), registryView);
@@ -1228,7 +1294,7 @@ namespace FlashpointSecurePlayer {
                                         }
                                         break;
                                         case TYPE.VALUE:
-                                        if (String.IsNullOrEmpty(activeRegistryStateElement._Deleted) && !forceDeleteAll) {
+                                        if (String.IsNullOrEmpty(activeRegistryStateElement._Deleted) && modificationsRevertMethod != FlashpointSecurePlayer.MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
                                             try {
                                                 // value was different before
                                                 SetValueInRegistryView(GetUserKeyValueName(activeRegistryStateElement.KeyName), activeRegistryStateElement.ValueName, activeRegistryStateElement.Value, activeRegistryStateElement.ValueKind.GetValueOrDefault(), registryView);

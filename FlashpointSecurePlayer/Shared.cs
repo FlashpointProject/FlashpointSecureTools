@@ -1653,6 +1653,33 @@ namespace FlashpointSecurePlayer {
             //activeTemplateElement.RegistryStates.LockItem = false;
         }
 
+        public static string GetComparablePath(string path) {
+            string comparablePath = null;
+
+            try {
+                comparablePath = Path.GetFullPath(path);
+            } catch (PathTooLongException) {
+                throw new ArgumentException("The path is too long to " + path + ".");
+            } catch (SecurityException) {
+                throw new Exceptions.TaskRequiresElevationException("Getting the Full Path to " + path + " requires elevation.");
+            } catch (NotSupportedException) {
+                throw new ArgumentException("The path " + path + " is not supported.");
+            }
+
+            // converting to a Uri canonicalizes the path
+            // making them possible to compare
+            try {
+                comparablePath = new Uri(comparablePath).LocalPath.ToUpperInvariant();
+            } catch (UriFormatException) {
+                throw new ArgumentException("The path " + comparablePath + " is malformed.");
+            } catch (NullReferenceException) {
+                throw new ArgumentNullException("The path is null.");
+            } catch (InvalidOperationException) {
+                throw new ArgumentException("The path " + comparablePath + " is invalid.");
+            }
+            return comparablePath;
+        }
+
         public static string RemoveTrailingSlash(string path) {
             // can be empty, but not null
             if (path == null) {
