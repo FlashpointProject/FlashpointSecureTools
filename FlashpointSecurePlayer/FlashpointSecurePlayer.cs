@@ -433,10 +433,14 @@ namespace FlashpointSecurePlayer {
                         case ModeElement.NAME.WEB_BROWSER:
                         if (!String.IsNullOrEmpty(modeElement.WorkingDirectory)) {
                             try {
-                                Directory.SetCurrentDirectory(modeElement.WorkingDirectory);
+                                Directory.SetCurrentDirectory(Environment.ExpandEnvironmentVariables(modeElement.WorkingDirectory));
                             } catch (System.Security.SecurityException ex) {
                                 LogExceptionToLauncher(ex);
                                 throw new TaskRequiresElevationException("Setting the Current Directory requires elevation.");
+                            } catch (ArgumentNullException ex) {
+                                LogExceptionToLauncher(ex);
+                                errorDelegate(Properties.Resources.FailedSetWorkingDirectory);
+                                throw new InvalidModeException("The Mode failed because the Working Directory cannot be null.");
                             } catch {
                                 errorDelegate(Properties.Resources.FailedSetWorkingDirectory);
                                 throw new InvalidModeException("Setting the Current Directory failed.");
