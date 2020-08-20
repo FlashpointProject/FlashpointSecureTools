@@ -213,13 +213,13 @@ namespace FlashpointSecurePlayer {
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool IsOS(OS_TYPE os);
 
-        const uint TOOLHELP32CS_INHERIT = 0x80000000;
-        const uint TOOLHELP32CS_SNAPALL = TOOLHELP32CS_SNAPHEAPLIST | TOOLHELP32CS_SNAPMODULE | TOOLHELP32CS_SNAPPROCESS | TOOLHELP32CS_SNAPTHREAD;
-        const uint TOOLHELP32CS_SNAPHEAPLIST = 0x00000001;
-        const uint TOOLHELP32CS_SNAPMODULE = 0x00000008;
-        const uint TOOLHELP32CS_SNAPMODULE32 = 0x00000010;
-        const uint TOOLHELP32CS_SNAPPROCESS = 0x00000002;
-        const uint TOOLHELP32CS_SNAPTHREAD = 0x00000004;
+        public const uint TOOLHELP32CS_INHERIT = 0x80000000;
+        public const uint TOOLHELP32CS_SNAPALL = TOOLHELP32CS_SNAPHEAPLIST | TOOLHELP32CS_SNAPMODULE | TOOLHELP32CS_SNAPPROCESS | TOOLHELP32CS_SNAPTHREAD;
+        public const uint TOOLHELP32CS_SNAPHEAPLIST = 0x00000001;
+        public const uint TOOLHELP32CS_SNAPMODULE = 0x00000008;
+        public const uint TOOLHELP32CS_SNAPMODULE32 = 0x00000010;
+        public const uint TOOLHELP32CS_SNAPPROCESS = 0x00000002;
+        public const uint TOOLHELP32CS_SNAPTHREAD = 0x00000004;
 
         [StructLayout(LayoutKind.Sequential)]
         public struct PROCESSENTRY32 {
@@ -237,19 +237,19 @@ namespace FlashpointSecurePlayer {
         };
 
         [DllImport("KERNEL32.DLL", SetLastError = true)]
-        static extern IntPtr CreateToolhelp32Snapshot(uint flags, uint toolhelp32ProcessID);
+        public static extern IntPtr CreateToolhelp32Snapshot(uint flags, uint toolhelp32ProcessID);
 
         [DllImport("KERNEL32.DLL")]
-        static extern bool Process32First(IntPtr snapshotHandle, ref PROCESSENTRY32 processEntryPointer);
+        public static extern bool Process32First(IntPtr snapshotHandle, ref PROCESSENTRY32 processEntryPointer);
 
         [DllImport("KERNEL32.DLL")]
-        static extern bool Process32Next(IntPtr snapshotHandle, ref PROCESSENTRY32 processEntryPointer);
+        public static extern bool Process32Next(IntPtr snapshotHandle, ref PROCESSENTRY32 processEntryPointer);
 
         [DllImport("KERNEL32.DLL", SetLastError = true)]
         public static extern bool QueryFullProcessImageName(IntPtr processHandle, int flags, StringBuilder exeName, ref int sizePointer);
 
         [Flags]
-        private enum FileFlagsAndAttributes : uint {
+        public enum FileFlagsAndAttributes : uint {
             ReadOnly = 0x00000001,
             Hidden = 0x00000002,
             System = 0x00000004,
@@ -278,7 +278,7 @@ namespace FlashpointSecurePlayer {
         }
 
         [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
-        static extern SafeFileHandle CreateFile(
+        public static extern SafeFileHandle CreateFile(
             string lpFileName,
             [MarshalAs(UnmanagedType.U4)] FileAccess dwDesiredAccess,
             [MarshalAs(UnmanagedType.U4)] FileShare dwShareMode,
@@ -288,7 +288,7 @@ namespace FlashpointSecurePlayer {
             IntPtr hTemplateFile);
 
         [StructLayout(LayoutKind.Explicit)]
-        public struct BY_HANDLE_FILE_INFORMATION {
+        private struct BY_HANDLE_FILE_INFORMATION {
             [FieldOffset(0)]
             public uint FileAttributes;
 
@@ -321,7 +321,7 @@ namespace FlashpointSecurePlayer {
         }
 
         [DllImport("KERNEL32.DLL", SetLastError = true)]
-        public static extern bool GetFileInformationByHandle(SafeFileHandle hFile, out BY_HANDLE_FILE_INFORMATION lpFileInformation);
+        private static extern bool GetFileInformationByHandle(SafeFileHandle hFile, out BY_HANDLE_FILE_INFORMATION lpFileInformation);
 
         [DllImport("KERNEL32.DLL", CharSet = CharSet.Auto)]
         public static extern int GetLongPathName(
