@@ -729,13 +729,8 @@ namespace FlashpointSecurePlayer {
 
                 // for ActiveX: check if it matches as a path
                 try {
-                    // performance: only get path if it hasn't matched yet
-                    string comparablePathValueString = GetComparablePath(comparableValueString);
-
-                    if (comparablePathValueString != null) {
-                        if (comparablePathValueString == GetComparablePath(comparableRegistryStateElementValueString)) {
-                            return true;
-                        }
+                    if (ComparePaths(comparableValueString, comparableRegistryStateElementValueString)) {
+                        return true;
                     }
                 } catch {
                     // Fail silently.
@@ -757,12 +752,8 @@ namespace FlashpointSecurePlayer {
 
                         // check if it matches as a path
                         try {
-                            string comparablePathValueString = GetComparablePath(comparableValueString);
-
-                            if (comparablePathValueString != null) {
-                                if (comparablePathValueString == GetComparablePath(comparableRegistryStateElementValueString)) {
-                                    return true;
-                                }
+                            if (ComparePaths(comparableValueString, comparableRegistryStateElementValueString)) {
+                                return true;
                             }
                         } catch {
                             // Fail silently.
