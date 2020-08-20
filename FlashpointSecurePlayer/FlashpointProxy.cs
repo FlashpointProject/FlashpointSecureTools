@@ -97,13 +97,13 @@ namespace FlashpointSecurePlayer {
         /// <summary>
         /// Sets an Internet option.
         /// </summary>
-        [DllImport("WinInet.dll", CharSet = CharSet.Ansi, SetLastError = true)]
+        [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Ansi)]
         private static extern bool InternetSetOption(IntPtr internetHandle, INTERNET_OPTION option, IntPtr bufferPointer, int bufferLength);
 
         /// <summary>
         /// Queries an Internet option on the specified handle. The Handle will be always 0.
         /// </summary>
-        [DllImport("WinInet.dll", CharSet = CharSet.Ansi, SetLastError = true, EntryPoint = "InternetQueryOption")]
+        [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Ansi, EntryPoint = "InternetQueryOption")]
         private extern static bool InternetQueryOption(IntPtr handle, INTERNET_OPTION optionFlag, ref INTERNET_PER_CONN_OPTION_LIST optionList, ref int size);
         
         // in enabling the proxy we need to set the Agent to use

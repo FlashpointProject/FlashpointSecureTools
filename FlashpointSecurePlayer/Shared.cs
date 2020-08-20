@@ -1,5 +1,4 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
@@ -16,6 +15,9 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+
+using Microsoft.Win32;
+using Microsoft.Win32.SafeHandles;
 
 namespace FlashpointSecurePlayer {
     public static class Shared {
@@ -159,7 +161,7 @@ namespace FlashpointSecurePlayer {
         [DllImport("KERNEL32.DLL")]
         public static extern bool GetBinaryType(string applicationNamePointer, out BINARY_TYPE binaryTypePointer);
 
-        [DllImport("USER32.DLL", CharSet = CharSet.Auto, SetLastError = false)]
+        [DllImport("USER32.DLL", SetLastError = false, CharSet = CharSet.Auto)]
         public static extern IntPtr SendMessage(IntPtr windowHandle, uint message, IntPtr wParam, IntPtr lParam);
 
         [DllImport("KERNEL32.DLL")]
@@ -245,6 +247,81 @@ namespace FlashpointSecurePlayer {
 
         [DllImport("KERNEL32.DLL", SetLastError = true)]
         public static extern bool QueryFullProcessImageName(IntPtr processHandle, int flags, StringBuilder exeName, ref int sizePointer);
+
+        [Flags]
+        private enum FileFlagsAndAttributes : uint {
+            ReadOnly = 0x00000001,
+            Hidden = 0x00000002,
+            System = 0x00000004,
+            Directory = 0x00000010,
+            Archive = 0x00000020,
+            Device = 0x00000040,
+            Normal = 0x00000080,
+            Temporary = 0x00000100,
+            SparseFile = 0x00000200,
+            ReparsePoint = 0x00000400,
+            Compressed = 0x00000800,
+            Offline = 0x00001000,
+            NotContentIndexed = 0x00002000,
+            Encrypted = 0x00004000,
+            WriteThrough = 0x80000000,
+            Overlapped = 0x40000000,
+            NoBuffering = 0x20000000,
+            RandomAccess = 0x10000000,
+            SequentialScan = 0x08000000,
+            DeleteOnClose = 0x04000000,
+            BackupSemantics = 0x02000000,
+            PosixSemantics = 0x01000000,
+            OpenReparsePoint = 0x00200000,
+            OpenNoRecall = 0x00100000,
+            FirstPipeInstance = 0x00080000
+        }
+
+        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
+        static extern SafeFileHandle CreateFile(
+            string lpFileName,
+            [MarshalAs(UnmanagedType.U4)] FileAccess dwDesiredAccess,
+            [MarshalAs(UnmanagedType.U4)] FileShare dwShareMode,
+            IntPtr lpSecurityAttributes,
+            [MarshalAs(UnmanagedType.U4)] FileMode dwCreationDisposition,
+            [MarshalAs(UnmanagedType.U4)] FileFlagsAndAttributes dwFlagsAndAttributes,
+            IntPtr hTemplateFile);
+
+        [StructLayout(LayoutKind.Explicit)]
+        public struct BY_HANDLE_FILE_INFORMATION {
+            [FieldOffset(0)]
+            public uint FileAttributes;
+
+            [FieldOffset(4)]
+            public System.Runtime.InteropServices.ComTypes.FILETIME CreationTime;
+
+            [FieldOffset(12)]
+            public System.Runtime.InteropServices.ComTypes.FILETIME LastAccessTime;
+
+            [FieldOffset(20)]
+            public System.Runtime.InteropServices.ComTypes.FILETIME LastWriteTime;
+
+            [FieldOffset(28)]
+            public uint VolumeSerialNumber;
+
+            [FieldOffset(32)]
+            public uint FileSizeHigh;
+
+            [FieldOffset(36)]
+            public uint FileSizeLow;
+
+            [FieldOffset(40)]
+            public uint NumberOfLinks;
+
+            [FieldOffset(44)]
+            public uint FileIndexHigh;
+
+            [FieldOffset(48)]
+            public uint FileIndexLow;
+        }
+
+        [DllImport("KERNEL32.DLL", SetLastError = true)]
+        public static extern bool GetFileInformationByHandle(SafeFileHandle hFile, out BY_HANDLE_FILE_INFORMATION lpFileInformation);
 
         [DllImport("KERNEL32.DLL", CharSet = CharSet.Auto)]
         public static extern int GetLongPathName(
@@ -1653,31 +1730,33 @@ namespace FlashpointSecurePlayer {
             //activeTemplateElement.RegistryStates.LockItem = false;
         }
 
-        public static string GetComparablePath(string path) {
-            string comparablePath = null;
+        public static bool ComparePaths(string path1, string path2) {
+            using (SafeFileHandle safeFileHandle1 = CreateFile(path1, FileAccess.Read, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileFlagsAndAttributes.BackupSemantics, IntPtr.Zero)) {
+                if (safeFileHandle1.IsInvalid) {
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                }
 
-            try {
-                comparablePath = Path.GetFullPath(path);
-            } catch (PathTooLongException) {
-                throw new ArgumentException("The path is too long to " + path + ".");
-            } catch (SecurityException) {
-                throw new Exceptions.TaskRequiresElevationException("Getting the Full Path to " + path + " requires elevation.");
-            } catch (NotSupportedException) {
-                throw new ArgumentException("The path " + path + " is not supported.");
-            }
+                using (SafeFileHandle safeFileHandle2 = CreateFile(path2, FileAccess.Read, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileFlagsAndAttributes.BackupSemantics, IntPtr.Zero)) {
+                    if (safeFileHandle2.IsInvalid) {
+                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                    }
 
-            // converting to a Uri canonicalizes the path
-            // making them possible to compare
-            try {
-                comparablePath = new Uri(comparablePath).LocalPath.ToUpperInvariant();
-            } catch (UriFormatException) {
-                throw new ArgumentException("The path " + comparablePath + " is malformed.");
-            } catch (NullReferenceException) {
-                throw new ArgumentNullException("The path is null.");
-            } catch (InvalidOperationException) {
-                throw new ArgumentException("The path " + comparablePath + " is invalid.");
+
+                    if (!GetFileInformationByHandle(safeFileHandle1, out BY_HANDLE_FILE_INFORMATION byHandleFileInformation1)) {
+                        throw new IOException("Failed to Get File Information By Handle for Safe File Handle 1");
+                    }
+
+
+                    if (!GetFileInformationByHandle(safeFileHandle2, out BY_HANDLE_FILE_INFORMATION byHandleFileInformation2)) {
+                        throw new IOException("Failed to Get File Information By Handle for Safe File Handle 2");
+                    }
+
+                    if (byHandleFileInformation1.VolumeSerialNumber == byHandleFileInformation2.VolumeSerialNumber && byHandleFileInformation1.FileIndexHigh == byHandleFileInformation2.FileIndexHigh && byHandleFileInformation1.FileIndexLow == byHandleFileInformation2.FileIndexLow) {
+                        return true;
+                    }
+                }
             }
-            return comparablePath;
+            return false;
         }
 
         public static string RemoveTrailingSlash(string path) {
@@ -1847,7 +1926,7 @@ namespace FlashpointSecurePlayer {
             argvPointer = CommandLineToArgvW(commandLine, out argc);
 
             if (argvPointer == IntPtr.Zero) {
-                throw new Win32Exception("Failed to get the argv pointer.");
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             }
 
             try {
@@ -2131,7 +2210,7 @@ namespace FlashpointSecurePlayer {
             }
 
             if (!queryResult) {
-                throw new Win32Exception("Failed to query the Full Process Image Name.");
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             }
             return processName.ToString();
         }

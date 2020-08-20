@@ -98,10 +98,6 @@ namespace FlashpointSecurePlayer {
             
             //string[] argv = CommandLineToArgv(executablePath, out int argc);
 
-            // the paths we'll be comparing to test if the executable is strictly the same
-            string comparableExecutablePath = null;
-            string activeComparableExecutablePath = GetComparablePath(executable);
-
             List<Process> processesByName;
             List<Process> processesByNameStrict;
             string processName = null;
@@ -118,9 +114,7 @@ namespace FlashpointSecurePlayer {
                         processName = GetProcessName(processesByName[i]);
 
                         try {
-                            comparableExecutablePath = GetComparablePath(processName);
-
-                            if (comparableExecutablePath == activeComparableExecutablePath) {
+                            if (ComparePaths(executable, processName)) {
                                 processesByNameStrict.Add(processesByName[i]);
                             }
                         } catch {
