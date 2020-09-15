@@ -1,5 +1,5 @@
 ﻿namespace FlashpointSecurePlayer {
-    partial class Server {
+    partial class WebBrowser {
         /// <summary>
         /// Required designer variable.
         /// </summary>
@@ -23,7 +23,7 @@
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent() {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Server));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WebBrowser));
             this.SuspendLayout();
             // 
             // closableWebBrowser1
@@ -38,19 +38,22 @@
             this.closableWebBrowser1.Size = new System.Drawing.Size(640, 480);
             this.closableWebBrowser1.TabIndex = 0;
             this.closableWebBrowser1.Url = new System.Uri("about:blank", System.UriKind.Absolute);
+            this.closableWebBrowser1.ProgressChanged += new System.Windows.Forms.WebBrowserProgressChangedEventHandler(this.closableWebBrowser1_ProgressChanged);
             // 
-            // Server
+            // WebBrowser
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(640, 480);
             this.Controls.Add(this.closableWebBrowser1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "Server";
+            this.Name = "WebBrowser";
             this.Text = "Flashpoint Secure Player";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Server_FormClosing);
-            this.Load += new System.EventHandler(this.Server_Load);
-            this.Shown += new System.EventHandler(this.Server_Shown);
+            this.Activated += new System.EventHandler(this.WebBrowser_Activated);
+            this.Deactivate += new System.EventHandler(this.WebBrowser_Deactivate);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.WebBrowser_FormClosing);
+            this.Load += new System.EventHandler(this.WebBrowser_Load);
+            this.Shown += new System.EventHandler(this.WebBrowser_Shown);
             this.ResumeLayout(false);
 
         }

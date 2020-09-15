@@ -15,10 +15,11 @@ using static FlashpointSecurePlayer.InternetInterfaces;
 
 namespace FlashpointSecurePlayer {
     public class CustomSecurityManager : InternetInterfaces.IServiceProvider, InternetInterfaces.IInternetSecurityManager {
+        private readonly byte[] FLASH_CONTEXT = new byte[16] { 110, 219, 124, 210, 109, 174, 207, 17, 150, 184, 68, 69, 83, 84, 0, 0 };
         private const string FLASH_EXTENSION = ".SWF";
 
         // https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/platform-apis/ms537182(v=vs.85)?redirectedfrom=MSDN
-        public CustomSecurityManager(WebBrowser _WebBrowser) {
+        public CustomSecurityManager(System.Windows.Forms.WebBrowser _WebBrowser) {
             InternetInterfaces.IServiceProvider webBrowserServiceProviderInterface = _WebBrowser.ActiveXInstance as InternetInterfaces.IServiceProvider;
             IntPtr profferServiceInterfacePointer = IntPtr.Zero;
 
@@ -87,7 +88,7 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
-            pwszUrl = pwszUrl.ToLower();
+            pwszUrl = pwszUrl.ToLowerInvariant();
 
             if (pwszUrl.IndexOf("http://") != 0 && pwszUrl.IndexOf("https://") != 0 && pwszUrl.IndexOf("ftp://") != 0) {
                 // we've wandered off from Flashpoint Server, revert to default zone settings
@@ -100,7 +101,7 @@ namespace FlashpointSecurePlayer {
             return INET_E_DEFAULT_ACTION;
         }
 
-        int InternetInterfaces.IInternetSecurityManager.ProcessUrlAction([MarshalAs(UnmanagedType.LPWStr)] string pwszUrl, uint dwAction, out uint pPolicy, uint cbPolicy, byte pContext, uint cbContext, uint dwFlags, uint dwReserved) {
+        int InternetInterfaces.IInternetSecurityManager.ProcessUrlAction([MarshalAs(UnmanagedType.LPWStr)] string pwszUrl, uint dwAction, out uint pPolicy, uint cbPolicy, IntPtr pContext, uint cbContext, uint dwFlags, uint dwReserved) {
             pPolicy = URLPOLICY_DISALLOW;
 
             if (cbPolicy < Marshal.SizeOf(pPolicy.GetType())) {
@@ -118,7 +119,13 @@ namespace FlashpointSecurePlayer {
             }
 
             try {
-                if (Path.GetExtension(new Uri(pwszUrl).LocalPath).ToUpper() == FLASH_EXTENSION) {
+                byte[] context = new byte[cbContext];
+
+                if (pContext != IntPtr.Zero) {
+                    Marshal.Copy(pContext, context, 0, (int)cbContext);
+                }
+
+                if (context.SequenceEqual(FLASH_CONTEXT) || Path.GetExtension(new Uri(pwszUrl).LocalPath).ToUpperInvariant() == FLASH_EXTENSION) {
                     if (dwAction == URLACTION_ACTIVEX_TREATASUNTRUSTED) { // don't trust Flash ActiveX Controls
                         pPolicy = URLPOLICY_ALLOW;
                     }
@@ -128,7 +135,7 @@ namespace FlashpointSecurePlayer {
                 return S_FALSE;
             }
 
-            pwszUrl = pwszUrl.ToLower();
+            pwszUrl = pwszUrl.ToLowerInvariant();
 
             if (pwszUrl.IndexOf("http://") != 0 && pwszUrl.IndexOf("https://") != 0 && pwszUrl.IndexOf("ftp://") != 0) {
                 // we've wandered off from Flashpoint Server, don't allow zone elevation

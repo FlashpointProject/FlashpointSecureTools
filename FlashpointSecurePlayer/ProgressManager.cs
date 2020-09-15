@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -33,6 +34,9 @@ namespace FlashpointSecurePlayer {
             private class Goal {
                 private int size = 1;
                 private int steps = 0;
+                private readonly object timeoutLock = new object();
+                private bool timeout = false;
+                private readonly System.Threading.Timer timer;
 
                 public int Size {
                     get {
@@ -71,11 +75,39 @@ namespace FlashpointSecurePlayer {
                         }
 
                         steps = value;
+
+                        if (Timeout) {
+                            Environment.Exit(0);
+                            throw new TimeoutException("The goal has timed-out.");
+                        }
                     }
                 }
 
-                public Goal(int size = 1) {
+                public uint Time { get; set; }
+
+                private bool Timeout {
+                    get {
+                        lock (timeoutLock) {
+                            return timeout;
+                        }
+                    }
+
+                    set {
+                        lock (timeoutLock) {
+                            timeout = value;
+                        }
+                    }
+                }
+
+                public Goal(int size = 1, uint time = 0) {
                     Size = size;
+                    Time = time;
+
+                    if (Time > 0) {
+                        timer = new System.Threading.Timer(new TimerCallback(delegate (object state) {
+                            Timeout = true;
+                        }), null, time, System.Threading.Timeout.Infinite);
+                    }
                 }
             }
 
@@ -147,7 +179,7 @@ namespace FlashpointSecurePlayer {
                 ProgressManager.Value = progressManagerValue;
             }
 
-            public static void Start(int size = 1) {
+            public static void Start(int size = 1, uint time = 0) {
                 if (size <= 0) {
                     return;
                 }
@@ -156,7 +188,7 @@ namespace FlashpointSecurePlayer {
                     ProgressManager.Reset();
                 }
 
-                Goals.Push(new Goal(size));
+                Goals.Push(new Goal(size, time));
             }
 
             public static void Stop() {

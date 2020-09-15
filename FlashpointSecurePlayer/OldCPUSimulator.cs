@@ -10,30 +10,60 @@ using System.Windows.Forms;
 
 using static FlashpointSecurePlayer.Shared;
 using static FlashpointSecurePlayer.Shared.Exceptions;
-using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.ModificationsElementCollection;
-using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement.OldCPUSimulatorElement;
 
 namespace FlashpointSecurePlayer {
     class OldCPUSimulator : Modifications {
         public OldCPUSimulator(Form form) : base(form) { }
 
-        public void Activate(string name, ref string server, ref string software, ref ProcessStartInfo softwareProcessStartInfo, out bool softwareIsOldCPUSimulator) {
+        public bool TestRunningWithOldCPUSimulator() {
+            // now, we might already be running under Old CPU Simulator
+            // we don't want to start a new instance in that case
+            // the user has manually started Old CPU Simulator already
+            Process parentProcess = GetParentProcess();
+            string parentProcessFileName = null;
+
+            if (parentProcess != null) {
+                try {
+                    parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess)).ToUpperInvariant();
+                } catch {
+                    throw new OldCPUSimulatorFailedException("Failed to get the parent process EXE name.");
+                }
+            }
+
+            if (parentProcessFileName == OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME) {
+                return true;
+            }
+            return false;
+        }
+
+        public void Activate(string templateName, ref ProcessStartInfo softwareProcessStartInfo, out bool softwareIsOldCPUSimulator) {
             OldCPUSimulatorElement oldCPUSimulatorElement = null;
             softwareIsOldCPUSimulator = false;
 
-            base.Activate(name);
+            base.Activate(templateName);
 
-            if (String.IsNullOrEmpty(name)) {
+            if (String.IsNullOrEmpty(TemplateName)) {
                 // no argument
                 return;
             }
 
-            ModificationsElement modificationsElement = GetModificationsElement(false, Name);
+            TemplateElement templateElement = GetTemplateElement(false, TemplateName);
 
-            if (modificationsElement == null) {
+            if (templateElement == null) {
                 return;
             }
-            
+
+            ModeElement modeElement = templateElement.Mode;
+            ModificationsElement modificationsElement = templateElement.Modifications;
+
+            if (!modificationsElement.ElementInformation.IsPresent) {
+                return;
+            }
+
             oldCPUSimulatorElement = modificationsElement.OldCPUSimulator;
 
             if (!oldCPUSimulatorElement.ElementInformation.IsPresent) {
@@ -47,21 +77,8 @@ namespace FlashpointSecurePlayer {
                 throw new OldCPUSimulatorFailedException("The target rate is required.");
             }
 
-            // now, we might already be running under Old CPU Simulator
-            // we don't want to start a new instance in that case
-            // the user has manually started Old CPU Simulator already
-            Process parentProcess = GetParentProcess();
-            string parentProcessEXEFileName = null;
-
-            if (parentProcess != null) {
-                try {
-                    parentProcessEXEFileName = Path.GetFileName(GetProcessEXEName(parentProcess)).ToUpper();
-                } catch {
-                    throw new OldCPUSimulatorFailedException("Failed to get the parent process EXE name.");
-                }
-            }
-
-            if (parentProcessEXEFileName == OLD_CPU_SIMULATOR_PARENT_PROCESS_EXE_FILE_NAME) {
+            if (TestRunningWithOldCPUSimulator()) {
+                // aaand we're done
                 return;
             }
 
@@ -109,12 +126,14 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            if (!String.IsNullOrEmpty(server)) {
+            switch (modeElement.Name) {
+                case ModeElement.NAME.WEB_BROWSER:
                 // server mode, need to restart the whole app
                 // handled in the GUI side of things
-                throw new OldCPUSimulatorRequiresApplicationRestartException("The Old CPU Simulator in Server Mode requires a restart.");
-            } else if (!String.IsNullOrEmpty(software)) {
+                throw new OldCPUSimulatorRequiresApplicationRestartException("The Old CPU Simulator in Web Browser Mode requires a restart.");
+                case ModeElement.NAME.SOFTWARE:
                 // USB the HDMI to .exe the database
+                string commandLineExpanded = Environment.ExpandEnvironmentVariables(modeElement.CommandLine);
                 StringBuilder oldCPUSimulatorSoftware = new StringBuilder("\"");
 
                 // the problem we're dealing with here
@@ -124,7 +143,12 @@ namespace FlashpointSecurePlayer {
                 // but still launch the executable from a path
                 // potentially relative to this executable
                 try {
-                    string[] argv = CommandLineToArgv(software, out int argc);
+                    string[] argv = CommandLineToArgv(commandLineExpanded, out int argc);
+
+                    if (argc <= 0) {
+                        throw new IndexOutOfRangeException("The command line argument is out of range.");
+                    }
+
                     // TODO: deal with paths with quotes... someday
                     oldCPUSimulatorSoftware.Append(Path.GetFullPath(argv[0]));
                 } catch {
@@ -132,16 +156,18 @@ namespace FlashpointSecurePlayer {
                 }
 
                 oldCPUSimulatorSoftware.Append("\" ");
-                oldCPUSimulatorSoftware.Append(GetCommandLineArgumentRange(software, 1, -1));
+                oldCPUSimulatorSoftware.Append(GetCommandLineArgumentRange(commandLineExpanded, 1, -1));
                 // this becomes effectively the new thing passed as --software
                 // the shared function is used both here and GUI side for restarts
-                software = OLD_CPU_SIMULATOR_PATH + " " + GetOldCPUSimulatorProcessStartInfoArguments(oldCPUSimulatorElement, oldCPUSimulatorSoftware.ToString());
+                //modeElement.CommandLine = OLD_CPU_SIMULATOR_PATH + " " + GetOldCPUSimulatorProcessStartInfoArguments(oldCPUSimulatorElement, oldCPUSimulatorSoftware.ToString());
                 softwareIsOldCPUSimulator = true;
 
                 if (softwareProcessStartInfo == null) {
                     softwareProcessStartInfo = new ProcessStartInfo();
                 }
 
+                softwareProcessStartInfo.FileName = OLD_CPU_SIMULATOR_PATH;
+                softwareProcessStartInfo.Arguments = GetOldCPUSimulatorProcessStartInfoArguments(oldCPUSimulatorElement, oldCPUSimulatorSoftware.ToString());
                 softwareProcessStartInfo.RedirectStandardError = true;
                 softwareProcessStartInfo.RedirectStandardOutput = false;
                 softwareProcessStartInfo.RedirectStandardInput = false;
@@ -151,7 +177,7 @@ namespace FlashpointSecurePlayer {
 
                 // default the working directory to here
                 // (otherwise it'd get set to Old CPU Simulator's directory, not desirable)
-                if (String.IsNullOrEmpty(softwareProcessStartInfo.WorkingDirectory)) {
+                if (String.IsNullOrEmpty(modeElement.WorkingDirectory)) {
                     softwareProcessStartInfo.WorkingDirectory = Environment.CurrentDirectory;
                 }
                 return;

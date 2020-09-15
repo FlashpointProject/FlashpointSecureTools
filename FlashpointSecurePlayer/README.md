@@ -1,50 +1,89 @@
-# Flashpoint Secure Player 1.1.9
+# Flashpoint Secure Player 2.0.0
+This document is a work in progress and the following information is not necessarily accurate.
+
 This player attempts to solve common compatibility or portability issues posed by browser plugins on Windows for the purpose of playback in BlueMaxima's Flashpoint.
 
 It is compatible with Windows 7, Windows 8, Windows 8.1 and Windows 10, and requires .NET Framework 4.5. If you are on Windows 8.1 or Windows 10, or if you are on Windows 7/8 and have updates enabled, you already have .NET Framework 4.5. Otherwise, you may [download .NET Framework 4.5.](http://www.microsoft.com/en-us/download/details.aspx?id=30653)
 
 The Flashpoint Secure Player is an advanced application that makes modifications temporarily for only the duration required. It could be described as a "weak sandbox," in that it makes real changes to the computer the application is running on, but will revert these changes as soon as they are no longer needed.
 
-It is driven by a model consisting of two concepts: Modes and Modifications. The Modes and Modifications are set either via the command line or a configuration file. The configuration files may be hosted on the Flashpoint Server, making it easy to integrate into the existing Flashpoint curation flow. A number of sample configuration files are included alongside the player in the FlashpointSecurePlayerConfigs folder.
+Flashpoint Secure Player requires a Template and a URL. The Template determines what to do with the URL. The name of the Template to use and the URL are set via the command line.
 
-Presently, there are three Modes (ActiveX Mode, Server Mode, and Software Mode) and eight Modifications (Run As Administrator, Mode Templates, Environment Variables, Download Source, Downloads Before, Registry Backups, Single Instance, and Old CPU Simulator.)
+`FlashpointSecurePlayer TemplateName URL`
 
 This player has bugs. Help me find them! If you've found a bug, report anything unusual as an issue.
 
+# Templates
+Templates determine what to do with a URL. Every Template has its own configuration file. The configuration files may be hosted on the Flashpoint Server, making it easy to integrate into the existing Flashpoint curation flow. A number of sample configuration files are included alongside the player in the FlashpointSecurePlayerConfigs folder.
+
+Templates consist of Modes and Modifications. Presently, there are two Modes (Web Browser Mode and Software Mode) and six Modifications (Run As Administrator, Environment Variables, Downloads Before, Registry Backups, Single Instance, and Old CPU Simulator.) Some Modifications may also be set via the command line.
+
+Flashpoint Secure Player will check for a configuration file in the FlashpointSecurePlayerConfigs folder with the same name as the Template (with any invalid pathname characters replaced with a period character.) If it fails to find a configuration file in this folder, it will look for the configuration file on the Flashpoint Server at http://flashpointsecureplayerconfig/ using the same pathname rules. If the configuration file is not found in either location, an error occurs.
+
+Here is an example of a Template that does not do anything, called "Example."
+
+```
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <configSections>
+    <section name="flashpointSecurePlayer" type="FlashpointSecurePlayer.Shared+FlashpointSecurePlayerSection, FlashpointSecurePlayer, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null" />
+  </configSections>
+  <flashpointSecurePlayer>
+    <templates>
+      <template name="Example" />
+    </templates>
+  </flashpointSecurePlayer>
+</configuration>
+```
+
+The important element here is the `template` element, which in future examples is all that will be shown. The rest of the configuration file will be the same in every configuration file Flashpoint Secure Player uses.
+
+# Flashpoint Environment Variables
+The Flashpoint Secure Player sets five Environment Variables for use in Templates. These Environment Variables are set immediately when the player is started so they can be used anywhere in a Template, and increase the player's flexibility.
+
+**FP_STARTUP_PATH**
+
+This is the path to the Flashpoint Secure Player executable.
+
+**FP_URL**
+
+This is the URL which was set via the command line.
+
+**FP_ARGUMENTS**
+
+This may either be set explicitly or implicitly. It may be set explicitly by adding `--arguments` or `-args` to the command line, and everything after will become the value of `FP_ARGUMENTS`. Otherwise, if an unrecognized argument is encountered in the command line, `FP_ARGUMENTS` will be set implicitly. Everything after and including the unrecognized argument will become the value of `FP_ARGUMENTS`. This is useful for when additional arguments need to be passed to a software, for example to pass Java Options to Java.
+
+**FP_HTDOCS_FILE**
+
+This is the path to the local file from the URL. The path is relative to Flashpoint's HTDOCS folder.
+
+**FP_HTDOCS_FILE_DIR**
+
+This is the path to the directory with the local file from the URL. The path is relative to Flashpoint's HTDOCS folder.
+
 # Modes
-The Mode determines what action Flashpoint Secure Player will perform after all of the Modifications are made. For example, the end goal may be to open a browser, or a specific software. The Mode to use is not optional. If it is not set, an error will occur. Modes are exclusive - there may only be one set at a time.
+The Mode determines what action Flashpoint Secure Player will perform after all of the Modifications are made. For example, the end goal may be to open a browser, or a specific software. Modes are exclusive - there may only be one set at a time.
 
-## <a name="activex-mode"></a>ActiveX Mode
-**Command Line:** `--activex` (or `-ax`)
+## Web Browser Mode
+The Web Browser Mode opens a URL in an Internet Explorer frame. The Flashpoint Proxy is used to go to the URL. Here is a `template` element that demonstrates the use of the Web Browser Mode.
 
-*For curator use only.*
+```
+<template name="webbrowserexample">
+	<mode name="WEB_BROWSER" />
+</template>
+```
 
-The ActiveX Mode imports a Registry Backup from an ActiveX Control. After the Registry Backup is created, the ActiveX Control may be used in curations.
+The Web Browser Mode has an additional attribute: `workingDirectory`. The `workingDirectory` attribute sets the working directory for the player. The default is the path to the Flashpoint Secure Player executable.
 
-As a curator using the ActiveX Mode, the ActiveX Control will be uninstalled on your machine if it was installed before. However, the benefit to this Mode is that after the Registry Backup has been created, ActiveX Controls will only be uninstalled if they had not previously been installed on the user's machine.
-
-To use the ActiveX Mode, a Modification Name must be specified, which must match the path of the ActiveX Control, like so.
-
-`FlashpointSecurePlayer --name "ActiveX\AstroAvenger2Loader\AstroAvenger2Loader.ocx" --activex`
-
-Please note that you should NOT use the ActiveX Mode in your final curation. The ActiveX Mode is only for curators to use to create a Registry Backup. Once the Registry Backup has been created using the command line above, which only needs to be done once, ever, per ActiveX Control, it will appear in the config folder with the same name, after which point it may be referenced in curations using Server Mode as follows.
-
-`FlashpointSecurePlayer --name "ActiveX\AstroAvenger2Loader\AstroAvenger2Loader.ocx" --server "http://www.shockwave.com/content/astroavenger2/sis/index.html"`
-
-This is a command you could use in your curation, remembering to include the Registry Backup in the curation. For more information about Registry Backups, see the section about [Registry Backup Modifications](#registry-backups) below.
-
-## Server Mode
-**Command Line:** `--server` (or `-sv`)
-
-The Server Mode opens a URL in an Internet Explorer frame. The Flashpoint Proxy is used to access the URL, so Server Mode is Redirectorless.
-
-It is possible to modify the Server Mode's behaviour by using the Server Mode Template. For more information, see the section about [Mode Template Modifications](#mode-templates) below.
-
-`FlashpointSecurePlayer --server "http://www.example.com"`
+```
+<template name="webbrowserexample">
+	<mode name="WEB_BROWSER" workingDirectory="%FP_STARTUP_PATH%\Example" />
+</template>
+```
 
 **Setting The Internet Explorer Version**
 
-By default, the Internet Explorer version used in Server Mode is Internet Explorer 7. Changing the Internet Explorer version to use may be accomplished by means of HTTP headers or meta elements.
+By default, the Internet Explorer version used in Web Browser Mode is Internet Explorer 7. Changing the Internet Explorer version to use may be accomplished by means of HTTP headers or meta elements.
 
 Here are some examples of meta elements that may be used to change the Internet Explorer version.
 
@@ -64,45 +103,27 @@ Here are some examples of meta elements that may be used to change the Internet 
  
 `<meta http-equiv="X-UA-Compatible" content="IE=edge" />`
 
-The Server Mode should not be used for Flash curations, as Internet Explorer is [removing Flash support](https://support.microsoft.com/en-ca/help/4520411/adobe-flash-end-of-support) December 31, 2020.
+The Web Browser Mode should not be used for Flash curations, as Internet Explorer is [removing Flash support](https://support.microsoft.com/en-ca/help/4520411/adobe-flash-end-of-support) December 31, 2020.
 
 ## Software Mode
-**Command Line:** `--software` (or `-sw`)
+The Software Mode opens any software. Here is a `template` element that demonstrates the use of the Software Mode.
 
-The Software Mode opens any software. The command line argument *must* be the last argument specified, as everything after the command line argument will be interpreted as the command line to be passed to the software.
+```
+<template name="softwareexample">
+	<mode name="SOFTWARE" commandLine="Basilisk-Portable\Basilisk-Portable.exe &quot;%FP_URL%&quot;" workingDirectory="%FP_STARTUP_PATH%" hideWindow="false" />
+</template>
+```
 
-The command line below opens an example.swf file in Flash.
+The Software Mode has three additional attributes: `commandLine`, `workingDirectory` and `hideWindow`.
 
-`FlashpointSecurePlayer --software "Flash\flashplayer_32_sa.exe" "http://www.example.com/example.swf"`
+The `commandLine` attribute specifies the command line of the software to start. It is required for Software Mode.
 
-It is possible to modify the Software Mode's behaviour by using the Software Mode Template. For more information, see the section about [Mode Template Modifications](#mode-templates) below.
+The `workingDirectory` attribute sets the working directory for the process. The default is the directory with the executable of the software.
+
+The `hideWindow` attribute causes the window of the software to be hidden. This is ideal for hiding console windows for softwares that have them. Please note that the `hideWindow` attribute is not supported when using the Old CPU Simulator Modification. For more information, see the section about the [Old CPU Simulator Modification](#old-cpu-simulator) below.
 
 # Modifications
 The Modifications determine what temporary modifications will be made for the duration of time that the application is running. Modifications are optional, none are required to be set. Modifications are not exclusive - there may be multiple Modifications set at a time.
-
-The Modifications Name is set via the `--name` (or `-n`) command line argument. The Modifications Name is case-insensitive. When this argument is passed, Flashpoint Secure Player will check for a configuration file in the FlashpointSecurePlayerConfigs folder with the same name (with any invalid pathname characters replaced with a period character.) If it fails to find a configuration file in this folder, it will look for the configuration file on the Flashpoint Server at http://flashpointsecureplayerconfig/ using the same pathname rules. If the configuration file is not found in either location, an error occurs.
-
-Here is an example of a Modification that does not do anything, called "Example."
-
-```
-<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-  <configSections>
-    <section name="flashpointSecurePlayer" type="FlashpointSecurePlayer.Shared+FlashpointSecurePlayerSection, FlashpointSecurePlayer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
-  </configSections>
-
-  <flashpointSecurePlayer>
-    <modifications>
-      <modification name="Example" />
-    </modifications>
-  </flashpointSecurePlayer>
-  <startup>
-    
-  <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.5"/></startup>
-</configuration>
-```
-
-The important element here is the `modification` element, which in future examples is all that will be shown. The rest of the configuration file will be the same in every configuration file Flashpoint Secure Player uses.
 
 ## <a name="#run-as-administrator"></a>Run As Administrator
 Set Via:
@@ -113,117 +134,64 @@ When the Run As Administrator Modification is used either via command line or co
 
 If the Run As Administrator Modification is not used, it does not test if the application is running as administrator or not. Therefore, it is possible that, even with this Modification not active, the application could be running as administrator. The omission of this Modification simply means that no test occurs.
 
-The command line below launches Flash as Administrator User.
+The command line below opens Flash as Administrator User.
 
-`FlashpointSecurePlayer -a --software "Flash\flashplayer_32_sa.exe" "http://www.example.com/example.swf"`
+`FlashpointSecurePlayer Flash "http://www.example.com/example.swf" -a`
 
-The command line below launches the Astro Avenger II ActiveX Control as Administrator User.
+The command line below opens the Astro Avenger II ActiveX Control as Administrator User.
 
-`FlashpointSecurePlayer -a --name "ActiveX\AstroAvenger2Loader\AstroAvenger2Loader.ocx" --server "http://www.shockwave.com/content/astroavenger2/sis/index.html"`
+`FlashpointSecurePlayer "ActiveX\AstroAvenger2Loader\AstroAvenger2Loader.ocx" "http://www.shockwave.com/content/astroavenger2/sis/index.html" -a`
 
-The `modification` element below also causes the application to be run as Administrator User.
+The `template` element below also causes the application to be run as Administrator User.
 
 ```
-<modification name="example" runAsAdministrator="true" />
+<template name="example">
+	<modifications runAsAdministrator="true" />
+</template>
 ```
 
 ## Environment Variables
 Set Via:
  - Configuration File: `environmentVariables` element
 
-The Environment Variables Modification may be used to set environment variables for the current process and any software it launches only. The envrionment variables are not set for the entire system. The `FLASHPOINTSECUREPLAYERSTARTUPPATH` variable may be used in the value, which will be substituted with the startup path of Flashpoint Secure Player.
+The Environment Variables Modification may be used to set, as well as find and replace within, environment variables for the current process and any software it launches only. The envrionment variables are not set for the entire system.
 
-Here is a modification `element` that sets the `FP_UNITY_PATH` variable to the location of the Unity Web Player plugin.
+Here is a `template` element that sets the `FP_UNITY_PATH` variable to the location of the Unity Web Player plugin.
 
 ```
-<modification name="unitywebplayer2">
-  <environmentVariables>
-    <environmentVariable name="FP_UNITY_PATH" value="%FLASHPOINTSECUREPLAYERSTARTUPPATH%\BrowserPlugins\UnityWebPlayer\Unity3d2.x\loader" />
-  </environmentVariables>
-</modification>
+<template name="unitywebplayer2">
+	<modifications>
+		<environmentVariables>
+			<environmentVariable name="FP_UNITY_PATH" value="%FP_STARTUP_PATH%\BrowserPlugins\UnityWebPlayer\Unity3d2.x\loader" />
+		</environmentVariables>
+	</modifications>
+</template>
+```
+
+Here is a `template` element that finds and replaces within the `FP_URL` environment variable to modify the specified URL so it does not go through the Flashpoint Proxy.
+
+```
+<template name="shiva3d">
+	<modifications>
+		<environmentVariables>
+		  <environmentVariable name="FP_URL" find="http://" replace="http://localhost:22500/" />
+		</environmentVariables>
+	</modifications>
+</template>
 ```
 
 **Compatibility Layers**
 
-It is possible to use the Environment Variables Modification to set compatibility layers by setting the `__COMPAT_LAYERS` environment variable to a [compatibility fix.](http://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-7/cc765984(v=ws.10)) Here is a `modification` element that starts the software in 640 x 480 resolution.
+It is possible to use the Environment Variables Modification to set compatibility layers by setting the `__COMPAT_LAYERS` environment variable to a [compatibility fix.](http://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-7/cc765984(v=ws.10)) Here is a `template` element that starts the software in 640 x 480 resolution.
 
 ```
-<modification name="lowresolution">
-  <environmentVariables>
-    <environmentVariable name="__COMPAT_LAYERS" value="640x480" />
-  </environmentVariables>
-</modification>
-```
-
-## <a name="mode-templates"></a>Mode Templates
-Set Via:
- - Configuration File: `modeTemplates` element
-
-The Mode Templates can modify the behaviour of the Server Mode and Software Mode such that a particular configuration file will cause these modes to be used. There is no ActiveX Mode Template.
-
-**Server Mode Template**
-
-The Server Mode Template provides the ability to apply a regex to the URL that was in the command line. For example, a `modification` element could be created which prefixes the URL with a specific domain.
-
-```
-<modification name="miniclip">
-  <modeTemplates>
-    <serverModeTemplate>
-	  <regexes>
-	    <regex name="(.+)" replace="http://www.miniclip.com/$1" />
-	  </regexes>
-    </serverModeTemplate>
-  </modeTemplates>
-</modification>
-```
-
-With the "Miniclip" Modification Name specified, all URLs passed into Server Mode will be modified, such that the command line below would cause the URL of http://www.miniclip.com/games/save-the-sheriff/en/ to open in the Internet Explorer frame.
-
-`FlashpointSecurePlayer --name "Miniclip" --server "games/save-the-sheriff/en/"`
-
-**Software Mode Template**
-
-The Software Mode Template works identically to the Server Mode Template in that it provides the ability to replace the command line passed in with regexes. The Software Mode Template also has additional attributes.
-
-The first attribute is `format`, which [formats](https://docs.microsoft.com/en-us/dotnet/api/system.string.format?view=netcore-3.1#Starting) the command line arguments as a string.
-
-The second attribute is `hideWindow`, which causes the window of the software to be hidden. This is ideal for hiding console windows for softwares that have them. Please note that the `hideWindow` attribute is not supported when using the Old CPU Simulator Modification. For more information, see the section about [Old CPU Simulator](#old-cpu-simulator) below.
-
-The third attribute is `workingDirectory`, which sets the working directory for the process. The `FLASHPOINTSECUREPLAYERSTARTUPPATH` variable may be used in this value, which will be substituted with the startup path of Flashpoint Secure Player.
-
-For example, a practical use of the Software Mode Template would be to create a `modification` element that always ensures the use of important Java options. Note that this example is simplified from the real Java configuration file for the purpose of demonstration.
-
-```
-<modification name="java">
-  <modeTemplates>
-    <softwareModeTemplate hideWindow="true">
-	  <regexes>
-	    <regex name="(.+)" replace="Java\JDK_1.8.0_181\bin\appletviewer.exe -J-Dhttp.proxyHost=127.0.0.1 -J-Dhttp.proxyPort=8888 -J-Dhttps.proxyHost=127.0.0.1 -J-Dhttps.proxyPort=8888 $1" />
-	  </regexes>
-    </softwareModeTemplate>
-  </modeTemplates>
-</modification>
-```
-
-With the "Java" Modification Name specified, the URL is factored into the regex, such that only the URL needs to be given when specifying the Software Mode argument. The command line below could be interpreted as passing the URL to the software.
-
-`FlashpointSecurePlayer --name "Java" --software "http://www.example.com/example.jar"`
-
-## Download Source
-Set Via:
- - Command Line: `--download-source` (or `-dlsrc`)
- - Configuration File: `downloadSource` element
-
-The Download Source Modification download a files from the Flashpoint Server and opens the downloaded file in the software. It has no effect in Server Mode. This is useful for software that is only capable of loading files from the computer and takes the file to open as an argument. The command line argument may only be used once.
-
-This Modification may be useful when used alongside the Downloads Before Modification. For more information, see the section about [Downloads Before Modifications](#downloads-before) below. Here is a `modification` element that demonstrates the use of the Download Source Modification.
-
-```
-<modification name="downloadsourceexample">
-  <modeTemplates>
-    <downloadSource name="http://www.example.com/movie.swf" />
-  </modeTemplates>
-</modification>
+<template name="lowresolution">
+	<modifications>
+		<environmentVariables>
+			<environmentVariable name="__COMPAT_LAYERS" value="640x480" />
+		</environmentVariables>
+	</modifications>
+</template>
 ```
 
 ## <a name="downloads-before"></a> Downloads Before
@@ -231,38 +199,46 @@ Set Via:
  - Command Line: `--download-before` (or `-dlb`)
  - Configuration File: `downloadsBefore` element
 
-The Downloads Before Modification may be used to download files from the Flashpoint Server. This is useful for software that is only capable of loading files from the computer. The command line argument may be used more than once to download multiple files. Here is a `modification` element that demonstrates the use of the Downloads Before Modification.
+The Downloads Before Modification may be used to download files from the Flashpoint Server. This is useful for software that is only capable of loading files from the computer. The command line argument may be used more than once to download multiple files. Here is a `template` element that demonstrates the use of the Downloads Before Modification.
 
 ```
-<modification name="downloadsbeforeexample">
-  <modeTemplates>
-    <downloadsBefore>
-	  <downloadBefore name="http://www.example.com/example1.swf" />
-	  <downloadBefore name="http://www.example.com/example2.swf" />
-    </downloadsBefore>
-  </modeTemplates>
-</modification>
+<template name="downloadsbeforeexample">
+	<modifications>
+		<downloadsBefore>
+			<downloadBefore name="http://www.example.com/example1.swf" />
+			<downloadBefore name="http://www.example.com/example2.swf" />
+		</downloadsBefore>
+	</modifications>
+</template>
 ```
 
-## <a name="registry-backups"></a>Registry Backups
+## <a name="registry-states"></a>Registry States
 Set Via:
- - Configuration File: `registryBackups` element
+ - Configuration File: `registryStates` element
 
-The Registry Backups Modification allows for specifying registry keys and values to be set temporarily and reverted when the player is exited. This allows for registry keys and values to only be set for the duration of time required. The `FLASHPOINTSECUREPLAYERSTARTUPPATH` variable may be used in values, which will be substituted with the startup path of Flashpoint Secure Player.
+The Registry States Modification allows for specifying registry keys and values to be set temporarily and reverted when the player is exited. This allows for registry keys and values to only be set for the duration of time required. Environment variables may be used in values, which will be expanded.
 
-Here is a `modifications` element which temporarily changes the Unity directory.
+Here is a `template` element which temporarily changes the Unity directory.
 
 ```
-<modification name="unitywebplayer2">
-  <registryBackups binaryType="SCS_32BIT_BINARY">
-	<registryBackup type="VALUE" keyName="HKEY_CURRENT_USER\Software\Unity\WebPlayer"
-		valueName="Directory" value="%FLASHPOINTSECUREPLAYERSTARTUPPATH%\BrowserPlugins\UnityWebPlayer\Unity3d2.x"
-		valueKind="String" />
-  </registryBackups>
-</modification>
+<template name="unitywebplayer5">
+	<modifications>
+		<registryStates binaryType="SCS_32BIT_BINARY">
+			<registryState type="VALUE" keyName="HKEY_CURRENT_USER\SOFTWARE\UNITY\WEBPLAYER"
+				valueName="DIRECTORY" value="%FP_STARTUP_PATH%\BrowserPlugins\UnityWebPlayer\Unity3d5.x"
+				valueKind="String" />
+		</registryStates>
+	</modifications>
+</template>
 ```
 
-The `type` attribute of the `registryBackup` element specifies whether the element represents a `KEY` or `VALUE`. If not specified, the default is `KEY`. The `keyName` and `valueName` attributes specify the location of the registry key and value. The `valueKind` attribute specifies the kind of value that will be set. If the `type` attribute is `KEY`, the `valueName`, `value`, and `valueKind` attributes are ignored.
+The `type` attribute of the `registryState` element specifies whether the element represents a `KEY` or `VALUE`. If not specified, the default is `KEY`.
+
+The `keyName` and `valueName` attributes specify the location of the registry key and value.
+
+The `valueKind` attribute specifies the kind of value that will be set.
+
+If the `type` attribute is `KEY`, the `valueName`, `value`, and `valueKind` attributes are ignored.
 
 There is no way to delete a registry key or value, only set them. The player may set a `_deleted` attribute, which is for internal use by the player only, and is ignored outside of the active configuration file (see the section about [Crash Recovery](#crash-recovery) below.)
 
@@ -270,11 +246,25 @@ Furthermore, the player may set an `_administrator` attribute, for internal use 
 
 **binaryType Attribute and WOW64 Keys**
 
-*You do not need to include the WOW6432Node or WOW64AANode subkeys when creating a Registry Backup.* If the `binaryType` attribute of the `registryBackups` element is not set to `SCS_64BIT_BINARY`, the 32-bit registry view is used, so the WOW6432Node and WOW64AANode subkeys will be used automatically where necessary.
+*You do not need to include the WOW6432Node or WOW64AANode subkeys when creating a Registry State.* If the `binaryType` attribute of the `registryStates` element is not set to `SCS_64BIT_BINARY`, the 32-bit registry view is used, so the WOW6432Node and WOW64AANode subkeys will be used automatically where necessary.
 
 **ActiveX Imports**
 
-See the section about [ActiveX Mode](#activex-mode) above.
+*For curator use only.*
+
+The ActiveX Imports feature imports a Registry State from an ActiveX Control. After the Registry State is created, the ActiveX Control may be used in curations.
+
+As a curator using the ActiveX Imports, the ActiveX Control will be uninstalled on your machine if it was installed before. However, the benefit to this feature is that after the Registry State has been created, ActiveX Controls will only be uninstalled if they had not previously been installed on the user's machine.
+
+To use ActiveX Imports, simply add `--activex` at the end of your command line for the game.
+
+`FlashpointSecurePlayer "ActiveX\AstroAvenger2Loader\AstroAvenger2Loader.ocx" "http://www.shockwave.com/content/astroavenger2/sis/index.html" --activex`
+
+Please note that you should NOT include `--activex` at the end of your command line in your final curation. The ActiveX Imports feature is only for curators to use to create a Registry State. Once the Registry State has been created using the command line above, which only needs to be done once, ever, per ActiveX Control, it will appear in the config folder with the same name, after which point it may be referenced in curations using Web Browser Mode as follows.
+
+`FlashpointSecurePlayer "ActiveX\AstroAvenger2Loader\AstroAvenger2Loader.ocx" "http://www.shockwave.com/content/astroavenger2/sis/index.html"`
+
+This is a command you could use in your curation, remembering to include the configuration file in the curation.
 
 **<a name="#crash-recovery"></a>Crash Recovery**
 
@@ -287,7 +277,7 @@ There are four possible scenarios.
 3. Flashpoint Secure Player is exited using the close button.
 4. Flashpoint Secure Player crashes, is killed in Task Manager, or a shutdown or power outage occurs.
 
-In scenarios one and two, Flashpoint Secure Player reverts the active Registry Backups Modification because the software is no longer open. In scenario three, Flashpoint Secure Player reverts the active Registry Backups Modification and any software opened using Software Mode is killed. In scenario four, Flashpoint Secure Player will revert the active Registry Backups Modification whenever the application is next run, regardless of what Modes or Modifications are specified.
+In scenarios one and two, Flashpoint Secure Player reverts the active Registry States Modification because the software is no longer open. In scenario three, Flashpoint Secure Player reverts the active Registry States Modification and any software opened using Software Mode is killed. In scenario four, Flashpoint Secure Player will revert the active Registry States Modification whenever the application is next run, regardless of what Modes or Modifications are specified.
 
 If the Registry Backups Modification cannot be reverted, an error occurs and the application will exit, and not do anything else regardless of what Modes or Modifications are specified until the issue is resolved. If the registry has been modified by a different application outside of Flashpoint Secure Player, the player no longer assumes control of those registry keys and values, and the active Registry Backups Modification is silently discarded.
 
@@ -301,24 +291,24 @@ Set Via:
 
 When the Single Instance Modification is used, the player tests that only a single instance of the software specified using Software Mode is open. This is useful for ensuring there aren't multiple instances open of software for which only a single instance may be open at a time before errors occur.
 
-This command line in combination with this `modification` element uses the Single Instance Modification and Mode Templates Modification to open Basilisk. For more information, see the section about [Mode Template Modifications](#mode-templates) above.
+This command line in combination with this `template` element uses the Single Instance Modification when opening Basilisk.
 
-`FlashpointSecurePlayer --name "basilisk" --sw "http://www.example.com"`
+`FlashpointSecurePlayer "basilisk" "http://www.example.com"`
 
 ```
-<modification name="basilisk">
-  <modeTemplates>
-    <softwareModeTemplate>
-	  <regexes>
-	    <regex name="(.+)" replace="Basilisk-Portable\Basilisk-Portable.exe $1" />
-	  </regexes>
-    </softwareModeTemplate>
-  </modeTemplates>
-  <singleInstance strict="false" commandLine="basilisk.exe" />
-</modification>
+<template name="basilisk">
+	<mode name="SOFTWARE" commandLine="Basilisk-Portable\Basilisk-Portable.exe &quot;%FP_URL%&quot;" />
+	<modifications>
+		<singleInstance executable="basilisk.exe" strict="false" />
+	</modifications>
+</template>
 ```
 
-The Single Instance Modification has two attributes: `strict` and `commandLine`. The `strict` attribute specifies whether the test only looks for the process with the exact same pathname or any process on the machine with a matching name. The default is `false`. The `commandLine` attribute specifies an alternate command line to test for. For example, in this instance, if the `commandLine` attribute were empty, it would instead look for `Basilisk-Portable.exe`.
+The Single Instance Modification has two attributes: `executable` and `strict`.
+
+The `executable` attribute specifies an alternate executable to test for. For example, in this instance, if the `executable` attribute were empty, it would instead look for `Basilisk-Portable.exe`.
+
+The `strict` attribute specifies whether the test only looks for the process with the exact same pathname or any process on the machine with a matching name. The default is `false`.
 
 ## <a name="old-cpu-simulator"></a>Old CPU Simulator
 Set Via:
@@ -330,7 +320,7 @@ The Old CPU Simulator Modification has six attributes. The only required attribu
 
 If the current rate is slower than the target rate, the Old CPU Simulator Modification is ignored.
 
-The player will look for Old CPU Simulator in the OldCPUSimulator folder. It must be Old CPU Simulator 1.6.4 or newer.
+The player will look for Old CPU Simulator in the OldCPUSimulator folder. It must be Old CPU Simulator 1.6.5 or newer.
 
 # Curation Flow
 Let's curate the game Zenerchi. The first step is to add the ActiveX Control to the ActiveX folder in FPSoftware. Here is the location we'll use for Zenerchi:
@@ -340,49 +330,32 @@ Let's curate the game Zenerchi. The first step is to add the ActiveX Control to 
 
 The first time an ActiveX Control is added to Flashpoint, a curator must create an ActiveX Import. This is accomplished with the following command line, substituting the ActiveX Control's location. If not run as administrator, the curator will be asked to launch as Administrator User. This command line is NOT to be included in the curation metadata, it is only used to create the Registry Backup.
 
-`FlashpointSecurePlayer --name "ActiveX\ZenerchiWeb.1.0.0.10\zenerchi.1.0.0.10.dll" --activex`
+`FlashpointSecurePlayer "ActiveX\ZenerchiWeb.1.0.0.10\zenerchi.1.0.0.10.dll" "http://www.shockwave.com/content/zenerchi/sis/index.html" --activex`
 
 This will produce a file in the FlashpointSecurePlayerConfigs folder called `activex.zenerchiweb.1.0.0.10.zenerchi.1.0.0.10.dll.config`. This file may be included in the curation as if it existed at the URL of http://flashpointsecureplayerconfigs/activex.zenerchiweb.1.0.0.10.zenerchi.1.0.0.10.dll.config and it will be downloaded from the Flashpoint Server by Flashpoint Secure Player when required.
 
 **Using the Registry Backup**
 
-To use the ActiveX Control, the same Modification Name is specified but the Mode is changed to Server Mode with the URL to load. This is the command line the curation metadata may include.
+To use the ActiveX Control, `--activex` is removed from the end of the command line. This is the command line the curation metadata may include.
 
-`FlashpointSecurePlayer --name "ActiveX\ZenerchiWeb.1.0.0.10\zenerchi.1.0.0.10.dll" --server "http://www.shockwave.com/content/zenerchi/sis/index.html"`
+`FlashpointSecurePlayer "ActiveX\ZenerchiWeb.1.0.0.10\zenerchi.1.0.0.10.dll" "http://www.shockwave.com/content/zenerchi/sis/index.html"`
 
 # Setup
-First, the FlashpointSecurePlayerConfigs folder should be copied to the FPSoftware folder. Then, the contents of the desired build folder (Debug or Release) should be copied to the FPSoftware folder, including the x86 and amd64 subfolders. The result should be like in the figure below.
-
-![Setup Screenshot](README_SetupScreenshot.jpg?raw=true)
-
-You may notice that because the Flashpoint Secure Player is effectively capable of replacing many of the batch scripts in terms of functionality, the following files are no longer strictly needed. However, for the purposes of making migration easier, it may be a good idea to modify the batch scripts to call upon Flashpoint Secure Player instead of deleting them outright, reducing their complexity significantly.
-
-- startActiveX.bat
-- startActiveX_compat.bat
-- startBasilisk.bat
-- startBasilisk_compat.bat
-- startJava.bat
-- startShiVa.bat
-- startUnity.bat
-- unityRestoreRegistry.bat
-- elevate.exe
-- TWPFP
-- ActiveX/unregisterAll.bat
+First, the FlashpointSecurePlayerConfigs folder should be copied to the FPSoftware folder. Then, the contents of the desired build folder (Debug or Release) should be copied to the FPSoftware folder, including the x86 and amd64 subfolders.
 
 Additionally, in order to support the Old CPU Simulator Modification, Old CPU Simulator is required. For more information, see the [Old CPU Simulator](#old-cpu-simulator) section above.
 
 # Planned Features
  - Currently, there is no way to edit configuration files other than manually, and a generic "configuration file failed to load" error occurs when there is a syntax error. It would be nice to have a seperate visual editor for configuration files.
- - Old CPU Simulator integration?
 
 # Questions And Answers
 **Is there is Linux version?**
 
 No, but also, what? This player deals mostly in solving Windows specific problems (to do with the registry, or running as administrator, etc.) for Windows specific plugins. The types of programs Flashpoint Secure Player is useful for would not have run natively on Linux in the first place.
 
-**Why does the Modification Name need to be specified in the configuration file if the filename of the configuration file also reflects it?**
+**Why does the Template Name need to be specified in the configuration file if the filename of the configuration file also reflects it?**
 
-It provides additional redundancy, ensuring the configuration file loaded was the one intended, and also opens the door for potentially allowing single configuration files to have multiple `modification` elements in the future.
+It provides additional redundancy, ensuring the configuration file loaded was the one intended, and also opens the door for potentially allowing single configuration files to have multiple `template` elements in the future.
 
 **Shouldn't the Flashpoint Launcher just have these features built in?**
 

@@ -88,7 +88,7 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Another instance of Flashpoint Secure Player is preventing the Modifications from being activated..
+        ///   Looks up a localized string similar to Another instance of Flashpoint Secure Player is preventing the Template from being activated..
         /// </summary>
         internal static string AnotherInstanceCausingInterference {
             get {
@@ -97,7 +97,7 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to as Administrator User.
+        ///   Looks up a localized string similar to as an Administrator User.
         /// </summary>
         internal static string AsAdministratorUser {
             get {
@@ -116,11 +116,11 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This curation is missing a modification name..
+        ///   Looks up a localized string similar to This curation is missing a template name..
         /// </summary>
-        internal static string CurationMissingModificationName {
+        internal static string CurationMissingTemplateName {
             get {
-                return ResourceManager.GetString("CurationMissingModificationName", resourceCulture);
+                return ResourceManager.GetString("CurationMissingTemplateName", resourceCulture);
             }
         }
         
@@ -130,6 +130,15 @@ namespace FlashpointSecurePlayer.Properties {
         internal static string EnvironmentVariablesFailed {
             get {
                 return ResourceManager.GetString("EnvironmentVariablesFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Environment Variables timed out..
+        /// </summary>
+        internal static string EnvironmentVariablesTimeout {
+            get {
+                return ResourceManager.GetString("EnvironmentVariablesTimeout", resourceCulture);
             }
         }
         
@@ -152,6 +161,15 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to set the Working Directory..
+        /// </summary>
+        internal static string FailedSetWorkingDirectory {
+            get {
+                return ResourceManager.GetString("FailedSetWorkingDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The Flashpoint Proxy could not be enabled..
         /// </summary>
         internal static string FlashpointProxyNotEnabled {
@@ -166,6 +184,24 @@ namespace FlashpointSecurePlayer.Properties {
         internal static string FlashpointSecurePlayer {
             get {
                 return ResourceManager.GetString("FlashpointSecurePlayer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This will force the deletion of the modification from your system. You should not do this unless instructed to by Flashpoint staff. Continue?.
+        /// </summary>
+        internal static string ForceDeleteAllWarning {
+            get {
+                return ResourceManager.GetString("ForceDeleteAllWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The game is downloading..
+        /// </summary>
+        internal static string GameDownloading {
+            get {
+                return ResourceManager.GetString("GameDownloading", resourceCulture);
             }
         }
         
@@ -216,7 +252,7 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This game will not work unless run {0}. Do you want to launch it {0}?
+        ///   Looks up a localized string similar to This game will not work unless it is run {0}. Do you want to launch it {0}?
         ///If you choose No, the application will exit..
         /// </summary>
         internal static string LaunchGame {
@@ -226,11 +262,11 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Mode Templates failed..
+        ///   Looks up a localized string similar to The Modifications failed to load because an Import was in progress..
         /// </summary>
-        internal static string ModeTemplatesFailed {
+        internal static string ModificationsFailedImport {
             get {
-                return ResourceManager.GetString("ModeTemplatesFailed", resourceCulture);
+                return ResourceManager.GetString("ModificationsFailedImport", resourceCulture);
             }
         }
         
@@ -244,11 +280,29 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No mode was selected..
+        /// </summary>
+        internal static string NoModeSelected {
+            get {
+                return ResourceManager.GetString("NoModeSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The Old CPU Simulator failed. The Target Rate may be invalid..
         /// </summary>
         internal static string OldCPUSimulatorFailed {
             get {
                 return ResourceManager.GetString("OldCPUSimulatorFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to With Old CPU Simulator, the game may load slowly. Please wait for the game to load..
+        /// </summary>
+        internal static string OldCPUSimulatorSlow {
+            get {
+                return ResourceManager.GetString("OldCPUSimulatorSlow", resourceCulture);
             }
         }
         
@@ -280,47 +334,56 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Registry Backup cannot run because another one is already running..
+        ///   Looks up a localized string similar to The Registry State cannot be started because another one has already been started..
         /// </summary>
-        internal static string RegistryBackupAlreadyRunning {
+        internal static string RegistryStateAlreadyInProgress {
             get {
-                return ResourceManager.GetString("RegistryBackupAlreadyRunning", resourceCulture);
+                return ResourceManager.GetString("RegistryStateAlreadyInProgress", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Registry Backup failed..
+        ///   Looks up a localized string similar to The Registry State failed to be created..
         /// </summary>
-        internal static string RegistryBackupFailed {
+        internal static string RegistryStateFailed {
             get {
-                return ResourceManager.GetString("RegistryBackupFailed", resourceCulture);
+                return ResourceManager.GetString("RegistryStateFailed", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A Registry Backup is in progress. Please do not turn off your computer..
+        ///   Looks up a localized string similar to The Registry State is being created. Please do not turn off your computer..
         /// </summary>
-        internal static string RegistryBackupInProgress {
+        internal static string RegistryStateInProgress {
             get {
-                return ResourceManager.GetString("RegistryBackupInProgress", resourceCulture);
+                return ResourceManager.GetString("RegistryStateInProgress", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Registry Backup cannot exit because it was not running..
+        ///   Looks up a localized string similar to The Registry State cannot be stopped because no Registry State has been started..
         /// </summary>
-        internal static string RegistryBackupNotRunning {
+        internal static string RegistryStateNotInProgress {
             get {
-                return ResourceManager.GetString("RegistryBackupNotRunning", resourceCulture);
+                return ResourceManager.GetString("RegistryStateNotInProgress", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Registry Backup was successful..
+        ///   Looks up a localized string similar to The Registry State timed out..
         /// </summary>
-        internal static string RegistryBackupWasSuccessful {
+        internal static string RegistryStateTimeout {
             get {
-                return ResourceManager.GetString("RegistryBackupWasSuccessful", resourceCulture);
+                return ResourceManager.GetString("RegistryStateTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Registry State was successfully created..
+        /// </summary>
+        internal static string RegistryStateWasSuccessful {
+            get {
+                return ResourceManager.GetString("RegistryStateWasSuccessful", resourceCulture);
             }
         }
         
