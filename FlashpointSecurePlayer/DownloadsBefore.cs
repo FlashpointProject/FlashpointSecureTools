@@ -8,8 +8,10 @@ using System.Windows.Forms;
 
 using static FlashpointSecurePlayer.Shared;
 using static FlashpointSecurePlayer.Shared.Exceptions;
-using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.ModificationsElementCollection;
-using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement.DownloadBeforeElementCollection;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement.DownloadBeforeElementCollection;
 
 namespace FlashpointSecurePlayer {
     class DownloadsBefore : Modifications {
@@ -17,8 +19,8 @@ namespace FlashpointSecurePlayer {
 
         private void Activate() { }
 
-        public async Task ActivateAsync(string name, List<string> downloadsBeforeNames) {
-            base.Activate(name);
+        public async Task ActivateAsync(string templateName, List<string> downloadsBeforeNames) {
+            base.Activate(templateName);
             //ModificationsElement modificationsElement = GetModificationsElement(true, Name);
 
             // purpose of the following code is to asynchronously

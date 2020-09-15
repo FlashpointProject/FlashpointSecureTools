@@ -127,20 +127,23 @@
     <value>The address ({0}) wasn't understood. Please report this bug.</value>
   </data>
   <data name="AnotherInstanceCausingInterference" xml:space="preserve">
-    <value>Another instance of Flashpoint Secure Player is preventing the Modifications from being activated.</value>
+    <value>Another instance of Flashpoint Secure Player is preventing the Template from being activated.</value>
   </data>
   <data name="AsAdministratorUser" xml:space="preserve">
-    <value>as Administrator User</value>
+    <value>as an Administrator User</value>
   </data>
   <data name="ConfigurationFailedLoad" xml:space="preserve">
     <value>The configuration failed to load.
 Please ensure Flashpoint is not corrupted, was extracted correctly, and is not running from OneDrive or a network drive.</value>
   </data>
-  <data name="CurationMissingModificationName" xml:space="preserve">
-    <value>This curation is missing a modification name.</value>
+  <data name="CurationMissingTemplateName" xml:space="preserve">
+    <value>This curation is missing a template name.</value>
   </data>
   <data name="EnvironmentVariablesFailed" xml:space="preserve">
     <value>The Environment Variables failed.</value>
+  </data>
+  <data name="EnvironmentVariablesTimeout" xml:space="preserve">
+    <value>The Environment Variables timed out.</value>
   </data>
   <data name="FailedCreateCustomSecurityManager" xml:space="preserve">
     <value>Failed to create a Custom Security Manager.</value>
@@ -148,11 +151,20 @@ Please ensure Flashpoint is not corrupted, was extracted correctly, and is not r
   <data name="FailedGetParentProcessEXEFileName" xml:space="preserve">
     <value>Failed to get the Parent Process EXE File Name.</value>
   </data>
+  <data name="FailedSetWorkingDirectory" xml:space="preserve">
+    <value>Failed to set the Working Directory.</value>
+  </data>
   <data name="FlashpointProxyNotEnabled" xml:space="preserve">
     <value>The Flashpoint Proxy could not be enabled.</value>
   </data>
   <data name="FlashpointSecurePlayer" xml:space="preserve">
     <value>Flashpoint Secure Player</value>
+  </data>
+  <data name="ForceDeleteAllWarning" xml:space="preserve">
+    <value>This will force the deletion of the modification from your system. You should not do this unless instructed to by Flashpoint staff. Continue?</value>
+  </data>
+  <data name="GameDownloading" xml:space="preserve">
+    <value>The game is downloading.</value>
   </data>
   <data name="GameFailedLaunch" xml:space="preserve">
     <value>This game failed to launch {0}.</value>
@@ -171,17 +183,23 @@ Please ensure Flashpoint is not corrupted, was extracted correctly, and is not r
     <value>The Job Object could not be created. Is your Windows Version new enough? Flashpoint only supports Windows 7, Windows 8, Windows 8.1, and Windows 10.</value>
   </data>
   <data name="LaunchGame" xml:space="preserve">
-    <value>This game will not work unless run {0}. Do you want to launch it {0}?
+    <value>This game will not work unless it is run {0}. Do you want to launch it {0}?
 If you choose No, the application will exit.</value>
   </data>
-  <data name="ModeTemplatesFailed" xml:space="preserve">
-    <value>The Mode Templates failed.</value>
+  <data name="ModificationsFailedImport" xml:space="preserve">
+    <value>The Modifications failed to load because an Import was in progress.</value>
   </data>
   <data name="NoGameSelected" xml:space="preserve">
     <value>No game was selected to start, so the application is exiting.</value>
   </data>
+  <data name="NoModeSelected" xml:space="preserve">
+    <value>No mode was selected.</value>
+  </data>
   <data name="OldCPUSimulatorFailed" xml:space="preserve">
     <value>The Old CPU Simulator failed. The Target Rate may be invalid.</value>
+  </data>
+  <data name="OldCPUSimulatorSlow" xml:space="preserve">
+    <value>With Old CPU Simulator, the game may load slowly. Please wait for the game to load.</value>
   </data>
   <data name="OpenFlashpointLauncher" xml:space="preserve">
     <value>Open the Flashpoint Launcher by opening the Start Flashpoint shortcut in the Flashpoint folder.</value>
@@ -192,20 +210,23 @@ If you choose No, the application will exit.</value>
   <data name="ProcessFailedStart" xml:space="preserve">
     <value>The process failed to start.</value>
   </data>
-  <data name="RegistryBackupAlreadyRunning" xml:space="preserve">
-    <value>The Registry Backup cannot run because another one is already running.</value>
+  <data name="RegistryStateAlreadyInProgress" xml:space="preserve">
+    <value>The Registry State cannot be started because another one has already been started.</value>
   </data>
-  <data name="RegistryBackupFailed" xml:space="preserve">
-    <value>The Registry Backup failed.</value>
+  <data name="RegistryStateFailed" xml:space="preserve">
+    <value>The Registry State failed to be created.</value>
   </data>
-  <data name="RegistryBackupInProgress" xml:space="preserve">
-    <value>A Registry Backup is in progress. Please do not turn off your computer.</value>
+  <data name="RegistryStateInProgress" xml:space="preserve">
+    <value>The Registry State is being created. Please do not turn off your computer.</value>
   </data>
-  <data name="RegistryBackupNotRunning" xml:space="preserve">
-    <value>The Registry Backup cannot exit because it was not running.</value>
+  <data name="RegistryStateNotInProgress" xml:space="preserve">
+    <value>The Registry State cannot be stopped because no Registry State has been started.</value>
   </data>
-  <data name="RegistryBackupWasSuccessful" xml:space="preserve">
-    <value>The Registry Backup was successful.</value>
+  <data name="RegistryStateTimeout" xml:space="preserve">
+    <value>The Registry State timed out.</value>
+  </data>
+  <data name="RegistryStateWasSuccessful" xml:space="preserve">
+    <value>The Registry State was successfully created.</value>
   </data>
   <data name="RequiredComponentsAreLoading" xml:space="preserve">
     <value>The required components are loading. Please do not turn off your computer.</value>

@@ -12,11 +12,11 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 namespace FlashpointSecurePlayer {
     // virtual class for modifications
     public abstract class Modifications {
-        protected readonly Form form = null;
+        protected readonly Form form;
         private readonly object importPausedLock = new object();
         private bool importPaused = true;
 
-        protected string Name { get; set; } = String.Empty;
+        protected string TemplateName { get; set; } = String.Empty;
         protected bool ImportStarted { get; set; } = false;
 
         protected bool ImportPaused {
@@ -45,6 +45,12 @@ namespace FlashpointSecurePlayer {
             Deactivate();
         }
 
+        protected void SetControlBox() {
+            if (form != null) {
+                form.ControlBox = !ImportStarted;
+            }
+        }
+
         public void PauseImport() {
             ImportPaused = true;
         }
@@ -53,16 +59,16 @@ namespace FlashpointSecurePlayer {
             ImportPaused = false;
         }
 
-        protected void StartImport(string name) {
+        protected void StartImport(string templateName) {
             if (ImportStarted) {
-                throw new InvalidOperationException("Cannot Start Import when the Import has started.");
+                throw new InvalidOperationException("Cannot Start Import when the Import is in progress.");
             }
 
-            if (String.IsNullOrEmpty(name)) {
-                throw new FormatException("name cannot be null or empty.");
+            if (String.IsNullOrEmpty(templateName)) {
+                throw new FormatException("templateName cannot be null or empty.");
             }
 
-            Name = name;
+            TemplateName = templateName;
             Deactivate();
 
             /*
@@ -94,16 +100,16 @@ namespace FlashpointSecurePlayer {
             */
         }
 
-        public void Activate(string name) {
+        public void Activate(string templateName) {
             if (ImportStarted) {
-                throw new InvalidOperationException("Cannot Activate when the Import has started.");
+                throw new InvalidOperationException("Cannot Activate when the Import is in progress.");
             }
 
             //if (String.IsNullOrEmpty(name)) {
-                //throw new FormatException("name cannot be null or empty.");
+            //throw new FormatException("templateName cannot be null or empty.");
             //}
 
-            Name = name;
+            TemplateName = templateName;
             Deactivate();
 
             //SetFlashpointSecurePlayerSection();
@@ -111,7 +117,7 @@ namespace FlashpointSecurePlayer {
 
         public void Deactivate() {
             if (ImportStarted) {
-                throw new InvalidOperationException("Cannot Deactivate when the Import has started.");
+                throw new InvalidOperationException("Cannot Deactivate when the Import is in progress.");
             }
 
             //SetFlashpointSecurePlayerSection();

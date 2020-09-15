@@ -1,5 +1,4 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
@@ -16,6 +15,9 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+
+using Microsoft.Win32;
+using Microsoft.Win32.SafeHandles;
 
 namespace FlashpointSecurePlayer {
     public static class Shared {
@@ -50,6 +52,18 @@ namespace FlashpointSecurePlayer {
                 public DownloadFailedException(string message, Exception inner) : base(message, inner) { }
             }
 
+            public class ImportFailedException : InvalidOperationException {
+                public ImportFailedException() { }
+                public ImportFailedException(string message) : base(message) { }
+                public ImportFailedException(string message, Exception inner) : base(message, inner) { }
+            }
+
+            public class ActiveXImportFailedException : ImportFailedException {
+                public ActiveXImportFailedException() { }
+                public ActiveXImportFailedException(string message) : base(message) { }
+                public ActiveXImportFailedException(string message, Exception inner) : base(message, inner) { }
+            }
+
             public class JobObjectException : Win32Exception {
                 public JobObjectException() { }
                 public JobObjectException(string message) : base(message) { }
@@ -68,22 +82,22 @@ namespace FlashpointSecurePlayer {
                 public InvalidActiveXControlException(string message, Exception inner) : base(message, inner) { }
             }
 
-            public class InvalidCurationException : InvalidOperationException {
-                public InvalidCurationException() { }
-                public InvalidCurationException(string message) : base(message) { }
-                public InvalidCurationException(string message, Exception inner) : base(message, inner) { }
+            public class InvalidTemplateException : InvalidOperationException {
+                public InvalidTemplateException() { }
+                public InvalidTemplateException(string message) : base(message) { }
+                public InvalidTemplateException(string message, Exception inner) : base(message, inner) { }
             }
 
-            public class InvalidModificationException : InvalidCurationException {
+            public class InvalidModeException : InvalidTemplateException {
+                public InvalidModeException() { }
+                public InvalidModeException(string message) : base(message) { }
+                public InvalidModeException(string message, Exception inner) : base(message, inner) { }
+            }
+
+            public class InvalidModificationException : InvalidTemplateException {
                 public InvalidModificationException() { }
                 public InvalidModificationException(string message) : base(message) { }
                 public InvalidModificationException(string message, Exception inner) : base(message, inner) { }
-            }
-
-            public class ModeTemplatesFailedException : InvalidModificationException {
-                public ModeTemplatesFailedException() { }
-                public ModeTemplatesFailedException(string message) : base(message) { }
-                public ModeTemplatesFailedException(string message, Exception inner) : base(message, inner) { }
             }
 
             public class OldCPUSimulatorFailedException : InvalidModificationException {
@@ -98,10 +112,10 @@ namespace FlashpointSecurePlayer {
                 public EnvironmentVariablesFailedException(string message, Exception inner) : base(message, inner) { }
             }
 
-            public class RegistryBackupFailedException : InvalidModificationException {
-                public RegistryBackupFailedException() { }
-                public RegistryBackupFailedException(string message) : base(message) { }
-                public RegistryBackupFailedException(string message, Exception inner) : base(message, inner) { }
+            public class RegistryStateFailedException : InvalidModificationException {
+                public RegistryStateFailedException() { }
+                public RegistryStateFailedException(string message) : base(message) { }
+                public RegistryStateFailedException(string message, Exception inner) : base(message, inner) { }
             }
 
             public static void LogExceptionToLauncher(Exception ex) {
@@ -147,7 +161,7 @@ namespace FlashpointSecurePlayer {
         [DllImport("KERNEL32.DLL")]
         public static extern bool GetBinaryType(string applicationNamePointer, out BINARY_TYPE binaryTypePointer);
 
-        [DllImport("USER32.DLL", CharSet = CharSet.Auto, SetLastError = false)]
+        [DllImport("USER32.DLL", SetLastError = false, CharSet = CharSet.Auto)]
         public static extern IntPtr SendMessage(IntPtr windowHandle, uint message, IntPtr wParam, IntPtr lParam);
 
         [DllImport("KERNEL32.DLL")]
@@ -199,13 +213,13 @@ namespace FlashpointSecurePlayer {
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool IsOS(OS_TYPE os);
 
-        const uint TOOLHELP32CS_INHERIT = 0x80000000;
-        const uint TOOLHELP32CS_SNAPALL = TOOLHELP32CS_SNAPHEAPLIST | TOOLHELP32CS_SNAPMODULE | TOOLHELP32CS_SNAPPROCESS | TOOLHELP32CS_SNAPTHREAD;
-        const uint TOOLHELP32CS_SNAPHEAPLIST = 0x00000001;
-        const uint TOOLHELP32CS_SNAPMODULE = 0x00000008;
-        const uint TOOLHELP32CS_SNAPMODULE32 = 0x00000010;
-        const uint TOOLHELP32CS_SNAPPROCESS = 0x00000002;
-        const uint TOOLHELP32CS_SNAPTHREAD = 0x00000004;
+        public const uint TOOLHELP32CS_INHERIT = 0x80000000;
+        public const uint TOOLHELP32CS_SNAPALL = TOOLHELP32CS_SNAPHEAPLIST | TOOLHELP32CS_SNAPMODULE | TOOLHELP32CS_SNAPPROCESS | TOOLHELP32CS_SNAPTHREAD;
+        public const uint TOOLHELP32CS_SNAPHEAPLIST = 0x00000001;
+        public const uint TOOLHELP32CS_SNAPMODULE = 0x00000008;
+        public const uint TOOLHELP32CS_SNAPMODULE32 = 0x00000010;
+        public const uint TOOLHELP32CS_SNAPPROCESS = 0x00000002;
+        public const uint TOOLHELP32CS_SNAPTHREAD = 0x00000004;
 
         [StructLayout(LayoutKind.Sequential)]
         public struct PROCESSENTRY32 {
@@ -223,16 +237,91 @@ namespace FlashpointSecurePlayer {
         };
 
         [DllImport("KERNEL32.DLL", SetLastError = true)]
-        static extern IntPtr CreateToolhelp32Snapshot(uint flags, uint toolhelp32ProcessID);
+        public static extern IntPtr CreateToolhelp32Snapshot(uint flags, uint toolhelp32ProcessID);
 
         [DllImport("KERNEL32.DLL")]
-        static extern bool Process32First(IntPtr snapshotHandle, ref PROCESSENTRY32 processEntryPointer);
+        public static extern bool Process32First(IntPtr snapshotHandle, ref PROCESSENTRY32 processEntryPointer);
 
         [DllImport("KERNEL32.DLL")]
-        static extern bool Process32Next(IntPtr snapshotHandle, ref PROCESSENTRY32 processEntryPointer);
+        public static extern bool Process32Next(IntPtr snapshotHandle, ref PROCESSENTRY32 processEntryPointer);
 
         [DllImport("KERNEL32.DLL", SetLastError = true)]
         public static extern bool QueryFullProcessImageName(IntPtr processHandle, int flags, StringBuilder exeName, ref int sizePointer);
+
+        [Flags]
+        public enum FileFlagsAndAttributes : uint {
+            ReadOnly = 0x00000001,
+            Hidden = 0x00000002,
+            System = 0x00000004,
+            Directory = 0x00000010,
+            Archive = 0x00000020,
+            Device = 0x00000040,
+            Normal = 0x00000080,
+            Temporary = 0x00000100,
+            SparseFile = 0x00000200,
+            ReparsePoint = 0x00000400,
+            Compressed = 0x00000800,
+            Offline = 0x00001000,
+            NotContentIndexed = 0x00002000,
+            Encrypted = 0x00004000,
+            WriteThrough = 0x80000000,
+            Overlapped = 0x40000000,
+            NoBuffering = 0x20000000,
+            RandomAccess = 0x10000000,
+            SequentialScan = 0x08000000,
+            DeleteOnClose = 0x04000000,
+            BackupSemantics = 0x02000000,
+            PosixSemantics = 0x01000000,
+            OpenReparsePoint = 0x00200000,
+            OpenNoRecall = 0x00100000,
+            FirstPipeInstance = 0x00080000
+        }
+
+        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern SafeFileHandle CreateFile(
+            string lpFileName,
+            [MarshalAs(UnmanagedType.U4)] FileAccess dwDesiredAccess,
+            [MarshalAs(UnmanagedType.U4)] FileShare dwShareMode,
+            IntPtr lpSecurityAttributes,
+            [MarshalAs(UnmanagedType.U4)] FileMode dwCreationDisposition,
+            [MarshalAs(UnmanagedType.U4)] FileFlagsAndAttributes dwFlagsAndAttributes,
+            IntPtr hTemplateFile);
+
+        [StructLayout(LayoutKind.Explicit)]
+        private struct BY_HANDLE_FILE_INFORMATION {
+            [FieldOffset(0)]
+            public uint FileAttributes;
+
+            [FieldOffset(4)]
+            public System.Runtime.InteropServices.ComTypes.FILETIME CreationTime;
+
+            [FieldOffset(12)]
+            public System.Runtime.InteropServices.ComTypes.FILETIME LastAccessTime;
+
+            [FieldOffset(20)]
+            public System.Runtime.InteropServices.ComTypes.FILETIME LastWriteTime;
+
+            [FieldOffset(28)]
+            public uint VolumeSerialNumber;
+
+            [FieldOffset(32)]
+            public uint FileSizeHigh;
+
+            [FieldOffset(36)]
+            public uint FileSizeLow;
+
+            [FieldOffset(40)]
+            public uint NumberOfLinks;
+
+            [FieldOffset(44)]
+            public uint FileIndexHigh;
+
+            [FieldOffset(48)]
+            public uint FileIndexLow;
+        }
+
+        [DllImport("KERNEL32.DLL", SetLastError = true)]
+        private static extern bool GetFileInformationByHandle(SafeFileHandle hFile, out BY_HANDLE_FILE_INFORMATION lpFileInformation);
 
         [DllImport("KERNEL32.DLL", CharSet = CharSet.Auto)]
         public static extern int GetLongPathName(
@@ -255,6 +344,7 @@ namespace FlashpointSecurePlayer {
         public static readonly Task CompletedTask = Task.FromResult(false);
 
         public const string HTDOCS = "..\\Server\\htdocs";
+        public static readonly string[] INDEX_EXTENSIONS = new string[2] { "html", "htm" };
         // there should be only one HTTP Client per application
         // (as of right now though this is exclusively used by DownloadsBefore class)
         private static readonly HttpClientHandler httpClientHandler = new HttpClientHandler {
@@ -278,22 +368,21 @@ namespace FlashpointSecurePlayer {
         private static FlashpointSecurePlayerSection flashpointSecurePlayerSection = null;
         private static FlashpointSecurePlayerSection activeFlashpointSecurePlayerSection = null;
 
-        public const string FLASHPOINT_SECURE_PLAYER_STARTUP_PATH = "FLASHPOINTSECUREPLAYERSTARTUPPATH";
-        public const string OLD_CPU_SIMULATOR_PATH = "OldCPUSimulator\\OldCPUSimulator.exe";
-        public const string OLD_CPU_SIMULATOR_PARENT_PROCESS_EXE_FILE_NAME = "OLDCPUSIMULATOR.EXE";
+        public const string FP_STARTUP_PATH = nameof(FP_STARTUP_PATH);
+        public const string FP_URL = nameof(FP_URL);
+        public const string FP_ARGUMENTS = nameof(FP_ARGUMENTS);
+        public const string FP_HTDOCS_FILE = nameof(FP_HTDOCS_FILE);
+        public const string FP_HTDOCS_FILE_DIR = nameof(FP_HTDOCS_FILE_DIR);
 
-        public abstract class ModificationsConfigurationElementCollection : ConfigurationElementCollection {
+        public const string OLD_CPU_SIMULATOR_PATH = "OldCPUSimulator\\OldCPUSimulator.exe";
+        public const string OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME = "OLDCPUSIMULATOR.EXE";
+
+        public abstract class TemplatesConfigurationElementCollection : ConfigurationElementCollection {
             public override ConfigurationElementCollectionType CollectionType {
                 get {
                     return ConfigurationElementCollectionType.AddRemoveClearMapAlternate;
                 }
             }
-
-            /*
-            protected override ConfigurationElement CreateNewElement() {
-                return new ConfigurationElement();
-            }
-            */
 
             protected override void BaseAdd(System.Configuration.ConfigurationElement configurationElement) {
                 BaseAdd(configurationElement, false);
@@ -339,603 +428,886 @@ namespace FlashpointSecurePlayer {
         }
 
         public class FlashpointSecurePlayerSection : ConfigurationSection {
-            public class ModificationsElementCollection : ModificationsConfigurationElementCollection {
-                public class ModificationsElement : ConfigurationElement {
-                    [ConfigurationProperty("name", IsKey = true, IsRequired = true)]
+            public class TemplatesElementCollection : TemplatesConfigurationElementCollection {
+                public class TemplateElement : ConfigurationElement {
+                    protected ConfigurationPropertyCollection _properties = null;
+                    protected ConfigurationProperty _name = null;
+                    protected ConfigurationProperty _active = null;
+                    protected ConfigurationProperty _mode = null;
+                    protected ConfigurationProperty _modifications = null;
+
+                    public TemplateElement() {
+                        _properties = new ConfigurationPropertyCollection();
+
+                        _name = new ConfigurationProperty("name", typeof(string), null,
+                            ConfigurationPropertyOptions.IsKey | ConfigurationPropertyOptions.IsRequired);
+                        _properties.Add(_name);
+
+                        /*
+                        if (String.IsNullOrEmpty(Name)) {
+                            _active = new ConfigurationProperty("active", typeof(string), null, ConfigurationPropertyOptions.IsRequired);
+                            _properties.Add(_active);
+                        } else {
+                            _mode = new ConfigurationProperty("mode", typeof(ModeElement), null, ConfigurationPropertyOptions.IsRequired);
+                            _properties.Add(_mode);
+                        }
+                        */
+                        
+                        _active = new ConfigurationProperty("active", typeof(string), null, ConfigurationPropertyOptions.None);
+                        _properties.Add(_active);
+
+                        _mode = new ConfigurationProperty("mode", typeof(ModeElement), null, ConfigurationPropertyOptions.None);
+                        _properties.Add(_mode);
+
+                        _modifications = new ConfigurationProperty("modifications", typeof(ModificationsElement), null, ConfigurationPropertyOptions.None);
+                        _properties.Add(_modifications);
+                    }
+                    
                     public string Name {
                         get {
-                            if (String.IsNullOrEmpty(base["name"] as string)) {
-                                return base["name"] as string;
+                            if (String.IsNullOrEmpty(base[_name] as string)) {
+                                return base[_name] as string;
                             }
-                            return (base["name"] as string).ToLower();
+                            return (base[_name] as string).ToLowerInvariant();
                         }
 
                         set {
                             if (String.IsNullOrEmpty(value)) {
-                                base["name"] = value;
+                                base[_mode] = null;
+                                base[_name] = value;
                                 return;
                             }
 
-                            base["name"] = value.ToLower();
+                            base[_active] = null;
+                            base[_name] = value.ToLowerInvariant();
                         }
                     }
-
-                    [ConfigurationProperty("active", IsRequired = false)]
+                    
                     public string Active {
                         get {
-                            if (String.IsNullOrEmpty(base["active"] as string)) {
-                                return base["active"] as string;
+                            if (!String.IsNullOrEmpty(Name) || _active == null) {
+                                return null;
                             }
-                            return (base["active"] as string).ToLower();
+
+                            if (String.IsNullOrEmpty(base[_active] as string)) {
+                                return base[_active] as string;
+                            }
+                            return (base[_active] as string).ToLowerInvariant();
                         }
 
                         set {
-                            if (String.IsNullOrEmpty(value)) {
-                                base["active"] = value;
+                            if (!String.IsNullOrEmpty(Name) || _active == null) {
                                 return;
                             }
 
-                            base["active"] = value.ToLower();
+                            if (String.IsNullOrEmpty(value)) {
+                                base[_active] = value;
+                                return;
+                            }
+
+                            base[_active] = value.ToLowerInvariant();
                         }
                     }
 
-                    [ConfigurationProperty("runAsAdministrator", DefaultValue = false, IsRequired = false)]
-                    public bool RunAsAdministrator {
-                        get {
-                            return (bool)base["runAsAdministrator"];
+                    public class ModeElement : ConfigurationElement {
+                        public enum NAME {
+                            WEB_BROWSER,
+                            SOFTWARE
                         }
 
-                        set {
-                            base["runAsAdministrator"] = value;
+                        public enum WEB_BROWSER_NAME {
+                            INTERNET_EXPLORER
                         }
-                    }
 
-                    public class EnvironmentVariablesElementCollection : ModificationsConfigurationElementCollection {
-                        public class EnvironmentVariablesElement : ConfigurationElement {
-                            [ConfigurationProperty("name", IsKey = true, IsRequired = true)]
-                            public string Name {
-                                get {
-                                    if (String.IsNullOrEmpty(base["name"] as string)) {
-                                        return base["name"] as string;
-                                    }
-                                    return (base["name"] as string).ToUpper();
-                                }
+                        protected ConfigurationPropertyCollection _properties = null;
+                        protected ConfigurationProperty _name = null;
+                        protected ConfigurationProperty _webBrowserName = null;
+                        protected ConfigurationProperty _commandLine = null;
+                        protected ConfigurationProperty _workingDirectory = null;
+                        protected ConfigurationProperty _hideWindow = null;
 
-                                set {
-                                    if (String.IsNullOrEmpty(value)) {
-                                        base["name"] = value;
-                                        return;
-                                    }
+                        public ModeElement() {
+                            _properties = new ConfigurationPropertyCollection();
 
-                                    base["name"] = value.ToUpper();
-                                }
+                            _name = new ConfigurationProperty("name", typeof(NAME), NAME.WEB_BROWSER,
+                                ConfigurationPropertyOptions.IsKey/* | ConfigurationPropertyOptions.IsRequired*/);
+                            _properties.Add(_name);
+
+                            /*
+                            switch (Name) {
+                                case NAME.WEB_BROWSER:
+                                _webBrowserName = new ConfigurationProperty("webBrowserName",
+                                    typeof(WEB_BROWSER_NAME), WEB_BROWSER_NAME.INTERNET_EXPLORER, ConfigurationPropertyOptions.IsRequired);
+                                _properties.Add(_webBrowserName);
+                                break;
+                                case NAME.SOFTWARE:
+                                _commandLine = new ConfigurationProperty("commandLine",
+                                    typeof(string), null, ConfigurationPropertyOptions.IsRequired);
+                                _properties.Add(_commandLine);
+
+                                _hideWindow = new ConfigurationProperty("hideWindow",
+                                    typeof(string), null, ConfigurationPropertyOptions.None);
+                                _properties.Add(_hideWindow);
+                                break;
                             }
+                            */
+                            
+                            _webBrowserName = new ConfigurationProperty("webBrowserName",
+                                typeof(WEB_BROWSER_NAME?), WEB_BROWSER_NAME.INTERNET_EXPLORER, ConfigurationPropertyOptions.None);
+                            _properties.Add(_webBrowserName);
 
-                            [ConfigurationProperty("value", IsRequired = true)]
-                            public string Value {
-                                get {
-                                    return base["value"] as string;
-                                }
+                            _commandLine = new ConfigurationProperty("commandLine",
+                                typeof(string), null, ConfigurationPropertyOptions.None);
+                            _properties.Add(_commandLine);
 
-                                set {
-                                    base["value"] = value;
-                                }
-                            }
+                            _workingDirectory = new ConfigurationProperty("workingDirectory", typeof(string), null, ConfigurationPropertyOptions.None);
+                            _properties.Add(_workingDirectory);
+
+                            _hideWindow = new ConfigurationProperty("hideWindow",
+                                typeof(bool), false, ConfigurationPropertyOptions.None);
+                            _properties.Add(_hideWindow);
                         }
-
-                        protected override object GetElementKey(ConfigurationElement configurationElement) {
-                            EnvironmentVariablesElement environmentVariablesElement = configurationElement as EnvironmentVariablesElement;
-                            return environmentVariablesElement.Name;
-                        }
-
-                        protected override ConfigurationElement CreateNewElement() {
-                            return new EnvironmentVariablesElement();
-                        }
-
-                        new public ConfigurationElement Get(string name) {
-                            name = name.ToUpper();
-                            return base.Get(name);
-                        }
-
-                        new public void Remove(string name) {
-                            name = name.ToUpper();
-                            base.Remove(name);
-                        }
-                    }
-
-                    [ConfigurationProperty("environmentVariables", IsRequired = false)]
-                    [ConfigurationCollection(typeof(EnvironmentVariablesElementCollection), AddItemName = "environmentVariable")]
-                    public EnvironmentVariablesElementCollection EnvironmentVariables {
-                        get {
-                            return (EnvironmentVariablesElementCollection)base["environmentVariables"];
-                        }
-
-                        set {
-                            base["environmentVariables"] = value;
-                        }
-                    }
-
-                    public class ModeTemplatesElement : ConfigurationElement {
-                        public class ModeTemplateElement : ConfigurationElement {
-                            public class RegexElementCollection : ModificationsConfigurationElementCollection {
-                                public class RegexElement : ConfigurationElement {
-                                    [ConfigurationProperty("name", IsKey = true, IsRequired = true)]
-                                    public string Name {
-                                        get {
-                                            return base["name"] as string;
-                                        }
-
-                                        set {
-                                            base["name"] = value;
-                                        }
-                                    }
-
-                                    [ConfigurationProperty("replace", IsRequired = true)]
-                                    public string Replace {
-                                        get {
-                                            return base["replace"] as string;
-                                        }
-
-                                        set {
-                                            base["replace"] = value;
-                                        }
-                                    }
-                                }
-
-                                protected override object GetElementKey(ConfigurationElement configurationElement) {
-                                    RegexElement nameRegexElement = configurationElement as RegexElement;
-                                    return nameRegexElement.Name;
-                                }
-
-                                protected override ConfigurationElement CreateNewElement() {
-                                    return new RegexElement();
-                                }
-                            }
-
-                            [ConfigurationProperty("regexes", IsRequired = false)]
-                            [ConfigurationCollection(typeof(RegexElementCollection), AddItemName = "regex")]
-                            public RegexElementCollection Regexes {
-                                get {
-                                    return (RegexElementCollection)base["regexes"];
-                                }
-
-                                set {
-                                    base["regexes"] = value;
-                                }
-                            }
-                        }
-
-                        public class SoftwareModeTemplateElement : ModeTemplateElement {
-                            [ConfigurationProperty("format", IsRequired = false)]
-                            public string Format {
-                                get {
-                                    return base["format"] as string;
-                                }
-
-                                set {
-                                    base["format"] = value;
-                                }
-                            }
-
-                            [ConfigurationProperty("hideWindow", DefaultValue = false, IsRequired = false)]
-                            public bool HideWindow {
-                                get {
-                                    return (bool)base["hideWindow"];
-                                }
-
-                                set {
-                                    base["hideWindow"] = value;
-                                }
-                            }
-
-                            [ConfigurationProperty("workingDirectory", IsRequired = false)]
-                            public string WorkingDirectory {
-                                get {
-                                    return base["workingDirectory"] as string;
-                                }
-
-                                set {
-                                    base["workingDirectory"] = value;
-                                }
-                            }
-                        }
-
-
-                        [ConfigurationProperty("serverModeTemplate", IsRequired = false)]
-                        public ModeTemplateElement ServerModeTemplate {
+                        
+                        public NAME Name {
                             get {
-                                return (ModeTemplateElement)base["serverModeTemplate"];
+                                return (NAME)base[_name];
                             }
 
                             set {
-                                base["serverModeTemplate"] = value;
+                                switch (value) {
+                                    case NAME.WEB_BROWSER:
+                                    base[_commandLine] = null;
+                                    base[_hideWindow] = null;
+                                    break;
+                                    case NAME.SOFTWARE:
+                                    base[_webBrowserName] = null;
+                                    break;
+                                }
+
+                                base[_name] = value;
                             }
                         }
-
-
-                        [ConfigurationProperty("softwareModeTemplate", IsRequired = false)]
-                        public SoftwareModeTemplateElement SoftwareModeTemplate {
+                        
+                        public WEB_BROWSER_NAME? WebBrowserName {
                             get {
-                                return (SoftwareModeTemplateElement)base["softwareModeTemplate"];
+                                if (Name != NAME.WEB_BROWSER || _webBrowserName == null) {
+                                    return null;
+                                }
+                                return base[_webBrowserName] as WEB_BROWSER_NAME?;
                             }
 
                             set {
-                                base["softwareModeTemplate"] = value;
-                            }
-                        }
-                    }
-
-                    [ConfigurationProperty("modeTemplates", IsRequired = false)]
-                    public ModeTemplatesElement ModeTemplates {
-                        get {
-                            return (ModeTemplatesElement)base["modeTemplates"];
-                        }
-
-                        set {
-                            base["modeTemplates"] = value;
-                        }
-                    }
-
-                    public class DownloadSourceElement : ConfigurationElement {
-                        [ConfigurationProperty("name", IsRequired = false)]
-                        public string Name {
-                            get {
-                                return base["name"] as string;
-                            }
-
-                            set {
-                                base["name"] = value;
-                            }
-                        }
-                    }
-
-                    [ConfigurationProperty("downloadSource", IsRequired = false)]
-                    public DownloadSourceElement DownloadSource {
-                        get {
-                            return (DownloadSourceElement)base["downloadSource"];
-                        }
-
-                        set {
-                            base["downloadSource"] = value;
-                        }
-                    }
-
-                    public class DownloadBeforeElementCollection : ModificationsConfigurationElementCollection {
-                        public class DownloadBeforeElement : ConfigurationElement {
-                            [ConfigurationProperty("name", IsKey = true, IsRequired = true)]
-                            public string Name {
-                                get {
-                                    return base["name"] as string;
+                                if (Name != NAME.WEB_BROWSER || _webBrowserName == null) {
+                                    return;
                                 }
-
-                                set {
-                                    base["name"] = value;
-                                }
+                                base[_webBrowserName] = value;
                             }
                         }
-
-                        protected override object GetElementKey(ConfigurationElement configurationElement) {
-                            DownloadBeforeElement downloadBeforeElement = configurationElement as DownloadBeforeElement;
-                            return downloadBeforeElement.Name;
-                        }
-
-                        protected override ConfigurationElement CreateNewElement() {
-                            return new DownloadBeforeElement();
-                        }
-                    }
-
-                    [ConfigurationProperty("downloadsBefore", IsRequired = false)]
-                    [ConfigurationCollection(typeof(DownloadBeforeElementCollection), AddItemName = "downloadBefore")]
-                    public DownloadBeforeElementCollection DownloadsBefore {
-                        get {
-                            return (DownloadBeforeElementCollection)base["downloadsBefore"];
-                        }
-
-                        set {
-                            base["downloadsBefore"] = value;
-                        }
-                    }
-
-                    public class RegistryBackupElementCollection : ModificationsConfigurationElementCollection {
-                        public class RegistryBackupElement : ConfigurationElement {
-                            [ConfigurationProperty("type", DefaultValue = global::FlashpointSecurePlayer.RegistryBackups.TYPE.KEY, IsRequired = false)]
-                            public RegistryBackups.TYPE Type {
-                                get {
-                                    return (RegistryBackups.TYPE)base["type"];
-                                }
-
-                                set {
-                                    base["type"] = value;
-                                }
-                            }
-
-                            [ConfigurationProperty("keyName", IsRequired = true)]
-                            public string KeyName {
-                                get {
-                                    if (String.IsNullOrEmpty(base["keyName"] as string)) {
-                                        return base["keyName"] as string;
-                                    }
-                                    return (base["keyName"] as string).ToUpper();
-                                }
-
-                                set {
-                                    if (String.IsNullOrEmpty(value)) {
-                                        base["keyName"] = value;
-                                        return;
-                                    }
-
-                                    base["keyName"] = value.ToUpper();
-                                }
-                            }
-
-                            [ConfigurationProperty("valueName", IsRequired = false)]
-                            public string ValueName {
-                                get {
-                                    if (String.IsNullOrEmpty(base["valueName"] as string)) {
-                                        return base["valueName"] as string;
-                                    }
-                                    return (base["valueName"] as string).ToUpper();
-                                }
-
-                                set {
-                                    if (String.IsNullOrEmpty(value)) {
-                                        base["valueName"] = value;
-                                        return;
-                                    }
-
-                                    base["valueName"] = value.ToUpper();
-                                }
-                            }
-
-                            [ConfigurationProperty("value", IsRequired = false)]
-                            public string Value {
-                                get {
-                                    return base["value"] as string;
-                                }
-
-                                set {
-                                    base["value"] = value;
-                                }
-                            }
-
-                            [ConfigurationProperty("valueKind", IsRequired = false)]
-                            public RegistryValueKind? ValueKind {
-                                get {
-                                    return base["valueKind"] as RegistryValueKind?;
-                                }
-
-                                set {
-                                    base["valueKind"] = value;
-                                }
-                            }
-
-                            [ConfigurationProperty("_deleted", IsRequired = false)]
-                            public string _Deleted {
-                                get {
-                                    return base["_deleted"] as string;
-                                }
-
-                                set {
-                                    base["_deleted"] = value;
-                                }
-                            }
-
-                            [ConfigurationProperty("_valueExpanded", IsRequired = false)]
-                            public string _ValueExpanded {
-                                get {
-                                    return base["_valueExpanded"] as string;
-                                }
-
-                                set {
-                                    base["_valueExpanded"] = value;
-                                }
-                            }
-
-                            public string Name {
-                                get {
-                                    return this.KeyName + "\\" + this.ValueName;
-                                }
-                            }
-                        }
-
-                        protected override object GetElementKey(ConfigurationElement configurationElement) {
-                            RegistryBackupElement registryBackupElement = configurationElement as RegistryBackupElement;
-                            return registryBackupElement.Name;
-                        }
-
-                        protected override ConfigurationElement CreateNewElement() {
-                            return new RegistryBackupElement();
-                        }
-
-                        new public ConfigurationElement Get(string name) {
-                            name = name.ToUpper();
-                            return base.Get(name);
-                        }
-
-                        new public void Remove(string name) {
-                            name = name.ToUpper();
-                            base.Remove(name);
-                        }
-
-                        [ConfigurationProperty("binaryType", DefaultValue = BINARY_TYPE.SCS_64BIT_BINARY, IsRequired = true)]
-                        public BINARY_TYPE BinaryType {
-                            get {
-                                return (BINARY_TYPE)base["binaryType"];
-                            }
-
-                            set {
-                                base["binaryType"] = value;
-                            }
-                        }
-
-                        [ConfigurationProperty("_administrator", DefaultValue = false, IsRequired = false)]
-                        public bool _Administrator {
-                            get {
-                                return (bool)base["_administrator"];
-                            }
-
-                            set {
-                                base["_administrator"] = value;
-                            }
-                        }
-                    }
-
-                    [ConfigurationProperty("registryBackups", IsRequired = false)]
-                    [ConfigurationCollection(typeof(RegistryBackupElementCollection), AddItemName = "registryBackup")]
-                    public RegistryBackupElementCollection RegistryBackups {
-                        get {
-                            return (RegistryBackupElementCollection)base["registryBackups"];
-                        }
-
-                        set {
-                            base["registryBackups"] = value;
-                        }
-                    }
-
-                    public class SingleInstanceElement : ConfigurationElement {
-                        [ConfigurationProperty("strict", DefaultValue = false, IsRequired = false)]
-                        public bool Strict {
-                            get {
-                                return (bool)base["strict"];
-                            }
-
-                            set {
-                                base["strict"] = value;
-                            }
-                        }
-
-                        [ConfigurationProperty("commandLine", IsRequired = false)]
+                        
                         public string CommandLine {
                             get {
-                                return base["commandLine"] as string;
+                                if (Name != NAME.SOFTWARE || _commandLine == null) {
+                                    return null;
+                                }
+                                return base[_commandLine] as string;
                             }
 
                             set {
-                                base["commandLine"] = value;
+                                if (Name != NAME.SOFTWARE || _commandLine == null) {
+                                    return;
+                                }
+                                base[_commandLine] = value;
+                            }
+                        }
+                        
+                        public string WorkingDirectory {
+                            get {
+                                if (/*Name != NAME.SOFTWARE || */_workingDirectory == null) {
+                                    return null;
+                                }
+                                return base[_workingDirectory] as string;
+                            }
+
+                            set {
+                                if (Name != NAME.SOFTWARE || _workingDirectory == null) {
+                                    return;
+                                }
+
+                                base[_workingDirectory] = value;
+                            }
+                        }
+                        
+                        public bool? HideWindow {
+                            get {
+                                if (Name != NAME.SOFTWARE || _hideWindow == null) {
+                                    return null;
+                                }
+                                return base[_hideWindow] as bool?;
+                            }
+
+                            set {
+                                if (Name != NAME.SOFTWARE || _hideWindow == null) {
+                                    return;
+                                }
+                                base[_hideWindow] = value;
+                            }
+                        }
+
+                        protected override ConfigurationPropertyCollection Properties {
+                            get {
+                                return _properties;
                             }
                         }
                     }
-
-                    [ConfigurationProperty("singleInstance", IsRequired = false)]
-                    public SingleInstanceElement SingleInstance {
+                    
+                    public ModeElement Mode {
                         get {
-                            return (SingleInstanceElement)base["singleInstance"];
+                            if (String.IsNullOrEmpty(Name) || _mode == null) {
+                                return null;
+                            }
+                            return base[_mode] as ModeElement;
                         }
 
                         set {
-                            base["singleInstance"] = value;
+                            if (String.IsNullOrEmpty(Name) || _mode == null) {
+                                return;
+                            }
+
+                            base[_mode] = value;
                         }
                     }
 
-                    public class OldCPUSimulatorElement : ConfigurationElement {
-                        [ConfigurationProperty("targetRate", DefaultValue = null, IsRequired = false)]
-                        public int? TargetRate {
+                    public class ModificationsElement : ConfigurationElement {
+                        [ConfigurationProperty("runAsAdministrator", DefaultValue = false, IsRequired = false)]
+                        public bool RunAsAdministrator {
                             get {
-                                return (int?)base["targetRate"];
+                                return (bool)base["runAsAdministrator"];
                             }
 
                             set {
-                                base["targetRate"] = value;
+                                base["runAsAdministrator"] = value;
                             }
                         }
 
-                        [ConfigurationProperty("refreshRate", DefaultValue = null, IsRequired = false)]
-                        public int? RefreshRate {
-                            get {
-                                return (int?)base["refreshRate"];
+                        public class EnvironmentVariablesElementCollection : TemplatesConfigurationElementCollection {
+                            public class EnvironmentVariablesElement : ConfigurationElement {
+                                protected ConfigurationPropertyCollection _properties = null;
+                                protected ConfigurationProperty _name = null;
+                                protected ConfigurationProperty _find = null;
+                                protected ConfigurationProperty _replace = null;
+                                protected ConfigurationProperty _value = null;
+
+                                public EnvironmentVariablesElement() {
+                                    _properties = new ConfigurationPropertyCollection();
+
+                                    // name not key for multiple find replace operations if so desired
+                                    _name = new ConfigurationProperty("name", typeof(string), null, ConfigurationPropertyOptions.IsRequired);
+                                    _properties.Add(_name);
+
+                                    _find = new ConfigurationProperty("find", typeof(string), null, ConfigurationPropertyOptions.None);
+                                    _properties.Add(_find);
+
+                                    /*
+                                    _value = new ConfigurationProperty(String.IsNullOrEmpty(Find) ? "value" : "replace",
+                                        typeof(string), null, ConfigurationPropertyOptions.IsRequired);
+                                    _properties.Add(_value);
+                                    */
+
+                                    _replace = new ConfigurationProperty("replace",
+                                        typeof(string), null, ConfigurationPropertyOptions.None);
+                                    _properties.Add(_replace);
+
+                                    _value = new ConfigurationProperty("value",
+                                        typeof(string), null, ConfigurationPropertyOptions.None);
+                                    _properties.Add(_value);
+                                }
+
+                                public string Name {
+                                    get {
+                                        if (String.IsNullOrEmpty(base[_name] as string)) {
+                                            return base[_name] as string;
+                                        }
+                                        return (base[_name] as string).ToUpperInvariant();
+                                    }
+
+                                    set {
+                                        if (String.IsNullOrEmpty(value)) {
+                                            base[_name] = value;
+                                            return;
+                                        }
+
+                                        base[_name] = value.ToUpperInvariant();
+                                    }
+                                }
+                                
+                                public string Find {
+                                    get {
+                                        return base[_find] as string;
+                                    }
+
+                                    set {
+                                        if (String.IsNullOrEmpty(value)) {
+                                            base[_value] = Value;
+                                            base[_replace] = null;
+                                        } else {
+                                            base[_replace] = Value;
+                                            base[_value] = null;
+                                        }
+
+                                        base[_find] = value;
+                                    }
+                                }
+                                
+                                public string Replace {
+                                    get {
+                                        return Value;
+                                    }
+
+                                    set {
+                                        Value = value;
+                                    }
+                                }
+                                
+                                public string Value {
+                                    get {
+                                        if (String.IsNullOrEmpty(Find)) {
+                                            return base[_value] as string;
+                                        }
+                                        return base[_replace] as string;
+                                    }
+
+                                    set {
+                                        if (String.IsNullOrEmpty(Find)) {
+                                            base[_value] = value;
+                                            base[_replace] = null;
+                                        } else {
+                                            base[_replace] = value;
+                                            base[_value] = null;
+                                        }
+                                    }
+                                }
+
+                                public string _Key {
+                                    get {
+                                        return this.Name + "\\" + this.Find;
+                                    }
+                                }
+
+                                protected override ConfigurationPropertyCollection Properties {
+                                    get {
+                                        return _properties;
+                                    }
+                                }
                             }
 
-                            set {
-                                base["refreshRate"] = value;
+                            protected override object GetElementKey(ConfigurationElement configurationElement) {
+                                EnvironmentVariablesElement environmentVariablesElement = configurationElement as EnvironmentVariablesElement;
+                                return environmentVariablesElement._Key;
+                            }
+
+                            protected override ConfigurationElement CreateNewElement() {
+                                return new EnvironmentVariablesElement();
+                            }
+
+                            new public ConfigurationElement Get(string name) {
+                                name = name.ToUpperInvariant();
+                                return base.Get(name);
+                            }
+
+                            new public void Remove(string name) {
+                                name = name.ToUpperInvariant();
+                                base.Remove(name);
                             }
                         }
 
-                        [ConfigurationProperty("setProcessPriorityHigh", DefaultValue = false, IsRequired = false)]
-                        public bool SetProcessPriorityHigh {
+                        [ConfigurationProperty("environmentVariables", IsRequired = false)]
+                        [ConfigurationCollection(typeof(EnvironmentVariablesElementCollection), AddItemName = "environmentVariable")]
+                        public EnvironmentVariablesElementCollection EnvironmentVariables {
                             get {
-                                return (bool)base["setProcessPriorityHigh"];
+                                return (EnvironmentVariablesElementCollection)base["environmentVariables"];
                             }
 
                             set {
-                                base["setProcessPriorityHigh"] = value;
+                                base["environmentVariables"] = value;
                             }
                         }
 
-                        [ConfigurationProperty("setSyncedProcessAffinityOne", DefaultValue = true, IsRequired = false)]
-                        public bool SetSyncedProcessAffinityOne {
-                            get {
-                                return (bool)base["setSyncedProcessAffinityOne"];
+                        public class DownloadBeforeElementCollection : TemplatesConfigurationElementCollection {
+                            public class DownloadBeforeElement : ConfigurationElement {
+                                [ConfigurationProperty("name", IsKey = true, IsRequired = true)]
+                                public string Name {
+                                    get {
+                                        return base["name"] as string;
+                                    }
+
+                                    set {
+                                        base["name"] = value;
+                                    }
+                                }
                             }
 
-                            set {
-                                base["setSyncedProcessAffinityOne"] = value;
+                            protected override object GetElementKey(ConfigurationElement configurationElement) {
+                                DownloadBeforeElement downloadBeforeElement = configurationElement as DownloadBeforeElement;
+                                return downloadBeforeElement.Name;
+                            }
+
+                            protected override ConfigurationElement CreateNewElement() {
+                                return new DownloadBeforeElement();
                             }
                         }
 
-                        [ConfigurationProperty("syncedProcessMainThreadOnly", DefaultValue = true, IsRequired = false)]
-                        public bool SyncedProcessMainThreadOnly {
+                        [ConfigurationProperty("downloadsBefore", IsRequired = false)]
+                        [ConfigurationCollection(typeof(DownloadBeforeElementCollection), AddItemName = "downloadBefore")]
+                        public DownloadBeforeElementCollection DownloadsBefore {
                             get {
-                                return (bool)base["syncedProcessMainThreadOnly"];
+                                return (DownloadBeforeElementCollection)base["downloadsBefore"];
                             }
 
                             set {
-                                base["syncedProcessMainThreadOnly"] = value;
+                                base["downloadsBefore"] = value;
                             }
                         }
 
-                        [ConfigurationProperty("refreshRateFloorFifteen", DefaultValue = true, IsRequired = false)]
-                        public bool RefreshRateFloorFifteen {
+                        public class RegistryStateElementCollection : TemplatesConfigurationElementCollection {
+                            protected ConfigurationPropertyCollection _properties = null;
+                            protected ConfigurationProperty _binaryType = null;
+                            protected ConfigurationProperty _administrator = null;
+
+                            public RegistryStateElementCollection() {
+                                _properties = new ConfigurationPropertyCollection();
+
+                                _binaryType = new ConfigurationProperty("binaryType",
+                                    typeof(BINARY_TYPE), BINARY_TYPE.SCS_64BIT_BINARY, ConfigurationPropertyOptions.IsRequired);
+                                _properties.Add(_binaryType);
+
+                                //if (String.IsNullOrEmpty(templateName)) {
+                                _administrator = new ConfigurationProperty("administrator",
+                                    typeof(bool?), false, ConfigurationPropertyOptions.None);
+                                _properties.Add(_administrator);
+                                //}
+                            }
+
+                            public class RegistryStateElement : ConfigurationElement {
+                                protected ConfigurationPropertyCollection _properties = null;
+                                protected ConfigurationProperty _type = null;
+                                protected ConfigurationProperty _keyName = null;
+                                protected ConfigurationProperty _valueName = null;
+                                protected ConfigurationProperty _value = null;
+                                protected ConfigurationProperty _valueKind = null;
+                                protected ConfigurationProperty _deleted = null;
+                                protected ConfigurationProperty _valueExpanded = null;
+
+                                public RegistryStateElement() {
+                                    _properties = new ConfigurationPropertyCollection();
+
+                                    _type = new ConfigurationProperty("type",
+                                        typeof(global::FlashpointSecurePlayer.RegistryStates.TYPE),
+                                        global::FlashpointSecurePlayer.RegistryStates.TYPE.KEY, ConfigurationPropertyOptions.None);
+                                    _properties.Add(_type);
+
+                                    _keyName = new ConfigurationProperty("keyName",
+                                        typeof(string), null, ConfigurationPropertyOptions.IsRequired);
+                                    _properties.Add(_keyName);
+
+                                    _value = new ConfigurationProperty("value",
+                                        typeof(string), null, ConfigurationPropertyOptions.None);
+                                    _properties.Add(_value);
+
+                                    _valueKind = new ConfigurationProperty("valueKind",
+                                        typeof(RegistryValueKind?), null, ConfigurationPropertyOptions.None);
+                                    _properties.Add(_valueKind);
+
+                                    /*
+                                    if (Type == global::FlashpointSecurePlayer.RegistryStates.TYPE.VALUE) {
+                                        _valueName = new ConfigurationProperty("valueName",
+                                            typeof(string), null, ConfigurationPropertyOptions.IsRequired);
+                                        _properties.Add(_valueName);
+                                    }
+                                    */
+
+                                    _valueName = new ConfigurationProperty("valueName",
+                                        typeof(string), null, ConfigurationPropertyOptions.None);
+                                    _properties.Add(_valueName);
+
+                                    //if (String.IsNullOrEmpty(templateName)) {
+                                    _deleted = new ConfigurationProperty("deleted",
+                                            typeof(string), null, ConfigurationPropertyOptions.None);
+                                        _properties.Add(_deleted);
+
+                                        _valueExpanded = new ConfigurationProperty("valueExpanded",
+                                            typeof(string), null, ConfigurationPropertyOptions.None);
+                                        _properties.Add(_valueExpanded);
+                                    //}
+                                }
+                                
+                                public RegistryStates.TYPE Type {
+                                    get {
+                                        return (RegistryStates.TYPE)base[_type];
+                                    }
+
+                                    set {
+                                        /*
+                                        if (value != global::FlashpointSecurePlayer.RegistryStates.TYPE.VALUE) {
+                                            base[_valueName] = null;
+                                        }
+                                        */
+
+                                        base[_type] = value;
+                                    }
+                                }
+                                
+                                public string KeyName {
+                                    get {
+                                        if (String.IsNullOrEmpty(base[_keyName] as string)) {
+                                            return base[_keyName] as string;
+                                        }
+                                        return (base[_keyName] as string).ToUpperInvariant();
+                                    }
+
+                                    set {
+                                        if (String.IsNullOrEmpty(value)) {
+                                            base[_keyName] = value;
+                                            return;
+                                        }
+
+                                        base[_keyName] = value.ToUpperInvariant();
+                                    }
+                                }
+                                
+                                public string ValueName {
+                                    get {
+                                        /*
+                                        if (Type != global::FlashpointSecurePlayer.RegistryStates.TYPE.VALUE || _valueName == null) {
+                                            return null;
+                                        }
+                                        */
+
+                                        if (String.IsNullOrEmpty(base[_valueName] as string)) {
+                                            return base[_valueName] as string;
+                                        }
+                                        return (base[_valueName] as string).ToUpperInvariant();
+                                    }
+
+                                    set {
+                                        /*
+                                        if (Type != global::FlashpointSecurePlayer.RegistryStates.TYPE.VALUE || _valueName == null) {
+                                            return;
+                                        }
+                                        */
+
+                                        if (String.IsNullOrEmpty(value)) {
+                                            base[_valueName] = value;
+                                            return;
+                                        }
+
+                                        base[_valueName] = value.ToUpperInvariant();
+                                    }
+                                }
+                                
+                                public string Value {
+                                    get {
+                                        return base[_value] as string;
+                                    }
+
+                                    set {
+                                        base[_value] = value;
+                                    }
+                                }
+                                
+                                public RegistryValueKind? ValueKind {
+                                    get {
+                                        if (_valueKind == null) {
+                                            return null;
+                                        }
+
+                                        return base[_valueKind] as RegistryValueKind?;
+                                    }
+
+                                    set {
+                                        if (_valueKind == null) {
+                                            return;
+                                        }
+
+                                        base[_valueKind] = value;
+                                    }
+                                }
+                                
+                                public string _Deleted {
+                                    get {
+                                        if (_deleted == null) {
+                                            return null;
+                                        }
+
+                                        return base[_deleted] as string;
+                                    }
+
+                                    set {
+                                        if (_deleted == null) {
+                                            return;
+                                        }
+
+                                        base[_deleted] = value;
+                                    }
+                                }
+                                
+                                public string _ValueExpanded {
+                                    get {
+                                        if (_valueExpanded == null) {
+                                            return null;
+                                        }
+
+                                        return base[_valueExpanded] as string;
+                                    }
+
+                                    set {
+                                        if (_valueExpanded == null) {
+                                            return;
+                                        }
+
+                                        base[_valueExpanded] = value;
+                                    }
+                                }
+
+                                public string Name {
+                                    get {
+                                        return this.KeyName + "\\" + this.ValueName;
+                                    }
+                                }
+
+                                protected override ConfigurationPropertyCollection Properties {
+                                    get {
+                                        return _properties;
+                                    }
+                                }
+                            }
+
+                            protected override object GetElementKey(ConfigurationElement configurationElement) {
+                                RegistryStateElement registryStateElement = configurationElement as RegistryStateElement;
+                                return registryStateElement.Name;
+                            }
+
+                            protected override ConfigurationElement CreateNewElement() {
+                                return new RegistryStateElement();
+                            }
+
+                            new public ConfigurationElement Get(string name) {
+                                name = name.ToUpperInvariant();
+                                return base.Get(name);
+                            }
+
+                            new public void Remove(string name) {
+                                name = name.ToUpperInvariant();
+                                base.Remove(name);
+                            }
+                            
+                            public BINARY_TYPE BinaryType {
+                                get {
+                                    return (BINARY_TYPE)base[_binaryType];
+                                }
+
+                                set {
+                                    base[_binaryType] = value;
+                                }
+                            }
+                            
+                            public bool? _Administrator {
+                                get {
+                                    if (_administrator == null) {
+                                        return null;
+                                    }
+
+                                    return base[_administrator] as bool?;
+                                }
+
+                                set {
+                                    if (_administrator == null) {
+                                        return;
+                                    }
+
+                                    base[_administrator] = value;
+                                }
+                            }
+
+                            protected override ConfigurationPropertyCollection Properties {
+                                get {
+                                    return _properties;
+                                }
+                            }
+                        }
+
+                        [ConfigurationProperty("registryStates", IsRequired = false)]
+                        [ConfigurationCollection(typeof(RegistryStateElementCollection), AddItemName = "registryState")]
+                        public RegistryStateElementCollection RegistryStates {
                             get {
-                                return (bool)base["refreshRateFloorFifteen"];
+                                return (RegistryStateElementCollection)base["registryStates"];
                             }
 
                             set {
-                                base["refreshRateFloorFifteen"] = value;
+                                base["registryStates"] = value;
+                            }
+                        }
+
+                        public class SingleInstanceElement : ConfigurationElement {
+                            [ConfigurationProperty("executable", IsRequired = false)]
+                            public string Executable {
+                                get {
+                                    return base["executable"] as string;
+                                }
+
+                                set {
+                                    base["executable"] = value;
+                                }
+                            }
+
+                            [ConfigurationProperty("strict", DefaultValue = false, IsRequired = false)]
+                            public bool Strict {
+                                get {
+                                    return (bool)base["strict"];
+                                }
+
+                                set {
+                                    base["strict"] = value;
+                                }
+                            }
+                        }
+
+                        [ConfigurationProperty("singleInstance", IsRequired = false)]
+                        public SingleInstanceElement SingleInstance {
+                            get {
+                                return (SingleInstanceElement)base["singleInstance"];
+                            }
+
+                            set {
+                                base["singleInstance"] = value;
+                            }
+                        }
+
+                        public class OldCPUSimulatorElement : ConfigurationElement {
+                            [ConfigurationProperty("targetRate", DefaultValue = null, IsRequired = false)]
+                            public int? TargetRate {
+                                get {
+                                    return (int?)base["targetRate"];
+                                }
+
+                                set {
+                                    base["targetRate"] = value;
+                                }
+                            }
+
+                            [ConfigurationProperty("refreshRate", DefaultValue = null, IsRequired = false)]
+                            public int? RefreshRate {
+                                get {
+                                    return (int?)base["refreshRate"];
+                                }
+
+                                set {
+                                    base["refreshRate"] = value;
+                                }
+                            }
+
+                            [ConfigurationProperty("setProcessPriorityHigh", DefaultValue = false, IsRequired = false)]
+                            public bool SetProcessPriorityHigh {
+                                get {
+                                    return (bool)base["setProcessPriorityHigh"];
+                                }
+
+                                set {
+                                    base["setProcessPriorityHigh"] = value;
+                                }
+                            }
+
+                            [ConfigurationProperty("setSyncedProcessAffinityOne", DefaultValue = true, IsRequired = false)]
+                            public bool SetSyncedProcessAffinityOne {
+                                get {
+                                    return (bool)base["setSyncedProcessAffinityOne"];
+                                }
+
+                                set {
+                                    base["setSyncedProcessAffinityOne"] = value;
+                                }
+                            }
+
+                            [ConfigurationProperty("syncedProcessMainThreadOnly", DefaultValue = true, IsRequired = false)]
+                            public bool SyncedProcessMainThreadOnly {
+                                get {
+                                    return (bool)base["syncedProcessMainThreadOnly"];
+                                }
+
+                                set {
+                                    base["syncedProcessMainThreadOnly"] = value;
+                                }
+                            }
+
+                            [ConfigurationProperty("refreshRateFloorFifteen", DefaultValue = true, IsRequired = false)]
+                            public bool RefreshRateFloorFifteen {
+                                get {
+                                    return (bool)base["refreshRateFloorFifteen"];
+                                }
+
+                                set {
+                                    base["refreshRateFloorFifteen"] = value;
+                                }
+                            }
+                        }
+
+                        [ConfigurationProperty("oldCPUSimulator", IsRequired = false)]
+                        public OldCPUSimulatorElement OldCPUSimulator {
+                            get {
+                                return (OldCPUSimulatorElement)base["oldCPUSimulator"];
+                            }
+
+                            set {
+                                base["oldCPUSimulator"] = value;
                             }
                         }
                     }
-
-                    [ConfigurationProperty("oldCPUSimulator", IsRequired = false)]
-                    public OldCPUSimulatorElement OldCPUSimulator {
+                    
+                    public ModificationsElement Modifications {
                         get {
-                            return (OldCPUSimulatorElement)base["oldCPUSimulator"];
+                            return base[_modifications] as ModificationsElement;
                         }
 
                         set {
-                            base["oldCPUSimulator"] = value;
+                            base[_modifications] = value;
+                        }
+                    }
+
+                    protected override ConfigurationPropertyCollection Properties {
+                        get {
+                            return _properties;
                         }
                     }
                 }
 
                 protected override object GetElementKey(ConfigurationElement configurationElement) {
-                    ModificationsElement modificationsElement = configurationElement as ModificationsElement;
-                    return modificationsElement.Name;
+                    TemplateElement templateElement = configurationElement as TemplateElement;
+                    return templateElement.Name;
                 }
 
                 protected override ConfigurationElement CreateNewElement() {
-                    return new ModificationsElement();
+                    return new TemplateElement();
                 }
 
-                new public ModificationsElement Get(string name) {
-                    name = name.ToLower();
-                    return base.Get(name) as ModificationsElement;
+                new public TemplateElement Get(string name) {
+                    name = name.ToLowerInvariant();
+                    return base.Get(name) as TemplateElement;
                 }
 
                 new public void Remove(string name) {
-                    name = name.ToLower();
+                    name = name.ToLowerInvariant();
                     base.Remove(name);
                 }
             }
 
-            [ConfigurationProperty("modifications", IsDefaultCollection = true, IsRequired = true)]
-            [ConfigurationCollection(typeof(ModificationsElementCollection), AddItemName = "modification")]
-            public ModificationsElementCollection Modifications {
+            [ConfigurationProperty("templates", IsDefaultCollection = true, IsRequired = true)]
+            [ConfigurationCollection(typeof(TemplatesElementCollection), AddItemName = "template")]
+            public TemplatesElementCollection Templates {
                 get {
-                    return (ModificationsElementCollection)base["modifications"];
+                    return (TemplatesElementCollection)base["templates"];
                 }
 
                 set {
-                    base["modifications"] = value;
+                    base["templates"] = value;
                 }
             }
         }
@@ -1017,7 +1389,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        public static async Task DownloadAsync(string name) {
+        public static async Task<Uri> DownloadAsync(string name) {
             await downloadSemaphoreSlim.WaitAsync().ConfigureAwait(true);
 
             try {
@@ -1073,11 +1445,16 @@ namespace FlashpointSecurePlayer {
                             }
                         }
                     }
+                    return httpResponseMessage.RequestMessage.RequestUri;
                 }
-            } catch (ArgumentNullException) {
-                throw new Exceptions.DownloadFailedException("The download name is invalid.");
+            } catch (Exceptions.DownloadFailedException ex) {
+                throw ex;
+            } catch (ArgumentException) {
+                throw new Exceptions.DownloadFailedException("The download failed because the download name (" + name + ") is invalid.");
             } catch (HttpRequestException) {
-                throw new Exceptions.DownloadFailedException("The HTTP Request is invalid.");
+                throw new Exceptions.DownloadFailedException("The download failed because the HTTP Request is invalid.");
+            } catch (InvalidOperationException) {
+                throw new Exceptions.DownloadFailedException("The download failed because the address (" + name + ") was not understood.");
             } finally {
                 downloadSemaphoreSlim.Release();
             }
@@ -1090,7 +1467,7 @@ namespace FlashpointSecurePlayer {
 
             string invalidNameCharacters = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
             Regex invalidNameCharactersRegex = new Regex("[" + Regex.Escape(invalidNameCharacters) + "]+");
-            return invalidNameCharactersRegex.Replace(name, ".").ToLower();
+            return invalidNameCharactersRegex.Replace(name, ".").ToLowerInvariant();
         }
 
         private static Configuration GetActiveEXEConfiguration() {
@@ -1182,7 +1559,11 @@ namespace FlashpointSecurePlayer {
                     // Fail silently.
                 } catch (ConfigurationErrorsException) {
                     // Fail silently.
+                } catch (IOException) {
+                    throw new ConfigurationErrorsException("The EXE Configuration is in use.");
                 }
+            } catch (IOException) {
+                throw new ConfigurationErrorsException("The EXE Configuration is in use.");
             }
 
             if (exeConfiguration == null) {
@@ -1234,7 +1615,7 @@ namespace FlashpointSecurePlayer {
                 try {
                     exeConfiguration.Sections.Add("flashpointSecurePlayer", new FlashpointSecurePlayerSection());
                 } catch (ArgumentException) {
-                    throw new ConfigurationErrorsException("The flashpointSecurePlayer Section is invalid.");
+                    throw configurationErrorsException;
                 }
 
                 // reload it into the configuration
@@ -1289,65 +1670,93 @@ namespace FlashpointSecurePlayer {
         }
 
         // does not save!
-        public static FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement GetModificationsElement(bool createModificationsElement, string exeConfigurationName) {
+        public static FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement GetTemplateElement(bool createTemplateElement, string exeConfigurationName) {
             // need the section to operate on
-            FlashpointSecurePlayerSection flashpointSecurePlayerSection = GetFlashpointSecurePlayerSection(createModificationsElement, exeConfigurationName);
+            FlashpointSecurePlayerSection flashpointSecurePlayerSection = GetFlashpointSecurePlayerSection(createTemplateElement, exeConfigurationName);
             // get the element
-            FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement modificationsElement = flashpointSecurePlayerSection.Modifications.Get(exeConfigurationName) as FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement;
+            FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement templateElement = flashpointSecurePlayerSection.Templates.Get(exeConfigurationName) as FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement;
 
             // create it if it doesn't exist...
-            if (createModificationsElement && modificationsElement == null) {
+            if (createTemplateElement && templateElement == null) {
                 // ...by new'ing it...
-                modificationsElement = new FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement() {
+                templateElement = new FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement() {
                     Name = exeConfigurationName
                 };
 
                 // and setting it (which does not save!)
-                SetModificationsElement(modificationsElement, exeConfigurationName);
+                SetTemplateElement(templateElement, exeConfigurationName);
             }
             // exit scene
-            return modificationsElement;
+            return templateElement;
         }
 
         // does not save!
-        public static FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement GetActiveModificationsElement(bool createModificationsElement, string exeConfigurationName = ACTIVE_EXE_CONFIGURATION_NAME) {
-            FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement modificationsElement = GetModificationsElement(createModificationsElement, ACTIVE_EXE_CONFIGURATION_NAME);
+        public static FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement GetActiveTemplateElement(bool createTemplateElement, string exeConfigurationName = ACTIVE_EXE_CONFIGURATION_NAME) {
+            FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement templateElement = GetTemplateElement(createTemplateElement, ACTIVE_EXE_CONFIGURATION_NAME);
 
-            if (!String.IsNullOrEmpty(exeConfigurationName) && modificationsElement != null) {
-                modificationsElement.Active = exeConfigurationName;
+            if (!String.IsNullOrEmpty(exeConfigurationName) && templateElement != null) {
+                templateElement.Active = exeConfigurationName;
             }
-
-            return modificationsElement;
+            return templateElement;
         }
 
         // does not save!
-        public static void SetModificationsElement(FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement modificationsElement, string exeConfigurationName) {
+        public static void SetTemplateElement(FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement templateElement, string exeConfigurationName) {
             // need the section to operate on
             FlashpointSecurePlayerSection flashpointSecurePlayerSection = GetFlashpointSecurePlayerSection(true, exeConfigurationName);
             // set it, and forget it
             // it gets replaced if it existed already
-            flashpointSecurePlayerSection.Modifications.Set(modificationsElement);
+            flashpointSecurePlayerSection.Templates.Set(templateElement);
         }
 
-        public static void LockActiveModificationsElement() {
-            FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement activeModificationsElement = GetActiveModificationsElement(false);
+        public static void LockActiveTemplateElement() {
+            FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement activeTemplateElement = GetActiveTemplateElement(false);
 
-            if (activeModificationsElement == null) {
+            if (activeTemplateElement == null) {
                 return;
             }
 
-            activeModificationsElement.LockItem = true;
+            activeTemplateElement.LockItem = true;
         }
 
-        public static void UnlockActiveModificationsElement() {
-            FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement activeModificationsElement = GetActiveModificationsElement(false);
+        public static void UnlockActiveTemplateElement() {
+            FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement activeTemplateElement = GetActiveTemplateElement(false);
 
-            if (activeModificationsElement == null) {
+            if (activeTemplateElement == null) {
                 return;
             }
 
-            activeModificationsElement.LockItem = false;
-            //activeModificationsElement.RegistryBackups.LockItem = false;
+            activeTemplateElement.LockItem = false;
+            //activeTemplateElement.RegistryStates.LockItem = false;
+        }
+
+        public static bool ComparePaths(string path1, string path2) {
+            using (SafeFileHandle safeFileHandle1 = CreateFile(path1, FileAccess.Read, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileFlagsAndAttributes.BackupSemantics, IntPtr.Zero)) {
+                if (safeFileHandle1.IsInvalid) {
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                }
+
+                using (SafeFileHandle safeFileHandle2 = CreateFile(path2, FileAccess.Read, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileFlagsAndAttributes.BackupSemantics, IntPtr.Zero)) {
+                    if (safeFileHandle2.IsInvalid) {
+                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                    }
+
+
+                    if (!GetFileInformationByHandle(safeFileHandle1, out BY_HANDLE_FILE_INFORMATION byHandleFileInformation1)) {
+                        throw new IOException("Failed to Get File Information By Handle for Safe File Handle 1");
+                    }
+
+
+                    if (!GetFileInformationByHandle(safeFileHandle2, out BY_HANDLE_FILE_INFORMATION byHandleFileInformation2)) {
+                        throw new IOException("Failed to Get File Information By Handle for Safe File Handle 2");
+                    }
+
+                    if (byHandleFileInformation1.VolumeSerialNumber == byHandleFileInformation2.VolumeSerialNumber && byHandleFileInformation1.FileIndexHigh == byHandleFileInformation2.FileIndexHigh && byHandleFileInformation1.FileIndexLow == byHandleFileInformation2.FileIndexLow) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         public static string RemoveTrailingSlash(string path) {
@@ -1398,7 +1807,7 @@ namespace FlashpointSecurePlayer {
                 if (shortPathName != null) {
                     if (shortPathName.Length > 0) {
                         // if the value is a short value...
-                        if (valueString.ToUpper().IndexOf(shortPathName.ToString().ToUpper()) == 0) {
+                        if (valueString.ToUpperInvariant().IndexOf(shortPathName.ToString().ToUpperInvariant()) == 0) {
                             // get the long path
                             StringBuilder longPathName = null;
 
@@ -1442,8 +1851,8 @@ namespace FlashpointSecurePlayer {
 
                 if (pathName != null) {
                     if (pathName.Length > 0) {
-                        if (valueString.ToUpper().IndexOf(RemoveTrailingSlash(pathName.ToString()).ToUpper()) == 0) {
-                            valueString = "%" + FLASHPOINT_SECURE_PLAYER_STARTUP_PATH + "%\\" + RemoveValueStringSlash(valueString.Substring(pathName.Length));
+                        if (valueString.ToUpperInvariant().IndexOf(RemoveTrailingSlash(pathName.ToString()).ToUpperInvariant()) == 0) {
+                            valueString = "%" + FP_STARTUP_PATH + "%\\" + RemoveValueStringSlash(valueString.Substring(pathName.Length));
                         }
                     }
                 }
@@ -1517,7 +1926,7 @@ namespace FlashpointSecurePlayer {
             argvPointer = CommandLineToArgvW(commandLine, out argc);
 
             if (argvPointer == IntPtr.Zero) {
-                throw new Win32Exception("Failed to get the argv pointer.");
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             }
 
             try {
@@ -1532,7 +1941,7 @@ namespace FlashpointSecurePlayer {
             return argv;
         }
 
-        public static string GetOldCPUSimulatorProcessStartInfoArguments(FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement.OldCPUSimulatorElement oldCPUSimulatorElement, string software) {
+        public static string GetOldCPUSimulatorProcessStartInfoArguments(FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement.OldCPUSimulatorElement oldCPUSimulatorElement, string software) {
             StringBuilder oldCPUSimulatorProcessStartInfoArguments = new StringBuilder("-t ");
             oldCPUSimulatorProcessStartInfoArguments.Append(oldCPUSimulatorElement.TargetRate.GetValueOrDefault());
 
@@ -1583,6 +1992,7 @@ namespace FlashpointSecurePlayer {
             
             if (applicationMutex != null) {
                 applicationMutex.ReleaseMutex();
+                applicationMutex.Dispose();
                 applicationMutex = null;
             }
 
@@ -1725,6 +2135,14 @@ namespace FlashpointSecurePlayer {
             return versionName;
         }
 
+        public static void SetWorkingDirectory(ref ProcessStartInfo processStartInfo, string workingDirectory) {
+            if (processStartInfo == null) {
+                processStartInfo = new ProcessStartInfo();
+            }
+
+            processStartInfo.WorkingDirectory = Environment.ExpandEnvironmentVariables(workingDirectory);
+        }
+
         public static void HideWindow(ref ProcessStartInfo processStartInfo) {
             if (processStartInfo == null) {
                 processStartInfo = new ProcessStartInfo();
@@ -1734,14 +2152,6 @@ namespace FlashpointSecurePlayer {
             processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             processStartInfo.CreateNoWindow = true;
             processStartInfo.ErrorDialog = false;
-        }
-
-        public static void SetWorkingDirectory(ref ProcessStartInfo processStartInfo, string workingDirectory) {
-            if (processStartInfo == null) {
-                processStartInfo = new ProcessStartInfo();
-            }
-
-            processStartInfo.WorkingDirectory = Environment.ExpandEnvironmentVariables(workingDirectory);
         }
 
         public static Process GetParentProcess() {
@@ -1757,7 +2167,7 @@ namespace FlashpointSecurePlayer {
             }
 
             PROCESSENTRY32 parentProcessEntry = new PROCESSENTRY32 {
-                size = (uint)System.Runtime.InteropServices.Marshal.SizeOf(typeof(PROCESSENTRY32))
+                size = (uint)Marshal.SizeOf(typeof(PROCESSENTRY32))
             };
 
             if (!Process32First(parentProcessSnapshotHandle, ref parentProcessEntry)) {
@@ -1782,28 +2192,27 @@ namespace FlashpointSecurePlayer {
             return parentProcess;
         }
 
-        public static string GetProcessEXEName(Process process) {
+        public static string GetProcessName(Process process) {
             bool queryResult = false;
             int size = MAX_PATH;
-            StringBuilder processEXEName = new StringBuilder(size);
+            StringBuilder processName = new StringBuilder(size);
 
             try {
                 string processMainModuleFileName = process.MainModule.FileName;
                 queryResult = true;
-                processEXEName = new StringBuilder(processMainModuleFileName);
+                processName = new StringBuilder(processMainModuleFileName);
             } catch (NotSupportedException) {
-                queryResult = QueryFullProcessImageName(process.Handle, 0, processEXEName, ref size);
+                queryResult = QueryFullProcessImageName(process.Handle, 0, processName, ref size);
             } catch (Win32Exception) {
-                queryResult = QueryFullProcessImageName(process.Handle, 0, processEXEName, ref size);
+                queryResult = QueryFullProcessImageName(process.Handle, 0, processName, ref size);
             } catch (InvalidOperationException) {
-                queryResult = QueryFullProcessImageName(process.Handle, 0, processEXEName, ref size);
+                queryResult = QueryFullProcessImageName(process.Handle, 0, processName, ref size);
             }
 
             if (!queryResult) {
-                throw new Win32Exception("Failed to query the Full Process Image Name.");
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             }
-
-            return processEXEName.ToString();
+            return processName.ToString();
         }
     }
 }

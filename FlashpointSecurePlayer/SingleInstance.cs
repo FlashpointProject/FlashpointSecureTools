@@ -11,8 +11,10 @@ using System.Windows.Forms;
 
 using static FlashpointSecurePlayer.Shared;
 using static FlashpointSecurePlayer.Shared.Exceptions;
-using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.ModificationsElementCollection;
-using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.ModificationsElementCollection.ModificationsElement;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement;
+using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement.SingleInstanceElement;
 
 namespace FlashpointSecurePlayer {
     class SingleInstance : Modifications {
@@ -53,17 +55,24 @@ namespace FlashpointSecurePlayer {
             return ShowClosableMessageBox(new Task[] { task }, text, caption, messageBoxButtons, messageBoxIcon);
         }
 
-        public void Activate(string name, string commandLine) {
-            base.Activate(name);
+        new public void Activate(string templateName) {
+            base.Activate(templateName);
 
-            if (String.IsNullOrEmpty(name)) {
+            if (String.IsNullOrEmpty(TemplateName)) {
                 // no argument
                 return;
             }
 
-            ModificationsElement modificationsElement = GetModificationsElement(false, Name);
+            TemplateElement templateElement = GetTemplateElement(false, TemplateName);
 
-            if (modificationsElement == null) {
+            if (templateElement == null) {
+                return;
+            }
+
+            ModeElement modeElement = templateElement.Mode;
+            ModificationsElement modificationsElement = templateElement.Modifications;
+
+            if (!modificationsElement.ElementInformation.IsPresent) {
                 return;
             }
 
@@ -73,67 +82,44 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            if (!String.IsNullOrEmpty(singleInstanceElement.CommandLine)) {
-                commandLine = singleInstanceElement.CommandLine;
+            string executable = singleInstanceElement.Executable;
+
+            if (String.IsNullOrEmpty(executable)) {
+                string[] argv = CommandLineToArgv(Environment.ExpandEnvironmentVariables(modeElement.CommandLine), out int argc);
+
+                if (argc > 0) {
+                    executable = argv[0];
+                }
             }
 
-            if (String.IsNullOrEmpty(commandLine)) {
+            if (String.IsNullOrEmpty(executable)) {
                 return;
             }
             
-            string[] argv = CommandLineToArgv(commandLine, out int argc);
-
-            // the paths we'll be comparing to test if the executable is strictly the same
-            string comparablePath = String.Empty;
-            string activeComparablePath = String.Empty;
-
-            try {
-                activeComparablePath = Path.GetFullPath(argv[0]);
-            } catch (PathTooLongException) {
-                throw new ArgumentException("The path is too long to " + argv[0] + ".");
-            } catch (SecurityException) {
-                throw new TaskRequiresElevationException("Getting the Full Path to " + argv[0] + " requires elevation.");
-            } catch (NotSupportedException) {
-                throw new ArgumentException("The path " + argv[0] + " is not supported.");
-            }
-
-            // converting to a Uri canonicalizes the path
-            // making them possible to compare
-            try {
-                activeComparablePath = new Uri(activeComparablePath).LocalPath.ToUpper();
-            } catch (UriFormatException) {
-                throw new ArgumentException("The path " + activeComparablePath + " is malformed.");
-            } catch (NullReferenceException) {
-                throw new ArgumentNullException("The path is null.");
-            } catch (InvalidOperationException) {
-                throw new ArgumentException("The path " + activeComparablePath + " is invalid.");
-            }
+            //string[] argv = CommandLineToArgv(executablePath, out int argc);
 
             List<Process> processesByName;
             List<Process> processesByNameStrict;
-            string processEXEName = null;
+            string processName = null;
             // GetProcessesByName can't have extension (stupidly)
-            string activeProcessEXEName = Path.GetFileNameWithoutExtension(argv[0]);
+            string activeProcessName = Path.GetFileNameWithoutExtension(executable);
 
             do {
                 // the strict list is the one which will be checked against for real
-                processesByName = Process.GetProcessesByName(activeProcessEXEName).ToList();
+                processesByName = Process.GetProcessesByName(activeProcessName).ToList();
                 processesByNameStrict = new List<Process>();
 
                 if (singleInstanceElement.Strict) {
                     for (int i = 0;i < processesByName.Count;i++) {
-                        processEXEName = GetProcessEXEName(processesByName[i]);
+                        processName = GetProcessName(processesByName[i]);
 
                         try {
-                            comparablePath = new Uri(processEXEName.ToString()).LocalPath.ToUpper();
-
-                            if (comparablePath == activeComparablePath) {
+                            if (ComparePaths(executable, processName)) {
                                 processesByNameStrict.Add(processesByName[i]);
                             }
-                        } catch (UriFormatException) { }
-                        catch (ArgumentNullException) { }
-                        catch (NullReferenceException) { }
-                        catch (InvalidOperationException) { }
+                        } catch {
+                            // Fail silently.
+                        }
                     }
                 } else {
                     processesByNameStrict = processesByName;
@@ -150,7 +136,7 @@ namespace FlashpointSecurePlayer {
 
                             processesByNameStrict.RemoveAt(0);
                         }
-                    }), String.Format(Properties.Resources.ProcessCompatibilityConflict, activeProcessEXEName), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+                    }), String.Format(Properties.Resources.ProcessCompatibilityConflict, activeProcessName), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
 
                     if (dialogResult == DialogResult.Cancel) {
                         Application.Exit();
