@@ -1094,7 +1094,7 @@ namespace FlashpointSecurePlayer {
                         activeX = true;
                     } else if (arg == "--run-as-administrator" || arg == "-a") {
                         RunAsAdministratorModification = true;
-                    } else if (arg == "--dev-force-delete-all" || arg == "-a") {
+                    } else if (arg == "--dev-force-delete-all") {
                         ModificationsRevertMethod = MODIFICATIONS_REVERT_METHOD.DELETE_ALL;
                     } else {
                         if (i < args.Length - 1) {
