@@ -11,7 +11,6 @@ C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\Fla
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayerVisualEditor\obj\Debug\FlashpointSecurePlayerConfigurationEditor.pdb
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayerConfigurationEditor\obj\Debug\FlashpointSecurePlayer.AboutFlashpointSecurePlayerConfigurationEditor.resources
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayerConfigurationEditor\obj\Debug\FlashpointSecurePlayer.CompatibilitySettingsEditor.resources
-C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayerConfigurationEditor\obj\Debug\FlashpointSecurePlayer.FlashpointSecurePlayerConfigurationEditor.resources
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayerConfigurationEditor\obj\Debug\FlashpointSecurePlayer.ModificationNameEditor.resources
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayerConfigurationEditor\obj\Debug\FlashpointSecurePlayer.Properties.Resources.resources
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayerConfigurationEditor\obj\Debug\FlashpointSecurePlayerConfigurationEditor.csproj.GenerateResource.cache
@@ -22,3 +21,4 @@ C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\Fla
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayerConfigurationEditor\obj\Debug\FlashpointSecurePlayerConfigurationEditor.exe
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayerConfigurationEditor\obj\Debug\FlashpointSecurePlayerConfigurationEditor.pdb
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayerConfigurationEditor\bin\Debug\FlashpointSecurePlayerConfigurationEditor.pdb
+C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayerConfigurationEditor\obj\Debug\FlashpointSecurePlayer.FlashpointSecurePlayerConfigurationEditor.resources
