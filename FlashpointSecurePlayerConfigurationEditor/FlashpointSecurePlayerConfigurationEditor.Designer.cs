@@ -32,21 +32,6 @@
             this.environmentVariablesGridView = new System.Windows.Forms.DataGridView();
             this.environmentVariablesNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.environmentVariablesValueDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.serverModeTemplateTabPage = new System.Windows.Forms.TabPage();
-            this.serverModeTemplateRegexesGroupBox = new System.Windows.Forms.GroupBox();
-            this.serverModeTemplateRegexesDataGridView = new System.Windows.Forms.DataGridView();
-            this.serverModeTemplateRegexesNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.serverModeTemplateRegexesReplaceDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.softwareModeTemplateTabPage = new System.Windows.Forms.TabPage();
-            this.softwareModeTemplateRegexes = new System.Windows.Forms.GroupBox();
-            this.softwareModeTemplateDataGridView = new System.Windows.Forms.DataGridView();
-            this.softwareModeTemplateRegexesNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.softwareModeTemplateRegexesReplaceDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.softwareModeTemplateHideWindowCheckBox = new System.Windows.Forms.CheckBox();
-            this.softwareModeTemplateWorkingDirectoryTextBox = new System.Windows.Forms.TextBox();
-            this.softwareModeTemplateWorkingDirectoryLabel = new System.Windows.Forms.Label();
-            this.softwareModeTemplateFormatTextBox = new System.Windows.Forms.TextBox();
-            this.softwareModeTemplateFormatLabel = new System.Windows.Forms.Label();
             this.downloadsBeforeTabPage = new System.Windows.Forms.TabPage();
             this.downloadsBeforeDataGridView = new System.Windows.Forms.DataGridView();
             this.downloadsBeforeNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -105,16 +90,13 @@
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.onlineHelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.templateTabControl = new System.Windows.Forms.TabControl();
+            this.modificationsTabPage = new System.Windows.Forms.TabPage();
+            this.modeTabPage = new System.Windows.Forms.TabPage();
             this.modificationsTabControl.SuspendLayout();
             this.runAsAdministratorTabPage.SuspendLayout();
             this.environmentVariablesTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.environmentVariablesGridView)).BeginInit();
-            this.serverModeTemplateTabPage.SuspendLayout();
-            this.serverModeTemplateRegexesGroupBox.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.serverModeTemplateRegexesDataGridView)).BeginInit();
-            this.softwareModeTemplateTabPage.SuspendLayout();
-            this.softwareModeTemplateRegexes.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.softwareModeTemplateDataGridView)).BeginInit();
             this.downloadsBeforeTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.downloadsBeforeDataGridView)).BeginInit();
             this.registryBackupsTabPage.SuspendLayout();
@@ -124,22 +106,22 @@
             this.optionsGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.refreshRateHzNumericUpDown)).BeginInit();
             this.menuStrip1.SuspendLayout();
+            this.templateTabControl.SuspendLayout();
+            this.modificationsTabPage.SuspendLayout();
             this.SuspendLayout();
             // 
             // modificationsTabControl
             // 
             this.modificationsTabControl.Controls.Add(this.runAsAdministratorTabPage);
             this.modificationsTabControl.Controls.Add(this.environmentVariablesTabPage);
-            this.modificationsTabControl.Controls.Add(this.serverModeTemplateTabPage);
-            this.modificationsTabControl.Controls.Add(this.softwareModeTemplateTabPage);
             this.modificationsTabControl.Controls.Add(this.downloadsBeforeTabPage);
             this.modificationsTabControl.Controls.Add(this.registryBackupsTabPage);
             this.modificationsTabControl.Controls.Add(this.singleInstanceTabPage);
             this.modificationsTabControl.Controls.Add(this.oldCPUSimulatorTabPage);
-            this.modificationsTabControl.Location = new System.Drawing.Point(12, 27);
+            this.modificationsTabControl.Location = new System.Drawing.Point(6, 6);
             this.modificationsTabControl.Name = "modificationsTabControl";
             this.modificationsTabControl.SelectedIndex = 0;
-            this.modificationsTabControl.Size = new System.Drawing.Size(616, 441);
+            this.modificationsTabControl.Size = new System.Drawing.Size(596, 403);
             this.modificationsTabControl.TabIndex = 0;
             // 
             // runAsAdministratorTabPage
@@ -148,7 +130,7 @@
             this.runAsAdministratorTabPage.Location = new System.Drawing.Point(4, 22);
             this.runAsAdministratorTabPage.Name = "runAsAdministratorTabPage";
             this.runAsAdministratorTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.runAsAdministratorTabPage.Size = new System.Drawing.Size(608, 415);
+            this.runAsAdministratorTabPage.Size = new System.Drawing.Size(588, 377);
             this.runAsAdministratorTabPage.TabIndex = 0;
             this.runAsAdministratorTabPage.Text = "Run As Administrator";
             this.runAsAdministratorTabPage.UseVisualStyleBackColor = true;
@@ -170,7 +152,7 @@
             this.environmentVariablesTabPage.Location = new System.Drawing.Point(4, 22);
             this.environmentVariablesTabPage.Name = "environmentVariablesTabPage";
             this.environmentVariablesTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.environmentVariablesTabPage.Size = new System.Drawing.Size(608, 415);
+            this.environmentVariablesTabPage.Size = new System.Drawing.Size(588, 377);
             this.environmentVariablesTabPage.TabIndex = 1;
             this.environmentVariablesTabPage.Text = "Environment Variables";
             this.environmentVariablesTabPage.UseVisualStyleBackColor = true;
@@ -193,7 +175,7 @@
             this.environmentVariablesValueDataGridViewTextBoxColumn});
             this.environmentVariablesGridView.Location = new System.Drawing.Point(6, 6);
             this.environmentVariablesGridView.Name = "environmentVariablesGridView";
-            this.environmentVariablesGridView.Size = new System.Drawing.Size(596, 374);
+            this.environmentVariablesGridView.Size = new System.Drawing.Size(576, 365);
             this.environmentVariablesGridView.TabIndex = 0;
             // 
             // environmentVariablesNameDataGridViewTextBoxColumn
@@ -208,150 +190,13 @@
             this.environmentVariablesValueDataGridViewTextBoxColumn.HeaderText = "Value";
             this.environmentVariablesValueDataGridViewTextBoxColumn.Name = "environmentVariablesValueDataGridViewTextBoxColumn";
             // 
-            // serverModeTemplateTabPage
-            // 
-            this.serverModeTemplateTabPage.Controls.Add(this.serverModeTemplateRegexesGroupBox);
-            this.serverModeTemplateTabPage.Location = new System.Drawing.Point(4, 22);
-            this.serverModeTemplateTabPage.Name = "serverModeTemplateTabPage";
-            this.serverModeTemplateTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.serverModeTemplateTabPage.Size = new System.Drawing.Size(608, 415);
-            this.serverModeTemplateTabPage.TabIndex = 2;
-            this.serverModeTemplateTabPage.Text = "Server Mode Template";
-            this.serverModeTemplateTabPage.UseVisualStyleBackColor = true;
-            // 
-            // serverModeTemplateRegexesGroupBox
-            // 
-            this.serverModeTemplateRegexesGroupBox.Controls.Add(this.serverModeTemplateRegexesDataGridView);
-            this.serverModeTemplateRegexesGroupBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.serverModeTemplateRegexesGroupBox.Location = new System.Drawing.Point(7, 7);
-            this.serverModeTemplateRegexesGroupBox.Name = "serverModeTemplateRegexesGroupBox";
-            this.serverModeTemplateRegexesGroupBox.Size = new System.Drawing.Size(595, 402);
-            this.serverModeTemplateRegexesGroupBox.TabIndex = 2;
-            this.serverModeTemplateRegexesGroupBox.TabStop = false;
-            this.serverModeTemplateRegexesGroupBox.Text = "Regexes";
-            // 
-            // serverModeTemplateRegexesDataGridView
-            // 
-            this.serverModeTemplateRegexesDataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.serverModeTemplateRegexesDataGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.serverModeTemplateRegexesNameDataGridViewTextBoxColumn,
-            this.serverModeTemplateRegexesReplaceDataGridViewTextBoxColumn});
-            this.serverModeTemplateRegexesDataGridView.Location = new System.Drawing.Point(6, 19);
-            this.serverModeTemplateRegexesDataGridView.Name = "serverModeTemplateRegexesDataGridView";
-            this.serverModeTemplateRegexesDataGridView.Size = new System.Drawing.Size(583, 377);
-            this.serverModeTemplateRegexesDataGridView.TabIndex = 1;
-            // 
-            // serverModeTemplateRegexesNameDataGridViewTextBoxColumn
-            // 
-            this.serverModeTemplateRegexesNameDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.serverModeTemplateRegexesNameDataGridViewTextBoxColumn.HeaderText = "Name";
-            this.serverModeTemplateRegexesNameDataGridViewTextBoxColumn.Name = "serverModeTemplateRegexesNameDataGridViewTextBoxColumn";
-            // 
-            // serverModeTemplateRegexesReplaceDataGridViewTextBoxColumn
-            // 
-            this.serverModeTemplateRegexesReplaceDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.serverModeTemplateRegexesReplaceDataGridViewTextBoxColumn.HeaderText = "Replace";
-            this.serverModeTemplateRegexesReplaceDataGridViewTextBoxColumn.Name = "serverModeTemplateRegexesReplaceDataGridViewTextBoxColumn";
-            // 
-            // softwareModeTemplateTabPage
-            // 
-            this.softwareModeTemplateTabPage.Controls.Add(this.softwareModeTemplateRegexes);
-            this.softwareModeTemplateTabPage.Controls.Add(this.softwareModeTemplateHideWindowCheckBox);
-            this.softwareModeTemplateTabPage.Controls.Add(this.softwareModeTemplateWorkingDirectoryTextBox);
-            this.softwareModeTemplateTabPage.Controls.Add(this.softwareModeTemplateWorkingDirectoryLabel);
-            this.softwareModeTemplateTabPage.Controls.Add(this.softwareModeTemplateFormatTextBox);
-            this.softwareModeTemplateTabPage.Controls.Add(this.softwareModeTemplateFormatLabel);
-            this.softwareModeTemplateTabPage.Location = new System.Drawing.Point(4, 22);
-            this.softwareModeTemplateTabPage.Name = "softwareModeTemplateTabPage";
-            this.softwareModeTemplateTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.softwareModeTemplateTabPage.Size = new System.Drawing.Size(608, 415);
-            this.softwareModeTemplateTabPage.TabIndex = 3;
-            this.softwareModeTemplateTabPage.Text = "Software Mode Template";
-            this.softwareModeTemplateTabPage.UseVisualStyleBackColor = true;
-            // 
-            // softwareModeTemplateRegexes
-            // 
-            this.softwareModeTemplateRegexes.Controls.Add(this.softwareModeTemplateDataGridView);
-            this.softwareModeTemplateRegexes.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.softwareModeTemplateRegexes.Location = new System.Drawing.Point(7, 91);
-            this.softwareModeTemplateRegexes.Name = "softwareModeTemplateRegexes";
-            this.softwareModeTemplateRegexes.Size = new System.Drawing.Size(595, 317);
-            this.softwareModeTemplateRegexes.TabIndex = 5;
-            this.softwareModeTemplateRegexes.TabStop = false;
-            this.softwareModeTemplateRegexes.Text = "Regexes";
-            // 
-            // softwareModeTemplateDataGridView
-            // 
-            this.softwareModeTemplateDataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.softwareModeTemplateDataGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.softwareModeTemplateRegexesNameDataGridViewTextBoxColumn,
-            this.softwareModeTemplateRegexesReplaceDataGridViewTextBoxColumn});
-            this.softwareModeTemplateDataGridView.Location = new System.Drawing.Point(6, 19);
-            this.softwareModeTemplateDataGridView.Name = "softwareModeTemplateDataGridView";
-            this.softwareModeTemplateDataGridView.Size = new System.Drawing.Size(583, 292);
-            this.softwareModeTemplateDataGridView.TabIndex = 1;
-            // 
-            // softwareModeTemplateRegexesNameDataGridViewTextBoxColumn
-            // 
-            this.softwareModeTemplateRegexesNameDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.softwareModeTemplateRegexesNameDataGridViewTextBoxColumn.HeaderText = "Name";
-            this.softwareModeTemplateRegexesNameDataGridViewTextBoxColumn.Name = "softwareModeTemplateRegexesNameDataGridViewTextBoxColumn";
-            // 
-            // softwareModeTemplateRegexesReplaceDataGridViewTextBoxColumn
-            // 
-            this.softwareModeTemplateRegexesReplaceDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.softwareModeTemplateRegexesReplaceDataGridViewTextBoxColumn.HeaderText = "Replace";
-            this.softwareModeTemplateRegexesReplaceDataGridViewTextBoxColumn.Name = "softwareModeTemplateRegexesReplaceDataGridViewTextBoxColumn";
-            // 
-            // softwareModeTemplateHideWindowCheckBox
-            // 
-            this.softwareModeTemplateHideWindowCheckBox.AutoSize = true;
-            this.softwareModeTemplateHideWindowCheckBox.Location = new System.Drawing.Point(512, 21);
-            this.softwareModeTemplateHideWindowCheckBox.Name = "softwareModeTemplateHideWindowCheckBox";
-            this.softwareModeTemplateHideWindowCheckBox.Size = new System.Drawing.Size(90, 17);
-            this.softwareModeTemplateHideWindowCheckBox.TabIndex = 4;
-            this.softwareModeTemplateHideWindowCheckBox.Text = "Hide Window";
-            this.softwareModeTemplateHideWindowCheckBox.UseVisualStyleBackColor = true;
-            // 
-            // softwareModeTemplateWorkingDirectoryTextBox
-            // 
-            this.softwareModeTemplateWorkingDirectoryTextBox.Location = new System.Drawing.Point(6, 65);
-            this.softwareModeTemplateWorkingDirectoryTextBox.Name = "softwareModeTemplateWorkingDirectoryTextBox";
-            this.softwareModeTemplateWorkingDirectoryTextBox.Size = new System.Drawing.Size(596, 20);
-            this.softwareModeTemplateWorkingDirectoryTextBox.TabIndex = 3;
-            // 
-            // softwareModeTemplateWorkingDirectoryLabel
-            // 
-            this.softwareModeTemplateWorkingDirectoryLabel.AutoSize = true;
-            this.softwareModeTemplateWorkingDirectoryLabel.Location = new System.Drawing.Point(6, 49);
-            this.softwareModeTemplateWorkingDirectoryLabel.Name = "softwareModeTemplateWorkingDirectoryLabel";
-            this.softwareModeTemplateWorkingDirectoryLabel.Size = new System.Drawing.Size(92, 13);
-            this.softwareModeTemplateWorkingDirectoryLabel.TabIndex = 2;
-            this.softwareModeTemplateWorkingDirectoryLabel.Text = "Working Directory";
-            // 
-            // softwareModeTemplateFormatTextBox
-            // 
-            this.softwareModeTemplateFormatTextBox.Location = new System.Drawing.Point(6, 19);
-            this.softwareModeTemplateFormatTextBox.Name = "softwareModeTemplateFormatTextBox";
-            this.softwareModeTemplateFormatTextBox.Size = new System.Drawing.Size(500, 20);
-            this.softwareModeTemplateFormatTextBox.TabIndex = 1;
-            // 
-            // softwareModeTemplateFormatLabel
-            // 
-            this.softwareModeTemplateFormatLabel.AutoSize = true;
-            this.softwareModeTemplateFormatLabel.Location = new System.Drawing.Point(6, 3);
-            this.softwareModeTemplateFormatLabel.Name = "softwareModeTemplateFormatLabel";
-            this.softwareModeTemplateFormatLabel.Size = new System.Drawing.Size(39, 13);
-            this.softwareModeTemplateFormatLabel.TabIndex = 0;
-            this.softwareModeTemplateFormatLabel.Text = "Format";
-            // 
             // downloadsBeforeTabPage
             // 
             this.downloadsBeforeTabPage.Controls.Add(this.downloadsBeforeDataGridView);
             this.downloadsBeforeTabPage.Location = new System.Drawing.Point(4, 22);
             this.downloadsBeforeTabPage.Name = "downloadsBeforeTabPage";
             this.downloadsBeforeTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.downloadsBeforeTabPage.Size = new System.Drawing.Size(608, 415);
+            this.downloadsBeforeTabPage.Size = new System.Drawing.Size(588, 377);
             this.downloadsBeforeTabPage.TabIndex = 4;
             this.downloadsBeforeTabPage.Text = "Downloads Before";
             this.downloadsBeforeTabPage.UseVisualStyleBackColor = true;
@@ -363,7 +208,7 @@
             this.downloadsBeforeNameDataGridViewTextBoxColumn});
             this.downloadsBeforeDataGridView.Location = new System.Drawing.Point(6, 6);
             this.downloadsBeforeDataGridView.Name = "downloadsBeforeDataGridView";
-            this.downloadsBeforeDataGridView.Size = new System.Drawing.Size(596, 403);
+            this.downloadsBeforeDataGridView.Size = new System.Drawing.Size(576, 365);
             this.downloadsBeforeDataGridView.TabIndex = 1;
             // 
             // downloadsBeforeNameDataGridViewTextBoxColumn
@@ -379,7 +224,7 @@
             this.registryBackupsTabPage.Location = new System.Drawing.Point(4, 22);
             this.registryBackupsTabPage.Name = "registryBackupsTabPage";
             this.registryBackupsTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.registryBackupsTabPage.Size = new System.Drawing.Size(608, 415);
+            this.registryBackupsTabPage.Size = new System.Drawing.Size(588, 377);
             this.registryBackupsTabPage.TabIndex = 5;
             this.registryBackupsTabPage.Text = "Registry Backups";
             this.registryBackupsTabPage.UseVisualStyleBackColor = true;
@@ -407,12 +252,13 @@
             this.registryBackupsValueKindDataGridViewComboBoxColumn});
             this.registryBackupsDataGridView.Location = new System.Drawing.Point(6, 6);
             this.registryBackupsDataGridView.Name = "registryBackupsDataGridView";
-            this.registryBackupsDataGridView.Size = new System.Drawing.Size(596, 379);
+            this.registryBackupsDataGridView.Size = new System.Drawing.Size(576, 365);
             this.registryBackupsDataGridView.TabIndex = 2;
             this.registryBackupsDataGridView.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.registryBackupsDataGridView_CellEndEdit);
             this.registryBackupsDataGridView.CellValidating += new System.Windows.Forms.DataGridViewCellValidatingEventHandler(this.registryBackupsDataGridView_CellValidating);
             this.registryBackupsDataGridView.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.registryBackupsDataGridView_CellValueChanged);
             this.registryBackupsDataGridView.CurrentCellDirtyStateChanged += new System.EventHandler(this.registryBackupsDataGridView_CurrentCellDirtyStateChanged);
+            this.registryBackupsDataGridView.DefaultValuesNeeded += new System.Windows.Forms.DataGridViewRowEventHandler(this.registryBackupsDataGridView_DefaultValuesNeeded);
             // 
             // registryBackupsTypeDataGridViewComboBoxColumn
             // 
@@ -471,7 +317,7 @@
             this.singleInstanceTabPage.Location = new System.Drawing.Point(4, 22);
             this.singleInstanceTabPage.Name = "singleInstanceTabPage";
             this.singleInstanceTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.singleInstanceTabPage.Size = new System.Drawing.Size(608, 415);
+            this.singleInstanceTabPage.Size = new System.Drawing.Size(588, 377);
             this.singleInstanceTabPage.TabIndex = 6;
             this.singleInstanceTabPage.Text = "Single Instance";
             this.singleInstanceTabPage.UseVisualStyleBackColor = true;
@@ -489,13 +335,13 @@
             // 
             this.commandLineTextBox.Location = new System.Drawing.Point(6, 19);
             this.commandLineTextBox.Name = "commandLineTextBox";
-            this.commandLineTextBox.Size = new System.Drawing.Size(540, 20);
+            this.commandLineTextBox.Size = new System.Drawing.Size(520, 20);
             this.commandLineTextBox.TabIndex = 1;
             // 
             // strictCheckBox
             // 
             this.strictCheckBox.AutoSize = true;
-            this.strictCheckBox.Location = new System.Drawing.Point(552, 21);
+            this.strictCheckBox.Location = new System.Drawing.Point(532, 22);
             this.strictCheckBox.Name = "strictCheckBox";
             this.strictCheckBox.Size = new System.Drawing.Size(50, 17);
             this.strictCheckBox.TabIndex = 0;
@@ -510,7 +356,7 @@
             this.oldCPUSimulatorTabPage.Location = new System.Drawing.Point(4, 22);
             this.oldCPUSimulatorTabPage.Name = "oldCPUSimulatorTabPage";
             this.oldCPUSimulatorTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.oldCPUSimulatorTabPage.Size = new System.Drawing.Size(608, 415);
+            this.oldCPUSimulatorTabPage.Size = new System.Drawing.Size(588, 377);
             this.oldCPUSimulatorTabPage.TabIndex = 7;
             this.oldCPUSimulatorTabPage.Text = "Old CPU Simulator";
             this.oldCPUSimulatorTabPage.UseVisualStyleBackColor = true;
@@ -526,7 +372,7 @@
             this.optionsGroupBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.optionsGroupBox.Location = new System.Drawing.Point(7, 52);
             this.optionsGroupBox.Name = "optionsGroupBox";
-            this.optionsGroupBox.Size = new System.Drawing.Size(595, 80);
+            this.optionsGroupBox.Size = new System.Drawing.Size(575, 80);
             this.optionsGroupBox.TabIndex = 2;
             this.optionsGroupBox.TabStop = false;
             this.optionsGroupBox.Text = "Options";
@@ -537,7 +383,7 @@
             this.refreshRateFloorFifteenCheckBox.Checked = true;
             this.refreshRateFloorFifteenCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
             this.refreshRateFloorFifteenCheckBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.refreshRateFloorFifteenCheckBox.Location = new System.Drawing.Point(441, 44);
+            this.refreshRateFloorFifteenCheckBox.Location = new System.Drawing.Point(437, 44);
             this.refreshRateFloorFifteenCheckBox.Name = "refreshRateFloorFifteenCheckBox";
             this.refreshRateFloorFifteenCheckBox.Size = new System.Drawing.Size(132, 30);
             this.refreshRateFloorFifteenCheckBox.TabIndex = 5;
@@ -550,7 +396,7 @@
             this.syncedProcessMainThreadOnlyCheckBox.Checked = true;
             this.syncedProcessMainThreadOnlyCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
             this.syncedProcessMainThreadOnlyCheckBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.syncedProcessMainThreadOnlyCheckBox.Location = new System.Drawing.Point(298, 44);
+            this.syncedProcessMainThreadOnlyCheckBox.Location = new System.Drawing.Point(294, 44);
             this.syncedProcessMainThreadOnlyCheckBox.Name = "syncedProcessMainThreadOnlyCheckBox";
             this.syncedProcessMainThreadOnlyCheckBox.Size = new System.Drawing.Size(129, 30);
             this.syncedProcessMainThreadOnlyCheckBox.TabIndex = 4;
@@ -575,7 +421,7 @@
             this.refreshRateHzNumericUpDown.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.refreshRateHzNumericUpDown.Location = new System.Drawing.Point(108, 18);
             this.refreshRateHzNumericUpDown.Name = "refreshRateHzNumericUpDown";
-            this.refreshRateHzNumericUpDown.Size = new System.Drawing.Size(190, 20);
+            this.refreshRateHzNumericUpDown.Size = new System.Drawing.Size(168, 20);
             this.refreshRateHzNumericUpDown.TabIndex = 2;
             // 
             // refreshRateHzLabel
@@ -592,7 +438,7 @@
             // 
             this.setProcessPriorityHighCheckBox.AutoSize = true;
             this.setProcessPriorityHighCheckBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.setProcessPriorityHighCheckBox.Location = new System.Drawing.Point(10, 44);
+            this.setProcessPriorityHighCheckBox.Location = new System.Drawing.Point(6, 44);
             this.setProcessPriorityHighCheckBox.Name = "setProcessPriorityHighCheckBox";
             this.setProcessPriorityHighCheckBox.Size = new System.Drawing.Size(133, 30);
             this.setProcessPriorityHighCheckBox.TabIndex = 0;
@@ -609,7 +455,7 @@
             "Custom Target Rate..."});
             this.targetMhzComboBox.Location = new System.Drawing.Point(7, 24);
             this.targetMhzComboBox.Name = "targetMhzComboBox";
-            this.targetMhzComboBox.Size = new System.Drawing.Size(595, 21);
+            this.targetMhzComboBox.Size = new System.Drawing.Size(575, 21);
             this.targetMhzComboBox.TabIndex = 1;
             // 
             // targetRateMhzLabel
@@ -773,6 +619,7 @@
             this.undoToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Z";
             this.undoToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             this.undoToolStripMenuItem.Text = "Undo";
+            this.undoToolStripMenuItem.Visible = false;
             // 
             // redoToolStripMenuItem
             // 
@@ -781,11 +628,13 @@
             this.redoToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Y";
             this.redoToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             this.redoToolStripMenuItem.Text = "Redo";
+            this.redoToolStripMenuItem.Visible = false;
             // 
             // toolStripUndoSeperator
             // 
             this.toolStripUndoSeperator.Name = "toolStripUndoSeperator";
             this.toolStripUndoSeperator.Size = new System.Drawing.Size(197, 6);
+            this.toolStripUndoSeperator.Visible = false;
             // 
             // cutToolStripMenuItem
             // 
@@ -862,7 +711,7 @@
             this.showTooltipsToolStripMenuItem.Checked = true;
             this.showTooltipsToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.showTooltipsToolStripMenuItem.Name = "showTooltipsToolStripMenuItem";
-            this.showTooltipsToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+            this.showTooltipsToolStripMenuItem.Size = new System.Drawing.Size(147, 22);
             this.showTooltipsToolStripMenuItem.Text = "Show Tooltips";
             this.showTooltipsToolStripMenuItem.CheckStateChanged += new System.EventHandler(this.showTooltipsToolStripMenuItem_CheckStateChanged);
             this.showTooltipsToolStripMenuItem.Click += new System.EventHandler(this.showTooltipsToolStripMenuItem_Click);
@@ -891,13 +740,44 @@
             this.aboutToolStripMenuItem.Text = "About...";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
+            // templateTabControl
+            // 
+            this.templateTabControl.Controls.Add(this.modeTabPage);
+            this.templateTabControl.Controls.Add(this.modificationsTabPage);
+            this.templateTabControl.Location = new System.Drawing.Point(12, 27);
+            this.templateTabControl.Name = "templateTabControl";
+            this.templateTabControl.SelectedIndex = 0;
+            this.templateTabControl.Size = new System.Drawing.Size(616, 441);
+            this.templateTabControl.TabIndex = 2;
+            // 
+            // modificationsTabPage
+            // 
+            this.modificationsTabPage.Controls.Add(this.modificationsTabControl);
+            this.modificationsTabPage.Location = new System.Drawing.Point(4, 22);
+            this.modificationsTabPage.Name = "modificationsTabPage";
+            this.modificationsTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.modificationsTabPage.Size = new System.Drawing.Size(608, 415);
+            this.modificationsTabPage.TabIndex = 1;
+            this.modificationsTabPage.Text = "Modifications";
+            this.modificationsTabPage.UseVisualStyleBackColor = true;
+            // 
+            // modeTabPage
+            // 
+            this.modeTabPage.Location = new System.Drawing.Point(4, 22);
+            this.modeTabPage.Name = "modeTabPage";
+            this.modeTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.modeTabPage.Size = new System.Drawing.Size(608, 415);
+            this.modeTabPage.TabIndex = 2;
+            this.modeTabPage.Text = "Mode";
+            this.modeTabPage.UseVisualStyleBackColor = true;
+            // 
             // FlashpointSecurePlayerConfigurationEditor
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(640, 480);
-            this.Controls.Add(this.modificationsTabControl);
+            this.Controls.Add(this.templateTabControl);
             this.Controls.Add(this.menuStrip1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -914,13 +794,6 @@
             this.runAsAdministratorTabPage.PerformLayout();
             this.environmentVariablesTabPage.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.environmentVariablesGridView)).EndInit();
-            this.serverModeTemplateTabPage.ResumeLayout(false);
-            this.serverModeTemplateRegexesGroupBox.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.serverModeTemplateRegexesDataGridView)).EndInit();
-            this.softwareModeTemplateTabPage.ResumeLayout(false);
-            this.softwareModeTemplateTabPage.PerformLayout();
-            this.softwareModeTemplateRegexes.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.softwareModeTemplateDataGridView)).EndInit();
             this.downloadsBeforeTabPage.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.downloadsBeforeDataGridView)).EndInit();
             this.registryBackupsTabPage.ResumeLayout(false);
@@ -935,6 +808,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.refreshRateHzNumericUpDown)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.templateTabControl.ResumeLayout(false);
+            this.modificationsTabPage.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -978,25 +853,10 @@
         private System.Windows.Forms.Button editCompatibilitySettingsButton;
         private System.Windows.Forms.ToolStripSeparator toolStripTextSeperator;
         private System.Windows.Forms.ToolStripMenuItem compatibilitySettingsToolStripMenuItem;
-        private System.Windows.Forms.TabPage serverModeTemplateTabPage;
-        private System.Windows.Forms.TabPage softwareModeTemplateTabPage;
         private System.Windows.Forms.TabPage downloadsBeforeTabPage;
         private System.Windows.Forms.TabPage registryBackupsTabPage;
         private System.Windows.Forms.TabPage singleInstanceTabPage;
         private System.Windows.Forms.TabPage oldCPUSimulatorTabPage;
-        private System.Windows.Forms.DataGridView serverModeTemplateRegexesDataGridView;
-        private System.Windows.Forms.DataGridViewTextBoxColumn serverModeTemplateRegexesNameDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn serverModeTemplateRegexesReplaceDataGridViewTextBoxColumn;
-        private System.Windows.Forms.Label softwareModeTemplateFormatLabel;
-        private System.Windows.Forms.GroupBox serverModeTemplateRegexesGroupBox;
-        private System.Windows.Forms.TextBox softwareModeTemplateFormatTextBox;
-        private System.Windows.Forms.Label softwareModeTemplateWorkingDirectoryLabel;
-        private System.Windows.Forms.TextBox softwareModeTemplateWorkingDirectoryTextBox;
-        private System.Windows.Forms.CheckBox softwareModeTemplateHideWindowCheckBox;
-        private System.Windows.Forms.GroupBox softwareModeTemplateRegexes;
-        private System.Windows.Forms.DataGridView softwareModeTemplateDataGridView;
-        private System.Windows.Forms.DataGridViewTextBoxColumn softwareModeTemplateRegexesNameDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn softwareModeTemplateRegexesReplaceDataGridViewTextBoxColumn;
         private System.Windows.Forms.ToolStripMenuItem registrationFileToolStripMenuItem;
         private System.Windows.Forms.DataGridView downloadsBeforeDataGridView;
         private System.Windows.Forms.DataGridViewTextBoxColumn downloadsBeforeNameDataGridViewTextBoxColumn;
@@ -1023,6 +883,9 @@
         private System.Windows.Forms.ToolStripMenuItem viewToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem showTooltipsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mergeWithToolStripMenuItem;
+        private System.Windows.Forms.TabControl templateTabControl;
+        private System.Windows.Forms.TabPage modificationsTabPage;
+        private System.Windows.Forms.TabPage modeTabPage;
     }
 }
 

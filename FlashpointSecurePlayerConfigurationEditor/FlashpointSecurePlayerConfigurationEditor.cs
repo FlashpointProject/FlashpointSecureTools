@@ -179,12 +179,8 @@ namespace FlashpointSecurePlayer {
             targetMhzComboBox.SelectedIndex = 0;
 
             commandLineTextBox.GotFocus += EnableTextEditing;
-            softwareModeTemplateFormatTextBox.GotFocus += EnableTextEditing;
-            softwareModeTemplateWorkingDirectoryTextBox.GotFocus += EnableTextEditing;
 
             commandLineTextBox.LostFocus += DisableTextEditing;
-            softwareModeTemplateFormatTextBox.LostFocus += DisableTextEditing;
-            softwareModeTemplateWorkingDirectoryTextBox.LostFocus += DisableTextEditing;
         }
 
         private void FlashpointSecurePlayerConfigurationEditor_FormClosing(object sender, FormClosingEventArgs e) {
@@ -269,6 +265,10 @@ namespace FlashpointSecurePlayer {
             ShowCompatibilitySettingsEditor();
         }
 
+        private void registryBackupsDataGridView_DefaultValuesNeeded(object sender, DataGridViewRowEventArgs e) {
+            e.Row.Cells[0].Value = "KEY";
+        }
+
         // REGISTRY BACKUPS
         private void registryBackupsDataGridView_CurrentCellDirtyStateChanged(object sender, EventArgs e) {
             // causes CellValueChanged to be run unrecursively when Type is edited
@@ -288,7 +288,7 @@ namespace FlashpointSecurePlayer {
             if (dataGridViewComboBoxCell != null) {
                 for(int i = 2;i < 5;i++) {
                     // TODO: Tooltips
-                    if (dataGridViewComboBoxCell.Value.Equals("KEY")) {
+                    if (dataGridViewComboBoxCell.Value != null && dataGridViewComboBoxCell.Value.Equals("KEY")) {
                         registryBackupsDataGridView.Rows[e.RowIndex].Cells[i].ReadOnly = true;
                         registryBackupsDataGridView.Rows[e.RowIndex].Cells[i].Value = String.Empty;
                         registryBackupsDataGridView.Rows[e.RowIndex].Cells[i].Style.BackColor = Color.LightGray;
@@ -321,7 +321,7 @@ namespace FlashpointSecurePlayer {
             }
 
             // value kind is a required attribute if type is not key
-            if (headerText.Equals("Value Kind") && !registryBackupsDataGridView.Rows[e.RowIndex].Cells[0].Value.Equals("KEY")) {
+            if (headerText.Equals("Value Kind") && registryBackupsDataGridView.Rows[e.RowIndex].Cells[0].Value != null && !registryBackupsDataGridView.Rows[e.RowIndex].Cells[0].Value.Equals("KEY")) {
                 if (String.IsNullOrEmpty(e.FormattedValue.ToString())) {
                     registryBackupsDataGridView.Rows[e.RowIndex].ErrorText = "Value Kind must not be empty";
                     e.Cancel = true;
