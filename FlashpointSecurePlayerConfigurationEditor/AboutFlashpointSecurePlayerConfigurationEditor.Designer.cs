@@ -98,6 +98,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "AboutFlashpointSecurePlayerConfigurationEditor";
             this.Text = "About Flashpoint Secure Player Configuration Editor";
             this.Load += new System.EventHandler(this.AboutFlashpointSecurePlayerConfigurationEditor_Load);

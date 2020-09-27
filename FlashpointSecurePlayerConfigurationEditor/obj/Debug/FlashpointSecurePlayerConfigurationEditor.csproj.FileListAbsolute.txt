@@ -22,3 +22,4 @@ C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\Fla
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayerConfigurationEditor\obj\Debug\FlashpointSecurePlayerConfigurationEditor.pdb
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayerConfigurationEditor\bin\Debug\FlashpointSecurePlayerConfigurationEditor.pdb
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayerConfigurationEditor\obj\Debug\FlashpointSecurePlayer.FlashpointSecurePlayerConfigurationEditor.resources
+C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayerConfigurationEditor\obj\Debug\FlashpointSecurePlayer.ConfigurationFileDialog.resources

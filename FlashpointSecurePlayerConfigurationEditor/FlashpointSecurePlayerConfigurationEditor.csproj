@@ -61,6 +61,12 @@
     <Compile Include="CompatibilitySettingsEditor.Designer.cs">
       <DependentUpon>CompatibilitySettingsEditor.cs</DependentUpon>
     </Compile>
+    <Compile Include="ConfigurationFileDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ConfigurationFileDialog.Designer.cs">
+      <DependentUpon>ConfigurationFileDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="FlashpointSecurePlayerConfigurationEditor.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -81,6 +87,9 @@
     <EmbeddedResource Include="CompatibilitySettingsEditor.resx">
       <DependentUpon>CompatibilitySettingsEditor.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="ConfigurationFileDialog.resx">
+      <DependentUpon>ConfigurationFileDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FlashpointSecurePlayerConfigurationEditor.resx">
       <DependentUpon>FlashpointSecurePlayerConfigurationEditor.cs</DependentUpon>
     </EmbeddedResource>
@@ -89,18 +98,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
@@ -109,6 +118,51 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Paste.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\NewDocument.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Open.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Save.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Edit_Undo.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Edit_Redo.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Cut.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Copy.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Delete.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Help.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\InsertTabControl.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Rename.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CompareVersions.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Options.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DownloadDocument.bmp" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
