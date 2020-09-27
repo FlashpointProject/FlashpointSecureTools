@@ -44,7 +44,7 @@
             this.registryBackupsValueDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.registryBackupsValueKindDataGridViewComboBoxColumn = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.singleInstanceTabPage = new System.Windows.Forms.TabPage();
-            this.commandLineLabel = new System.Windows.Forms.Label();
+            this.executableLabel = new System.Windows.Forms.Label();
             this.commandLineTextBox = new System.Windows.Forms.TextBox();
             this.strictCheckBox = new System.Windows.Forms.CheckBox();
             this.oldCPUSimulatorTabPage = new System.Windows.Forms.TabPage();
@@ -86,13 +86,28 @@
             this.modificationNameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.compatibilitySettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.modeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.modificationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.runAsAdministratorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.environmentVariablesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.downloadsBeforeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.registryBackupsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.singleInstanceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.oldCPUSimulatorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripPagesSeperator = new System.Windows.Forms.ToolStripSeparator();
             this.showTooltipsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.onlineHelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.templateTabControl = new System.Windows.Forms.TabControl();
-            this.modificationsTabPage = new System.Windows.Forms.TabPage();
             this.modeTabPage = new System.Windows.Forms.TabPage();
+            this.workingDirectoryLabel = new System.Windows.Forms.Label();
+            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.commandLineLabel = new System.Windows.Forms.Label();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.modeNameComboBox = new System.Windows.Forms.ComboBox();
+            this.modificationsTabPage = new System.Windows.Forms.TabPage();
+            this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.modificationsTabControl.SuspendLayout();
             this.runAsAdministratorTabPage.SuspendLayout();
             this.environmentVariablesTabPage.SuspendLayout();
@@ -107,6 +122,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.refreshRateHzNumericUpDown)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.templateTabControl.SuspendLayout();
+            this.modeTabPage.SuspendLayout();
             this.modificationsTabPage.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -138,11 +154,12 @@
             // runAsAdministratorCheckBox
             // 
             this.runAsAdministratorCheckBox.AutoSize = true;
-            this.runAsAdministratorCheckBox.Location = new System.Drawing.Point(7, 7);
+            this.runAsAdministratorCheckBox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.runAsAdministratorCheckBox.Location = new System.Drawing.Point(6, 6);
             this.runAsAdministratorCheckBox.Name = "runAsAdministratorCheckBox";
-            this.runAsAdministratorCheckBox.Size = new System.Drawing.Size(124, 17);
+            this.runAsAdministratorCheckBox.Size = new System.Drawing.Size(127, 17);
             this.runAsAdministratorCheckBox.TabIndex = 0;
-            this.runAsAdministratorCheckBox.Text = "Run As Administrator";
+            this.runAsAdministratorCheckBox.Text = "Run As Administrator:";
             this.runAsAdministratorCheckBox.UseVisualStyleBackColor = true;
             // 
             // environmentVariablesTabPage
@@ -311,7 +328,7 @@
             // 
             // singleInstanceTabPage
             // 
-            this.singleInstanceTabPage.Controls.Add(this.commandLineLabel);
+            this.singleInstanceTabPage.Controls.Add(this.executableLabel);
             this.singleInstanceTabPage.Controls.Add(this.commandLineTextBox);
             this.singleInstanceTabPage.Controls.Add(this.strictCheckBox);
             this.singleInstanceTabPage.Location = new System.Drawing.Point(4, 22);
@@ -322,30 +339,31 @@
             this.singleInstanceTabPage.Text = "Single Instance";
             this.singleInstanceTabPage.UseVisualStyleBackColor = true;
             // 
-            // commandLineLabel
+            // executableLabel
             // 
-            this.commandLineLabel.AutoSize = true;
-            this.commandLineLabel.Location = new System.Drawing.Point(6, 3);
-            this.commandLineLabel.Name = "commandLineLabel";
-            this.commandLineLabel.Size = new System.Drawing.Size(77, 13);
-            this.commandLineLabel.TabIndex = 2;
-            this.commandLineLabel.Text = "Command Line";
+            this.executableLabel.AutoSize = true;
+            this.executableLabel.Location = new System.Drawing.Point(6, 9);
+            this.executableLabel.Name = "executableLabel";
+            this.executableLabel.Size = new System.Drawing.Size(63, 13);
+            this.executableLabel.TabIndex = 2;
+            this.executableLabel.Text = "Executable:";
             // 
             // commandLineTextBox
             // 
-            this.commandLineTextBox.Location = new System.Drawing.Point(6, 19);
+            this.commandLineTextBox.Location = new System.Drawing.Point(75, 6);
             this.commandLineTextBox.Name = "commandLineTextBox";
-            this.commandLineTextBox.Size = new System.Drawing.Size(520, 20);
+            this.commandLineTextBox.Size = new System.Drawing.Size(507, 20);
             this.commandLineTextBox.TabIndex = 1;
             // 
             // strictCheckBox
             // 
             this.strictCheckBox.AutoSize = true;
-            this.strictCheckBox.Location = new System.Drawing.Point(532, 22);
+            this.strictCheckBox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.strictCheckBox.Location = new System.Drawing.Point(34, 32);
             this.strictCheckBox.Name = "strictCheckBox";
-            this.strictCheckBox.Size = new System.Drawing.Size(50, 17);
+            this.strictCheckBox.Size = new System.Drawing.Size(53, 17);
             this.strictCheckBox.TabIndex = 0;
-            this.strictCheckBox.Text = "Strict";
+            this.strictCheckBox.Text = "Strict:";
             this.strictCheckBox.UseVisualStyleBackColor = true;
             // 
             // oldCPUSimulatorTabPage
@@ -500,6 +518,8 @@
             // 
             // newToolStripMenuItem
             // 
+            this.newToolStripMenuItem.Image = global::FlashpointSecurePlayer.Properties.Resources.NewDocument;
+            this.newToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
             this.newToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+N";
             this.newToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
@@ -507,6 +527,8 @@
             // 
             // openToolStripMenuItem
             // 
+            this.openToolStripMenuItem.Image = global::FlashpointSecurePlayer.Properties.Resources.Open;
+            this.openToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
             this.openToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+O";
             this.openToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
@@ -517,6 +539,8 @@
             this.openRecentToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.noneToolStripMenuItem});
             this.openRecentToolStripMenuItem.Enabled = false;
+            this.openRecentToolStripMenuItem.Image = global::FlashpointSecurePlayer.Properties.Resources.Open;
+            this.openRecentToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
             this.openRecentToolStripMenuItem.Name = "openRecentToolStripMenuItem";
             this.openRecentToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
             this.openRecentToolStripMenuItem.Text = "Open Recent";
@@ -533,6 +557,8 @@
             this.importToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.activeXControlToolStripMenuItem,
             this.registrationFileToolStripMenuItem});
+            this.importToolStripMenuItem.Image = global::FlashpointSecurePlayer.Properties.Resources.DownloadDocument;
+            this.importToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
             this.importToolStripMenuItem.Name = "importToolStripMenuItem";
             this.importToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
             this.importToolStripMenuItem.Text = "Import";
@@ -563,6 +589,8 @@
             // 
             // saveToolStripMenuItem
             // 
+            this.saveToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("saveToolStripMenuItem.Image")));
+            this.saveToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
             this.saveToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+S";
             this.saveToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
@@ -570,6 +598,8 @@
             // 
             // saveAsToolStripMenuItem
             // 
+            this.saveAsToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("saveAsToolStripMenuItem.Image")));
+            this.saveAsToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
             this.saveAsToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Shift+S";
             this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
@@ -577,6 +607,8 @@
             // 
             // mergeWithToolStripMenuItem
             // 
+            this.mergeWithToolStripMenuItem.Image = global::FlashpointSecurePlayer.Properties.Resources.CompareVersions;
+            this.mergeWithToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
             this.mergeWithToolStripMenuItem.Name = "mergeWithToolStripMenuItem";
             this.mergeWithToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
             this.mergeWithToolStripMenuItem.Text = "Merge With...";
@@ -615,60 +647,69 @@
             // undoToolStripMenuItem
             // 
             this.undoToolStripMenuItem.Enabled = false;
+            this.undoToolStripMenuItem.Image = global::FlashpointSecurePlayer.Properties.Resources.Edit_Undo;
+            this.undoToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
             this.undoToolStripMenuItem.Name = "undoToolStripMenuItem";
             this.undoToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Z";
-            this.undoToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            this.undoToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
             this.undoToolStripMenuItem.Text = "Undo";
-            this.undoToolStripMenuItem.Visible = false;
             // 
             // redoToolStripMenuItem
             // 
             this.redoToolStripMenuItem.Enabled = false;
+            this.redoToolStripMenuItem.Image = global::FlashpointSecurePlayer.Properties.Resources.Edit_Redo;
+            this.redoToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
             this.redoToolStripMenuItem.Name = "redoToolStripMenuItem";
             this.redoToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Y";
-            this.redoToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            this.redoToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
             this.redoToolStripMenuItem.Text = "Redo";
-            this.redoToolStripMenuItem.Visible = false;
             // 
             // toolStripUndoSeperator
             // 
             this.toolStripUndoSeperator.Name = "toolStripUndoSeperator";
-            this.toolStripUndoSeperator.Size = new System.Drawing.Size(197, 6);
-            this.toolStripUndoSeperator.Visible = false;
+            this.toolStripUndoSeperator.Size = new System.Drawing.Size(202, 6);
             // 
             // cutToolStripMenuItem
             // 
             this.cutToolStripMenuItem.Enabled = false;
+            this.cutToolStripMenuItem.Image = global::FlashpointSecurePlayer.Properties.Resources.Cut;
+            this.cutToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
             this.cutToolStripMenuItem.Name = "cutToolStripMenuItem";
             this.cutToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+X";
-            this.cutToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            this.cutToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
             this.cutToolStripMenuItem.Text = "Cut";
             this.cutToolStripMenuItem.Click += new System.EventHandler(this.cutToolStripMenuItem_Click);
             // 
             // copyToolStripMenuItem
             // 
             this.copyToolStripMenuItem.Enabled = false;
+            this.copyToolStripMenuItem.Image = global::FlashpointSecurePlayer.Properties.Resources.Copy;
+            this.copyToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
             this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
             this.copyToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+C";
-            this.copyToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            this.copyToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
             this.copyToolStripMenuItem.Text = "Copy";
             this.copyToolStripMenuItem.Click += new System.EventHandler(this.copyToolStripMenuItem_Click);
             // 
             // pasteToolStripMenuItem
             // 
             this.pasteToolStripMenuItem.Enabled = false;
+            this.pasteToolStripMenuItem.Image = global::FlashpointSecurePlayer.Properties.Resources.Paste;
+            this.pasteToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
             this.pasteToolStripMenuItem.Name = "pasteToolStripMenuItem";
             this.pasteToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+V";
-            this.pasteToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            this.pasteToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
             this.pasteToolStripMenuItem.Text = "Paste";
             this.pasteToolStripMenuItem.Click += new System.EventHandler(this.pasteToolStripMenuItem_Click);
             // 
             // deleteToolStripMenuItem
             // 
             this.deleteToolStripMenuItem.Enabled = false;
+            this.deleteToolStripMenuItem.Image = global::FlashpointSecurePlayer.Properties.Resources.Delete;
+            this.deleteToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
             this.deleteToolStripMenuItem.ShortcutKeyDisplayString = "Del";
-            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
             this.deleteToolStripMenuItem.Text = "Delete";
             // 
             // selectAllToolStripMenuItem
@@ -676,35 +717,113 @@
             this.selectAllToolStripMenuItem.Enabled = false;
             this.selectAllToolStripMenuItem.Name = "selectAllToolStripMenuItem";
             this.selectAllToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+A";
-            this.selectAllToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            this.selectAllToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
             this.selectAllToolStripMenuItem.Text = "Select All";
             // 
             // toolStripTextSeperator
             // 
             this.toolStripTextSeperator.Name = "toolStripTextSeperator";
-            this.toolStripTextSeperator.Size = new System.Drawing.Size(197, 6);
+            this.toolStripTextSeperator.Size = new System.Drawing.Size(202, 6);
             // 
             // modificationNameToolStripMenuItem
             // 
+            this.modificationNameToolStripMenuItem.Image = global::FlashpointSecurePlayer.Properties.Resources.Rename;
+            this.modificationNameToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
             this.modificationNameToolStripMenuItem.Name = "modificationNameToolStripMenuItem";
-            this.modificationNameToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            this.modificationNameToolStripMenuItem.ShortcutKeyDisplayString = "F2";
+            this.modificationNameToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
             this.modificationNameToolStripMenuItem.Text = "Modification Name...";
             this.modificationNameToolStripMenuItem.Click += new System.EventHandler(this.modificationNameToolStripMenuItem_Click);
             // 
             // compatibilitySettingsToolStripMenuItem
             // 
+            this.compatibilitySettingsToolStripMenuItem.Image = global::FlashpointSecurePlayer.Properties.Resources.Options;
+            this.compatibilitySettingsToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
             this.compatibilitySettingsToolStripMenuItem.Name = "compatibilitySettingsToolStripMenuItem";
-            this.compatibilitySettingsToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            this.compatibilitySettingsToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
             this.compatibilitySettingsToolStripMenuItem.Text = "Compatibility Settings...";
             this.compatibilitySettingsToolStripMenuItem.Click += new System.EventHandler(this.compatibilitySettingsToolStripMenuItem_Click);
             // 
             // viewToolStripMenuItem
             // 
             this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.modeToolStripMenuItem,
+            this.modificationsToolStripMenuItem,
+            this.toolStripPagesSeperator,
             this.showTooltipsToolStripMenuItem});
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
             this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.viewToolStripMenuItem.Text = "View";
+            // 
+            // modeToolStripMenuItem
+            // 
+            this.modeToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
+            this.modeToolStripMenuItem.Name = "modeToolStripMenuItem";
+            this.modeToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+1";
+            this.modeToolStripMenuItem.Size = new System.Drawing.Size(147, 22);
+            this.modeToolStripMenuItem.Text = "Mode";
+            // 
+            // modificationsToolStripMenuItem
+            // 
+            this.modificationsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.runAsAdministratorToolStripMenuItem,
+            this.environmentVariablesToolStripMenuItem,
+            this.downloadsBeforeToolStripMenuItem,
+            this.registryBackupsToolStripMenuItem,
+            this.singleInstanceToolStripMenuItem,
+            this.oldCPUSimulatorToolStripMenuItem});
+            this.modificationsToolStripMenuItem.Image = global::FlashpointSecurePlayer.Properties.Resources.InsertTabControl;
+            this.modificationsToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
+            this.modificationsToolStripMenuItem.Name = "modificationsToolStripMenuItem";
+            this.modificationsToolStripMenuItem.Size = new System.Drawing.Size(147, 22);
+            this.modificationsToolStripMenuItem.Text = "Modifications";
+            // 
+            // runAsAdministratorToolStripMenuItem
+            // 
+            this.runAsAdministratorToolStripMenuItem.Name = "runAsAdministratorToolStripMenuItem";
+            this.runAsAdministratorToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+2";
+            this.runAsAdministratorToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
+            this.runAsAdministratorToolStripMenuItem.Text = "Run As Administrator";
+            // 
+            // environmentVariablesToolStripMenuItem
+            // 
+            this.environmentVariablesToolStripMenuItem.Name = "environmentVariablesToolStripMenuItem";
+            this.environmentVariablesToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+3";
+            this.environmentVariablesToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
+            this.environmentVariablesToolStripMenuItem.Text = "Environment Variables";
+            // 
+            // downloadsBeforeToolStripMenuItem
+            // 
+            this.downloadsBeforeToolStripMenuItem.Name = "downloadsBeforeToolStripMenuItem";
+            this.downloadsBeforeToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+4";
+            this.downloadsBeforeToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
+            this.downloadsBeforeToolStripMenuItem.Text = "Downloads Before";
+            // 
+            // registryBackupsToolStripMenuItem
+            // 
+            this.registryBackupsToolStripMenuItem.Name = "registryBackupsToolStripMenuItem";
+            this.registryBackupsToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+5";
+            this.registryBackupsToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
+            this.registryBackupsToolStripMenuItem.Text = "Registry Backups";
+            // 
+            // singleInstanceToolStripMenuItem
+            // 
+            this.singleInstanceToolStripMenuItem.Name = "singleInstanceToolStripMenuItem";
+            this.singleInstanceToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+6";
+            this.singleInstanceToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
+            this.singleInstanceToolStripMenuItem.Text = "Single Instance";
+            // 
+            // oldCPUSimulatorToolStripMenuItem
+            // 
+            this.oldCPUSimulatorToolStripMenuItem.Name = "oldCPUSimulatorToolStripMenuItem";
+            this.oldCPUSimulatorToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+7";
+            this.oldCPUSimulatorToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
+            this.oldCPUSimulatorToolStripMenuItem.Text = "Old CPU Simulator";
+            // 
+            // toolStripPagesSeperator
+            // 
+            this.toolStripPagesSeperator.Name = "toolStripPagesSeperator";
+            this.toolStripPagesSeperator.Size = new System.Drawing.Size(144, 6);
             // 
             // showTooltipsToolStripMenuItem
             // 
@@ -727,6 +846,8 @@
             // 
             // onlineHelpToolStripMenuItem
             // 
+            this.onlineHelpToolStripMenuItem.Image = global::FlashpointSecurePlayer.Properties.Resources.Help;
+            this.onlineHelpToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
             this.onlineHelpToolStripMenuItem.Name = "onlineHelpToolStripMenuItem";
             this.onlineHelpToolStripMenuItem.ShortcutKeyDisplayString = "F1";
             this.onlineHelpToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
@@ -750,6 +871,68 @@
             this.templateTabControl.Size = new System.Drawing.Size(616, 441);
             this.templateTabControl.TabIndex = 2;
             // 
+            // modeTabPage
+            // 
+            this.modeTabPage.Controls.Add(this.checkBox1);
+            this.modeTabPage.Controls.Add(this.workingDirectoryLabel);
+            this.modeTabPage.Controls.Add(this.textBox2);
+            this.modeTabPage.Controls.Add(this.commandLineLabel);
+            this.modeTabPage.Controls.Add(this.textBox1);
+            this.modeTabPage.Controls.Add(this.modeNameComboBox);
+            this.modeTabPage.Location = new System.Drawing.Point(4, 22);
+            this.modeTabPage.Name = "modeTabPage";
+            this.modeTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.modeTabPage.Size = new System.Drawing.Size(608, 415);
+            this.modeTabPage.TabIndex = 2;
+            this.modeTabPage.Text = "Mode";
+            this.modeTabPage.UseVisualStyleBackColor = true;
+            // 
+            // workingDirectoryLabel
+            // 
+            this.workingDirectoryLabel.AutoSize = true;
+            this.workingDirectoryLabel.Location = new System.Drawing.Point(6, 62);
+            this.workingDirectoryLabel.Name = "workingDirectoryLabel";
+            this.workingDirectoryLabel.Size = new System.Drawing.Size(95, 13);
+            this.workingDirectoryLabel.TabIndex = 6;
+            this.workingDirectoryLabel.Text = "Working Directory:";
+            // 
+            // textBox2
+            // 
+            this.textBox2.Location = new System.Drawing.Point(107, 59);
+            this.textBox2.Name = "textBox2";
+            this.textBox2.Size = new System.Drawing.Size(495, 20);
+            this.textBox2.TabIndex = 5;
+            // 
+            // commandLineLabel
+            // 
+            this.commandLineLabel.AutoSize = true;
+            this.commandLineLabel.Enabled = false;
+            this.commandLineLabel.Location = new System.Drawing.Point(21, 36);
+            this.commandLineLabel.Name = "commandLineLabel";
+            this.commandLineLabel.Size = new System.Drawing.Size(80, 13);
+            this.commandLineLabel.TabIndex = 4;
+            this.commandLineLabel.Text = "Command Line:";
+            // 
+            // textBox1
+            // 
+            this.textBox1.Enabled = false;
+            this.textBox1.Location = new System.Drawing.Point(107, 33);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(495, 20);
+            this.textBox1.TabIndex = 2;
+            // 
+            // modeNameComboBox
+            // 
+            this.modeNameComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.modeNameComboBox.FormattingEnabled = true;
+            this.modeNameComboBox.Items.AddRange(new object[] {
+            "Web Browser",
+            "Software"});
+            this.modeNameComboBox.Location = new System.Drawing.Point(6, 6);
+            this.modeNameComboBox.Name = "modeNameComboBox";
+            this.modeNameComboBox.Size = new System.Drawing.Size(295, 21);
+            this.modeNameComboBox.TabIndex = 0;
+            // 
             // modificationsTabPage
             // 
             this.modificationsTabPage.Controls.Add(this.modificationsTabControl);
@@ -761,15 +944,17 @@
             this.modificationsTabPage.Text = "Modifications";
             this.modificationsTabPage.UseVisualStyleBackColor = true;
             // 
-            // modeTabPage
+            // checkBox1
             // 
-            this.modeTabPage.Location = new System.Drawing.Point(4, 22);
-            this.modeTabPage.Name = "modeTabPage";
-            this.modeTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.modeTabPage.Size = new System.Drawing.Size(608, 415);
-            this.modeTabPage.TabIndex = 2;
-            this.modeTabPage.Text = "Mode";
-            this.modeTabPage.UseVisualStyleBackColor = true;
+            this.checkBox1.AutoSize = true;
+            this.checkBox1.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.checkBox1.Enabled = false;
+            this.checkBox1.Location = new System.Drawing.Point(26, 85);
+            this.checkBox1.Name = "checkBox1";
+            this.checkBox1.Size = new System.Drawing.Size(93, 17);
+            this.checkBox1.TabIndex = 7;
+            this.checkBox1.Text = "Hide Window:";
+            this.checkBox1.UseVisualStyleBackColor = true;
             // 
             // FlashpointSecurePlayerConfigurationEditor
             // 
@@ -809,6 +994,8 @@
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.templateTabControl.ResumeLayout(false);
+            this.modeTabPage.ResumeLayout(false);
+            this.modeTabPage.PerformLayout();
             this.modificationsTabPage.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -863,7 +1050,7 @@
         private System.Windows.Forms.DataGridView registryBackupsDataGridView;
         private System.Windows.Forms.ToolStripMenuItem modificationNameToolStripMenuItem;
         private System.Windows.Forms.CheckBox binaryTypeCheckBox;
-        private System.Windows.Forms.Label commandLineLabel;
+        private System.Windows.Forms.Label executableLabel;
         private System.Windows.Forms.TextBox commandLineTextBox;
         private System.Windows.Forms.CheckBox strictCheckBox;
         private System.Windows.Forms.ComboBox targetMhzComboBox;
@@ -886,6 +1073,21 @@
         private System.Windows.Forms.TabControl templateTabControl;
         private System.Windows.Forms.TabPage modificationsTabPage;
         private System.Windows.Forms.TabPage modeTabPage;
+        private System.Windows.Forms.ToolStripMenuItem modeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem modificationsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem runAsAdministratorToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem environmentVariablesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem downloadsBeforeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem registryBackupsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem singleInstanceToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem oldCPUSimulatorToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripPagesSeperator;
+        private System.Windows.Forms.ComboBox modeNameComboBox;
+        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Label workingDirectoryLabel;
+        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.Label commandLineLabel;
+        private System.Windows.Forms.CheckBox checkBox1;
     }
 }
 

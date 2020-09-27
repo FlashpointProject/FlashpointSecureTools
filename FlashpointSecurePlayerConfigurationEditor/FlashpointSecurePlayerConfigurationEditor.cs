@@ -176,6 +176,7 @@ namespace FlashpointSecurePlayer {
         }
 
         private void FlashpointSecurePlayerConfigurationEditor_Load(object sender, EventArgs e) {
+            modeNameComboBox.SelectedIndex = 0;
             targetMhzComboBox.SelectedIndex = 0;
 
             commandLineTextBox.GotFocus += EnableTextEditing;
@@ -283,10 +284,9 @@ namespace FlashpointSecurePlayer {
             }
 
             // don't allow Value Name to be set if Type is Key
-            DataGridViewComboBoxCell dataGridViewComboBoxCell = registryBackupsDataGridView.Rows[e.RowIndex].Cells[0] as DataGridViewComboBoxCell;
 
-            if (dataGridViewComboBoxCell != null) {
-                for(int i = 2;i < 5;i++) {
+            if (registryBackupsDataGridView.Rows[e.RowIndex].Cells[0] is DataGridViewComboBoxCell dataGridViewComboBoxCell) {
+                for (int i = 2; i < 5; i++) {
                     // TODO: Tooltips
                     if (dataGridViewComboBoxCell.Value != null && dataGridViewComboBoxCell.Value.Equals("KEY")) {
                         registryBackupsDataGridView.Rows[e.RowIndex].Cells[i].ReadOnly = true;
@@ -346,9 +346,7 @@ namespace FlashpointSecurePlayer {
         }
 
         private void FlashpointSecurePlayerConfigurationEditor_DragDrop(object sender, DragEventArgs e) {
-            string[] fileNames = e.Data.GetData(DataFormats.FileDrop) as string[];
-
-            if (fileNames != null) {
+            if (e.Data.GetData(DataFormats.FileDrop) is string[] fileNames) {
                 if (fileNames.Any()) {
                     if (!String.IsNullOrEmpty(fileNames[0])) {
                         Open(fileNames[0]);

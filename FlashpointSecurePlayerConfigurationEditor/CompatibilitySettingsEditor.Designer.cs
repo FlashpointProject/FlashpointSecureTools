@@ -25,17 +25,17 @@
         private void InitializeComponent() {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CompatibilitySettingsEditor));
             this.compatibilityModeGroupBox = new System.Windows.Forms.GroupBox();
-            this.compatibilityModeCheckBox = new System.Windows.Forms.CheckBox();
             this.compatibilityModeComboBox = new System.Windows.Forms.ComboBox();
+            this.compatibilityModeCheckBox = new System.Windows.Forms.CheckBox();
             this.settingsGroupBox = new System.Windows.Forms.GroupBox();
-            this.colorCheckBox = new System.Windows.Forms.CheckBox();
-            this.colorComboBox = new System.Windows.Forms.ComboBox();
-            this.sixHundredFortyXFourHundredEightyCheckBox = new System.Windows.Forms.CheckBox();
-            this.disableFullscreenOptimizationsCheckBox = new System.Windows.Forms.CheckBox();
             this.runAsAdminCheckBox = new System.Windows.Forms.CheckBox();
+            this.disableFullscreenOptimizationsCheckBox = new System.Windows.Forms.CheckBox();
+            this.sixHundredFortyXFourHundredEightyCheckBox = new System.Windows.Forms.CheckBox();
+            this.colorComboBox = new System.Windows.Forms.ComboBox();
+            this.colorCheckBox = new System.Windows.Forms.CheckBox();
             this.highDPIScalingOverrideGroupBox = new System.Windows.Forms.GroupBox();
-            this.highDpiCheckBox = new System.Windows.Forms.CheckBox();
             this.highDpiComboBox = new System.Windows.Forms.ComboBox();
+            this.highDpiCheckBox = new System.Windows.Forms.CheckBox();
             this.okButton = new System.Windows.Forms.Button();
             this.cancelButton = new System.Windows.Forms.Button();
             this.compatibilityModeGroupBox.SuspendLayout();
@@ -53,17 +53,6 @@
             this.compatibilityModeGroupBox.TabIndex = 0;
             this.compatibilityModeGroupBox.TabStop = false;
             this.compatibilityModeGroupBox.Text = "Compatibility mode";
-            // 
-            // compatibilityModeCheckBox
-            // 
-            this.compatibilityModeCheckBox.AutoSize = true;
-            this.compatibilityModeCheckBox.Location = new System.Drawing.Point(7, 20);
-            this.compatibilityModeCheckBox.Name = "compatibilityModeCheckBox";
-            this.compatibilityModeCheckBox.Size = new System.Drawing.Size(224, 17);
-            this.compatibilityModeCheckBox.TabIndex = 0;
-            this.compatibilityModeCheckBox.Text = "Run this program in compatibility mode for:";
-            this.compatibilityModeCheckBox.UseVisualStyleBackColor = true;
-            this.compatibilityModeCheckBox.CheckedChanged += new System.EventHandler(this.compatibilityModeCheckBox_CheckedChanged);
             // 
             // compatibilityModeComboBox
             // 
@@ -85,6 +74,17 @@
             this.compatibilityModeComboBox.Size = new System.Drawing.Size(225, 21);
             this.compatibilityModeComboBox.TabIndex = 1;
             // 
+            // compatibilityModeCheckBox
+            // 
+            this.compatibilityModeCheckBox.AutoSize = true;
+            this.compatibilityModeCheckBox.Location = new System.Drawing.Point(7, 20);
+            this.compatibilityModeCheckBox.Name = "compatibilityModeCheckBox";
+            this.compatibilityModeCheckBox.Size = new System.Drawing.Size(224, 17);
+            this.compatibilityModeCheckBox.TabIndex = 0;
+            this.compatibilityModeCheckBox.Text = "Run this program in compatibility mode for:";
+            this.compatibilityModeCheckBox.UseVisualStyleBackColor = true;
+            this.compatibilityModeCheckBox.CheckedChanged += new System.EventHandler(this.compatibilityModeCheckBox_CheckedChanged);
+            // 
             // settingsGroupBox
             // 
             this.settingsGroupBox.Controls.Add(this.runAsAdminCheckBox);
@@ -99,16 +99,35 @@
             this.settingsGroupBox.TabStop = false;
             this.settingsGroupBox.Text = "Settings";
             // 
-            // colorCheckBox
+            // runAsAdminCheckBox
             // 
-            this.colorCheckBox.AutoSize = true;
-            this.colorCheckBox.Location = new System.Drawing.Point(7, 20);
-            this.colorCheckBox.Name = "colorCheckBox";
-            this.colorCheckBox.Size = new System.Drawing.Size(125, 17);
-            this.colorCheckBox.TabIndex = 0;
-            this.colorCheckBox.Text = "Reduced color mode";
-            this.colorCheckBox.UseVisualStyleBackColor = true;
-            this.colorCheckBox.CheckedChanged += new System.EventHandler(this.colorCheckBox_CheckedChanged);
+            this.runAsAdminCheckBox.AutoSize = true;
+            this.runAsAdminCheckBox.Location = new System.Drawing.Point(7, 120);
+            this.runAsAdminCheckBox.Name = "runAsAdminCheckBox";
+            this.runAsAdminCheckBox.Size = new System.Drawing.Size(197, 17);
+            this.runAsAdminCheckBox.TabIndex = 4;
+            this.runAsAdminCheckBox.Text = "Run this program as an administrator";
+            this.runAsAdminCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // disableFullscreenOptimizationsCheckBox
+            // 
+            this.disableFullscreenOptimizationsCheckBox.AutoSize = true;
+            this.disableFullscreenOptimizationsCheckBox.Location = new System.Drawing.Point(7, 96);
+            this.disableFullscreenOptimizationsCheckBox.Name = "disableFullscreenOptimizationsCheckBox";
+            this.disableFullscreenOptimizationsCheckBox.Size = new System.Drawing.Size(172, 17);
+            this.disableFullscreenOptimizationsCheckBox.TabIndex = 3;
+            this.disableFullscreenOptimizationsCheckBox.Text = "Disable fullscreen optimizations";
+            this.disableFullscreenOptimizationsCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // sixHundredFortyXFourHundredEightyCheckBox
+            // 
+            this.sixHundredFortyXFourHundredEightyCheckBox.AutoSize = true;
+            this.sixHundredFortyXFourHundredEightyCheckBox.Location = new System.Drawing.Point(7, 72);
+            this.sixHundredFortyXFourHundredEightyCheckBox.Name = "sixHundredFortyXFourHundredEightyCheckBox";
+            this.sixHundredFortyXFourHundredEightyCheckBox.Size = new System.Drawing.Size(190, 17);
+            this.sixHundredFortyXFourHundredEightyCheckBox.TabIndex = 2;
+            this.sixHundredFortyXFourHundredEightyCheckBox.Text = "Run in 640 x 480 screen resolution";
+            this.sixHundredFortyXFourHundredEightyCheckBox.UseVisualStyleBackColor = true;
             // 
             // colorComboBox
             // 
@@ -123,35 +142,16 @@
             this.colorComboBox.Size = new System.Drawing.Size(126, 21);
             this.colorComboBox.TabIndex = 1;
             // 
-            // sixHundredFortyXFourHundredEightyCheckBox
+            // colorCheckBox
             // 
-            this.sixHundredFortyXFourHundredEightyCheckBox.AutoSize = true;
-            this.sixHundredFortyXFourHundredEightyCheckBox.Location = new System.Drawing.Point(7, 72);
-            this.sixHundredFortyXFourHundredEightyCheckBox.Name = "sixHundredFortyXFourHundredEightyCheckBox";
-            this.sixHundredFortyXFourHundredEightyCheckBox.Size = new System.Drawing.Size(190, 17);
-            this.sixHundredFortyXFourHundredEightyCheckBox.TabIndex = 2;
-            this.sixHundredFortyXFourHundredEightyCheckBox.Text = "Run in 640 x 480 screen resolution";
-            this.sixHundredFortyXFourHundredEightyCheckBox.UseVisualStyleBackColor = true;
-            // 
-            // disableFullscreenOptimizationsCheckBox
-            // 
-            this.disableFullscreenOptimizationsCheckBox.AutoSize = true;
-            this.disableFullscreenOptimizationsCheckBox.Location = new System.Drawing.Point(7, 96);
-            this.disableFullscreenOptimizationsCheckBox.Name = "disableFullscreenOptimizationsCheckBox";
-            this.disableFullscreenOptimizationsCheckBox.Size = new System.Drawing.Size(172, 17);
-            this.disableFullscreenOptimizationsCheckBox.TabIndex = 3;
-            this.disableFullscreenOptimizationsCheckBox.Text = "Disable fullscreen optimizations";
-            this.disableFullscreenOptimizationsCheckBox.UseVisualStyleBackColor = true;
-            // 
-            // runAsAdminCheckBox
-            // 
-            this.runAsAdminCheckBox.AutoSize = true;
-            this.runAsAdminCheckBox.Location = new System.Drawing.Point(7, 120);
-            this.runAsAdminCheckBox.Name = "runAsAdminCheckBox";
-            this.runAsAdminCheckBox.Size = new System.Drawing.Size(197, 17);
-            this.runAsAdminCheckBox.TabIndex = 4;
-            this.runAsAdminCheckBox.Text = "Run this program as an administrator";
-            this.runAsAdminCheckBox.UseVisualStyleBackColor = true;
+            this.colorCheckBox.AutoSize = true;
+            this.colorCheckBox.Location = new System.Drawing.Point(7, 20);
+            this.colorCheckBox.Name = "colorCheckBox";
+            this.colorCheckBox.Size = new System.Drawing.Size(125, 17);
+            this.colorCheckBox.TabIndex = 0;
+            this.colorCheckBox.Text = "Reduced color mode";
+            this.colorCheckBox.UseVisualStyleBackColor = true;
+            this.colorCheckBox.CheckedChanged += new System.EventHandler(this.colorCheckBox_CheckedChanged);
             // 
             // highDPIScalingOverrideGroupBox
             // 
@@ -163,17 +163,6 @@
             this.highDPIScalingOverrideGroupBox.TabIndex = 2;
             this.highDPIScalingOverrideGroupBox.TabStop = false;
             this.highDPIScalingOverrideGroupBox.Text = "High DPI scaling override";
-            // 
-            // highDpiCheckBox
-            // 
-            this.highDpiCheckBox.AutoSize = true;
-            this.highDpiCheckBox.Location = new System.Drawing.Point(7, 20);
-            this.highDpiCheckBox.Name = "highDpiCheckBox";
-            this.highDpiCheckBox.Size = new System.Drawing.Size(193, 30);
-            this.highDpiCheckBox.TabIndex = 0;
-            this.highDpiCheckBox.Text = "Override high DPI scaling behavior.\r\nScaling performed by:";
-            this.highDpiCheckBox.UseVisualStyleBackColor = true;
-            this.highDpiCheckBox.CheckedChanged += new System.EventHandler(this.highDpiCheckBox_CheckedChanged);
             // 
             // highDpiComboBox
             // 
@@ -188,6 +177,17 @@
             this.highDpiComboBox.Name = "highDpiComboBox";
             this.highDpiComboBox.Size = new System.Drawing.Size(193, 21);
             this.highDpiComboBox.TabIndex = 1;
+            // 
+            // highDpiCheckBox
+            // 
+            this.highDpiCheckBox.AutoSize = true;
+            this.highDpiCheckBox.Location = new System.Drawing.Point(7, 20);
+            this.highDpiCheckBox.Name = "highDpiCheckBox";
+            this.highDpiCheckBox.Size = new System.Drawing.Size(193, 30);
+            this.highDpiCheckBox.TabIndex = 0;
+            this.highDpiCheckBox.Text = "Override high DPI scaling behavior.\r\nScaling performed by:";
+            this.highDpiCheckBox.UseVisualStyleBackColor = true;
+            this.highDpiCheckBox.CheckedChanged += new System.EventHandler(this.highDpiCheckBox_CheckedChanged);
             // 
             // okButton
             // 
@@ -225,6 +225,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "CompatibilitySettingsEditor";
             this.Text = "Compatibility Settings Editor";
             this.Load += new System.EventHandler(this.CompatibilitySettingsEditor_Load);
