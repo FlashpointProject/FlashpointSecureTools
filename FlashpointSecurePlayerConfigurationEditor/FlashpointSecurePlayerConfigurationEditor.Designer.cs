@@ -66,7 +66,6 @@
             this.importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.activeXControlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.registrationFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripInSeperator = new System.Windows.Forms.ToolStripSeparator();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -83,6 +82,8 @@
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.selectAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripTextSeperator = new System.Windows.Forms.ToolStripSeparator();
+            this.lockPageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripLockSeperator = new System.Windows.Forms.ToolStripSeparator();
             this.modificationNameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.compatibilitySettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -96,18 +97,25 @@
             this.oldCPUSimulatorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripPagesSeperator = new System.Windows.Forms.ToolStripSeparator();
             this.showTooltipsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.insertToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.variablesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.startupPathToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.uRLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.argumentsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.hTDOCSFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.hTDOCSFileDirectoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.onlineHelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.templateTabControl = new System.Windows.Forms.TabControl();
             this.modeTabPage = new System.Windows.Forms.TabPage();
+            this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.workingDirectoryLabel = new System.Windows.Forms.Label();
             this.textBox2 = new System.Windows.Forms.TextBox();
             this.commandLineLabel = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.modeNameComboBox = new System.Windows.Forms.ComboBox();
             this.modificationsTabPage = new System.Windows.Forms.TabPage();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.modificationsTabControl.SuspendLayout();
             this.runAsAdministratorTabPage.SuspendLayout();
             this.environmentVariablesTabPage.SuspendLayout();
@@ -492,6 +500,7 @@
             this.fileToolStripMenuItem,
             this.editToolStripMenuItem,
             this.viewToolStripMenuItem,
+            this.insertToolStripMenuItem,
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
@@ -505,7 +514,6 @@
             this.openToolStripMenuItem,
             this.openRecentToolStripMenuItem,
             this.importToolStripMenuItem,
-            this.closeToolStripMenuItem,
             this.toolStripInSeperator,
             this.saveToolStripMenuItem,
             this.saveAsToolStripMenuItem,
@@ -565,6 +573,8 @@
             // 
             // activeXControlToolStripMenuItem
             // 
+            this.activeXControlToolStripMenuItem.Image = global::FlashpointSecurePlayer.Properties.Resources.Control_WebBrowser;
+            this.activeXControlToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
             this.activeXControlToolStripMenuItem.Name = "activeXControlToolStripMenuItem";
             this.activeXControlToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
             this.activeXControlToolStripMenuItem.Text = "ActiveX Control...";
@@ -574,13 +584,6 @@
             this.registrationFileToolStripMenuItem.Name = "registrationFileToolStripMenuItem";
             this.registrationFileToolStripMenuItem.Size = new System.Drawing.Size(167, 22);
             this.registrationFileToolStripMenuItem.Text = "Registration File...";
-            // 
-            // closeToolStripMenuItem
-            // 
-            this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-            this.closeToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+F4";
-            this.closeToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
-            this.closeToolStripMenuItem.Text = "Close";
             // 
             // toolStripInSeperator
             // 
@@ -638,6 +641,8 @@
             this.deleteToolStripMenuItem,
             this.selectAllToolStripMenuItem,
             this.toolStripTextSeperator,
+            this.lockPageToolStripMenuItem,
+            this.toolStripLockSeperator,
             this.modificationNameToolStripMenuItem,
             this.compatibilitySettingsToolStripMenuItem});
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
@@ -724,6 +729,20 @@
             // 
             this.toolStripTextSeperator.Name = "toolStripTextSeperator";
             this.toolStripTextSeperator.Size = new System.Drawing.Size(202, 6);
+            // 
+            // lockPageToolStripMenuItem
+            // 
+            this.lockPageToolStripMenuItem.Image = global::FlashpointSecurePlayer.Properties.Resources.ProtectForm;
+            this.lockPageToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
+            this.lockPageToolStripMenuItem.Name = "lockPageToolStripMenuItem";
+            this.lockPageToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
+            this.lockPageToolStripMenuItem.Text = "Lock Page";
+            this.lockPageToolStripMenuItem.Click += new System.EventHandler(this.lockPageToolStripMenuItem_Click);
+            // 
+            // toolStripLockSeperator
+            // 
+            this.toolStripLockSeperator.Name = "toolStripLockSeperator";
+            this.toolStripLockSeperator.Size = new System.Drawing.Size(202, 6);
             // 
             // modificationNameToolStripMenuItem
             // 
@@ -835,6 +854,57 @@
             this.showTooltipsToolStripMenuItem.CheckStateChanged += new System.EventHandler(this.showTooltipsToolStripMenuItem_CheckStateChanged);
             this.showTooltipsToolStripMenuItem.Click += new System.EventHandler(this.showTooltipsToolStripMenuItem_Click);
             // 
+            // insertToolStripMenuItem
+            // 
+            this.insertToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.variablesToolStripMenuItem});
+            this.insertToolStripMenuItem.Name = "insertToolStripMenuItem";
+            this.insertToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
+            this.insertToolStripMenuItem.Text = "Insert";
+            // 
+            // variablesToolStripMenuItem
+            // 
+            this.variablesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.startupPathToolStripMenuItem,
+            this.uRLToolStripMenuItem,
+            this.argumentsToolStripMenuItem,
+            this.hTDOCSFilesToolStripMenuItem,
+            this.hTDOCSFileDirectoryToolStripMenuItem});
+            this.variablesToolStripMenuItem.Enabled = false;
+            this.variablesToolStripMenuItem.Name = "variablesToolStripMenuItem";
+            this.variablesToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
+            this.variablesToolStripMenuItem.Text = "Variables";
+            // 
+            // startupPathToolStripMenuItem
+            // 
+            this.startupPathToolStripMenuItem.Name = "startupPathToolStripMenuItem";
+            this.startupPathToolStripMenuItem.Size = new System.Drawing.Size(192, 22);
+            this.startupPathToolStripMenuItem.Text = "Startup Path";
+            // 
+            // uRLToolStripMenuItem
+            // 
+            this.uRLToolStripMenuItem.Name = "uRLToolStripMenuItem";
+            this.uRLToolStripMenuItem.Size = new System.Drawing.Size(192, 22);
+            this.uRLToolStripMenuItem.Text = "URL";
+            // 
+            // argumentsToolStripMenuItem
+            // 
+            this.argumentsToolStripMenuItem.Name = "argumentsToolStripMenuItem";
+            this.argumentsToolStripMenuItem.Size = new System.Drawing.Size(192, 22);
+            this.argumentsToolStripMenuItem.Text = "Arguments";
+            // 
+            // hTDOCSFilesToolStripMenuItem
+            // 
+            this.hTDOCSFilesToolStripMenuItem.Name = "hTDOCSFilesToolStripMenuItem";
+            this.hTDOCSFilesToolStripMenuItem.Size = new System.Drawing.Size(192, 22);
+            this.hTDOCSFilesToolStripMenuItem.Text = "HTDOCS File";
+            // 
+            // hTDOCSFileDirectoryToolStripMenuItem
+            // 
+            this.hTDOCSFileDirectoryToolStripMenuItem.Name = "hTDOCSFileDirectoryToolStripMenuItem";
+            this.hTDOCSFileDirectoryToolStripMenuItem.Size = new System.Drawing.Size(192, 22);
+            this.hTDOCSFileDirectoryToolStripMenuItem.Text = "HTDOCS File Directory";
+            // 
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -856,6 +926,8 @@
             // 
             // aboutToolStripMenuItem
             // 
+            this.aboutToolStripMenuItem.Image = global::FlashpointSecurePlayer.Properties.Resources.Information;
+            this.aboutToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
             this.aboutToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
             this.aboutToolStripMenuItem.Text = "About...";
@@ -886,6 +958,18 @@
             this.modeTabPage.TabIndex = 2;
             this.modeTabPage.Text = "Mode";
             this.modeTabPage.UseVisualStyleBackColor = true;
+            // 
+            // checkBox1
+            // 
+            this.checkBox1.AutoSize = true;
+            this.checkBox1.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.checkBox1.Enabled = false;
+            this.checkBox1.Location = new System.Drawing.Point(26, 85);
+            this.checkBox1.Name = "checkBox1";
+            this.checkBox1.Size = new System.Drawing.Size(93, 17);
+            this.checkBox1.TabIndex = 7;
+            this.checkBox1.Text = "Hide Window:";
+            this.checkBox1.UseVisualStyleBackColor = true;
             // 
             // workingDirectoryLabel
             // 
@@ -930,7 +1014,7 @@
             "Software"});
             this.modeNameComboBox.Location = new System.Drawing.Point(6, 6);
             this.modeNameComboBox.Name = "modeNameComboBox";
-            this.modeNameComboBox.Size = new System.Drawing.Size(295, 21);
+            this.modeNameComboBox.Size = new System.Drawing.Size(596, 21);
             this.modeNameComboBox.TabIndex = 0;
             // 
             // modificationsTabPage
@@ -943,18 +1027,6 @@
             this.modificationsTabPage.TabIndex = 1;
             this.modificationsTabPage.Text = "Modifications";
             this.modificationsTabPage.UseVisualStyleBackColor = true;
-            // 
-            // checkBox1
-            // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.checkBox1.Enabled = false;
-            this.checkBox1.Location = new System.Drawing.Point(26, 85);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(93, 17);
-            this.checkBox1.TabIndex = 7;
-            this.checkBox1.Text = "Hide Window:";
-            this.checkBox1.UseVisualStyleBackColor = true;
             // 
             // FlashpointSecurePlayerConfigurationEditor
             // 
@@ -1013,7 +1085,6 @@
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem newToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem importToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem activeXControlToolStripMenuItem;
@@ -1088,6 +1159,15 @@
         private System.Windows.Forms.TextBox textBox2;
         private System.Windows.Forms.Label commandLineLabel;
         private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.ToolStripMenuItem insertToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem variablesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem startupPathToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem uRLToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem argumentsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem hTDOCSFilesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem hTDOCSFileDirectoryToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem lockPageToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripLockSeperator;
     }
 }
 

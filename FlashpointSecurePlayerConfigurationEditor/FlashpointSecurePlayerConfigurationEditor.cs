@@ -231,6 +231,14 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        private void lockPageToolStripMenuItem_Click(object sender, EventArgs e) {
+            if (lockPageToolStripMenuItem.CheckState == CheckState.Checked) {
+                lockPageToolStripMenuItem.CheckState = CheckState.Unchecked;
+            } else {
+                lockPageToolStripMenuItem.CheckState = CheckState.Checked;
+            }
+        }
+
         private void modificationNameToolStripMenuItem_Click(object sender, EventArgs e) {
             ShowModificationNameEditor();
         }

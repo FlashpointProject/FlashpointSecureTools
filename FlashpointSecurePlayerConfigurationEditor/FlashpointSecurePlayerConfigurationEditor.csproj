@@ -164,5 +164,14 @@
   <ItemGroup>
     <None Include="Resources\DownloadDocument.bmp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Information.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Control_WebBrowser.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ProtectForm.bmp" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
