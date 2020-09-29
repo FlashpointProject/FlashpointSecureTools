@@ -234,7 +234,7 @@
             this.downloadsBeforeDataGridView.Location = new System.Drawing.Point(6, 6);
             this.downloadsBeforeDataGridView.Name = "downloadsBeforeDataGridView";
             this.downloadsBeforeDataGridView.Size = new System.Drawing.Size(576, 365);
-            this.downloadsBeforeDataGridView.TabIndex = 1;
+            this.downloadsBeforeDataGridView.TabIndex = 0;
             // 
             // downloadsBeforeNameDataGridViewTextBoxColumn
             // 
@@ -278,7 +278,7 @@
             this.registryBackupsDataGridView.Location = new System.Drawing.Point(6, 6);
             this.registryBackupsDataGridView.Name = "registryBackupsDataGridView";
             this.registryBackupsDataGridView.Size = new System.Drawing.Size(576, 365);
-            this.registryBackupsDataGridView.TabIndex = 2;
+            this.registryBackupsDataGridView.TabIndex = 0;
             this.registryBackupsDataGridView.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.registryBackupsDataGridView_CellEndEdit);
             this.registryBackupsDataGridView.CellValidating += new System.Windows.Forms.DataGridViewCellValidatingEventHandler(this.registryBackupsDataGridView_CellValidating);
             this.registryBackupsDataGridView.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.registryBackupsDataGridView_CellValueChanged);
@@ -353,7 +353,7 @@
             this.executableLabel.Location = new System.Drawing.Point(6, 9);
             this.executableLabel.Name = "executableLabel";
             this.executableLabel.Size = new System.Drawing.Size(63, 13);
-            this.executableLabel.TabIndex = 2;
+            this.executableLabel.TabIndex = 0;
             this.executableLabel.Text = "Executable:";
             // 
             // commandLineTextBox
@@ -370,7 +370,7 @@
             this.strictCheckBox.Location = new System.Drawing.Point(34, 32);
             this.strictCheckBox.Name = "strictCheckBox";
             this.strictCheckBox.Size = new System.Drawing.Size(53, 17);
-            this.strictCheckBox.TabIndex = 0;
+            this.strictCheckBox.TabIndex = 2;
             this.strictCheckBox.Text = "Strict:";
             this.strictCheckBox.UseVisualStyleBackColor = true;
             // 
@@ -412,7 +412,7 @@
             this.refreshRateFloorFifteenCheckBox.Location = new System.Drawing.Point(437, 44);
             this.refreshRateFloorFifteenCheckBox.Name = "refreshRateFloorFifteenCheckBox";
             this.refreshRateFloorFifteenCheckBox.Size = new System.Drawing.Size(132, 30);
-            this.refreshRateFloorFifteenCheckBox.TabIndex = 5;
+            this.refreshRateFloorFifteenCheckBox.TabIndex = 6;
             this.refreshRateFloorFifteenCheckBox.Text = "Round Down Refresh\r\nRate to Nearest 15 Hz";
             this.refreshRateFloorFifteenCheckBox.UseVisualStyleBackColor = true;
             // 
@@ -425,7 +425,7 @@
             this.syncedProcessMainThreadOnlyCheckBox.Location = new System.Drawing.Point(294, 44);
             this.syncedProcessMainThreadOnlyCheckBox.Name = "syncedProcessMainThreadOnlyCheckBox";
             this.syncedProcessMainThreadOnlyCheckBox.Size = new System.Drawing.Size(129, 30);
-            this.syncedProcessMainThreadOnlyCheckBox.TabIndex = 4;
+            this.syncedProcessMainThreadOnlyCheckBox.TabIndex = 5;
             this.syncedProcessMainThreadOnlyCheckBox.Text = "Synced Process Main\r\nThread Only";
             this.syncedProcessMainThreadOnlyCheckBox.UseVisualStyleBackColor = true;
             // 
@@ -438,7 +438,7 @@
             this.setSyncedProcessAffinityOneCheckBox.Location = new System.Drawing.Point(154, 44);
             this.setSyncedProcessAffinityOneCheckBox.Name = "setSyncedProcessAffinityOneCheckBox";
             this.setSyncedProcessAffinityOneCheckBox.Size = new System.Drawing.Size(122, 30);
-            this.setSyncedProcessAffinityOneCheckBox.TabIndex = 3;
+            this.setSyncedProcessAffinityOneCheckBox.TabIndex = 4;
             this.setSyncedProcessAffinityOneCheckBox.Text = "Set Synced Process\r\nAffinity To One";
             this.setSyncedProcessAffinityOneCheckBox.UseVisualStyleBackColor = true;
             // 
@@ -448,7 +448,7 @@
             this.refreshRateHzNumericUpDown.Location = new System.Drawing.Point(108, 18);
             this.refreshRateHzNumericUpDown.Name = "refreshRateHzNumericUpDown";
             this.refreshRateHzNumericUpDown.Size = new System.Drawing.Size(168, 20);
-            this.refreshRateHzNumericUpDown.TabIndex = 2;
+            this.refreshRateHzNumericUpDown.TabIndex = 1;
             // 
             // refreshRateHzLabel
             // 
@@ -457,7 +457,7 @@
             this.refreshRateHzLabel.Location = new System.Drawing.Point(7, 20);
             this.refreshRateHzLabel.Name = "refreshRateHzLabel";
             this.refreshRateHzLabel.Size = new System.Drawing.Size(95, 13);
-            this.refreshRateHzLabel.TabIndex = 1;
+            this.refreshRateHzLabel.TabIndex = 0;
             this.refreshRateHzLabel.Text = "Refresh Rate (Hz:)";
             // 
             // setProcessPriorityHighCheckBox
@@ -467,7 +467,7 @@
             this.setProcessPriorityHighCheckBox.Location = new System.Drawing.Point(6, 44);
             this.setProcessPriorityHighCheckBox.Name = "setProcessPriorityHighCheckBox";
             this.setProcessPriorityHighCheckBox.Size = new System.Drawing.Size(133, 30);
-            this.setProcessPriorityHighCheckBox.TabIndex = 0;
+            this.setProcessPriorityHighCheckBox.TabIndex = 3;
             this.setProcessPriorityHighCheckBox.Text = "Set Process Priority To\r\nHigh";
             this.setProcessPriorityHighCheckBox.UseVisualStyleBackColor = true;
             // 
@@ -505,7 +505,7 @@
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(640, 24);
-            this.menuStrip1.TabIndex = 1;
+            this.menuStrip1.TabIndex = 0;
             // 
             // fileToolStripMenuItem
             // 
@@ -941,7 +941,7 @@
             this.templateTabControl.Name = "templateTabControl";
             this.templateTabControl.SelectedIndex = 0;
             this.templateTabControl.Size = new System.Drawing.Size(616, 441);
-            this.templateTabControl.TabIndex = 2;
+            this.templateTabControl.TabIndex = 1;
             // 
             // modeTabPage
             // 
@@ -967,7 +967,7 @@
             this.checkBox1.Location = new System.Drawing.Point(26, 85);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(93, 17);
-            this.checkBox1.TabIndex = 7;
+            this.checkBox1.TabIndex = 5;
             this.checkBox1.Text = "Hide Window:";
             this.checkBox1.UseVisualStyleBackColor = true;
             // 
@@ -977,7 +977,7 @@
             this.workingDirectoryLabel.Location = new System.Drawing.Point(6, 62);
             this.workingDirectoryLabel.Name = "workingDirectoryLabel";
             this.workingDirectoryLabel.Size = new System.Drawing.Size(95, 13);
-            this.workingDirectoryLabel.TabIndex = 6;
+            this.workingDirectoryLabel.TabIndex = 3;
             this.workingDirectoryLabel.Text = "Working Directory:";
             // 
             // textBox2
@@ -985,7 +985,7 @@
             this.textBox2.Location = new System.Drawing.Point(107, 59);
             this.textBox2.Name = "textBox2";
             this.textBox2.Size = new System.Drawing.Size(495, 20);
-            this.textBox2.TabIndex = 5;
+            this.textBox2.TabIndex = 4;
             // 
             // commandLineLabel
             // 
@@ -994,7 +994,7 @@
             this.commandLineLabel.Location = new System.Drawing.Point(21, 36);
             this.commandLineLabel.Name = "commandLineLabel";
             this.commandLineLabel.Size = new System.Drawing.Size(80, 13);
-            this.commandLineLabel.TabIndex = 4;
+            this.commandLineLabel.TabIndex = 1;
             this.commandLineLabel.Text = "Command Line:";
             // 
             // textBox1
