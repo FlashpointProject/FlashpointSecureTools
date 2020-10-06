@@ -162,12 +162,11 @@
             // runAsAdministratorCheckBox
             // 
             this.runAsAdministratorCheckBox.AutoSize = true;
-            this.runAsAdministratorCheckBox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.runAsAdministratorCheckBox.Location = new System.Drawing.Point(6, 6);
             this.runAsAdministratorCheckBox.Name = "runAsAdministratorCheckBox";
-            this.runAsAdministratorCheckBox.Size = new System.Drawing.Size(127, 17);
+            this.runAsAdministratorCheckBox.Size = new System.Drawing.Size(124, 17);
             this.runAsAdministratorCheckBox.TabIndex = 0;
-            this.runAsAdministratorCheckBox.Text = "Run As Administrator:";
+            this.runAsAdministratorCheckBox.Text = "Run As Administrator";
             this.runAsAdministratorCheckBox.UseVisualStyleBackColor = true;
             // 
             // environmentVariablesTabPage
@@ -369,9 +368,9 @@
             this.strictCheckBox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.strictCheckBox.Location = new System.Drawing.Point(34, 32);
             this.strictCheckBox.Name = "strictCheckBox";
-            this.strictCheckBox.Size = new System.Drawing.Size(53, 17);
+            this.strictCheckBox.Size = new System.Drawing.Size(56, 17);
             this.strictCheckBox.TabIndex = 2;
-            this.strictCheckBox.Text = "Strict:";
+            this.strictCheckBox.Text = "Strict: ";
             this.strictCheckBox.UseVisualStyleBackColor = true;
             // 
             // oldCPUSimulatorTabPage
@@ -966,9 +965,9 @@
             this.checkBox1.Enabled = false;
             this.checkBox1.Location = new System.Drawing.Point(26, 85);
             this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(93, 17);
+            this.checkBox1.Size = new System.Drawing.Size(96, 17);
             this.checkBox1.TabIndex = 5;
-            this.checkBox1.Text = "Hide Window:";
+            this.checkBox1.Text = "Hide Window: ";
             this.checkBox1.UseVisualStyleBackColor = true;
             // 
             // workingDirectoryLabel
