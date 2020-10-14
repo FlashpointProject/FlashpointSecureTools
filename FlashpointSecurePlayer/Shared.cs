@@ -343,7 +343,7 @@ namespace FlashpointSecurePlayer {
 
         public static readonly Task CompletedTask = Task.FromResult(false);
 
-        public const string HTDOCS = "..\\Server\\htdocs";
+        public const string HTDOCS = "..\\Legacy\\htdocs";
         public static readonly string[] INDEX_EXTENSIONS = new string[2] { "html", "htm" };
         // there should be only one HTTP Client per application
         // (as of right now though this is exclusively used by DownloadsBefore class)
