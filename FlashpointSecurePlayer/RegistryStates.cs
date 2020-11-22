@@ -51,7 +51,8 @@ namespace FlashpointSecurePlayer {
             VALUE
         };
 
-        private const int IMPORT_TIMEOUT = 5;
+        //private const int IMPORT_TIMEOUT = 5;
+        private const int IMPORT_TIMEOUT = 60;
         private const string IMPORT_RESUME = "FLASHPOINTSECUREPLAYERREGISTRYSTATEIMPORTRESUME";
         private const string IMPORT_PAUSE = "FLASHPOINTSECUREPLAYERREGISTRYSTATEIMPORTPAUSE";
         private object activationLock = new object();
@@ -408,6 +409,9 @@ namespace FlashpointSecurePlayer {
                         registryKey.DeleteSubKeyTree(keyName.Substring(subKeyNameIndex), false);
                     } catch (ArgumentNullException) {
                         // key name is null
+                        return;
+                    } catch (ArgumentException) {
+                        // subkey doesn't exist
                         return;
                     } catch (NullReferenceException) {
                         // registry key is null
