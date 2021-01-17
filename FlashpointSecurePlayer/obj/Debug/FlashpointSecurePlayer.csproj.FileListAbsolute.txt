@@ -50,3 +50,30 @@ C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\Fla
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.exe
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.pdb
 C:\Users\Anthony\Documents\Visual Studio 2017\Projects\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.csprojAssemblyReference.cache
+D:\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\FlashpointSecurePlayer.exe.config
+D:\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\FlashpointSecurePlayer.exe
+D:\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\FlashpointSecurePlayer.pdb
+D:\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\Microsoft.Diagnostics.FastSerialization.dll
+D:\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\Microsoft.Diagnostics.Tracing.TraceEvent.dll
+D:\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\OSExtensions.dll
+D:\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll
+D:\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\Microsoft.Diagnostics.FastSerialization.xml
+D:\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\Microsoft.Diagnostics.Tracing.TraceEvent.xml
+D:\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
+D:\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\Interop.SHDocVw.dll
+D:\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.csproj.ResolveComReference.cache
+D:\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.FlashpointSecurePlayer.resources
+D:\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.WebBrowser.resources
+D:\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.Properties.Resources.resources
+D:\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.csproj.GenerateResource.cache
+D:\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.csproj.CoreCompileInputs.cache
+D:\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.csproj.CopyComplete
+D:\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.exe
+D:\FlashpointSecureTools\FlashpointSecurePlayer\obj\Debug\FlashpointSecurePlayer.pdb
+D:\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\x86\KernelTraceControl.dll
+D:\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\x86\KernelTraceControl.Win61.dll
+D:\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\x86\msdia140.dll
+D:\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\amd64\KernelTraceControl.dll
+D:\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\amd64\msdia140.dll
+D:\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\TraceReloggerLib.dll
+D:\FlashpointSecureTools\FlashpointSecurePlayer\bin\Debug\Dia2Lib.dll

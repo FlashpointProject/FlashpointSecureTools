@@ -164,7 +164,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>editbin.exe /NXCOMPAT:NO "$(TargetPath)"</PostBuildEvent>
+    <PostBuildEvent>call "$(DevEnvDir)..\Tools\VsDevCmd.bat"
+editbin.exe /NXCOMPAT:NO "$(TargetPath)"</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
