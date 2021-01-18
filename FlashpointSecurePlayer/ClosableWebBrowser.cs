@@ -17,11 +17,18 @@ namespace FlashpointSecurePlayer {
 
         public ClosableWebBrowser(Form form) {
             this.form = form;
+            this.PreviewKeyDown += ClosableWebBrowser_PreviewKeyDown;
+        }
+
+        private void ClosableWebBrowser_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            e.IsInputKey = true;
         }
 
         protected override void OnPaint(PaintEventArgs pe) {
             base.OnPaint(pe);
         }
+
 
         protected override void WndProc(ref Message m) {
             switch (m.Msg) {
