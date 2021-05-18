@@ -484,7 +484,7 @@ namespace FlashpointSecurePlayer {
                             }
 
                             if (String.IsNullOrEmpty(softwareProcessStartInfo.Arguments)) {
-                                softwareProcessStartInfo.Arguments = GetCommandLineArgumentRange(commandLineExpanded, 1, -1);
+                                softwareProcessStartInfo.Arguments = GetArgumentRangeFromCommandLine(commandLineExpanded, 1, -1);
                             }
 
                             softwareProcessStartInfo.ErrorDialog = false;
@@ -1099,7 +1099,7 @@ namespace FlashpointSecurePlayer {
                     } else {
                         if (i < args.Length - 1) {
                             if (arg == "--arguments" || arg == "-args") {
-                                Arguments = GetCommandLineArgumentRange(Environment.CommandLine, i + 1, -1);
+                                Arguments = GetArgumentRangeFromCommandLine(Environment.CommandLine, i + 1, -1);
                                 break;
                             } else if (arg == "--download-before" || arg == "-dlb") {
                                 if (DownloadsBeforeModificationNames == null) {
@@ -1112,7 +1112,7 @@ namespace FlashpointSecurePlayer {
                             }
                         }
 
-                        Arguments = GetCommandLineArgumentRange(Environment.CommandLine, i, -1);
+                        Arguments = GetArgumentRangeFromCommandLine(Environment.CommandLine, i, -1);
                         break;
                     }
                 }
