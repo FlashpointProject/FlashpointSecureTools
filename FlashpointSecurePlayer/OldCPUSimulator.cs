@@ -72,8 +72,7 @@ namespace FlashpointSecurePlayer {
 
             // sigh... okay
             // first, we check the target rate
-
-            if (oldCPUSimulatorElement.TargetRate == null) {
+            if (!int.TryParse(Environment.ExpandEnvironmentVariables(oldCPUSimulatorElement.TargetRate), out int targetRate)) {
                 throw new OldCPUSimulatorFailedException("The target rate is required.");
             }
 
@@ -122,7 +121,7 @@ namespace FlashpointSecurePlayer {
             }
 
             // if our CPU is too slow, just ignore the modification
-            if (mhzLimit <= oldCPUSimulatorElement.TargetRate) {
+            if (mhzLimit <= targetRate) {
                 return;
             }
 

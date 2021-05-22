@@ -1183,10 +1183,10 @@ namespace FlashpointSecurePlayer {
                         }
 
                         public class OldCPUSimulatorElement : ConfigurationElement {
-                            [ConfigurationProperty("targetRate", DefaultValue = null, IsRequired = false)]
-                            public int? TargetRate {
+                            [ConfigurationProperty("targetRate", IsRequired = false)]
+                            public string TargetRate {
                                 get {
-                                    return (int?)base["targetRate"];
+                                    return base["targetRate"] as string;
                                 }
 
                                 set {
@@ -1194,10 +1194,10 @@ namespace FlashpointSecurePlayer {
                                 }
                             }
 
-                            [ConfigurationProperty("refreshRate", DefaultValue = null, IsRequired = false)]
-                            public int? RefreshRate {
+                            [ConfigurationProperty("refreshRate", IsRequired = false)]
+                            public string RefreshRate {
                                 get {
-                                    return (int?)base["refreshRate"];
+                                    return base["refreshRate"] as string;
                                 }
 
                                 set {
@@ -1973,11 +1973,11 @@ namespace FlashpointSecurePlayer {
 
         public static string GetOldCPUSimulatorProcessStartInfoArguments(FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement.OldCPUSimulatorElement oldCPUSimulatorElement, string software) {
             StringBuilder oldCPUSimulatorProcessStartInfoArguments = new StringBuilder("-t ");
-            oldCPUSimulatorProcessStartInfoArguments.Append(oldCPUSimulatorElement.TargetRate.GetValueOrDefault());
+            oldCPUSimulatorProcessStartInfoArguments.Append(Environment.ExpandEnvironmentVariables(oldCPUSimulatorElement.TargetRate));
 
-            if (oldCPUSimulatorElement.RefreshRate != null) {
+            if (!String.IsNullOrEmpty(oldCPUSimulatorElement.RefreshRate)) {
                 oldCPUSimulatorProcessStartInfoArguments.Append(" -r ");
-                oldCPUSimulatorProcessStartInfoArguments.Append(oldCPUSimulatorElement.RefreshRate.GetValueOrDefault());
+                oldCPUSimulatorProcessStartInfoArguments.Append(Environment.ExpandEnvironmentVariables(oldCPUSimulatorElement.RefreshRate));
             }
 
             if (oldCPUSimulatorElement.SetProcessPriorityHigh) {
