@@ -1973,11 +1973,20 @@ namespace FlashpointSecurePlayer {
 
         public static string GetOldCPUSimulatorProcessStartInfoArguments(FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement.OldCPUSimulatorElement oldCPUSimulatorElement, string software) {
             StringBuilder oldCPUSimulatorProcessStartInfoArguments = new StringBuilder("-t ");
-            oldCPUSimulatorProcessStartInfoArguments.Append(Environment.ExpandEnvironmentVariables(oldCPUSimulatorElement.TargetRate));
+
+            if (!int.TryParse(Environment.ExpandEnvironmentVariables(oldCPUSimulatorElement.TargetRate), out int targetRate)) {
+                throw new ArgumentException("The Old CPU Simulator Element has an invalid Target Rate.");
+            }
+
+            oldCPUSimulatorProcessStartInfoArguments.Append(targetRate);
 
             if (!String.IsNullOrEmpty(oldCPUSimulatorElement.RefreshRate)) {
+                if (!int.TryParse(Environment.ExpandEnvironmentVariables(oldCPUSimulatorElement.RefreshRate), out int refreshRate)) {
+                    throw new ArgumentException("The Old CPU Simulator Element has an invalid Refresh Rate.");
+                }
+
                 oldCPUSimulatorProcessStartInfoArguments.Append(" -r ");
-                oldCPUSimulatorProcessStartInfoArguments.Append(Environment.ExpandEnvironmentVariables(oldCPUSimulatorElement.RefreshRate));
+                oldCPUSimulatorProcessStartInfoArguments.Append(refreshRate);
             }
 
             if (oldCPUSimulatorElement.SetProcessPriorityHigh) {

@@ -244,11 +244,18 @@ namespace FlashpointSecurePlayer {
                 throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator and getting the full path to Old CPU Simulator failed.");
             }
 
-            ProcessStartInfo processStartInfo = new ProcessStartInfo {
-                FileName = fullPath,
-                Arguments = GetOldCPUSimulatorProcessStartInfoArguments(modificationsElement.OldCPUSimulator, Environment.CommandLine),
-                WorkingDirectory = Environment.CurrentDirectory
-            };
+            ProcessStartInfo processStartInfo;
+
+            try {
+                processStartInfo = new ProcessStartInfo {
+                    FileName = fullPath,
+                    Arguments = GetOldCPUSimulatorProcessStartInfoArguments(modificationsElement.OldCPUSimulator, Environment.CommandLine),
+                    WorkingDirectory = Environment.CurrentDirectory
+                };
+            } catch (ArgumentException ex) {
+                LogExceptionToLauncher(ex);
+                throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator and getting the Old CPU Simulator Process Start Info Arguments failed.");
+            }
 
             HideWindow(ref processStartInfo);
 
