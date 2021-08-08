@@ -244,11 +244,18 @@ namespace FlashpointSecurePlayer {
                 throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator and getting the full path to Old CPU Simulator failed.");
             }
 
-            ProcessStartInfo processStartInfo = new ProcessStartInfo {
-                FileName = fullPath,
-                Arguments = GetOldCPUSimulatorProcessStartInfoArguments(modificationsElement.OldCPUSimulator, Environment.CommandLine),
-                WorkingDirectory = Environment.CurrentDirectory
-            };
+            ProcessStartInfo processStartInfo;
+
+            try {
+                processStartInfo = new ProcessStartInfo {
+                    FileName = fullPath,
+                    Arguments = GetOldCPUSimulatorProcessStartInfoArguments(modificationsElement.OldCPUSimulator, Environment.CommandLine),
+                    WorkingDirectory = Environment.CurrentDirectory
+                };
+            } catch (ArgumentException ex) {
+                LogExceptionToLauncher(ex);
+                throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator and getting the Old CPU Simulator Process Start Info Arguments failed.");
+            }
 
             HideWindow(ref processStartInfo);
 
@@ -484,7 +491,7 @@ namespace FlashpointSecurePlayer {
                             }
 
                             if (String.IsNullOrEmpty(softwareProcessStartInfo.Arguments)) {
-                                softwareProcessStartInfo.Arguments = GetCommandLineArgumentRange(commandLineExpanded, 1, -1);
+                                softwareProcessStartInfo.Arguments = GetArgumentRangeFromCommandLine(commandLineExpanded, 1, -1);
                             }
 
                             softwareProcessStartInfo.ErrorDialog = false;
@@ -1099,7 +1106,7 @@ namespace FlashpointSecurePlayer {
                     } else {
                         if (i < args.Length - 1) {
                             if (arg == "--arguments" || arg == "-args") {
-                                Arguments = GetCommandLineArgumentRange(Environment.CommandLine, i + 1, -1);
+                                Arguments = GetArgumentRangeFromCommandLine(Environment.CommandLine, i + 1, -1);
                                 break;
                             } else if (arg == "--download-before" || arg == "-dlb") {
                                 if (DownloadsBeforeModificationNames == null) {
@@ -1112,7 +1119,7 @@ namespace FlashpointSecurePlayer {
                             }
                         }
 
-                        Arguments = GetCommandLineArgumentRange(Environment.CommandLine, i, -1);
+                        Arguments = GetArgumentRangeFromCommandLine(Environment.CommandLine, i, -1);
                         break;
                     }
                 }

@@ -164,10 +164,29 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                double multiplier = (double)goalsArray[0].Steps / goalsArray[0].Size;
+                int size = 0;
+                double reciprocal = 1;
+                double multiplier = 0;
 
-                for (int i = 1;i < goalsArray.Length;i++) {
-                    multiplier *= (double)(goalsArray[i].Steps + 1) / goalsArray[i].Size;
+                for (int i = 0;i < goalsArray.Length;i++) {
+                    for (int j = 0; j < i; j++) {
+                        size = goalsArray[j].Size;
+
+                        if (size == 0) {
+                            break;
+                        }
+
+                        reciprocal *= (double)1 / size;
+                    }
+
+                    size = goalsArray[i].Size;
+
+                    if (size == 0) {
+                        break;
+                    }
+
+                    multiplier += reciprocal * ((double)goalsArray[i].Steps / size);
+                    reciprocal = 1;
                 }
 
                 int progressManagerValue = (int)Math.Floor(multiplier * 100.0);

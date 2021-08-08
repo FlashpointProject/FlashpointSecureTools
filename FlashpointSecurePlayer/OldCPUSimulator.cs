@@ -72,8 +72,7 @@ namespace FlashpointSecurePlayer {
 
             // sigh... okay
             // first, we check the target rate
-
-            if (oldCPUSimulatorElement.TargetRate == null) {
+            if (!int.TryParse(Environment.ExpandEnvironmentVariables(oldCPUSimulatorElement.TargetRate), out int targetRate)) {
                 throw new OldCPUSimulatorFailedException("The target rate is required.");
             }
 
@@ -122,7 +121,7 @@ namespace FlashpointSecurePlayer {
             }
 
             // if our CPU is too slow, just ignore the modification
-            if (mhzLimit <= oldCPUSimulatorElement.TargetRate) {
+            if (mhzLimit <= targetRate) {
                 return;
             }
 
@@ -134,7 +133,7 @@ namespace FlashpointSecurePlayer {
                 case ModeElement.NAME.SOFTWARE:
                 // USB the HDMI to .exe the database
                 string commandLineExpanded = Environment.ExpandEnvironmentVariables(modeElement.CommandLine);
-                StringBuilder oldCPUSimulatorSoftware = new StringBuilder("\"");
+                StringBuilder oldCPUSimulatorSoftware = new StringBuilder();
 
                 // the problem we're dealing with here
                 // is that we need to get the full path to
@@ -148,15 +147,16 @@ namespace FlashpointSecurePlayer {
                     if (argc <= 0) {
                         throw new IndexOutOfRangeException("The command line argument is out of range.");
                     }
-
-                    // TODO: deal with paths with quotes... someday
-                    oldCPUSimulatorSoftware.Append(Path.GetFullPath(argv[0]));
+                    
+                    string fullPath = Path.GetFullPath(argv[0]);
+                    GetValidArgument(ref fullPath);
+                    oldCPUSimulatorSoftware.Append(fullPath);
                 } catch {
                     throw new OldCPUSimulatorFailedException("The command line is invalid.");
                 }
 
-                oldCPUSimulatorSoftware.Append("\" ");
-                oldCPUSimulatorSoftware.Append(GetCommandLineArgumentRange(commandLineExpanded, 1, -1));
+                oldCPUSimulatorSoftware.Append(" ");
+                oldCPUSimulatorSoftware.Append(GetArgumentRangeFromCommandLine(commandLineExpanded, 1, -1));
                 // this becomes effectively the new thing passed as --software
                 // the shared function is used both here and GUI side for restarts
                 //modeElement.CommandLine = OLD_CPU_SIMULATOR_PATH + " " + GetOldCPUSimulatorProcessStartInfoArguments(oldCPUSimulatorElement, oldCPUSimulatorSoftware.ToString());

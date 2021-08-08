@@ -1183,10 +1183,10 @@ namespace FlashpointSecurePlayer {
                         }
 
                         public class OldCPUSimulatorElement : ConfigurationElement {
-                            [ConfigurationProperty("targetRate", DefaultValue = null, IsRequired = false)]
-                            public int? TargetRate {
+                            [ConfigurationProperty("targetRate", IsRequired = false)]
+                            public string TargetRate {
                                 get {
-                                    return (int?)base["targetRate"];
+                                    return base["targetRate"] as string;
                                 }
 
                                 set {
@@ -1194,10 +1194,10 @@ namespace FlashpointSecurePlayer {
                                 }
                             }
 
-                            [ConfigurationProperty("refreshRate", DefaultValue = null, IsRequired = false)]
-                            public int? RefreshRate {
+                            [ConfigurationProperty("refreshRate", IsRequired = false)]
+                            public string RefreshRate {
                                 get {
-                                    return (int?)base["refreshRate"];
+                                    return base["refreshRate"] as string;
                                 }
 
                                 set {
@@ -1873,50 +1873,80 @@ namespace FlashpointSecurePlayer {
         }
         */
 
-        public static bool GetCommandLineArgument(string commandLine, out string commandLineArgument) {
-            commandLineArgument = String.Empty;
+        // https://web.archive.org/web/20190109172835/https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
+        public static void GetValidArgument(ref string argument, bool force = false) {
+            if (force || argument == String.Empty || argument.IndexOfAny(new char[] { ' ', '\t', '\n', '\v', '\"' }) != -1) {
+                int backslashes = 0;
+                StringBuilder validArgument = new StringBuilder();
+
+                for (int i = 0; i < argument.Length; i++) {
+                    backslashes = 0;
+
+                    while (i != argument.Length && argument[i] == '\\') {
+                        backslashes++;
+                        i++;
+                    }
+
+                    if (i != argument.Length) {
+                        if (argument[i] == '"') {
+                            validArgument.Append('\\', backslashes + backslashes + 1);
+                        } else {
+                            validArgument.Append('\\', backslashes);
+                        }
+
+                        validArgument.Append(argument[i]);
+                    }
+                }
+
+                validArgument.Append('\\', backslashes + backslashes);
+                argument = "\"" + validArgument.ToString() + "\"";
+            }
+        }
+
+        public static bool GetArgumentFromCommandLine(string commandLine, out string argument) {
+            argument = String.Empty;
             Regex commandLineQuotes = new Regex("^\\s*\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*\"? ?");
             Regex commandLineWords = new Regex("^\\s*\\S+ ?");
             MatchCollection matchResults = commandLineQuotes.Matches(commandLine);
 
             if (matchResults.Count > 0) {
-                commandLineArgument = matchResults[0].Value;
+                argument = matchResults[0].Value;
                 return true;
             } else {
                 matchResults = commandLineWords.Matches(commandLine);
 
                 if (matchResults.Count > 0) {
-                    commandLineArgument = matchResults[0].Value;
+                    argument = matchResults[0].Value;
                     return true;
                 }
             }
             return false;
         }
 
-        public static string GetCommandLineArgumentRange(string commandLine, int begin, int end) {
-            List<string> commandLineArguments = new List<string>();
-            string commandLineArgument = String.Empty;
-            string commandLineArgumentRange = String.Empty;
+        public static string GetArgumentRangeFromCommandLine(string commandLine, int begin, int end) {
+            List<string> arguments = new List<string>();
+            string argument = String.Empty;
+            string argumentRange = String.Empty;
 
-            while (GetCommandLineArgument(commandLine, out commandLineArgument)) {
-                commandLineArguments.Add(commandLineArgument);
-                commandLine = commandLine.Substring(commandLineArgument.Length);
+            while (GetArgumentFromCommandLine(commandLine, out argument)) {
+                arguments.Add(argument);
+                commandLine = commandLine.Substring(argument.Length);
             }
 
             if (end < 0) {
-                end += commandLineArguments.Count + 1;
+                end += arguments.Count + 1;
             }
 
-            for (int i = 0;i < commandLineArguments.Count;i++) {
+            for (int i = 0;i < arguments.Count;i++) {
                 if (i >= end) {
                     break;
                 }
 
                 if (i >= begin) {
-                    commandLineArgumentRange += commandLineArguments[i];
+                    argumentRange += arguments[i];
                 }
             }
-            return commandLineArgumentRange;
+            return argumentRange;
         }
 
         public static string[] CommandLineToArgv(string commandLine, out int argc) {
@@ -1943,11 +1973,20 @@ namespace FlashpointSecurePlayer {
 
         public static string GetOldCPUSimulatorProcessStartInfoArguments(FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement.OldCPUSimulatorElement oldCPUSimulatorElement, string software) {
             StringBuilder oldCPUSimulatorProcessStartInfoArguments = new StringBuilder("-t ");
-            oldCPUSimulatorProcessStartInfoArguments.Append(oldCPUSimulatorElement.TargetRate.GetValueOrDefault());
 
-            if (oldCPUSimulatorElement.RefreshRate != null) {
+            if (!int.TryParse(Environment.ExpandEnvironmentVariables(oldCPUSimulatorElement.TargetRate), out int targetRate)) {
+                throw new ArgumentException("The Old CPU Simulator Element has an invalid Target Rate.");
+            }
+
+            oldCPUSimulatorProcessStartInfoArguments.Append(targetRate);
+
+            if (!String.IsNullOrEmpty(oldCPUSimulatorElement.RefreshRate)) {
+                if (!int.TryParse(Environment.ExpandEnvironmentVariables(oldCPUSimulatorElement.RefreshRate), out int refreshRate)) {
+                    throw new ArgumentException("The Old CPU Simulator Element has an invalid Refresh Rate.");
+                }
+
                 oldCPUSimulatorProcessStartInfoArguments.Append(" -r ");
-                oldCPUSimulatorProcessStartInfoArguments.Append(oldCPUSimulatorElement.RefreshRate.GetValueOrDefault());
+                oldCPUSimulatorProcessStartInfoArguments.Append(refreshRate);
             }
 
             if (oldCPUSimulatorElement.SetProcessPriorityHigh) {
@@ -1977,7 +2016,7 @@ namespace FlashpointSecurePlayer {
                     FileName = Application.ExecutablePath,
                     // can't use GetCommandLineArgs() and String.Join because arguments that were in quotes will lose their quotes
                     // need to use Environment.CommandLine and find arguments
-                    Arguments = GetCommandLineArgumentRange(Environment.CommandLine, 1, -1)
+                    Arguments = GetArgumentRangeFromCommandLine(Environment.CommandLine, 1, -1)
                 };
             }
 
