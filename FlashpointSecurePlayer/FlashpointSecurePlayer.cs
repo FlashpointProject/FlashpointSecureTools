@@ -564,16 +564,13 @@ namespace FlashpointSecurePlayer {
                                     }
                                     break;
                                     case -2:
-                                    MessageBox.Show("You cannot run multiple instances of Old CPU Simulator.");
+                                    MessageBox.Show(Properties.Resources.OCS_NoMultipleInstances);
                                     break;
                                     case -3:
-                                    MessageBox.Show("Failed to Create New String");
-                                    break;
-                                    case -4:
-                                    MessageBox.Show("Failed to Set String");
+                                    MessageBox.Show(Properties.Resources.OCS_CPUSpeedNotDetermined);
                                     break;
                                     default:
-                                    MessageBox.Show("Failed to Simulate Old CPU");
+                                    MessageBox.Show(Properties.Resources.OCS_OldCPUNotSimulated);
                                     break;
                                 }
                             }
@@ -662,7 +659,7 @@ namespace FlashpointSecurePlayer {
                         // throw on activation
                         if (templateElement == null) {
                             errorDelegate(Properties.Resources.ConfigurationFailedLoad);
-                            throw new InvalidTemplateException("The Template Element " + TemplateName + " is null.");
+                            throw new InvalidTemplateException("The Template Element \"" + TemplateName + "\" is null.");
                         }
 
                         ModeElement modeElement = templateElement.Mode;
@@ -1244,11 +1241,11 @@ namespace FlashpointSecurePlayer {
 
                             htdocsFilePath.Append(requestUri.LocalPath);
                         } catch (UriFormatException) {
-                            throw new ArgumentException("The URL " + URL + " is malformed.");
+                            throw new ArgumentException("The URL \"" + URL + "\" is malformed.");
                         } catch (NullReferenceException) {
                             throw new ArgumentNullException("The URL is null.");
                         } catch (InvalidOperationException) {
-                            throw new ArgumentException("The URL " + URL + " is invalid.");
+                            throw new ArgumentException("The URL \"" + URL + "\" is invalid.");
                         }
 
                         try {
@@ -1269,11 +1266,11 @@ namespace FlashpointSecurePlayer {
                         try {
                             htdocsFullFilePath = Path.GetFullPath(htdocsFilePath.ToString());
                         } catch (PathTooLongException) {
-                            throw new ArgumentException("The path is too long to " + htdocsFilePath.ToString() + ".");
+                            throw new ArgumentException("The path is too long to \"" + htdocsFilePath.ToString() + "\".");
                         } catch (System.Security.SecurityException) {
-                            throw new TaskRequiresElevationException("Getting the Full Path to " + htdocsFilePath.ToString() + " requires elevation.");
+                            throw new TaskRequiresElevationException("Getting the Full Path to \"" + htdocsFilePath.ToString() + "\" requires elevation.");
                         } catch (NotSupportedException) {
-                            throw new ArgumentException("The path " + htdocsFilePath.ToString() + " is not supported.");
+                            throw new ArgumentException("The path \"" + htdocsFilePath.ToString() + "\" is not supported.");
                         }
 
                         if (htdocsFullFilePath == null) {

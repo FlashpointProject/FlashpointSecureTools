@@ -5,8 +5,6 @@ VisualStudioVersion = 15.0.28307.136
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlashpointSecurePlayer", "FlashpointSecurePlayer\FlashpointSecurePlayer.csproj", "{40F29106-602D-484F-8F97-41D1C9C2C414}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlashpointSecurePlayerConfigurationEditor", "FlashpointSecurePlayerConfigurationEditor\FlashpointSecurePlayerConfigurationEditor.csproj", "{63F2A5A1-7648-4CF3-900E-DC97AEA5B08B}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,10 +15,6 @@ Global
 		{40F29106-602D-484F-8F97-41D1C9C2C414}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{40F29106-602D-484F-8F97-41D1C9C2C414}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{40F29106-602D-484F-8F97-41D1C9C2C414}.Release|Any CPU.Build.0 = Release|Any CPU
-		{63F2A5A1-7648-4CF3-900E-DC97AEA5B08B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{63F2A5A1-7648-4CF3-900E-DC97AEA5B08B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{63F2A5A1-7648-4CF3-900E-DC97AEA5B08B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{63F2A5A1-7648-4CF3-900E-DC97AEA5B08B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -35,7 +35,7 @@ namespace FlashpointSecurePlayer {
             moduleHandle = LoadLibrary(libFileName);
 
             if (moduleHandle == IntPtr.Zero) {
-                throw new DllNotFoundException("The library " + libFileName + " could not be found.");
+                throw new DllNotFoundException("The library \"" + libFileName + "\" could not be found.");
             }
 
             IntPtr dllRegisterServerProcAddress = IntPtr.Zero;

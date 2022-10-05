@@ -289,6 +289,33 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The CPU&apos;s clock speed could not be determined..
+        /// </summary>
+        internal static string OCS_CPUSpeedNotDetermined {
+            get {
+                return ResourceManager.GetString("OCS_CPUSpeedNotDetermined", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You must not run multiple instances of Old CPU Simulator..
+        /// </summary>
+        internal static string OCS_NoMultipleInstances {
+            get {
+                return ResourceManager.GetString("OCS_NoMultipleInstances", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The old CPU could not be simulated..
+        /// </summary>
+        internal static string OCS_OldCPUNotSimulated {
+            get {
+                return ResourceManager.GetString("OCS_OldCPUNotSimulated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The Old CPU Simulator failed. The Target Rate may be invalid..
         /// </summary>
         internal static string OldCPUSimulatorFailed {

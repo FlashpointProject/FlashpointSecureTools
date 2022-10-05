@@ -195,6 +195,15 @@ If you choose No, the application will exit.</value>
   <data name="NoModeSelected" xml:space="preserve">
     <value>No mode was selected.</value>
   </data>
+  <data name="OCS_CPUSpeedNotDetermined" xml:space="preserve">
+    <value>The CPU's clock speed could not be determined.</value>
+  </data>
+  <data name="OCS_NoMultipleInstances" xml:space="preserve">
+    <value>You must not run multiple instances of Old CPU Simulator.</value>
+  </data>
+  <data name="OCS_OldCPUNotSimulated" xml:space="preserve">
+    <value>The old CPU could not be simulated.</value>
+  </data>
   <data name="OldCPUSimulatorFailed" xml:space="preserve">
     <value>The Old CPU Simulator failed. The Target Rate may be invalid.</value>
   </data>

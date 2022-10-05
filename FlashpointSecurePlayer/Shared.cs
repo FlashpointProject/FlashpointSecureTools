@@ -961,16 +961,18 @@ namespace FlashpointSecurePlayer {
                                         if (String.IsNullOrEmpty(base[_keyName] as string)) {
                                             return base[_keyName] as string;
                                         }
-                                        return (base[_keyName] as string).ToUpperInvariant();
+                                        return (base[_keyName] as string)/*.ToUpperInvariant()*/;
                                     }
 
                                     set {
+                                        /*
                                         if (String.IsNullOrEmpty(value)) {
                                             base[_keyName] = value;
                                             return;
                                         }
+                                        */
 
-                                        base[_keyName] = value.ToUpperInvariant();
+                                        base[_keyName] = value/*.ToUpperInvariant()*/;
                                     }
                                 }
                                 
@@ -982,10 +984,12 @@ namespace FlashpointSecurePlayer {
                                         }
                                         */
 
+                                        /*
                                         if (String.IsNullOrEmpty(base[_valueName] as string)) {
                                             return base[_valueName] as string;
                                         }
-                                        return (base[_valueName] as string).ToUpperInvariant();
+                                        */
+                                        return (base[_valueName] as string)/*.ToUpperInvariant()*/;
                                     }
 
                                     set {
@@ -1070,7 +1074,7 @@ namespace FlashpointSecurePlayer {
 
                                 public string Name {
                                     get {
-                                        return this.KeyName + "\\" + this.ValueName;
+                                        return this.KeyName.ToUpperInvariant() + "\\" + this.ValueName.ToUpperInvariant();
                                     }
                                 }
 
@@ -1205,7 +1209,7 @@ namespace FlashpointSecurePlayer {
                                 }
                             }
 
-                            [ConfigurationProperty("setProcessPriorityHigh", DefaultValue = false, IsRequired = false)]
+                            [ConfigurationProperty("setProcessPriorityHigh", DefaultValue = true, IsRequired = false)]
                             public bool SetProcessPriorityHigh {
                                 get {
                                     return (bool)base["setProcessPriorityHigh"];
@@ -1395,7 +1399,7 @@ namespace FlashpointSecurePlayer {
             try {
                 using (HttpResponseMessage httpResponseMessage = await httpClient.GetAsync(name, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(true)) {
                     if (!httpResponseMessage.IsSuccessStatusCode) {
-                        throw new Exceptions.DownloadFailedException("The HTTP Response Message failed with a Status Code of " + httpResponseMessage.StatusCode + ".");
+                        throw new Exceptions.DownloadFailedException("The HTTP Response Message failed with a Status Code of \"" + httpResponseMessage.StatusCode + "\".");
                     }
 
                     using (Stream stream = await httpResponseMessage.Content.ReadAsStreamAsync().ConfigureAwait(true)) {
@@ -1537,7 +1541,13 @@ namespace FlashpointSecurePlayer {
                 if (!exeConfiguration.HasFile) {
                     throw new ConfigurationErrorsException("The EXE Configuration has no file.");
                 }
-            } catch (ConfigurationErrorsException) {
+            } catch (ConfigurationErrorsException ex) {
+                try {
+                    Console.Out.WriteLine("Downloading EXE Configuration to HTDOCS because the EXE Configuration had an error: " + ex.Message);
+                } catch {
+                    // Fail silently.
+                }
+
                 try {
                     // nope, so open from configuration download
                     EXEConfiguration = ConfigurationManager.OpenMappedExeConfiguration(new ExeConfigurationFileMap {
@@ -1556,9 +1566,7 @@ namespace FlashpointSecurePlayer {
                     EXEConfigurationName = name;
                     return EXEConfiguration;
                 } catch (Exceptions.DownloadFailedException) {
-                    // Fail silently.
-                } catch (ConfigurationErrorsException) {
-                    // Fail silently.
+                    throw new ConfigurationErrorsException("The EXE Configuration failed to download.");
                 } catch (IOException) {
                     throw new ConfigurationErrorsException("The EXE Configuration is in use.");
                 }

@@ -288,7 +288,7 @@ namespace FlashpointSecurePlayer {
             } catch (ArgumentException) {
                 return null;
             } catch (UnauthorizedAccessException) {
-                throw new SecurityException("Access to the base key " + keyName + " is denied.");
+                throw new SecurityException("Access to the base key \"" + keyName + "\" is denied.");
             }
         }
 
@@ -381,13 +381,13 @@ namespace FlashpointSecurePlayer {
                     return null;
                 } catch (ObjectDisposedException) {
                     // key is closed (could not be opened)
-                    throw new ArgumentException("The key " + keyName + " is closed.");
+                    throw new ArgumentException("The key \"" + keyName + "\" is closed.");
                 } catch (IOException) {
                     // the key is marked for deletion
                     return null;
                 } catch (UnauthorizedAccessException) {
                     // we don't have write rights to the key
-                    throw new SecurityException("The user cannot write to the key " + keyName + ".");
+                    throw new SecurityException("The user cannot write to the key \"" + keyName + "\".");
                 }
             }
             return registryKey;
@@ -421,7 +421,7 @@ namespace FlashpointSecurePlayer {
                         return;
                     } catch (UnauthorizedAccessException) {
                         // we don't have write rights to the key
-                        throw new SecurityException("The user cannot write to the key " + keyName + ".");
+                        throw new SecurityException("The user cannot write to the key \"" + keyName + "\".");
                     }
                 }
             } finally {
@@ -437,7 +437,7 @@ namespace FlashpointSecurePlayer {
             try {
                 if (registryKey == null) {
                     // key is invalid
-                    throw new ArgumentException("The key " + keyName + " is invalid.");
+                    throw new ArgumentException("The key \"" + keyName + "\" is invalid.");
                 }
             } finally {
                 if (registryKey != null) {
@@ -473,7 +473,7 @@ namespace FlashpointSecurePlayer {
                     return null;
                 } catch (UnauthorizedAccessException) {
                     // we don't have read rights to the key
-                    throw new SecurityException("The user cannot read from the value " + valueName + ".");
+                    throw new SecurityException("The user cannot read from the value \"" + valueName + "\" in key \"" + keyName + "\".");
                 }
 
                 RegistryValueKind? valueKind = GetValueKindInRegistryView(keyName, valueName, registryView);
@@ -520,17 +520,17 @@ namespace FlashpointSecurePlayer {
                     registryKey.SetValue(valueName, value, valueKind);
                 } catch (NullReferenceException) {
                     // registry key is null
-                    throw new ArgumentException("The key " + keyName + " is null.");
+                    throw new ArgumentException("The key \"" + keyName + "\" is null.");
                 } catch (ObjectDisposedException) {
                     // key is closed (could not be opened)
-                    throw new ArgumentException("The key " + keyName + " is closed.");
+                    throw new ArgumentException("The key \"" + keyName + "\" is closed.");
                 } catch (IOException) {
                     // key represents a root node
-                    throw new ArgumentException("The key " + keyName + " represents a root node.");
+                    throw new ArgumentException("The key \"" + keyName + "\" represents a root node.");
                 } catch (UnauthorizedAccessException) {
-                    throw new SecurityException("The value " + valueName + " cannot be accessed by the user.");
+                    throw new SecurityException("The value \"" + valueName + "\" in key \"" + keyName + "\" cannot be accessed by the user.");
                 } catch (ArgumentException) {
-                    throw new SecurityException("The value " + valueName + " has the wrong type.");
+                    throw new SecurityException("The value \"" + valueName + "\" in key \"" + keyName + "\" has the wrong type.");
                 }
             } finally {
                 if (registryKey != null) {
@@ -778,17 +778,17 @@ namespace FlashpointSecurePlayer {
             if (modificationsElement.RegistryStates.Get(TemplateName) != null) {
                 // preset already exists with this name
                 // prevent a registry state from running for a non-curator
-                throw new InvalidTemplateException("A Template with the name " + TemplateName + " exists.");
+                throw new InvalidTemplateException("A Template with the name \"" + TemplateName + "\" exists.");
             }
 
             try {
                 fullPath = Path.GetFullPath(TemplateName);
             } catch (PathTooLongException) {
-                throw new ArgumentException("The path is too long to " + TemplateName + ".");
+                throw new ArgumentException("The path is too long to \"" + TemplateName + "\".");
             } catch (SecurityException) {
-                throw new TaskRequiresElevationException("Getting the Full Path to " + TemplateName + " requires elevation.");
+                throw new TaskRequiresElevationException("Getting the Full Path to \"" + TemplateName + "\" requires elevation.");
             } catch (NotSupportedException) {
-                throw new ArgumentException("The path to " + TemplateName + " is not supported.");
+                throw new ArgumentException("The path to \"" + TemplateName + "\" is not supported.");
             }
 
             // check permission to run
@@ -962,11 +962,11 @@ namespace FlashpointSecurePlayer {
                 try {
                     fullPath = Path.GetFullPath(TemplateName);
                 } catch (PathTooLongException) {
-                    throw new ArgumentException("The path is too long to " + TemplateName + ".");
+                    throw new ArgumentException("The path is too long to \"" + TemplateName + "\".");
                 } catch (SecurityException) {
-                    throw new TaskRequiresElevationException("Getting the Full Path to " + TemplateName + " requires elevation.");
+                    throw new TaskRequiresElevationException("Getting the Full Path to \"" + TemplateName + "\" requires elevation.");
                 } catch (NotSupportedException) {
-                    throw new ArgumentException("The path to " + TemplateName + " is not supported.");
+                    throw new ArgumentException("The path to \"" + TemplateName + "\" is not supported.");
                 }
                 */
 
@@ -1029,7 +1029,7 @@ namespace FlashpointSecurePlayer {
                                 value = null;
                             } catch (SecurityException) {
                                 // value exists but we can't get it
-                                throw new TaskRequiresElevationException("The value " + registryStateElement.ValueName + " cannot be accessed by the user.");
+                                throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" cannot be accessed by the user.");
                             }
 
                             if (value == null) {
@@ -1086,11 +1086,11 @@ namespace FlashpointSecurePlayer {
                                 } catch (InvalidOperationException) {
                                     // key marked for deletion
                                     Deactivate();
-                                    throw new RegistryStateFailedException("The key " + keyName + " is marked for deletion.");
+                                    throw new RegistryStateFailedException("The key \"" + keyName + "\" is marked for deletion.");
                                 } catch (ArgumentException) {
                                     // key doesn't exist and can't be created
                                     Deactivate();
-                                    throw new TaskRequiresElevationException("Creating the key " + keyName + " requires elevation.");
+                                    throw new TaskRequiresElevationException("Creating the key \"" + keyName + "\" requires elevation.");
                                 } catch (SecurityException) {
                                     // key exists and we can't modify it
                                 }
@@ -1101,19 +1101,19 @@ namespace FlashpointSecurePlayer {
                                 } catch (FormatException) {
                                     // value marked for deletion
                                     Deactivate();
-                                    throw new RegistryStateFailedException("The value " + registryStateElement.ValueName + " must be Base64.");
+                                    throw new RegistryStateFailedException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" must be Base64.");
                                 } catch (InvalidOperationException) {
                                     // value marked for deletion
                                     Deactivate();
-                                    throw new RegistryStateFailedException("The value " + registryStateElement.ValueName + " is marked for deletion.");
+                                    throw new RegistryStateFailedException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" is marked for deletion.");
                                 } catch (ArgumentException) {
                                     // value doesn't exist and can't be created
                                     Deactivate();
-                                    throw new TaskRequiresElevationException("Creating the value " + registryStateElement.ValueName + " requires elevation.");
+                                    throw new TaskRequiresElevationException("Creating the value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" requires elevation.");
                                 } catch (SecurityException) {
                                     // value exists and we can't modify it
                                     Deactivate();
-                                    throw new TaskRequiresElevationException("Modifying the value " + registryStateElement.ValueName + " requires elevation.");
+                                    throw new TaskRequiresElevationException("Modifying the value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" requires elevation.");
                                 }
                                 break;
                         }
@@ -1219,14 +1219,16 @@ namespace FlashpointSecurePlayer {
                                             clear = true;
                                         }
                                     } else {
+                                        string keyName = GetUserKeyValueName(registryStateElement.KeyName);
+
                                         try {
-                                            value = GetValueInRegistryView(GetUserKeyValueName(registryStateElement.KeyName), registryStateElement.ValueName, registryView);
+                                            value = GetValueInRegistryView(keyName, registryStateElement.ValueName, registryView);
                                         } catch (ArgumentException) {
                                             // value doesn't exist
                                             value = null;
                                         } catch (SecurityException) {
                                             // value exists but we can't get it
-                                            throw new TaskRequiresElevationException("Getting the value " + registryStateElement.ValueName + " requires elevation.");
+                                            throw new TaskRequiresElevationException("Getting the value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" requires elevation.");
                                         }
 
                                         if ((activeRegistryStateElement.Type == TYPE.KEY && registryStateElement.Type == TYPE.VALUE) || (activeRegistryStateElement.Type == TYPE.VALUE && !String.IsNullOrEmpty(activeRegistryStateElement._Deleted))) {
@@ -1286,24 +1288,26 @@ namespace FlashpointSecurePlayer {
                                                 DeleteKeyInRegistryView(GetUserKeyValueName(activeRegistryStateElement._Deleted), registryView);
                                             } catch (SecurityException) {
                                                 // value exists and we can't modify it
-                                                throw new TaskRequiresElevationException("Deleting the key " + activeRegistryStateElement._Deleted + " requires elevation.");
+                                                throw new TaskRequiresElevationException("Deleting the key \"" + activeRegistryStateElement._Deleted + "\" requires elevation.");
                                             }
                                         }
                                         break;
                                         case TYPE.VALUE:
                                         if (String.IsNullOrEmpty(activeRegistryStateElement._Deleted) && modificationsRevertMethod != FlashpointSecurePlayer.MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
+                                            string keyName = GetUserKeyValueName(activeRegistryStateElement.KeyName);
+
                                             try {
                                                 // value was different before
-                                                SetValueInRegistryView(GetUserKeyValueName(activeRegistryStateElement.KeyName), activeRegistryStateElement.ValueName, activeRegistryStateElement.Value, activeRegistryStateElement.ValueKind.GetValueOrDefault(), registryView);
+                                                SetValueInRegistryView(keyName, activeRegistryStateElement.ValueName, activeRegistryStateElement.Value, activeRegistryStateElement.ValueKind.GetValueOrDefault(), registryView);
                                             } catch (InvalidOperationException) {
                                                 // value doesn't exist and can't be created
-                                                throw new RegistryStateFailedException("The value " + activeRegistryStateElement.ValueName + " cannot be created.");
+                                                throw new RegistryStateFailedException("The value \"" + activeRegistryStateElement.ValueName + "\" in key \"" + keyName + "\" cannot be created.");
                                             } catch (ArgumentException) {
                                                 // value doesn't exist and can't be created
-                                                throw new RegistryStateFailedException("The value " + activeRegistryStateElement.ValueName + " cannot be created.");
+                                                throw new RegistryStateFailedException("The value \"" + activeRegistryStateElement.ValueName + "\" in key \"" + keyName + "\" cannot be created.");
                                             } catch (SecurityException) {
                                                 // value exists and we can't modify it
-                                                throw new TaskRequiresElevationException("Setting the value " + activeRegistryStateElement.ValueName + " requires elevation.");
+                                                throw new TaskRequiresElevationException("Setting the value \"" + activeRegistryStateElement.ValueName + "\" in key \"" + keyName + "\" requires elevation.");
                                             }
                                         } else {
                                             try {
@@ -1311,7 +1315,7 @@ namespace FlashpointSecurePlayer {
                                                 DeleteValueInRegistryView(GetUserKeyValueName(activeRegistryStateElement.KeyName), activeRegistryStateElement.ValueName, registryView);
                                             } catch (SecurityException) {
                                                 // value exists and we can't modify it
-                                                throw new TaskRequiresElevationException("Deleting the value " + activeRegistryStateElement.ValueName + " requires elevation.");
+                                                throw new TaskRequiresElevationException("Deleting the value \"" + activeRegistryStateElement.ValueName + "\" requires elevation.");
                                             }
                                         }
                                         break;
