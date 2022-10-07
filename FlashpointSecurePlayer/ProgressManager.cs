@@ -136,7 +136,6 @@ namespace FlashpointSecurePlayer {
                     if (!Goals.Any()) {
                         return 0;
                     }
-                    
                     return Goals.Peek().Steps;
                 }
 
@@ -200,7 +199,10 @@ namespace FlashpointSecurePlayer {
 
             public static void Start(int size = 1, uint time = 0) {
                 if (size <= 0) {
-                    return;
+                    // it needs to be able to push invalid length goals
+                    // so it doesn't pop a previous goal when stopped
+                    //return;
+                    size = 1;
                 }
 
                 if (!Goals.Any()) {
@@ -266,7 +268,7 @@ namespace FlashpointSecurePlayer {
             }
 
             set {
-                ProgressManager.value = Math.Max(Math.Min(value, 100), 0);
+                ProgressManager.value = Math.Min(100, Math.Max(0, value));
 
                 if (ProgressBar == null) {
                     return;

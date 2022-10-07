@@ -1913,8 +1913,8 @@ namespace FlashpointSecurePlayer {
 
         public static bool GetArgumentFromCommandLine(string commandLine, out string argument) {
             argument = String.Empty;
-            Regex commandLineQuotes = new Regex("^\\s*\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*\"? ?");
-            Regex commandLineWords = new Regex("^\\s*\\S+ ?");
+            Regex commandLineQuotes = new Regex("^\\s*\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*\"?\\\\?\\s*");
+            Regex commandLineWords = new Regex("^\\s*\\S+\\s*");
             MatchCollection matchResults = commandLineQuotes.Matches(commandLine);
 
             if (matchResults.Count > 0) {
