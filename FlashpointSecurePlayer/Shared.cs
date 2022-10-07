@@ -1912,26 +1912,39 @@ namespace FlashpointSecurePlayer {
         }
 
         public static bool GetArgumentFromCommandLine(string commandLine, out string argument) {
-            argument = String.Empty;
-            Regex commandLineQuotes = new Regex("^\\s*\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*\"?\\\\?\\s*");
-            Regex commandLineWords = new Regex("^\\s*\\S+\\s*");
-            MatchCollection matchResults = commandLineQuotes.Matches(commandLine);
+            MatchCollection matchResults = null;
 
-            if (matchResults.Count > 0) {
-                argument = matchResults[0].Value;
-                return true;
-            } else {
+            {
+                Regex commandLineQuotes = new Regex("^\\s*\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*[\"\\\\]?\\s?(?:\\s*$)?");
+                matchResults = commandLineQuotes.Matches(commandLine);
+
+                if (matchResults.Count > 0) {
+                    argument = matchResults[0].Value;
+
+                    if (!String.IsNullOrEmpty(argument)) {
+                        return true;
+                    }
+                }
+            }
+
+            {
+                Regex commandLineWords = new Regex("^\\s*\\S+\\s?(?:\\s*$)?");
                 matchResults = commandLineWords.Matches(commandLine);
 
                 if (matchResults.Count > 0) {
                     argument = matchResults[0].Value;
-                    return true;
+
+                    if (!String.IsNullOrEmpty(argument)) {
+                        return true;
+                    }
                 }
             }
+
+            argument = String.Empty;
             return false;
         }
 
-        public static string GetArgumentRangeFromCommandLine(string commandLine, int begin, int end) {
+        public static string GetArgumentRangeFromCommandLine(string commandLine, int begin = 0, int end = -1) {
             List<string> arguments = new List<string>();
             string argument = String.Empty;
             string argumentRange = String.Empty;
@@ -2024,7 +2037,7 @@ namespace FlashpointSecurePlayer {
                     FileName = Application.ExecutablePath,
                     // can't use GetCommandLineArgs() and String.Join because arguments that were in quotes will lose their quotes
                     // need to use Environment.CommandLine and find arguments
-                    Arguments = GetArgumentRangeFromCommandLine(Environment.CommandLine, 1, -1)
+                    Arguments = GetArgumentRangeFromCommandLine(Environment.CommandLine, 1)
                 };
             }
 
