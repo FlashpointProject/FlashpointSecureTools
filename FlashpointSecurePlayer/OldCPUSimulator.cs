@@ -156,7 +156,7 @@ namespace FlashpointSecurePlayer {
                 }
 
                 oldCPUSimulatorSoftware.Append(" ");
-                oldCPUSimulatorSoftware.Append(GetArgumentRangeFromCommandLine(commandLineExpanded, 1));
+                oldCPUSimulatorSoftware.Append(GetArgumentSliceFromCommandLine(commandLineExpanded, 1));
                 // this becomes effectively the new thing passed as --software
                 // the shared function is used both here and GUI side for restarts
                 //modeElement.CommandLine = OLD_CPU_SIMULATOR_PATH + " " + GetOldCPUSimulatorProcessStartInfoArguments(oldCPUSimulatorElement, oldCPUSimulatorSoftware.ToString());
