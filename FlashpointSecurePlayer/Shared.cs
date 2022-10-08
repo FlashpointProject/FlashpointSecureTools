@@ -1915,7 +1915,7 @@ namespace FlashpointSecurePlayer {
             List<string> arguments = new List<string>();
 
             {
-                Regex commandLineArguments = new Regex("^\\s*(?:\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*[\"\\\\]?|(?:[^\"\\\\\\s]+|\\\\\\S)+\\\\?|\\s+$)+\\s?");
+                Regex commandLineArguments = new Regex("^\\s*(?:\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*\"?|(?:[^\"\\\\\\s]+|\\\\\\S)+|\\\\|\\s+$)+\\s?");
                 Match match = commandLineArguments.Match(commandLine);
 
                 while (match.Success) {
