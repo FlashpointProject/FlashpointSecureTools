@@ -603,7 +603,8 @@ namespace FlashpointSecurePlayer {
                 windowsVersionName != "Windows Server 2012 R2 64-bit" &&
                 windowsVersionName != "Windows 10 64-bit" &&
                 windowsVersionName != "Windows Server 2016 64-bit" &&
-                windowsVersionName != "Windows Server 2019 64-bit") {
+                windowsVersionName != "Windows Server 2019 64-bit" &&
+                windowsVersionName != "Windows Server 2022 64-bit") {
                 // no
                 return keyValueName;
             }

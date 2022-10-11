@@ -1054,7 +1054,8 @@ namespace FlashpointSecurePlayer {
                 windowsVersionName != "Windows Server 2012 R2" &&
                 windowsVersionName != "Windows 10" &&
                 windowsVersionName != "Windows Server 2016" &&
-                windowsVersionName != "Windows Server 2019") {
+                windowsVersionName != "Windows Server 2019" &&
+                windowsVersionName != "Windows Server 2022") {
                 ProgressManager.ShowError();
                 MessageBox.Show(Properties.Resources.WindowsVersionTooOld, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Application.Exit();

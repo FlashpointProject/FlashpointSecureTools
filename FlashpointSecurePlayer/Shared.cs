@@ -2124,10 +2124,12 @@ namespace FlashpointSecurePlayer {
                     default:
                     // Windows 10 will be the last version of Windows
                     if (IsOS(OS_TYPE.OS_ANYSERVER)) {
-                        if (operatingSystem.Version.Build == 14393) {
+                        if (operatingSystem.Version.Build < 17763) {
                             versionName += "Server 2016";
-                        } else {
+                        } else if (operatingSystem.Version.Build < 20348) {
                             versionName += "Server 2019";
+                        } else {
+                            versionName += "Server 2022";
                         }
                     } else {
                         versionName += "10";
