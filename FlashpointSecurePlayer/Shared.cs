@@ -1920,7 +1920,8 @@ namespace FlashpointSecurePlayer {
 
                 while (match.Success) {
                     arguments.Add(match.Value);
-                    match = match.NextMatch();
+                    commandLine = commandLine.Substring(match.Length);
+                    match = commandLineArguments.Match(commandLine);
                 }
             }
 
