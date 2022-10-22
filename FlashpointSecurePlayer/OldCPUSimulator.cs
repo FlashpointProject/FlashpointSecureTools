@@ -29,7 +29,8 @@ namespace FlashpointSecurePlayer {
             if (parentProcess != null) {
                 try {
                     parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess)).ToUpperInvariant();
-                } catch {
+                } catch (Exception ex) {
+                    LogExceptionToLauncher(ex);
                     throw new OldCPUSimulatorFailedException("Failed to get the parent process EXE name.");
                 }
             }
@@ -116,7 +117,8 @@ namespace FlashpointSecurePlayer {
                 if (oldCPUSimulatorProcess.ExitCode != 0 || !long.TryParse(oldCPUSimulatorProcessStandardOutput.Split('\n').Last(), out maxRate)) {
                     throw new OldCPUSimulatorFailedException("Failed to get Max Rate.");
                 }
-            } catch {
+            } catch (Exception ex) {
+                LogExceptionToLauncher(ex);
                 throw new OldCPUSimulatorFailedException("Failed to get Max Rate.");
             }
 
@@ -151,7 +153,8 @@ namespace FlashpointSecurePlayer {
                     string fullPath = Path.GetFullPath(argv[0]);
                     GetValidArgument(ref fullPath);
                     oldCPUSimulatorSoftware.Append(fullPath);
-                } catch {
+                } catch (Exception ex) {
+                    LogExceptionToLauncher(ex);
                     throw new OldCPUSimulatorFailedException("The command line is invalid.");
                 }
 

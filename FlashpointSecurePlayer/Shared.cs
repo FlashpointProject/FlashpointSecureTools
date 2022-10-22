@@ -1542,11 +1542,7 @@ namespace FlashpointSecurePlayer {
                     throw new ConfigurationErrorsException("The EXE Configuration has no file.");
                 }
             } catch (ConfigurationErrorsException ex) {
-                try {
-                    Console.Out.WriteLine("Downloading EXE Configuration to HTDOCS because the EXE Configuration had an error: " + ex.Message);
-                } catch {
-                    // Fail silently.
-                }
+                Exceptions.LogExceptionToLauncher(ex);
 
                 try {
                     // nope, so open from configuration download
@@ -2041,7 +2037,8 @@ namespace FlashpointSecurePlayer {
                 // https://stackoverflow.com/questions/33042010/in-what-cases-does-the-process-start-method-return-false
                 Process.Start(processStartInfo);
                 Application.Exit();
-            } catch {
+            } catch (Exception ex) {
+                Exceptions.LogExceptionToLauncher(ex);
                 form.Show();
                 ProgressManager.ShowError();
                 MessageBox.Show(Properties.Resources.ProcessFailedStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);

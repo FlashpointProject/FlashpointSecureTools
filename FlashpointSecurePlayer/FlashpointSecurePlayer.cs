@@ -222,7 +222,8 @@ namespace FlashpointSecurePlayer {
             if (parentProcess != null) {
                 try {
                     parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess)).ToUpperInvariant();
-                } catch {
+                } catch (Exception ex) {
+                    LogExceptionToLauncher(ex);
                     ProgressManager.ShowError();
                     MessageBox.Show(Properties.Resources.ProcessFailedStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Application.Exit();
@@ -240,7 +241,8 @@ namespace FlashpointSecurePlayer {
             // Old CPU Simulator needs to be on top, not us
             try {
                 fullPath = Path.GetFullPath(OLD_CPU_SIMULATOR_PATH);
-            } catch {
+            } catch (Exception ex) {
+                LogExceptionToLauncher(ex);
                 throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator and getting the full path to Old CPU Simulator failed.");
             }
 
@@ -448,7 +450,8 @@ namespace FlashpointSecurePlayer {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.FailedSetWorkingDirectory);
                                 throw new InvalidModeException("The Mode failed because the Working Directory cannot be null.");
-                            } catch {
+                            } catch (Exception ex) {
+                                LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.FailedSetWorkingDirectory);
                                 throw new InvalidModeException("Setting the Current Directory failed.");
                             }
@@ -458,7 +461,8 @@ namespace FlashpointSecurePlayer {
 
                         try {
                             webBrowserURL = new Uri(URL);
-                        } catch {
+                        } catch (Exception ex) {
+                            LogExceptionToLauncher(ex);
                             errorDelegate(String.Format(Properties.Resources.AddressNotUnderstood, URL));
                             throw new InvalidModeException("The address (" + URL + ") was not understood by the Mode.");
                         }
@@ -574,7 +578,8 @@ namespace FlashpointSecurePlayer {
                                     break;
                                 }
                             }
-                        } catch {
+                        } catch (Exception ex) {
+                            LogExceptionToLauncher(ex);
                             Show();
                             Refresh();
                             errorDelegate(Properties.Resources.ProcessFailedStart);
@@ -824,7 +829,8 @@ namespace FlashpointSecurePlayer {
                                 } catch (TaskRequiresElevationException ex) {
                                     LogExceptionToLauncher(ex);
                                     AskLaunchAsAdministratorUser();
-                                } catch {
+                                } catch (Exception ex) {
+                                    LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.UnknownProcessCompatibilityConflict);
                                 }
                             }
@@ -1043,7 +1049,10 @@ namespace FlashpointSecurePlayer {
         }
 
         private async void FlashpointSecurePlayer_Load(object sender, EventArgs e) {
+            Text += " " + typeof(FlashpointSecurePlayer).Assembly.GetName().Version;
+
             ProgressManager.ProgressBar = securePlaybackProgressBar;
+
             string windowsVersionName = GetWindowsVersionName(false, false, false);
 
             if (windowsVersionName != "Windows 7" &&

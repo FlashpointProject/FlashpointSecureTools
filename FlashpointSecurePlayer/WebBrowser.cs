@@ -172,6 +172,8 @@ namespace FlashpointSecurePlayer {
         }
 
         private void WebBrowser_Load(object sender, EventArgs e) {
+            Text += " " + typeof(WebBrowser).Assembly.GetName().Version;
+
             // default value is Redirector port
             /*
             short port = 8888;
