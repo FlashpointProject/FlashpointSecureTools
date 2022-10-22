@@ -1988,19 +1988,19 @@ namespace FlashpointSecurePlayer {
             }
 
             if (oldCPUSimulatorElement.SetProcessPriorityHigh) {
-                oldCPUSimulatorProcessStartInfoArguments.Append(" --set-process-priority-high");
+                oldCPUSimulatorProcessStartInfoArguments.Append(" -ph");
             }
 
             if (oldCPUSimulatorElement.SetSyncedProcessAffinityOne) {
-                oldCPUSimulatorProcessStartInfoArguments.Append(" --set-synced-process-affinity-one");
+                oldCPUSimulatorProcessStartInfoArguments.Append(" -a1");
             }
 
             if (oldCPUSimulatorElement.SyncedProcessMainThreadOnly) {
-                oldCPUSimulatorProcessStartInfoArguments.Append(" --synced-process-main-thread-only");
+                oldCPUSimulatorProcessStartInfoArguments.Append(" -mt");
             }
 
             if (oldCPUSimulatorElement.RefreshRateFloorFifteen) {
-                oldCPUSimulatorProcessStartInfoArguments.Append(" --refresh-rate-floor-fifteen");
+                oldCPUSimulatorProcessStartInfoArguments.Append(" -rf");
             }
 
             oldCPUSimulatorProcessStartInfoArguments.Append(" -sw ");
