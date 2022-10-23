@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security;
 using System.Security.Principal;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -217,9 +218,9 @@ namespace FlashpointSecurePlayer {
                 return keyValueName;
             }
 
-            keyValueName = keyValueName.ToUpperInvariant() + "\\";
+            keyValueName += "\\";
 
-            if (keyValueName.IndexOf("HKEY_LOCAL_MACHINE\\") == 0) {
+            if (keyValueName.ToUpperInvariant().IndexOf("HKEY_LOCAL_MACHINE\\") == 0) {
                 keyValueName = "HKEY_CURRENT_USER\\" + keyValueName.Substring(19);
             }
 
@@ -232,21 +233,23 @@ namespace FlashpointSecurePlayer {
             if (kernelRegistryString == null) {
                 return kernelRegistryString;
             }
-
-            kernelRegistryString = kernelRegistryString.ToUpperInvariant() + "\\";
+            
+            kernelRegistryString += "\\";
+            string kernelRegistryStringUpper = kernelRegistryString.ToUpperInvariant();
             string keyValueName = String.Empty;
 
-            if (kernelRegistryString.IndexOf("\\REGISTRY\\MACHINE\\") == 0) {
+            if (kernelRegistryStringUpper.IndexOf("\\REGISTRY\\MACHINE\\") == 0) {
                 keyValueName = "HKEY_LOCAL_MACHINE\\" + kernelRegistryString.Substring(18);
             } else {
-                if (kernelRegistryString.IndexOf("\\REGISTRY\\USER\\") == 0) {
+                if (kernelRegistryStringUpper.IndexOf("\\REGISTRY\\USER\\") == 0) {
                     keyValueName = "HKEY_USERS\\" + kernelRegistryString.Substring(15);
+                    string keyValueNameUpper = keyValueName.ToUpperInvariant();
                     string currentUser = WindowsIdentity.GetCurrent().User.Value.ToUpperInvariant();
 
-                    if (keyValueName.IndexOf("HKEY_USERS\\" + currentUser + "_CLASSES\\") == 0) {
+                    if (keyValueNameUpper.IndexOf("HKEY_USERS\\" + currentUser + "_CLASSES\\") == 0) {
                         keyValueName = "HKEY_CURRENT_USER\\SOFTWARE\\CLASSES\\" + keyValueName.Substring(20 + currentUser.Length);
                     } else {
-                        if (keyValueName.IndexOf("HKEY_USERS\\" + currentUser + "\\") == 0) {
+                        if (keyValueNameUpper.IndexOf("HKEY_USERS\\" + currentUser + "\\") == 0) {
                             keyValueName = "HKEY_CURRENT_USER\\" + keyValueName.Substring(12 + currentUser.Length);
                         }
                     }
@@ -620,7 +623,10 @@ namespace FlashpointSecurePlayer {
                 return keyValueName;
             }
 
-            keyValueName = keyValueName.ToUpperInvariant();
+            // TODO TODO
+            //keyValueName = keyValueName.ToUpperInvariant();
+            keyValueName = Regex.Replace(keyValueName, "\\\\WOW6432NODE\\\\", "\\WOW6432NODE\\", RegexOptions.IgnoreCase);
+            keyValueName = Regex.Replace(keyValueName, "\\\\WOW64AANODE\\\\", "\\WOW64AANODE\\", RegexOptions.IgnoreCase);
 
             // remove Wow6432Node and WowAA32Node after affected keys
             List<string> keyValueNameSplit = keyValueName.Split(new string[] { "\\WOW6432NODE\\", "\\WOW64AANODE\\" }, StringSplitOptions.None).ToList();
@@ -629,15 +635,18 @@ namespace FlashpointSecurePlayer {
                 return keyValueName;
             }
 
-            if (WOW64KeyLists.ContainsKey(keyValueNameSplit[0])) {
-                List<WOW64Key> wow64KeyList = WOW64KeyLists[keyValueNameSplit[0]];
+            string wow64KeyUpper = keyValueNameSplit[0].ToUpperInvariant();
+            string wow64KeyNameUpper = (keyValueNameSplit[1] + "\\").ToUpperInvariant();
+
+            if (WOW64KeyLists.ContainsKey(wow64KeyUpper)) {
+                List<WOW64Key> wow64KeyList = WOW64KeyLists[wow64KeyUpper];
                 WOW64Key.EFFECT effect = WOW64Key.EFFECT.SHARED;
                 List<string> effectExceptionValueNames = new List<string>();
                 windowsVersionName = GetWindowsVersionName(false, false, false);
                 bool removeWOW64Subkey = false;
 
                 for (int i = 0;i < wow64KeyList.Count;i++) {
-                    if ((keyValueNameSplit[1] + "\\").IndexOf(wow64KeyList[i].Name + "\\") == 0) {
+                    if (wow64KeyNameUpper.IndexOf(wow64KeyList[i].Name + "\\") == 0) {
                         effect = wow64KeyList[i].Effect;
                         effectExceptionValueNames = wow64KeyList[i].EffectExceptionValueNames;
 

@@ -1562,7 +1562,10 @@ namespace FlashpointSecurePlayer {
                     EXEConfigurationName = name;
                     return EXEConfiguration;
                 } catch (Exceptions.DownloadFailedException) {
-                    throw new ConfigurationErrorsException("The EXE Configuration failed to download.");
+                    // Fail silently.
+                    //throw new ConfigurationErrorsException("The EXE Configuration failed to download.");
+                } catch (ConfigurationErrorsException) {
+                    // Fail silently.
                 } catch (IOException) {
                     throw new ConfigurationErrorsException("The EXE Configuration is in use.");
                 }
