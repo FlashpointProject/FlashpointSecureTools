@@ -117,7 +117,7 @@ namespace FlashpointSecurePlayer {
             int internetPerConnOptionListSize = Marshal.SizeOf(internetPerConnOptionList);
 
             if (internetPerConnOptionListOptions.Length < 2) {
-                throw new ArgumentException("The Internet Per Connection Option List Options cannot have a Length of less than two.");
+                throw new ArgumentException("The Internet Per Connection Option List Options must not have a Length of less than two.");
             }
 
             // set flags

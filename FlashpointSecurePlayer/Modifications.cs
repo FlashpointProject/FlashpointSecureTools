@@ -65,7 +65,7 @@ namespace FlashpointSecurePlayer {
             }
 
             if (String.IsNullOrEmpty(templateName)) {
-                throw new FormatException("templateName cannot be null or empty.");
+                throw new FormatException("templateName must not be null or empty.");
             }
 
             TemplateName = templateName;
@@ -106,7 +106,7 @@ namespace FlashpointSecurePlayer {
             }
 
             //if (String.IsNullOrEmpty(name)) {
-            //throw new FormatException("templateName cannot be null or empty.");
+            //throw new FormatException("templateName must not be null or empty.");
             //}
 
             TemplateName = templateName;

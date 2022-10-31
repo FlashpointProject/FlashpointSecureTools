@@ -44,12 +44,12 @@ namespace FlashpointSecurePlayer {
                     }
 
                     set {
-                        // new size cannot be less than old size
+                        // new size must not be less than old size
                         if (value < size) {
                             value = size;
                         }
 
-                        // new size cannot be less than steps
+                        // new size must not be less than steps
                         if (value < Steps) {
                             value = Steps;
                         }
@@ -64,12 +64,12 @@ namespace FlashpointSecurePlayer {
                     }
 
                     set {
-                        // new steps cannot be less than old steps
+                        // new steps must not be less than old steps
                         if (value < steps) {
                             value = steps;
                         }
 
-                        // new steps cannot be greater than size
+                        // new steps must not be greater than size
                         if (value > Size) {
                             value = Size;
                         }

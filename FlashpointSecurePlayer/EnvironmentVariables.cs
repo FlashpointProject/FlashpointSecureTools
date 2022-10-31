@@ -199,7 +199,7 @@ namespace FlashpointSecurePlayer {
                             // because the compatibility layers only take effect
                             // on process start
                             if (values.Except(compatibilityLayerValues).Any()) {
-                                throw new CompatibilityLayersException("The Compatibility Layers (" + value + ") cannot be set.");
+                                throw new CompatibilityLayersException("The Compatibility Layers (" + value + ") cannot be set without a restart.");
                             }
                         }
 

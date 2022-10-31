@@ -464,7 +464,7 @@ namespace FlashpointSecurePlayer {
                             } catch (ArgumentNullException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.FailedSetWorkingDirectory);
-                                throw new InvalidModeException("The Mode failed because the Working Directory cannot be null.");
+                                throw new InvalidModeException("The Mode failed because the Working Directory must not be null.");
                             } catch (Exception ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.FailedSetWorkingDirectory);
@@ -526,7 +526,7 @@ namespace FlashpointSecurePlayer {
                                     try {
                                         SetWorkingDirectory(ref softwareProcessStartInfo, Environment.ExpandEnvironmentVariables(modeElement.WorkingDirectory));
                                     } catch (ArgumentNullException) {
-                                        throw new InvalidModeException("The Mode failed because the Working Directory cannot be null.");
+                                        throw new InvalidModeException("The Mode failed because the Working Directory must not be null.");
                                     }
                                 }
                             }

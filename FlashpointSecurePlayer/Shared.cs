@@ -1840,7 +1840,7 @@ namespace FlashpointSecurePlayer {
 
         // find path in registry value
         // string must begin with path
-        // string cannot exceed MAX_PATH*2+15 characters
+        // string must not exceed MAX_PATH*2+15 characters
         public static object ReplaceStartupPathEnvironmentVariable(object value) {
             // since it's a value we'll just check it exists
             if (!(value is string valueString)) {
