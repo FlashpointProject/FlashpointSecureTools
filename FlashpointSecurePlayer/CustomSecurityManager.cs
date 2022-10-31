@@ -18,9 +18,11 @@ namespace FlashpointSecurePlayer {
         private readonly byte[] FLASH_CONTEXT = new byte[16] { 110, 219, 124, 210, 109, 174, 207, 17, 150, 184, 68, 69, 83, 84, 0, 0 };
         private const string FLASH_EXTENSION = ".SWF";
 
+        private bool useFlashActiveXControl = false;
+
         // https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/platform-apis/ms537182(v=vs.85)?redirectedfrom=MSDN
-        public CustomSecurityManager(System.Windows.Forms.WebBrowser _WebBrowser) {
-            InternetInterfaces.IServiceProvider webBrowserServiceProviderInterface = _WebBrowser.ActiveXInstance as InternetInterfaces.IServiceProvider;
+        public CustomSecurityManager(System.Windows.Forms.WebBrowser webBrowser, bool _useFlashActiveXControl = false) {
+            InternetInterfaces.IServiceProvider webBrowserServiceProviderInterface = webBrowser.ActiveXInstance as InternetInterfaces.IServiceProvider;
             IntPtr profferServiceInterfacePointer = IntPtr.Zero;
 
             try {
@@ -44,6 +46,8 @@ namespace FlashpointSecurePlayer {
             } catch (ExternalException) {
                 throw new Win32Exception("An External Exception was encountered while creating the Custom Security Manager.");
             }
+
+            useFlashActiveXControl = _useFlashActiveXControl;
         }
 
         int InternetInterfaces.IServiceProvider.QueryService(ref Guid guidService, ref Guid riid, out IntPtr ppvObject) {
@@ -125,11 +129,13 @@ namespace FlashpointSecurePlayer {
                     Marshal.Copy(pContext, context, 0, (int)cbContext);
                 }
 
-                if (context.SequenceEqual(FLASH_CONTEXT) || Path.GetExtension(new Uri(pwszUrl).LocalPath).ToUpperInvariant() == FLASH_EXTENSION) {
-                    if (dwAction == URLACTION_ACTIVEX_TREATASUNTRUSTED) { // don't trust Flash ActiveX Controls
-                        pPolicy = URLPOLICY_ALLOW;
+                if (!useFlashActiveXControl) {
+                    if (context.SequenceEqual(FLASH_CONTEXT) || Path.GetExtension(new Uri(pwszUrl).LocalPath).ToUpperInvariant() == FLASH_EXTENSION) {
+                        if (dwAction == URLACTION_ACTIVEX_TREATASUNTRUSTED) { // don't trust Flash ActiveX Controls
+                            pPolicy = URLPOLICY_ALLOW;
+                        }
+                        return S_OK;
                     }
-                    return S_OK;
                 }
             } catch {
                 return S_FALSE;

@@ -243,6 +243,15 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The ActiveX Control Install Status will be ignored. The ActiveX Import may not work as intended..
+        /// </summary>
+        internal static string IgnoreActiveXControlInstallFailureWarning {
+            get {
+                return ResourceManager.GetString("IgnoreActiveXControlInstallFailureWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The Job Object could not be created. Is your Windows Version new enough? Flashpoint only supports Windows 7, Windows 8, Windows 8.1, and Windows 10..
         /// </summary>
         internal static string JobObjectNotCreated {
@@ -438,6 +447,15 @@ namespace FlashpointSecurePlayer.Properties {
         internal static string UnknownProcessCompatibilityConflict {
             get {
                 return ResourceManager.GetString("UnknownProcessCompatibilityConflict", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This curation uses the Flash ActiveX Control. It may not work as intended in future Windows updates..
+        /// </summary>
+        internal static string UseFlashActiveXControlWarning {
+            get {
+                return ResourceManager.GetString("UseFlashActiveXControlWarning", resourceCulture);
             }
         }
         

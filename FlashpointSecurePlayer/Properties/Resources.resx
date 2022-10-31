@@ -179,6 +179,9 @@ Please ensure Flashpoint is not corrupted, was extracted correctly, and is not r
   <data name="GameNotCuratedCorrectly" xml:space="preserve">
     <value>This game was not curated correctly. Please report this bug.</value>
   </data>
+  <data name="IgnoreActiveXControlInstallFailureWarning" xml:space="preserve">
+    <value>The ActiveX Control Install Status will be ignored. The ActiveX Import may not work as intended.</value>
+  </data>
   <data name="JobObjectNotCreated" xml:space="preserve">
     <value>The Job Object could not be created. Is your Windows Version new enough? Flashpoint only supports Windows 7, Windows 8, Windows 8.1, and Windows 10.</value>
   </data>
@@ -245,6 +248,9 @@ If you choose No, the application will exit.</value>
   </data>
   <data name="UnknownProcessCompatibilityConflict" xml:space="preserve">
     <value>An unknown process is causing a compatibility conflict with this game, and the application cannot continue.</value>
+  </data>
+  <data name="UseFlashActiveXControlWarning" xml:space="preserve">
+    <value>This curation uses the Flash ActiveX Control. It may not work as intended in future Windows updates.</value>
   </data>
   <data name="UseFlashpointLauncher" xml:space="preserve">
     <value>Please use the Flashpoint Launcher to select a game to start.</value>

@@ -49,6 +49,8 @@ namespace FlashpointSecurePlayer {
         private string TemplateName { get; set; } = ACTIVE_EXE_CONFIGURATION_NAME;
         private string Arguments { get; set; } = String.Empty;
         private MODIFICATIONS_REVERT_METHOD ModificationsRevertMethod { get; set; } = MODIFICATIONS_REVERT_METHOD.CRASH_RECOVERY;
+        private bool IgnoreActiveXControlInstallFailure { get; set; } = false;
+        private bool UseFlashActiveXControl { get; set; } = false;
         private bool RunAsAdministratorModification { get; set; } = false;
         private List<string> DownloadsBeforeModificationNames { get; set; } = null;
 
@@ -123,8 +125,9 @@ namespace FlashpointSecurePlayer {
                 // opening two instances of it
                 try {
                     processesByName = Process.GetProcessesByName(FLASHPOINT_LAUNCHER_PROCESS_NAME);
-                } catch (InvalidOperationException) {
+                } catch (InvalidOperationException ex) {
                     // only occurs Windows XP which is unsupported
+                    LogExceptionToLauncher(ex);
                     ProgressManager.ShowError();
                     MessageBox.Show(Properties.Resources.WindowsVersionTooOld, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Application.Exit();
@@ -319,8 +322,11 @@ namespace FlashpointSecurePlayer {
                             activeXControl.Install();
                         } catch (Win32Exception ex) {
                             LogExceptionToLauncher(ex);
-                            errorDelegate(Properties.Resources.ActiveXControlInstallFailed);
-                            throw new ActiveXImportFailedException("The ActiveX Import failed because the ActiveX Control failed to install.");
+
+                            if (!IgnoreActiveXControlInstallFailure) {
+                                errorDelegate(Properties.Resources.ActiveXControlInstallFailed);
+                                throw new ActiveXImportFailedException("The ActiveX Import failed because the ActiveX Control failed to install.");
+                            }
                         }
 
                         ProgressManager.CurrentGoal.Steps++;
@@ -333,8 +339,11 @@ namespace FlashpointSecurePlayer {
                             activeXControl.Uninstall();
                         } catch (Win32Exception ex) {
                             LogExceptionToLauncher(ex);
-                            errorDelegate(Properties.Resources.ActiveXControlUninstallFailed);
-                            throw new ActiveXImportFailedException("The ActiveX Import failed because the ActiveX Control failed to uninstall.");
+
+                            if (!IgnoreActiveXControlInstallFailure) {
+                                errorDelegate(Properties.Resources.ActiveXControlUninstallFailed);
+                                throw new ActiveXImportFailedException("The ActiveX Import failed because the ActiveX Control failed to uninstall.");
+                            }
                         }
 
                         ProgressManager.CurrentGoal.Steps++;
@@ -372,8 +381,11 @@ namespace FlashpointSecurePlayer {
                                 activeXControl.Install();
                             } catch (Win32Exception ex) {
                                 LogExceptionToLauncher(ex);
-                                errorDelegate(Properties.Resources.ActiveXControlInstallFailed);
-                                throw new ActiveXImportFailedException("The ActiveX Import failed because the ActiveX Control failed to install.");
+
+                                if (!IgnoreActiveXControlInstallFailure) {
+                                    errorDelegate(Properties.Resources.ActiveXControlInstallFailed);
+                                    throw new ActiveXImportFailedException("The ActiveX Import failed because the ActiveX Control failed to install.");
+                                }
                             }
 
                             ProgressManager.CurrentGoal.Steps++;
@@ -408,8 +420,11 @@ namespace FlashpointSecurePlayer {
                             activeXControl.Uninstall();
                         } catch (Win32Exception ex) {
                             LogExceptionToLauncher(ex);
-                            errorDelegate(Properties.Resources.ActiveXControlUninstallFailed);
-                            throw new ActiveXImportFailedException("The ActiveX Import failed because the ActiveX Control failed to uninstall.");
+
+                            if (!IgnoreActiveXControlInstallFailure) {
+                                errorDelegate(Properties.Resources.ActiveXControlUninstallFailed);
+                                throw new ActiveXImportFailedException("The ActiveX Import failed because the ActiveX Control failed to uninstall.");
+                            }
                         }
 
                         ProgressManager.CurrentGoal.Steps++;
@@ -467,7 +482,7 @@ namespace FlashpointSecurePlayer {
                             throw new InvalidModeException("The address (" + URL + ") was not understood by the Mode.");
                         }
 
-                        webBrowserForm = new WebBrowser(webBrowserURL) {
+                        webBrowserForm = new WebBrowser(webBrowserURL, UseFlashActiveXControl) {
                             WindowState = FormWindowState.Maximized
                         };
 
@@ -1110,6 +1125,10 @@ namespace FlashpointSecurePlayer {
                         RunAsAdministratorModification = true;
                     } else if (arg == "--dev-force-delete-all") {
                         ModificationsRevertMethod = MODIFICATIONS_REVERT_METHOD.DELETE_ALL;
+                    } else if (arg == "--dev-ignore-activex-control-install-failure") {
+                        IgnoreActiveXControlInstallFailure = true;
+                    } else if (arg == "--dev-use-flash-activex-control") {
+                        UseFlashActiveXControl = true;
                     } else {
                         if (i < args.Length - 1) {
                             if (arg == "--arguments" || arg == "-args") {
@@ -1136,6 +1155,14 @@ namespace FlashpointSecurePlayer {
                         Application.Exit();
                         return;
                     }
+                }
+
+                if (IgnoreActiveXControlInstallFailure) {
+                    MessageBox.Show(Properties.Resources.IgnoreActiveXControlInstallFailureWarning, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+
+                if (UseFlashActiveXControl) {
+                    MessageBox.Show(Properties.Resources.UseFlashActiveXControlWarning, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
 
                 // this is where we do crash recovery

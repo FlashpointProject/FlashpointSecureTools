@@ -99,7 +99,8 @@ namespace FlashpointSecurePlayer {
                 return false;
             }
         }
-
+        
+        private bool useFlashActiveXControl = false;
         private CustomSecurityManager customSecurityManager = null;
         private readonly WebBrowserTitle webBrowserTitle;
         private Uri webBrowserURL = null;
@@ -160,15 +161,17 @@ namespace FlashpointSecurePlayer {
             messageFilter = new MessageFilter(this, new EventHandler(OnBack), new EventHandler(OnForward));
         }
 
-        public WebBrowser() {
+        public WebBrowser(bool _useFlashActiveXControl = false) {
             _WebBrowser();
             webBrowserTitle = new WebBrowserTitle(this);
+            useFlashActiveXControl = _useFlashActiveXControl;
         }
 
-        public WebBrowser(Uri WebBrowserURL) {
+        public WebBrowser(Uri _webBrowserURL, bool _useFlashActiveXControl = false) {
             _WebBrowser();
             webBrowserTitle = new WebBrowserTitle(this);
-            webBrowserURL = WebBrowserURL;
+            webBrowserURL = _webBrowserURL;
+            useFlashActiveXControl = _useFlashActiveXControl;
         }
 
         private void WebBrowser_Load(object sender, EventArgs e) {
@@ -198,14 +201,16 @@ namespace FlashpointSecurePlayer {
             try {
                 //string portString = port.ToString();
                 FlashpointProxy.Enable("http=127.0.0.1:22500;https=127.0.0.1:22500;ftp=127.0.0.1:22500");
-            } catch (FlashpointProxyException) {
+            } catch (FlashpointProxyException ex) {
                 // popup message box but allow through anyway
+                LogExceptionToLauncher(ex);
                 MessageBox.Show(Properties.Resources.FlashpointProxyNotEnabled, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
 
             try {
-                customSecurityManager = new CustomSecurityManager(closableWebBrowser1);
-            } catch (Win32Exception) {
+                customSecurityManager = new CustomSecurityManager(closableWebBrowser1, useFlashActiveXControl);
+            } catch (Win32Exception ex) {
+                LogExceptionToLauncher(ex);
                 ProgressManager.ShowError();
                 MessageBox.Show(Properties.Resources.FailedCreateCustomSecurityManager, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Application.Exit();
@@ -292,7 +297,7 @@ namespace FlashpointSecurePlayer {
         }
 
         private void ShDocVwWebBrowser_NewWindow2(ref object ppDisp, ref bool Cancel) {
-            WebBrowser webBrowserForm = new WebBrowser();
+            WebBrowser webBrowserForm = new WebBrowser(useFlashActiveXControl);
             webBrowserForm.Show(this);
             ppDisp = webBrowserForm.PPDisp;
             Cancel = false;
