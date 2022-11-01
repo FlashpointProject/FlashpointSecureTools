@@ -869,6 +869,7 @@ namespace FlashpointSecurePlayer {
                     }
                 } catch {
                     this.kernelSession.Dispose();
+                    this.kernelSession = null;
                     ImportStarted = false;
                 }
             } catch {
@@ -924,6 +925,7 @@ namespace FlashpointSecurePlayer {
                 SetFlashpointSecurePlayerSection(TemplateName);
             } finally {
                 this.kernelSession.Dispose();
+                this.kernelSession = null;
                 ImportStarted = false;
                 SetControlBox();
             }

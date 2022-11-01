@@ -6,7 +6,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using static FlashpointSecurePlayer.Shared;
@@ -14,6 +13,7 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 
 using SHDocVw;
 using System.Security.Permissions;
+using System.Threading;
 
 namespace FlashpointSecurePlayer {
     public partial class WebBrowser : Form {
@@ -100,11 +100,15 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        private int FULLSCREEN_EXIT_LABEL_TIMER_TIME = 2500;
+
         private bool useFlashActiveXControl = false;
         private CustomSecurityManager customSecurityManager = null;
         private readonly WebBrowserTitle webBrowserTitle;
         private Uri webBrowserURL = null;
         private bool addressToolStripSpringTextBoxEntered = false;
+        private bool fullscreen = false;
+        private System.Windows.Forms.Timer exitFullscreenLabelTimer;
         private MessageFilter messageFilter = null;
         private bool resizable = true;
         private object downloadCompletedLock = new object();
@@ -142,6 +146,72 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        private bool ExitFullscreenLabelTimer {
+            get {
+                return exitFullscreenLabelTimer != null;
+            }
+
+            set {
+                if (exitFullscreenLabelTimer != null) {
+                    exitFullscreenLabelTimer.Stop();
+                    exitFullscreenLabelTimer.Tick -= exitFullscreenLabelTimer_Tick;
+                    exitFullscreenLabelTimer.Dispose();
+                    exitFullscreenLabelTimer = null;
+                }
+
+                if (value) {
+                    exitFullscreenLabelTimer = new System.Windows.Forms.Timer();
+                    exitFullscreenLabelTimer.Interval = FULLSCREEN_EXIT_LABEL_TIMER_TIME;
+                    exitFullscreenLabelTimer.Tick += exitFullscreenLabelTimer_Tick;
+                    exitFullscreenLabelTimer.Start();
+                }
+            }
+        }
+
+        private bool Fullscreen {
+            get {
+                return fullscreen;
+            }
+
+            set {
+                fullscreen = value;
+
+                if (fullscreen) {
+                    toolBarToolStrip.Visible = false;
+                    statusBarStatusStrip.Visible = false;
+                    closableWebBrowser.Dock = DockStyle.Fill;
+
+                    BringToFront();
+
+                    // need to do this first to have an effect if starting maximized
+                    WindowState = FormWindowState.Normal;
+                    // knock out borders, temporarily disabling resizing
+                    FormBorderStyle = FormBorderStyle.None;
+                    // enter fullscreen
+                    WindowState = FormWindowState.Maximized;
+
+                    exitFullscreenLabel.Visible = true;
+                    ExitFullscreenLabelTimer = true;
+                } else {
+                    ExitFullscreenLabelTimer = false;
+                    exitFullscreenLabel.Visible = false;
+
+                    BringToFront();
+
+                    // need to do this first to reset the window to its set size
+                    FormBorderStyle = FormBorderStyle.Sizable;
+                    // exit fullscreen
+                    WindowState = FormWindowState.Normal;
+                    // show resizable if this is a resizable window
+                    Resizable = resizable;
+
+                    closableWebBrowser.Dock = DockStyle.None;
+                    toolBarToolStrip.Visible = true;
+                    statusBarStatusStrip.Visible = true;
+                }
+            }
+        }
+
         public object PPDisp {
             get {
                 if (closableWebBrowser == null) {
@@ -165,7 +235,7 @@ namespace FlashpointSecurePlayer {
             closableWebBrowser.StatusTextChanged += closableWebBrowser_StatusTextChanged;
             closableWebBrowser.Navigated += closableWebBrowser_Navigated;
 
-            statusBarStatusStrip.Renderer = new FlashpointSecurePlayer.EllipsisRenderer();
+            statusBarStatusStrip.Renderer = new FlashpointSecurePlayer.EndEllipsisTextRenderer();
 
             messageFilter = new MessageFilter(this, new EventHandler(OnBack), new EventHandler(OnForward));
         }
@@ -295,14 +365,23 @@ namespace FlashpointSecurePlayer {
             }
 
             closableWebBrowser.Dispose();
+            closableWebBrowser = null;
         }
 
         private void WebBrowser_Activated(object sender, EventArgs e) {
             Application.AddMessageFilter(messageFilter);
+
+            if (Fullscreen) {
+                BringToFront();
+            }
         }
 
         private void WebBrowser_Deactivate(object sender, EventArgs e) {
             Application.RemoveMessageFilter(messageFilter);
+
+            if (Fullscreen) {
+                WindowState = FormWindowState.Minimized;
+            }
         }
 
         private void closableWebBrowser_ProgressChanged(object sender, WebBrowserProgressChangedEventArgs e) {
@@ -357,12 +436,17 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
+            if (closableWebBrowser.Url.Equals("about:blank")) {
+                addressToolStripSpringTextBox.Text = String.Empty;
+                return;
+            }
+
             addressToolStripSpringTextBox.Text = closableWebBrowser.Url.ToString();
         }
 
         private void ShDocVwWebBrowser_NewWindow2(ref object ppDisp, ref bool Cancel) {
             WebBrowser webBrowserForm = new WebBrowser(useFlashActiveXControl);
-            webBrowserForm.Show(this);
+            webBrowserForm.Show(/*this*/);
             ppDisp = webBrowserForm.PPDisp;
             Cancel = false;
         }
@@ -517,6 +601,21 @@ namespace FlashpointSecurePlayer {
             Navigate(addressToolStripSpringTextBox.Text);
         }
 
+        private void newWindowButton_Click(object sender, EventArgs e) {
+            WebBrowser webBrowserForm = new WebBrowser(useFlashActiveXControl);
+            webBrowserForm.Show(/*this*/);
+        }
+
+        private void fullscreenButton_Click(object sender, EventArgs e) {
+            Fullscreen = true;
+        }
+
+        private void exitFullscreenLabelTimer_Tick(Object myObject, EventArgs myEventArgs) {
+            ExitFullscreenLabelTimer = false;
+
+            exitFullscreenLabel.Visible = false;
+        }
+
         private void OnBack(object sender, EventArgs e) {
             if (closableWebBrowser == null) {
                 return;
@@ -536,23 +635,9 @@ namespace FlashpointSecurePlayer {
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
             if (keyData == Keys.F11 || keyData == (Keys.Alt | Keys.Enter)) {
                 if (TopMost) {
-                    // allow other windows over this one
-                    TopMost = false;
-                    // need to do this now to reset the window to its set size
-                    FormBorderStyle = FormBorderStyle.Sizable;
-                    // exit fullscreen
-                    WindowState = FormWindowState.Normal;
-                    // show resizable if this is a resizable window
-                    Resizable = resizable;
+                    Fullscreen = false;
                 } else {
-                    // need to do this first to have an effect if starting maximized
-                    WindowState = FormWindowState.Normal;
-                    // knock out borders, temporarily disabling resizing
-                    FormBorderStyle = FormBorderStyle.None;
-                    // enter fullscreen
-                    WindowState = FormWindowState.Maximized;
-                    // don't allow other windows over this one
-                    TopMost = true;
+                    Fullscreen = true;
                 }
             }
             return true;

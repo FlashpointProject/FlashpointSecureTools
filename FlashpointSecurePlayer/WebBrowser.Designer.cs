@@ -35,10 +35,14 @@
             this.toolBarToolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.addressToolStripSpringTextBox = new FlashpointSecurePlayer.ToolStripSpringTextBox();
             this.goButton = new System.Windows.Forms.ToolStripButton();
+            this.toolbarToolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.newWindowButton = new System.Windows.Forms.ToolStripButton();
+            this.fullscreenButton = new System.Windows.Forms.ToolStripButton();
             this.statusBarStatusStrip = new System.Windows.Forms.StatusStrip();
             this.statusToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.progressToolStripProgressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.closableWebBrowser = new FlashpointSecurePlayer.ClosableWebBrowser();
+            this.exitFullscreenLabel = new System.Windows.Forms.Label();
             this.toolBarToolStrip.SuspendLayout();
             this.statusBarStatusStrip.SuspendLayout();
             this.SuspendLayout();
@@ -55,7 +59,10 @@
             this.printButton,
             this.toolBarToolStripSeparator2,
             this.addressToolStripSpringTextBox,
-            this.goButton});
+            this.goButton,
+            this.toolbarToolStripSeparator3,
+            this.newWindowButton,
+            this.fullscreenButton});
             this.toolBarToolStrip.Location = new System.Drawing.Point(0, 0);
             this.toolBarToolStrip.Name = "toolBarToolStrip";
             this.toolBarToolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
@@ -150,7 +157,7 @@
             this.addressToolStripSpringTextBox.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.addressToolStripSpringTextBox.Name = "addressToolStripSpringTextBox";
             this.addressToolStripSpringTextBox.Padding = new System.Windows.Forms.Padding(3, 0, 3, 0);
-            this.addressToolStripSpringTextBox.Size = new System.Drawing.Size(376, 25);
+            this.addressToolStripSpringTextBox.Size = new System.Drawing.Size(324, 25);
             this.addressToolStripSpringTextBox.Enter += new System.EventHandler(this.addressToolStripSpringTextBox_Enter);
             this.addressToolStripSpringTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.addressToolStripTextBox_KeyDown);
             this.addressToolStripSpringTextBox.Click += new System.EventHandler(this.addressToolStripSpringTextBox_Click);
@@ -164,6 +171,35 @@
             this.goButton.Size = new System.Drawing.Size(42, 22);
             this.goButton.Text = "Go";
             this.goButton.Click += new System.EventHandler(this.goButton_Click);
+            // 
+            // toolbarToolStripSeparator3
+            // 
+            this.toolbarToolStripSeparator3.Name = "toolbarToolStripSeparator3";
+            this.toolbarToolStripSeparator3.Size = new System.Drawing.Size(6, 25);
+            // 
+            // newWindowButton
+            // 
+            this.newWindowButton.AutoToolTip = false;
+            this.newWindowButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.newWindowButton.Image = ((System.Drawing.Image)(resources.GetObject("newWindowButton.Image")));
+            this.newWindowButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.newWindowButton.Name = "newWindowButton";
+            this.newWindowButton.Size = new System.Drawing.Size(23, 22);
+            this.newWindowButton.Text = "toolStripButton1";
+            this.newWindowButton.ToolTipText = "New Window";
+            this.newWindowButton.Click += new System.EventHandler(this.newWindowButton_Click);
+            // 
+            // fullscreenButton
+            // 
+            this.fullscreenButton.AutoToolTip = false;
+            this.fullscreenButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.fullscreenButton.Image = ((System.Drawing.Image)(resources.GetObject("fullscreenButton.Image")));
+            this.fullscreenButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.fullscreenButton.Name = "fullscreenButton";
+            this.fullscreenButton.Size = new System.Drawing.Size(23, 22);
+            this.fullscreenButton.Text = "toolStripButton2";
+            this.fullscreenButton.ToolTipText = "Fullscreen";
+            this.fullscreenButton.Click += new System.EventHandler(this.fullscreenButton_Click);
             // 
             // statusBarStatusStrip
             // 
@@ -210,11 +246,28 @@
             this.closableWebBrowser.Url = new System.Uri("about:blank", System.UriKind.Absolute);
             this.closableWebBrowser.ProgressChanged += new System.Windows.Forms.WebBrowserProgressChangedEventHandler(this.closableWebBrowser_ProgressChanged);
             // 
+            // exitFullscreenLabel
+            // 
+            this.exitFullscreenLabel.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.exitFullscreenLabel.AutoSize = true;
+            this.exitFullscreenLabel.BackColor = System.Drawing.Color.DimGray;
+            this.exitFullscreenLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.exitFullscreenLabel.ForeColor = System.Drawing.Color.White;
+            this.exitFullscreenLabel.Location = new System.Drawing.Point(174, 50);
+            this.exitFullscreenLabel.Name = "exitFullscreenLabel";
+            this.exitFullscreenLabel.Padding = new System.Windows.Forms.Padding(10);
+            this.exitFullscreenLabel.Size = new System.Drawing.Size(308, 45);
+            this.exitFullscreenLabel.TabIndex = 3;
+            this.exitFullscreenLabel.Text = "Press F11 to Exit Fullscreen.";
+            this.exitFullscreenLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.exitFullscreenLabel.Visible = false;
+            // 
             // WebBrowser
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(640, 527);
+            this.Controls.Add(this.exitFullscreenLabel);
             this.Controls.Add(this.statusBarStatusStrip);
             this.Controls.Add(this.toolBarToolStrip);
             this.Controls.Add(this.closableWebBrowser);
@@ -252,6 +305,10 @@
         private System.Windows.Forms.ToolStripSeparator toolBarToolStripSeparator2;
         private ToolStripSpringTextBox addressToolStripSpringTextBox;
         private System.Windows.Forms.ToolStripButton goButton;
+        private System.Windows.Forms.ToolStripSeparator toolbarToolStripSeparator3;
+        private System.Windows.Forms.ToolStripButton newWindowButton;
+        private System.Windows.Forms.ToolStripButton fullscreenButton;
+        private System.Windows.Forms.Label exitFullscreenLabel;
     }
 }
 

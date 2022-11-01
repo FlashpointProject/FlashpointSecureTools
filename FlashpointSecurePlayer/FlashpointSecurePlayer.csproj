@@ -88,7 +88,7 @@
     </Compile>
     <Compile Include="CustomSecurityManager.cs" />
     <Compile Include="DownloadsBefore.cs" />
-    <Compile Include="EllipsisRenderer.cs" />
+    <Compile Include="EndEllipsisTextRenderer.cs" />
     <Compile Include="InternetInterfaces.cs" />
     <Compile Include="EnvironmentVariables.cs" />
     <Compile Include="FlashpointSecurePlayerGUI.cs">

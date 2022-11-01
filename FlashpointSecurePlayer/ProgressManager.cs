@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using static FlashpointSecurePlayer.Shared;
@@ -36,7 +34,7 @@ namespace FlashpointSecurePlayer {
                 private int steps = 0;
                 private readonly object timeoutLock = new object();
                 private bool timeout = false;
-                private readonly System.Threading.Timer timer;
+                private readonly System.Timers.Timer timer;
 
                 public int Size {
                     get {
@@ -104,10 +102,13 @@ namespace FlashpointSecurePlayer {
                     Time = time;
 
                     if (Time > 0) {
-                        timer = new System.Threading.Timer(new TimerCallback(delegate (object state) {
-                            Timeout = true;
-                        }), null, time, System.Threading.Timeout.Infinite);
+                        timer = new System.Timers.Timer(Time);
+                        timer.Elapsed += timer_Elapsed;
                     }
+                }
+
+                private void timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e) {
+                    Timeout = true;
                 }
             }
 
