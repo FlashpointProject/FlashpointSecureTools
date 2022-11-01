@@ -343,9 +343,8 @@ namespace FlashpointSecurePlayer {
         }
 
         private void WebBrowser_FormClosing(object sender, FormClosingEventArgs e) {
-            //Application.Exit();
             Hide();
-
+            
             if (closableWebBrowser == null) {
                 return;
             }
@@ -364,6 +363,9 @@ namespace FlashpointSecurePlayer {
                 shDocVwWebBrowser.DownloadComplete -= ShDocVwWebBrowser_DownloadComplete;
             }
 
+            // the Form property must be nulled out, otherwise we enter an infinite loop
+            // (browser reports being closed > we close the form and so on)
+            closableWebBrowser.Form = null;
             closableWebBrowser.Dispose();
             closableWebBrowser = null;
         }

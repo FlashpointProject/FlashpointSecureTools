@@ -13,21 +13,7 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 
 namespace FlashpointSecurePlayer {
     public partial class ClosableWebBrowser : System.Windows.Forms.WebBrowser {
-        private Form form = null;
-
-        public Form Form {
-            get {
-                return form;
-            }
-
-            set {
-                if (form != null) {
-                    return;
-                }
-
-                form = value;
-            }
-        }
+        public Form Form { get; set; } = null;
 
         public ClosableWebBrowser() {
             InitializeComponent();
