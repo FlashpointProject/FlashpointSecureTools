@@ -16,12 +16,13 @@ namespace FlashpointSecurePlayer {
         protected readonly Form form;
 
         public ClosableWebBrowser(Form form) {
+            InitializeComponent();
+
             this.form = form;
             this.PreviewKeyDown += ClosableWebBrowser_PreviewKeyDown;
         }
 
-        private void ClosableWebBrowser_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
-        {
+        private void ClosableWebBrowser_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e) {
             e.IsInputKey = true;
         }
 
@@ -29,31 +30,30 @@ namespace FlashpointSecurePlayer {
             base.OnPaint(pe);
         }
 
-
         protected override void WndProc(ref Message m) {
-            switch (m.Msg) {
-                case WM_PARENTNOTIFY:
-                if (!DesignMode) {
+            if (!DesignMode) {
+                switch (m.Msg) {
+                    case WM_PARENTNOTIFY:
                     if (m.WParam.ToInt32() == WM_DESTROY) {
                         if (form != null) {
                             form.Close();
                         }
                     }
-                }
 
-                DefWndProc(ref m);
-                return;
-                case WM_PAINT:
-                if (form != null) {
-                    if (form.WindowState != FormWindowState.Maximized) {
-                        // lame fix: browser hangs when window.open top attribute > control height (why?)
-                        // Width, Height, and WindowState changes all work here
-                        // Width/Height are less obvious and Height doesn't cause text reflow
-                        form.Height--;
-                        form.Height++;
+                    DefWndProc(ref m);
+                    return;
+                    case WM_PAINT:
+                    if (form != null) {
+                        if (form.WindowState != FormWindowState.Maximized) {
+                            // lame fix: browser hangs when window.open top attribute > control height (why?)
+                            // Width, Height, and WindowState changes all work here
+                            // Width/Height are less obvious and Height doesn't cause text reflow
+                            form.Height--;
+                            form.Height++;
+                        }
                     }
+                    break;
                 }
-                break;
             }
 
             base.WndProc(ref m);

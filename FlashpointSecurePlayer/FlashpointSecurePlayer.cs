@@ -1112,7 +1112,7 @@ namespace FlashpointSecurePlayer {
                 }
 
                 TemplateName = args[1];
-                URL = args[2];
+                URL = AddURLProtocol(args[2]);
                 string arg = null;
 
                 for (int i = 3;i < args.Length;i++) {

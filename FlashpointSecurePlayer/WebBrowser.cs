@@ -18,14 +18,14 @@ using System.Security.Permissions;
 namespace FlashpointSecurePlayer {
     public partial class WebBrowser : Form {
         private class WebBrowserTitle {
-            private const string APPLICATION_TITLE = "Flashpoint Secure Player";
-
             protected readonly Form form;
+            private string applicationTitle = "Flashpoint Secure Player";
             private string documentTitle = null;
-            private long progress = -1;
+            private int progress = -1;
 
             public WebBrowserTitle(Form form) {
                 this.form = form;
+                this.applicationTitle += " " + typeof(WebBrowserTitle).Assembly.GetName().Version;
             }
 
             private void Show() {
@@ -40,7 +40,7 @@ namespace FlashpointSecurePlayer {
                     text.Append(" - ");
                 }
 
-                text.Append(APPLICATION_TITLE);
+                text.Append(this.applicationTitle);
 
                 if (progress != -1) {
                     text.Append(" [");
@@ -58,7 +58,7 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
-            public long Progress {
+            public int Progress {
                 set {
                     progress = value;
                     Show();
@@ -99,7 +99,7 @@ namespace FlashpointSecurePlayer {
                 return false;
             }
         }
-        
+
         private bool useFlashActiveXControl = false;
         private CustomSecurityManager customSecurityManager = null;
         private readonly WebBrowserTitle webBrowserTitle;
@@ -156,8 +156,12 @@ namespace FlashpointSecurePlayer {
             if (closableWebBrowser1 == null) {
                 return;
             }
-            
+
+            closableWebBrowser1.CanGoBackChanged += closableWebBrowser1_CanGoBackChanged;
+            closableWebBrowser1.CanGoForwardChanged += closableWebBrowser1_CanGoForwardChanged;
             closableWebBrowser1.DocumentTitleChanged += closableWebBrowser1_DocumentTitleChanged;
+            closableWebBrowser1.StatusTextChanged += closableWebBrowser1_StatusTextChanged;
+            closableWebBrowser1.Navigated += closableWebBrowser1_Navigated;
             messageFilter = new MessageFilter(this, new EventHandler(OnBack), new EventHandler(OnForward));
         }
 
@@ -172,6 +176,26 @@ namespace FlashpointSecurePlayer {
             webBrowserTitle = new WebBrowserTitle(this);
             webBrowserURL = _webBrowserURL;
             useFlashActiveXControl = _useFlashActiveXControl;
+        }
+
+        private void Navigate(String URL) {
+            if (closableWebBrowser1 == null) {
+                return;
+            }
+
+            if (String.IsNullOrEmpty(URL)) {
+                return;
+            }
+
+            if (URL.Equals("about:blank")) {
+                return;
+            }
+
+            try {
+                closableWebBrowser1.Navigate(new Uri(AddURLProtocol(URL)));
+            } catch (System.UriFormatException) {
+                return;
+            }
         }
 
         private void WebBrowser_Load(object sender, EventArgs e) {
@@ -239,10 +263,10 @@ namespace FlashpointSecurePlayer {
             if (closableWebBrowser1 == null || webBrowserURL == null) {
                 return;
             }
-            
+
             closableWebBrowser1.Url = webBrowserURL;
         }
-        
+
         private void WebBrowser_FormClosing(object sender, FormClosingEventArgs e) {
             //Application.Exit();
             Hide();
@@ -277,15 +301,33 @@ namespace FlashpointSecurePlayer {
         }
 
         private void closableWebBrowser1_ProgressChanged(object sender, WebBrowserProgressChangedEventArgs e) {
-            if (e.CurrentProgress == -1) {
+            if (e.CurrentProgress < 0) {
                 DownloadCompleted = true;
             }
 
             if (DownloadCompleted) {
                 return;
             }
-            
-            webBrowserTitle.Progress = e.MaximumProgress > 0 ? (long)Math.Floor((double)e.CurrentProgress / e.MaximumProgress) : 0;
+
+            int progress = e.MaximumProgress > 0 ? (int)Math.Min((double)e.CurrentProgress / e.MaximumProgress * 100, 100) : 0;
+            webBrowserTitle.Progress = progress;
+            progressToolStripProgressBar.Value = progress;
+        }
+
+        private void closableWebBrowser1_CanGoBackChanged(object sender, EventArgs e) {
+            if (closableWebBrowser1 == null) {
+                return;
+            }
+
+            backButton.Enabled = closableWebBrowser1.CanGoBack;
+        }
+
+        private void closableWebBrowser1_CanGoForwardChanged(object sender, EventArgs e) {
+            if (closableWebBrowser1 == null) {
+                return;
+            }
+
+            forwardButton.Enabled = closableWebBrowser1.CanGoForward;
         }
 
         private void closableWebBrowser1_DocumentTitleChanged(object sender, EventArgs e) {
@@ -294,6 +336,22 @@ namespace FlashpointSecurePlayer {
             }
 
             webBrowserTitle.DocumentTitle = closableWebBrowser1.DocumentTitle;
+        }
+
+        private void closableWebBrowser1_StatusTextChanged(object sender, EventArgs e) {
+            if (closableWebBrowser1 == null) {
+                return;
+            }
+
+            statusToolStripStatusLabel.Text = closableWebBrowser1.StatusText;
+        }
+
+        private void closableWebBrowser1_Navigated(object sender, EventArgs e) {
+            if (closableWebBrowser1 == null) {
+                return;
+            }
+
+            addressToolStripTextBox.Text = closableWebBrowser1.Url.ToString();
         }
 
         private void ShDocVwWebBrowser_NewWindow2(ref object ppDisp, ref bool Cancel) {
@@ -348,6 +406,7 @@ namespace FlashpointSecurePlayer {
 
             DownloadCompleted = false;
             webBrowserTitle.Progress = 0;
+            progressToolStripProgressBar.Value = 0;
             UseWaitCursor = true;
             closableWebBrowser1Control.Enabled = false;
         }
@@ -365,8 +424,75 @@ namespace FlashpointSecurePlayer {
 
             DownloadCompleted = true;
             webBrowserTitle.Progress = -1;
+            progressToolStripProgressBar.Value = 0;
             closableWebBrowser1Control.Enabled = true;
             UseWaitCursor = false;
+        }
+
+        private void backButton_Click(object sender, EventArgs e) {
+            if (closableWebBrowser1 == null) {
+                return;
+            }
+
+            closableWebBrowser1.GoBack();
+        }
+
+        private void forwardButton_Click(object sender, EventArgs e) {
+            if (closableWebBrowser1 == null) {
+                return;
+            }
+
+            closableWebBrowser1.GoForward();
+        }
+
+        private void stopButton_Click(object sender, EventArgs e) {
+            if (closableWebBrowser1 == null) {
+                return;
+            }
+
+            closableWebBrowser1.Stop();
+        }
+
+        private void refreshButton_Click(object sender, EventArgs e) {
+            if (closableWebBrowser1 == null) {
+                return;
+            }
+
+            // Skip refresh if about:blank is loaded to avoid removing
+            // content specified by the DocumentText property.
+            if (!closableWebBrowser1.Url.Equals("about:blank")) {
+                closableWebBrowser1.Refresh();
+            }
+        }
+
+        private void saveAsButton_Click(object sender, EventArgs e) {
+            if (closableWebBrowser1 == null) {
+                return;
+            }
+
+            closableWebBrowser1.ShowSaveAsDialog();
+        }
+
+        private void printButton_Click(object sender, EventArgs e) {
+            if (closableWebBrowser1 == null) {
+                return;
+            }
+
+            closableWebBrowser1.ShowPrintDialog();
+        }
+
+        private void addressToolStripTextBox_Click(object sender, EventArgs e) {
+            addressToolStripTextBox.SelectAll();
+        }
+
+        private void addressToolStripTextBox_KeyDown(object sender, KeyEventArgs e) {
+            if (e.KeyCode == Keys.Enter) {
+                Navigate(addressToolStripTextBox.Text);
+            }
+        }
+
+        private void goButton_Click(object sender, EventArgs e) {
+            Navigate(addressToolStripTextBox.Text);
         }
 
         private void OnBack(object sender, EventArgs e) {
@@ -374,9 +500,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            if (closableWebBrowser1.CanGoBack) {
-                closableWebBrowser1.GoBack();
-            }
+            closableWebBrowser1.GoBack();
         }
 
         private void OnForward(object sender, EventArgs e) {
@@ -384,9 +508,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            if (closableWebBrowser1.CanGoForward) {
-                closableWebBrowser1.GoForward();
-            }
+            closableWebBrowser1.GoForward();
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {

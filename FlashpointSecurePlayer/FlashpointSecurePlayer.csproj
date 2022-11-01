@@ -104,6 +104,12 @@
     <Compile Include="SingleInstance.cs" />
     <Compile Include="ProcessSync.cs" />
     <Compile Include="RegistryStates.cs" />
+    <Compile Include="ToolStripSpringTextBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ToolStripSpringTextBox.Designer.cs">
+      <DependentUpon>ToolStripSpringTextBox.cs</DependentUpon>
+    </Compile>
     <Compile Include="WebBrowser.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -1880,6 +1880,13 @@ namespace FlashpointSecurePlayer {
         }
         */
 
+        public static string AddURLProtocol(string URL) {
+            if (URL.StartsWith("http://") || URL.StartsWith("https://") || URL.StartsWith("ftp://")) {
+                return URL;
+            }
+            return "http://" + URL;
+        }
+
         // https://web.archive.org/web/20190109172835/https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
         public static void GetValidArgument(ref string argument, bool force = false) {
             if (force || argument == String.Empty || argument.IndexOfAny(new char[] { ' ', '\t', '\n', '\v', '\"' }) != -1) {
