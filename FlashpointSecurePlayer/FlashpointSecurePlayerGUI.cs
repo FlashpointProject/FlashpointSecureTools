@@ -1464,7 +1464,7 @@ namespace FlashpointSecurePlayer {
             } catch (InvalidOperationException ex) {
                 // IT IS VERY IMPORTANT THIS SHOULD NEVER HAPPEN!
                 LogExceptionToLauncher(ex);
-                Environment.Exit(0);
+                Environment.Exit(-1);
             }
         }
     }
