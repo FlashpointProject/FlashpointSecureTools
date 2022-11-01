@@ -352,7 +352,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            addressToolStripTextBox.Text = closableWebBrowser1.Url.ToString();
+            addressToolStripSpringTextBox.Text = closableWebBrowser1.Url.ToString();
         }
 
         private void ShDocVwWebBrowser_NewWindow2(ref object ppDisp, ref bool Cancel) {
@@ -483,17 +483,24 @@ namespace FlashpointSecurePlayer {
         }
 
         private void addressToolStripTextBox_Click(object sender, EventArgs e) {
-            addressToolStripTextBox.SelectAll();
+            addressToolStripSpringTextBox.SelectAll();
+        }
+
+        private void addressToolStripTextBox_Paint(object sender, PaintEventArgs e) {
+            // manually draw the border so the text is vertically aligned correctly
+            Rectangle borderRectangle = new Rectangle(0, 1, addressToolStripSpringTextBox.Width - 1, addressToolStripSpringTextBox.Height - 3);
+            e.Graphics.FillRectangle(SystemBrushes.Window, borderRectangle);
+            e.Graphics.DrawRectangle(SystemPens.WindowFrame, borderRectangle);
         }
 
         private void addressToolStripTextBox_KeyDown(object sender, KeyEventArgs e) {
             if (e.KeyCode == Keys.Enter) {
-                Navigate(addressToolStripTextBox.Text);
+                Navigate(addressToolStripSpringTextBox.Text);
             }
         }
 
         private void goButton_Click(object sender, EventArgs e) {
-            Navigate(addressToolStripTextBox.Text);
+            Navigate(addressToolStripSpringTextBox.Text);
         }
 
         private void OnBack(object sender, EventArgs e) {

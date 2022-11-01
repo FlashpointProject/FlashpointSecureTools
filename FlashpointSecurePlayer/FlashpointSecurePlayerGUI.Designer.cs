@@ -44,9 +44,9 @@
             this.securePlaybackProgressBar.Name = "securePlaybackProgressBar";
             this.securePlaybackProgressBar.Size = new System.Drawing.Size(389, 23);
             this.securePlaybackProgressBar.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
-            this.securePlaybackProgressBar.TabIndex = 2;
+            this.securePlaybackProgressBar.TabIndex = 0;
             // 
-            // FlashpointSecurePlayer
+            // FlashpointSecurePlayerGUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -56,7 +56,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
-            this.Name = "FlashpointSecurePlayer";
+            this.Name = "FlashpointSecurePlayerGUI";
             this.Text = "Flashpoint Secure Player";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FlashpointSecurePlayer_FormClosing);
             this.Load += new System.EventHandler(this.FlashpointSecurePlayer_Load);
