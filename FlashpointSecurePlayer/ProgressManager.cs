@@ -34,7 +34,7 @@ namespace FlashpointSecurePlayer {
                 private int steps = 0;
                 private readonly object timeoutLock = new object();
                 private bool timeout = false;
-                private readonly System.Timers.Timer timer;
+                private System.Timers.Timer timer;
 
                 public int Size {
                     get {
@@ -103,11 +103,18 @@ namespace FlashpointSecurePlayer {
 
                     if (Time > 0) {
                         timer = new System.Timers.Timer(Time);
+                        timer.AutoReset = false;
                         timer.Elapsed += timer_Elapsed;
+                        timer.Start();
                     }
                 }
 
                 private void timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e) {
+                    timer.Stop();
+                    timer.Elapsed -= timer_Elapsed;
+                    timer.Close();
+                    timer = null;
+
                     Timeout = true;
                 }
             }

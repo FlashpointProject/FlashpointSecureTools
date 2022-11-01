@@ -604,6 +604,7 @@ namespace FlashpointSecurePlayer {
         }
 
         private void newWindowButton_Click(object sender, EventArgs e) {
+            // we don't want this window to be the parent, breaks fullscreen and not otherwise useful
             WebBrowser webBrowserForm = new WebBrowser(useFlashActiveXControl);
             webBrowserForm.Show(/*this*/);
         }
@@ -612,7 +613,7 @@ namespace FlashpointSecurePlayer {
             Fullscreen = true;
         }
 
-        private void exitFullscreenLabelTimer_Tick(Object myObject, EventArgs myEventArgs) {
+        private void exitFullscreenLabelTimer_Tick(object sender, EventArgs e) {
             ExitFullscreenLabelTimer = false;
 
             exitFullscreenLabel.Visible = false;

@@ -30,26 +30,26 @@ namespace FlashpointSecurePlayer {
         }
 
         protected override void WndProc(ref Message m) {
-            if (!DesignMode) {
+            if (!DesignMode && Form != null) {
                 switch (m.Msg) {
                     case WM_PARENTNOTIFY:
                     if (m.WParam.ToInt32() == WM_DESTROY) {
-                        if (Form != null) {
-                            Form.Close();
-                        }
+                        // close the form if the browser control closes
+                        // (for example, if window.close is called)
+                        // needs to be done here because the event
+                        // intended for this does not actually fire
+                        Form.Close();
                     }
 
                     DefWndProc(ref m);
                     return;
                     case WM_PAINT:
-                    if (Form != null) {
-                        if (Form.WindowState != FormWindowState.Maximized) {
-                            // lame fix: browser hangs when window.open top attribute > control height (why?)
-                            // Width, Height, and WindowState changes all work here
-                            // Width/Height are less obvious and Height doesn't cause text reflow
-                            Form.Height--;
-                            Form.Height++;
-                        }
+                    if (Form.WindowState != FormWindowState.Maximized) {
+                        // lame fix: browser hangs when window.open top attribute > control height (why?)
+                        // Width, Height, and WindowState changes all work here
+                        // Width/Height are less obvious and Height doesn't cause text reflow
+                        Form.Height--;
+                        Form.Height++;
                     }
                     break;
                 }

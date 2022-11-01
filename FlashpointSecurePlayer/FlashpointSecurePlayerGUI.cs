@@ -1452,9 +1452,20 @@ namespace FlashpointSecurePlayer {
                 // Fail silently.
             }
 
-            Show();
-            Refresh();
-            Application.Exit();
+            // this should not cause an exception
+            // if it does, it means there is an infinite closing loop
+            // (a form is closing a form which is closing a form, and so on)
+            // you can debug infinite closing loops by setting breakpoints
+            // on all Form.Close functions
+            try {
+                Show();
+                Refresh();
+                Application.Exit();
+            } catch (InvalidOperationException ex) {
+                // IT IS VERY IMPORTANT THIS SHOULD NEVER HAPPEN!
+                LogExceptionToLauncher(ex);
+                Environment.Exit(0);
+            }
         }
     }
 }
