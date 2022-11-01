@@ -1371,6 +1371,12 @@ namespace FlashpointSecurePlayer {
             public static Dictionary<string, StringBuilder> Long { get; set; } = new Dictionary<string, StringBuilder>();
         }
 
+        public enum MODIFICATIONS_REVERT_METHOD {
+            CRASH_RECOVERY,
+            REVERT_ALL,
+            DELETE_ALL
+        }
+
         public static bool TestLaunchedAsAdministratorUser() {
             AppDomain.CurrentDomain.SetPrincipalPolicy(PrincipalPolicy.WindowsPrincipal);
 

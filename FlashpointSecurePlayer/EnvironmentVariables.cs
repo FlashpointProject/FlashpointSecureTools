@@ -211,7 +211,7 @@ namespace FlashpointSecurePlayer {
             }
         }
         
-        public void Deactivate(FlashpointSecurePlayer.MODIFICATIONS_REVERT_METHOD modificationsRevertMethod = FlashpointSecurePlayer.MODIFICATIONS_REVERT_METHOD.CRASH_RECOVERY) {
+        public void Deactivate(MODIFICATIONS_REVERT_METHOD modificationsRevertMethod = MODIFICATIONS_REVERT_METHOD.CRASH_RECOVERY) {
             lock (deactivationLock) {
                 // do the reverse of activation because we can
                 base.Deactivate();
@@ -309,7 +309,7 @@ namespace FlashpointSecurePlayer {
                                 values = value.ToUpperInvariant().Split(' ').ToList();
                             }
 
-                            if (modificationsRevertMethod == FlashpointSecurePlayer.MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
+                            if (modificationsRevertMethod == MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
                                 try {
                                     Environment.SetEnvironmentVariable(activeEnvironmentVariablesElement.Name, null, EnvironmentVariableTarget.Process);
                                 } catch (ArgumentException) {

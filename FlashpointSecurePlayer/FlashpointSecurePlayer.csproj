@@ -90,11 +90,11 @@
     <Compile Include="DownloadsBefore.cs" />
     <Compile Include="InternetInterfaces.cs" />
     <Compile Include="EnvironmentVariables.cs" />
-    <Compile Include="FlashpointSecurePlayer.cs">
+    <Compile Include="FlashpointSecurePlayerGUI.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FlashpointSecurePlayer.Designer.cs">
-      <DependentUpon>FlashpointSecurePlayer.cs</DependentUpon>
+    <Compile Include="FlashpointSecurePlayerGUI.Designer.cs">
+      <DependentUpon>FlashpointSecurePlayerGUI.cs</DependentUpon>
     </Compile>
     <Compile Include="Modifications.cs" />
     <Compile Include="OldCPUSimulator.cs" />
@@ -119,8 +119,8 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FlashpointProxy.cs" />
-    <EmbeddedResource Include="FlashpointSecurePlayer.resx">
-      <DependentUpon>FlashpointSecurePlayer.cs</DependentUpon>
+    <EmbeddedResource Include="FlashpointSecurePlayerGUI.resx">
+      <DependentUpon>FlashpointSecurePlayerGUI.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="WebBrowser.resx">
       <DependentUpon>WebBrowser.cs</DependentUpon>

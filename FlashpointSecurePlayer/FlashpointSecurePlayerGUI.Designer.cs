@@ -1,5 +1,5 @@
 ﻿namespace FlashpointSecurePlayer {
-    partial class FlashpointSecurePlayer {
+    partial class FlashpointSecurePlayerGUI {
         /// <summary>
         /// Required designer variable.
         /// </summary>
@@ -23,7 +23,7 @@
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent() {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FlashpointSecurePlayer));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FlashpointSecurePlayerGUI));
             this.errorLabel = new System.Windows.Forms.Label();
             this.securePlaybackProgressBar = new System.Windows.Forms.ProgressBar();
             this.SuspendLayout();

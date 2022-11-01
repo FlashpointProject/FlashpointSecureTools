@@ -13,7 +13,7 @@ namespace FlashpointSecurePlayer {
         static void Main() {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new FlashpointSecurePlayer());
+            Application.Run(new FlashpointSecurePlayerGUI());
         }
     }
 }

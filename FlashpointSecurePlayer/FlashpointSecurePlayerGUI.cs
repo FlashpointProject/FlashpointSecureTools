@@ -18,18 +18,12 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Templat
 using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement;
 
 namespace FlashpointSecurePlayer {
-    public partial class FlashpointSecurePlayer : Form {
+    public partial class FlashpointSecurePlayerGUI : Form {
         private const string APPLICATION_MUTEX_NAME = "Flashpoint Secure Player";
         private const string MODE_MUTEX_NAME = "Flashpoint Secure Player Mode";
         private const string MODIFICATIONS_MUTEX_NAME = "Flashpoint Secure Player Modifications";
         private const string FLASHPOINT_LAUNCHER_PARENT_PROCESS_FILE_NAME = "CMD.EXE";
         private const string FLASHPOINT_LAUNCHER_PROCESS_NAME = "FLASHPOINT";
-
-        public enum MODIFICATIONS_REVERT_METHOD {
-            CRASH_RECOVERY,
-            REVERT_ALL,
-            DELETE_ALL
-        }
 
         private Mutex applicationMutex = null;
 
@@ -56,7 +50,7 @@ namespace FlashpointSecurePlayer {
 
         private delegate void ErrorDelegate(string text);
 
-        public FlashpointSecurePlayer() {
+        public FlashpointSecurePlayerGUI() {
             InitializeComponent();
 
             // default to false in case of error
@@ -1064,7 +1058,7 @@ namespace FlashpointSecurePlayer {
         }
 
         private async void FlashpointSecurePlayer_Load(object sender, EventArgs e) {
-            Text += " " + typeof(FlashpointSecurePlayer).Assembly.GetName().Version;
+            Text += " " + typeof(FlashpointSecurePlayerGUI).Assembly.GetName().Version;
 
             ProgressManager.ProgressBar = securePlaybackProgressBar;
 

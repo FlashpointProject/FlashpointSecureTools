@@ -33,11 +33,12 @@
             this.saveAsButton = new System.Windows.Forms.ToolStripButton();
             this.printButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.addressToolStripTextBox = new ToolStripSpringTextBox();
+            this.addressToolStripTextBox = new FlashpointSecurePlayer.ToolStripSpringTextBox();
             this.goButton = new System.Windows.Forms.ToolStripButton();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusToolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.progressToolStripProgressBar = new System.Windows.Forms.ToolStripProgressBar();
+            this.closableWebBrowser1 = new FlashpointSecurePlayer.ClosableWebBrowser();
             this.toolStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -144,7 +145,8 @@
             // addressToolStripTextBox
             // 
             this.addressToolStripTextBox.Name = "addressToolStripTextBox";
-            this.addressToolStripTextBox.Size = new System.Drawing.Size(100, 25);
+            this.addressToolStripTextBox.Size = new System.Drawing.Size(376, 25);
+            this.addressToolStripTextBox.ToolTipText = "Address";
             this.addressToolStripTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.addressToolStripTextBox_KeyDown);
             this.addressToolStripTextBox.Click += new System.EventHandler(this.addressToolStripTextBox_Click);
             // 
@@ -162,7 +164,7 @@
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statusToolStripStatusLabel,
             this.progressToolStripProgressBar});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 458);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 505);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(640, 22);
             this.statusStrip1.TabIndex = 2;
@@ -186,16 +188,16 @@
             // 
             // closableWebBrowser1
             // 
-            this.closableWebBrowser1 = new ClosableWebBrowser(this);
             this.closableWebBrowser1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.closableWebBrowser1.Form = null;
             this.closableWebBrowser1.Location = new System.Drawing.Point(0, 25);
             this.closableWebBrowser1.Margin = new System.Windows.Forms.Padding(0);
             this.closableWebBrowser1.MinimumSize = new System.Drawing.Size(32, 32);
             this.closableWebBrowser1.Name = "closableWebBrowser1";
             this.closableWebBrowser1.ScriptErrorsSuppressed = true;
-            this.closableWebBrowser1.Size = new System.Drawing.Size(640, 433);
+            this.closableWebBrowser1.Size = new System.Drawing.Size(640, 480);
             this.closableWebBrowser1.TabIndex = 0;
             this.closableWebBrowser1.Url = new System.Uri("about:blank", System.UriKind.Absolute);
             this.closableWebBrowser1.ProgressChanged += new System.Windows.Forms.WebBrowserProgressChangedEventHandler(this.closableWebBrowser1_ProgressChanged);
@@ -204,7 +206,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(640, 480);
+            this.ClientSize = new System.Drawing.Size(640, 527);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.closableWebBrowser1);

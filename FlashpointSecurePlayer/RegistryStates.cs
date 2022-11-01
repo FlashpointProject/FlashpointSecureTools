@@ -1137,7 +1137,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        public void Deactivate(FlashpointSecurePlayer.MODIFICATIONS_REVERT_METHOD modificationsRevertMethod = FlashpointSecurePlayer.MODIFICATIONS_REVERT_METHOD.CRASH_RECOVERY) {
+        public void Deactivate(MODIFICATIONS_REVERT_METHOD modificationsRevertMethod = MODIFICATIONS_REVERT_METHOD.CRASH_RECOVERY) {
             lock (deactivationLock) {
                 base.Deactivate();
                 TemplateElement activeTemplateElement = GetActiveTemplateElement(false);
@@ -1206,7 +1206,7 @@ namespace FlashpointSecurePlayer {
                 ProgressManager.CurrentGoal.Start(activeModificationsElement.RegistryStates.Count + activeModificationsElement.RegistryStates.Count);
 
                 try {
-                    if (modificationsRevertMethod == FlashpointSecurePlayer.MODIFICATIONS_REVERT_METHOD.CRASH_RECOVERY) {
+                    if (modificationsRevertMethod == MODIFICATIONS_REVERT_METHOD.CRASH_RECOVERY) {
                         // check if any key has been modified from the modification element
                         for (int i = 0; i < activeModificationsElement.RegistryStates.Count; i++) {
                             // the "active" one is the one that doesn't have a name (it has the "active" attribute)
@@ -1292,7 +1292,7 @@ namespace FlashpointSecurePlayer {
                                 if (registryStateElement != null) {
                                     switch (activeRegistryStateElement.Type) {
                                         case TYPE.KEY:
-                                        if (!String.IsNullOrEmpty(activeRegistryStateElement._Deleted) || modificationsRevertMethod == FlashpointSecurePlayer.MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
+                                        if (!String.IsNullOrEmpty(activeRegistryStateElement._Deleted) || modificationsRevertMethod == MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
                                             try {
                                                 // key didn't exist before
                                                 DeleteKeyInRegistryView(GetUserKeyValueName(activeRegistryStateElement._Deleted), registryView);
@@ -1303,7 +1303,7 @@ namespace FlashpointSecurePlayer {
                                         }
                                         break;
                                         case TYPE.VALUE:
-                                        if (String.IsNullOrEmpty(activeRegistryStateElement._Deleted) && modificationsRevertMethod != FlashpointSecurePlayer.MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
+                                        if (String.IsNullOrEmpty(activeRegistryStateElement._Deleted) && modificationsRevertMethod != MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
                                             string keyName = GetUserKeyValueName(activeRegistryStateElement.KeyName);
 
                                             try {

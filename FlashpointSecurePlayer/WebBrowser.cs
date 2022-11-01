@@ -157,6 +157,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
+            closableWebBrowser1.Form = this;
             closableWebBrowser1.CanGoBackChanged += closableWebBrowser1_CanGoBackChanged;
             closableWebBrowser1.CanGoForwardChanged += closableWebBrowser1_CanGoForwardChanged;
             closableWebBrowser1.DocumentTitleChanged += closableWebBrowser1_DocumentTitleChanged;
