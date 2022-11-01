@@ -636,12 +636,9 @@ namespace FlashpointSecurePlayer {
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
+            // TODO: shouldn't ALT require a different MSG?
             if (keyData == Keys.F11 || keyData == (Keys.Alt | Keys.Enter)) {
-                if (TopMost) {
-                    Fullscreen = false;
-                } else {
-                    Fullscreen = true;
-                }
+                Fullscreen = !fullscreen;
             }
             return true;
         }
