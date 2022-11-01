@@ -164,6 +164,9 @@ namespace FlashpointSecurePlayer {
             closableWebBrowser.DocumentTitleChanged += closableWebBrowser_DocumentTitleChanged;
             closableWebBrowser.StatusTextChanged += closableWebBrowser_StatusTextChanged;
             closableWebBrowser.Navigated += closableWebBrowser_Navigated;
+
+            statusBarStatusStrip.Renderer = new FlashpointSecurePlayer.EllipsisRenderer();
+
             messageFilter = new MessageFilter(this, new EventHandler(OnBack), new EventHandler(OnForward));
         }
 

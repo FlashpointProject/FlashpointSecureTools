@@ -58,6 +58,7 @@
             this.goButton});
             this.toolBarToolStrip.Location = new System.Drawing.Point(0, 0);
             this.toolBarToolStrip.Name = "toolBarToolStrip";
+            this.toolBarToolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
             this.toolBarToolStrip.Size = new System.Drawing.Size(640, 25);
             this.toolBarToolStrip.TabIndex = 0;
             this.toolBarToolStrip.Text = "toolStrip1";
@@ -171,6 +172,7 @@
             this.progressToolStripProgressBar});
             this.statusBarStatusStrip.Location = new System.Drawing.Point(0, 505);
             this.statusBarStatusStrip.Name = "statusBarStatusStrip";
+            this.statusBarStatusStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
             this.statusBarStatusStrip.ShowItemToolTips = true;
             this.statusBarStatusStrip.Size = new System.Drawing.Size(640, 22);
             this.statusBarStatusStrip.TabIndex = 2;
@@ -182,7 +184,7 @@
             this.statusToolStripStatusLabel.BorderStyle = System.Windows.Forms.Border3DStyle.Etched;
             this.statusToolStripStatusLabel.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.statusToolStripStatusLabel.Name = "statusToolStripStatusLabel";
-            this.statusToolStripStatusLabel.Size = new System.Drawing.Size(492, 17);
+            this.statusToolStripStatusLabel.Size = new System.Drawing.Size(523, 17);
             this.statusToolStripStatusLabel.Spring = true;
             this.statusToolStripStatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
