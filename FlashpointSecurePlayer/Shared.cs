@@ -169,6 +169,74 @@ namespace FlashpointSecurePlayer {
         [DllImport("USER32.DLL", SetLastError = false, CharSet = CharSet.Auto)]
         public static extern IntPtr SendMessage(IntPtr windowHandle, uint message, IntPtr wParam, IntPtr lParam);
 
+        public enum HookType : int {
+            WH_MSGFILTER = -1,
+            WH_JOURNALRECORD = 0,
+            WH_JOURNALPLAYBACK = 1,
+            WH_KEYBOARD = 2,
+            WH_GETMESSAGE = 3,
+            WH_CALLWNDPROC = 4,
+            WH_CBT = 5,
+            WH_SYSMSGFILTER = 6,
+            WH_MOUSE = 7,
+            WH_HARDWARE = 8,
+            WH_DEBUG = 9,
+            WH_SHELL = 10,
+            WH_FOREGROUNDIDLE = 11,
+            WH_CALLWNDPROCRET = 12,
+            WH_KEYBOARD_LL = 13,
+            WH_MOUSE_LL = 14
+        }
+
+        public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("USER32.DLL")]
+        public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public class KBDLLHOOKSTRUCT {
+            public uint vkCode;
+            public uint scanCode;
+            public KBDLLHOOKSTRUCTFlags flags;
+            public uint time;
+            public UIntPtr dwExtraInfo;
+        }
+
+        [Flags]
+        public enum KBDLLHOOKSTRUCTFlags : uint {
+            LLKHF_EXTENDED = 0x01,
+            LLKHF_INJECTED = 0x10,
+            LLKHF_ALTDOWN = 0x20,
+            LLKHF_UP = 0x80
+        }
+        
+        [DllImport("USER32.DLL")]
+        public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, [In]KBDLLHOOKSTRUCT lParam);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct POINT {
+            public int X;
+            public int Y;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct MSLLHOOKSTRUCT {
+            public POINT pt;
+            public int mouseData;
+            public int flags;
+            public int time;
+            public UIntPtr dwExtraInfo;
+        }
+        
+        [DllImport("USER32.DLL")]
+        public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, [In]MSLLHOOKSTRUCT lParam);
+
+        [DllImport("USER32.DLL", SetLastError = true)]
+        public static extern IntPtr SetWindowsHookEx(HookType hookType, HookProc lpfn, IntPtr hMod, uint dwThreadId);
+
+        [DllImport("USER32.DLL", SetLastError = true)]
+        public static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
         [DllImport("KERNEL32.DLL")]
         public static extern IntPtr LocalFree(IntPtr memoryHandle);
 
@@ -2012,7 +2080,7 @@ namespace FlashpointSecurePlayer {
             
             if (applicationMutex != null) {
                 applicationMutex.ReleaseMutex();
-                applicationMutex.Dispose();
+                applicationMutex.Close();
                 applicationMutex = null;
             }
 

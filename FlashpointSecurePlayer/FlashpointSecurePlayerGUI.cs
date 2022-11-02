@@ -63,6 +63,7 @@ namespace FlashpointSecurePlayer {
 
                 if (!createdNew) {
                     // multiple instances open, blow up immediately
+                    applicationMutex.Close();
                     applicationMutex = null;
                     throw new InvalidOperationException("You cannot run multiple instances of Flashpoint Secure Player.");
                 }
@@ -1430,7 +1431,7 @@ namespace FlashpointSecurePlayer {
                 }
 
                 applicationMutex.ReleaseMutex();
-                applicationMutex.Dispose();
+                applicationMutex.Close();
                 applicationMutex = null;
             }
         }

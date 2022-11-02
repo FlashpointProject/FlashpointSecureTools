@@ -16,141 +16,7 @@ using SHDocVw;
 
 namespace FlashpointSecurePlayer {
     public partial class WebBrowserMode : Form {
-        private class WebBrowserModeTitle {
-            protected readonly Form form = null;
-            private string applicationTitle = "Flashpoint Secure Player";
-            private string documentTitle = null;
-            private int progress = -1;
-
-            public WebBrowserModeTitle(Form form) {
-                this.form = form;
-                this.applicationTitle += " " + typeof(WebBrowserModeTitle).Assembly.GetName().Version;
-
-                Show();
-            }
-
-            private void Show() {
-                if (form == null) {
-                    return;
-                }
-
-                StringBuilder text = new StringBuilder();
-
-                if (!String.IsNullOrEmpty(documentTitle)) {
-                    text.Append(documentTitle);
-                    text.Append(" - ");
-                }
-
-                text.Append(applicationTitle);
-
-                if (progress != -1) {
-                    text.Append(" [");
-                    text.Append(progress);
-                    text.Append("%]");
-                }
-
-                form.Text = text.ToString();
-            }
-
-            public string DocumentTitle {
-                set {
-                    documentTitle = value;
-                    Show();
-                }
-            }
-
-            public int Progress {
-                set {
-                    progress = value;
-                    Show();
-                }
-            }
-        }
-
-        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
-        private class MessageFilter : IMessageFilter {
-            private readonly WebBrowserMode webBrowserMode = null;
-
-            public MessageFilter(WebBrowserMode webBrowserMode) {
-                this.webBrowserMode = webBrowserMode;
-            }
-
-            [SecurityPermission(SecurityAction.Demand)]
-            public bool PreFilterMessage(ref Message m) {
-                if (webBrowserMode == null) {
-                    return false;
-                }
-
-                switch (m.Msg) {
-                    case WM_MOUSEMOVE:
-                    if (webBrowserMode.Fullscreen) {
-                        ToolStrip toolBarToolStrip = webBrowserMode.toolBarToolStrip;
-                        Point toolBarToolStripMousePosition = toolBarToolStrip.PointToClient(Control.MousePosition);
-                        
-                        if (toolBarToolStrip.Visible) {
-                            if (!toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
-                                toolBarToolStrip.Visible = false;
-                            }
-                        } else {
-                            if (toolBarToolStripMousePosition.Y == 0
-                                && toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
-                                toolBarToolStrip.Visible = true;
-                            }
-                        }
-                    }
-                    return false;
-                    case WM_XBUTTONUP:
-                    int wParam = m.WParam.ToInt32();
-
-                    if ((wParam & MK_XBUTTON1) == MK_XBUTTON1) {
-                        webBrowserMode.BrowserBack();
-                        return true;
-                    }
-
-                    if ((wParam & MK_XBUTTON2) == MK_XBUTTON2) {
-                        webBrowserMode.BrowserForward();
-                        return true;
-                    }
-                    break;
-                }
-                return false;
-            }
-        }
-
-        private const int FULLSCREEN_EXIT_LABEL_TIMER_TIME = 2500;
-
-        private bool useFlashActiveXControl = false;
-        private CustomSecurityManager customSecurityManager = null;
-
-        private readonly WebBrowserModeTitle webBrowserModeTitle;
-        private Uri webBrowserURL = null;
-        private bool addressToolStripSpringTextBoxEntered = false;
-
         private bool resizable = true;
-        private System.Windows.Forms.Timer exitFullscreenLabelTimer = null;
-        private bool fullscreen = false;
-        private bool fullscreenResizable = true;
-        private FormWindowState fullscreenWindowState = FormWindowState.Maximized;
-        private Point closableWebBrowserAnchorLocation;
-        private Size closableWebBrowserAnchorSize;
-
-        private MessageFilter messageFilter = null;
-        private object downloadCompletedLock = new object();
-        private bool downloadCompleted = false;
-
-        private bool DownloadCompleted {
-            get {
-                lock (downloadCompletedLock) {
-                    return downloadCompleted;
-                }
-            }
-
-            set {
-                lock (downloadCompletedLock) {
-                    downloadCompleted = value;
-                }
-            }
-        }
 
         private bool Resizable {
             get {
@@ -182,6 +48,10 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        private const int FULLSCREEN_EXIT_LABEL_TIMER_TIME = 2500;
+
+        private System.Windows.Forms.Timer exitFullscreenLabelTimer = null;
+
         private bool ExitFullscreenLabelTimer {
             get {
                 return exitFullscreenLabelTimer != null;
@@ -205,6 +75,13 @@ namespace FlashpointSecurePlayer {
                 }
             }
         }
+
+        private bool fullscreen = false;
+        private bool fullscreenResizable = true;
+        private FormWindowState fullscreenWindowState = FormWindowState.Maximized;
+
+        private Point closableWebBrowserAnchorLocation;
+        private Size closableWebBrowserAnchorSize;
 
         private bool Fullscreen {
             get {
@@ -266,14 +143,124 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        public object PPDisp {
-            get {
-                if (closableWebBrowser == null) {
-                    return null;
+        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+        private class MessageFilter : IMessageFilter {
+            private readonly WebBrowserMode webBrowserMode = null;
+
+            public MessageFilter(WebBrowserMode webBrowserMode) {
+                this.webBrowserMode = webBrowserMode;
+            }
+
+            [SecurityPermission(SecurityAction.Demand)]
+            public bool PreFilterMessage(ref Message m) {
+                if (webBrowserMode == null) {
+                    return false;
                 }
-                return closableWebBrowser.ActiveXInstance;
+
+                if (m.Msg == WM_XBUTTONUP) {
+                    int wParam = m.WParam.ToInt32();
+
+                    if ((wParam & MK_XBUTTON1) == MK_XBUTTON1) {
+                        webBrowserMode.BrowserBack();
+                        return true;
+                    }
+
+                    if ((wParam & MK_XBUTTON2) == MK_XBUTTON2) {
+                        webBrowserMode.BrowserForward();
+                        return true;
+                    }
+                }
+                return false;
             }
         }
+
+        private MessageFilter messageFilter = null;
+
+        private HookProc lowLevelMouseProc = null;
+        private IntPtr mouseHook = IntPtr.Zero;
+
+        private IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam) {
+            if (nCode >= 0) {
+                if (Fullscreen) {
+                    if (wParam.ToInt32() == WM_MOUSEMOVE) {
+                        // this is checked in LowLevelMouseProc because
+                        // otherwise plugins such as Viscape which
+                        // create their own window can steal the
+                        // mouse move event
+                        Point toolBarToolStripMousePosition = toolBarToolStrip.PointToClient(Control.MousePosition);
+
+                        if (toolBarToolStrip.Visible) {
+                            if (!toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
+                                toolBarToolStrip.Visible = false;
+                            }
+                        } else {
+                            if (toolBarToolStripMousePosition.Y == 0
+                                && toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
+                                toolBarToolStrip.Visible = true;
+                            }
+                        }
+                    }
+                }
+            }
+            return CallNextHookEx(mouseHook, nCode, wParam, lParam);
+        }
+
+        private class WebBrowserModeTitle {
+            protected readonly Form form = null;
+            private readonly string applicationTitle = "Flashpoint Secure Player";
+            private string documentTitle = null;
+            private int progress = -1;
+
+            public WebBrowserModeTitle(Form form) {
+                this.form = form;
+                this.applicationTitle += " " + typeof(WebBrowserModeTitle).Assembly.GetName().Version;
+
+                Show();
+            }
+
+            private void Show() {
+                if (form == null) {
+                    return;
+                }
+
+                StringBuilder text = new StringBuilder();
+
+                if (!String.IsNullOrEmpty(documentTitle)) {
+                    text.Append(documentTitle);
+                    text.Append(" - ");
+                }
+
+                text.Append(applicationTitle);
+
+                if (progress != -1) {
+                    text.Append(" [");
+                    text.Append(progress);
+                    text.Append("%]");
+                }
+
+                form.Text = text.ToString();
+            }
+
+            public string DocumentTitle {
+                set {
+                    documentTitle = value;
+                    Show();
+                }
+            }
+
+            public int Progress {
+                set {
+                    progress = value;
+                    Show();
+                }
+            }
+        }
+
+        private readonly WebBrowserModeTitle webBrowserModeTitle;
+        private Uri webBrowserURL = null;
+
+        private bool useFlashActiveXControl = false;
+        private CustomSecurityManager customSecurityManager = null;
 
         private void _WebBrowserMode(bool useFlashActiveXControl = false) {
             InitializeComponent();
@@ -294,6 +281,12 @@ namespace FlashpointSecurePlayer {
             statusBarStatusStrip.Renderer = new EndEllipsisTextRenderer();
 
             messageFilter = new MessageFilter(this);
+
+            lowLevelMouseProc = new HookProc(LowLevelMouseProc);
+
+            if (mouseHook == IntPtr.Zero) {
+                mouseHook = SetWindowsHookEx(HookType.WH_MOUSE_LL, lowLevelMouseProc, IntPtr.Zero, 0);
+            }
         }
 
         public WebBrowserMode(bool useFlashActiveXControl = false) {
@@ -305,6 +298,44 @@ namespace FlashpointSecurePlayer {
             _WebBrowserMode(useFlashActiveXControl);
             webBrowserModeTitle = new WebBrowserModeTitle(this);
             webBrowserURL = _webBrowserURL;
+        }
+
+        ~WebBrowserMode() {
+            if (closableWebBrowser == null) {
+                return;
+            }
+
+            if (closableWebBrowser.ActiveXInstance is SHDocVw.WebBrowser shDocVwWebBrowser) {
+                // IE5
+                shDocVwWebBrowser.NewWindow2 -= ShDocVwWebBrowser_NewWindow2;
+                // IE6
+                shDocVwWebBrowser.NewWindow3 -= ShDocVwWebBrowser_NewWindow3;
+                shDocVwWebBrowser.WindowSetTop -= ShDocVwWebBrowser_WindowSetTop;
+                shDocVwWebBrowser.WindowSetLeft -= ShDocVwWebBrowser_WindowSetLeft;
+                shDocVwWebBrowser.WindowSetWidth -= ShDocVwWebBrowser_WindowSetWidth;
+                shDocVwWebBrowser.WindowSetHeight -= ShDocVwWebBrowser_WindowSetHeight;
+                shDocVwWebBrowser.WindowSetResizable -= ShDocVwWebBrowser_WindowSetResizable;
+                shDocVwWebBrowser.DownloadBegin -= ShDocVwWebBrowser_DownloadBegin;
+                shDocVwWebBrowser.DownloadComplete -= ShDocVwWebBrowser_DownloadComplete;
+            }
+
+            // the WebBrowserMode property must be nulled out, otherwise we
+            // end up closing the current form when it's already closed
+            // (browser reports being closed > we close the form and so on)
+            closableWebBrowser.WebBrowserMode = null;
+            closableWebBrowser.CanGoBackChanged -= closableWebBrowser_CanGoBackChanged;
+            closableWebBrowser.CanGoForwardChanged -= closableWebBrowser_CanGoForwardChanged;
+            closableWebBrowser.DocumentTitleChanged -= closableWebBrowser_DocumentTitleChanged;
+            closableWebBrowser.StatusTextChanged -= closableWebBrowser_StatusTextChanged;
+            closableWebBrowser.Navigated -= closableWebBrowser_Navigated;
+            closableWebBrowser.Dispose();
+            closableWebBrowser = null;
+
+            if (mouseHook != IntPtr.Zero) {
+                if (UnhookWindowsHookEx(mouseHook)) {
+                    mouseHook = IntPtr.Zero;
+                }
+            }
         }
 
         public void BrowserBack() {
@@ -459,30 +490,6 @@ namespace FlashpointSecurePlayer {
 
         private void WebBrowserMode_FormClosing(object sender, FormClosingEventArgs e) {
             Hide();
-            
-            if (closableWebBrowser == null) {
-                return;
-            }
-
-            if (closableWebBrowser.ActiveXInstance is SHDocVw.WebBrowser shDocVwWebBrowser) {
-                // IE5
-                shDocVwWebBrowser.NewWindow2 -= ShDocVwWebBrowser_NewWindow2;
-                // IE6
-                shDocVwWebBrowser.NewWindow3 -= ShDocVwWebBrowser_NewWindow3;
-                shDocVwWebBrowser.WindowSetTop -= ShDocVwWebBrowser_WindowSetTop;
-                shDocVwWebBrowser.WindowSetLeft -= ShDocVwWebBrowser_WindowSetLeft;
-                shDocVwWebBrowser.WindowSetWidth -= ShDocVwWebBrowser_WindowSetWidth;
-                shDocVwWebBrowser.WindowSetHeight -= ShDocVwWebBrowser_WindowSetHeight;
-                shDocVwWebBrowser.WindowSetResizable -= ShDocVwWebBrowser_WindowSetResizable;
-                shDocVwWebBrowser.DownloadBegin -= ShDocVwWebBrowser_DownloadBegin;
-                shDocVwWebBrowser.DownloadComplete -= ShDocVwWebBrowser_DownloadComplete;
-            }
-
-            // the Form property must be nulled out, otherwise we enter an infinite loop
-            // (browser reports being closed > we close the form and so on)
-            closableWebBrowser.WebBrowserMode = null;
-            closableWebBrowser.Dispose();
-            closableWebBrowser = null;
         }
 
         private void WebBrowserMode_Activated(object sender, EventArgs e) {
@@ -498,6 +505,23 @@ namespace FlashpointSecurePlayer {
 
             if (Fullscreen) {
                 WindowState = FormWindowState.Minimized;
+            }
+        }
+
+        private object downloadCompletedLock = new object();
+        private bool downloadCompleted = false;
+
+        private bool DownloadCompleted {
+            get {
+                lock (downloadCompletedLock) {
+                    return downloadCompleted;
+                }
+            }
+
+            set {
+                lock (downloadCompletedLock) {
+                    downloadCompleted = value;
+                }
             }
         }
 
@@ -559,6 +583,15 @@ namespace FlashpointSecurePlayer {
             }
 
             addressToolStripSpringTextBox.Text = closableWebBrowser.Url.ToString();
+        }
+
+        public object PPDisp {
+            get {
+                if (closableWebBrowser == null) {
+                    return null;
+                }
+                return closableWebBrowser.ActiveXInstance;
+            }
         }
 
         private void ShDocVwWebBrowser_NewWindow2(ref object ppDisp, ref bool Cancel) {
@@ -659,6 +692,8 @@ namespace FlashpointSecurePlayer {
         private void printButton_Click(object sender, EventArgs e) {
             BrowserPrint();
         }
+
+        private bool addressToolStripSpringTextBoxEntered = false;
 
         private void addressToolStripSpringTextBox_Click(object sender, EventArgs e) {
             if (addressToolStripSpringTextBoxEntered) {
