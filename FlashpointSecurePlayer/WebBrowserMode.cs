@@ -270,13 +270,13 @@ namespace FlashpointSecurePlayer {
             if (closableWebBrowser == null) {
                 return;
             }
-
-            closableWebBrowser.WebBrowserMode = this;
+            
             closableWebBrowser.CanGoBackChanged += closableWebBrowser_CanGoBackChanged;
             closableWebBrowser.CanGoForwardChanged += closableWebBrowser_CanGoForwardChanged;
             closableWebBrowser.DocumentTitleChanged += closableWebBrowser_DocumentTitleChanged;
             closableWebBrowser.StatusTextChanged += closableWebBrowser_StatusTextChanged;
-            closableWebBrowser.Navigated += closableWebBrowser_Navigated;
+            closableWebBrowser.WebBrowserClose += closableWebBrowser_WebBrowserClose;
+            closableWebBrowser.WebBrowserPaint += closableWebBrowser_WebBrowserPaint;
 
             statusBarStatusStrip.Renderer = new EndEllipsisTextRenderer();
 
@@ -305,29 +305,16 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            if (closableWebBrowser.ActiveXInstance is SHDocVw.WebBrowser shDocVwWebBrowser) {
-                // IE5
-                shDocVwWebBrowser.NewWindow2 -= ShDocVwWebBrowser_NewWindow2;
-                // IE6
-                shDocVwWebBrowser.NewWindow3 -= ShDocVwWebBrowser_NewWindow3;
-                shDocVwWebBrowser.WindowSetTop -= ShDocVwWebBrowser_WindowSetTop;
-                shDocVwWebBrowser.WindowSetLeft -= ShDocVwWebBrowser_WindowSetLeft;
-                shDocVwWebBrowser.WindowSetWidth -= ShDocVwWebBrowser_WindowSetWidth;
-                shDocVwWebBrowser.WindowSetHeight -= ShDocVwWebBrowser_WindowSetHeight;
-                shDocVwWebBrowser.WindowSetResizable -= ShDocVwWebBrowser_WindowSetResizable;
-                shDocVwWebBrowser.DownloadBegin -= ShDocVwWebBrowser_DownloadBegin;
-                shDocVwWebBrowser.DownloadComplete -= ShDocVwWebBrowser_DownloadComplete;
-            }
-
             // the WebBrowserMode property must be nulled out, otherwise we
             // end up closing the current form when it's already closed
             // (browser reports being closed > we close the form and so on)
-            closableWebBrowser.WebBrowserMode = null;
+            // TODO
             closableWebBrowser.CanGoBackChanged -= closableWebBrowser_CanGoBackChanged;
             closableWebBrowser.CanGoForwardChanged -= closableWebBrowser_CanGoForwardChanged;
             closableWebBrowser.DocumentTitleChanged -= closableWebBrowser_DocumentTitleChanged;
             closableWebBrowser.StatusTextChanged -= closableWebBrowser_StatusTextChanged;
-            closableWebBrowser.Navigated -= closableWebBrowser_Navigated;
+            closableWebBrowser.WebBrowserClose -= closableWebBrowser_WebBrowserClose;
+            closableWebBrowser.WebBrowserPaint -= closableWebBrowser_WebBrowserPaint;
             closableWebBrowser.Dispose();
             closableWebBrowser = null;
 
@@ -490,6 +477,26 @@ namespace FlashpointSecurePlayer {
 
         private void WebBrowserMode_FormClosing(object sender, FormClosingEventArgs e) {
             Hide();
+
+            if (closableWebBrowser == null) {
+                return;
+            }
+
+            customSecurityManager = null;
+
+            if (closableWebBrowser.ActiveXInstance is SHDocVw.WebBrowser shDocVwWebBrowser) {
+                // IE5
+                shDocVwWebBrowser.NewWindow2 -= ShDocVwWebBrowser_NewWindow2;
+                // IE6
+                shDocVwWebBrowser.NewWindow3 -= ShDocVwWebBrowser_NewWindow3;
+                shDocVwWebBrowser.WindowSetTop -= ShDocVwWebBrowser_WindowSetTop;
+                shDocVwWebBrowser.WindowSetLeft -= ShDocVwWebBrowser_WindowSetLeft;
+                shDocVwWebBrowser.WindowSetWidth -= ShDocVwWebBrowser_WindowSetWidth;
+                shDocVwWebBrowser.WindowSetHeight -= ShDocVwWebBrowser_WindowSetHeight;
+                shDocVwWebBrowser.WindowSetResizable -= ShDocVwWebBrowser_WindowSetResizable;
+                shDocVwWebBrowser.DownloadBegin -= ShDocVwWebBrowser_DownloadBegin;
+                shDocVwWebBrowser.DownloadComplete -= ShDocVwWebBrowser_DownloadComplete;
+            }
         }
 
         private void WebBrowserMode_Activated(object sender, EventArgs e) {
@@ -572,7 +579,7 @@ namespace FlashpointSecurePlayer {
             statusToolStripStatusLabel.Text = closableWebBrowser.StatusText;
         }
 
-        private void closableWebBrowser_Navigated(object sender, EventArgs e) {
+        private void closableWebBrowser_Navigated(object sender, WebBrowserNavigatedEventArgs e) {
             if (closableWebBrowser == null) {
                 return;
             }
@@ -583,6 +590,14 @@ namespace FlashpointSecurePlayer {
             }
 
             addressToolStripSpringTextBox.Text = closableWebBrowser.Url.ToString();
+        }
+
+        private void closableWebBrowser_WebBrowserClose(object sender, EventArgs e) {
+            Close();
+        }
+
+        private void closableWebBrowser_WebBrowserPaint(object sender, EventArgs e) {
+
         }
 
         public object PPDisp {

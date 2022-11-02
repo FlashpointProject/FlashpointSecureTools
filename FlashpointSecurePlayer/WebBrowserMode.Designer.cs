@@ -243,7 +243,7 @@
             this.closableWebBrowser.Size = new System.Drawing.Size(640, 480);
             this.closableWebBrowser.TabIndex = 1;
             this.closableWebBrowser.Url = new System.Uri("about:blank", System.UriKind.Absolute);
-            this.closableWebBrowser.WebBrowserMode = null;
+            this.closableWebBrowser.Navigated += new System.Windows.Forms.WebBrowserNavigatedEventHandler(this.closableWebBrowser_Navigated);
             this.closableWebBrowser.ProgressChanged += new System.Windows.Forms.WebBrowserProgressChangedEventHandler(this.closableWebBrowser_ProgressChanged);
             // 
             // exitFullscreenLabel

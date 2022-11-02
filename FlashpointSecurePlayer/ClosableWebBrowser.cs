@@ -12,19 +12,44 @@ using static FlashpointSecurePlayer.Shared;
 using static FlashpointSecurePlayer.Shared.Exceptions;
 
 namespace FlashpointSecurePlayer {
+    // http://blogs.msdn.com/b/jpsanders/archive/2007/05/25/how-to-close-the-form-hosting-the-webbrowser-control-when-scripting-calls-window-close-in-the-net-framework-version-2-0.aspx
     public partial class ClosableWebBrowser : System.Windows.Forms.WebBrowser {
-        public WebBrowserMode WebBrowserMode { get; set; } = null;
+        [Browsable(true)]
+        [Category("Action")]
+        [Description("Occurs when the Web Browser is closed.")]
+        public event EventHandler WebBrowserClose;
+
+        [Browsable(true)]
+        [Category("Action")]
+        [Description("Occurs when the Web Browser is painted.")]
+        public event EventHandler WebBrowserPaint;
 
         public ClosableWebBrowser() {
             InitializeComponent();
         }
 
-        protected override void OnPaint(PaintEventArgs pe) {
-            base.OnPaint(pe);
+        protected virtual void OnWebBrowserClose(EventArgs e) {
+            EventHandler handler = WebBrowserClose;
+
+            if (handler == null) {
+                return;
+            }
+
+            handler(this, e);
+        }
+
+        protected virtual void OnWebBrowserPaint(EventArgs e) {
+            EventHandler handler = WebBrowserPaint;
+
+            if (handler == null) {
+                return;
+            }
+
+            handler(this, e);
         }
 
         protected override void WndProc(ref Message m) {
-            if (!DesignMode && WebBrowserMode != null) {
+            if (!DesignMode) {
                 switch (m.Msg) {
                     case WM_PARENTNOTIFY:
                     if (m.WParam.ToInt32() == WM_DESTROY) {
@@ -32,19 +57,13 @@ namespace FlashpointSecurePlayer {
                         // (for example, if window.close is called)
                         // needs to be done here because the event
                         // intended for this does not actually fire
-                        WebBrowserMode.Close();
+                        OnWebBrowserClose(EventArgs.Empty);
                     }
 
                     DefWndProc(ref m);
                     return;
                     case WM_PAINT:
-                    if (WebBrowserMode.WindowState != FormWindowState.Maximized) {
-                        // lame fix: browser hangs when window.open top attribute > control height (why?)
-                        // Width, Height, and WindowState changes all work here
-                        // Width/Height are less obvious and Height doesn't cause text reflow
-                        WebBrowserMode.Height--;
-                        WebBrowserMode.Height++;
-                    }
+                    OnWebBrowserPaint(EventArgs.Empty);
                     break;
                 }
             }
