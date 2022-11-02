@@ -146,7 +146,12 @@ namespace FlashpointSecurePlayer {
 
         public const int WM_DESTROY = 0x00000002;
         public const int WM_PAINT = 0x0000000F;
+        public const int WM_MOUSEMOVE = 0x00000200;
+        public const int WM_XBUTTONUP = 0x0000020C;
         public const int WM_PARENTNOTIFY = 0x00000210;
+
+        public const int MK_XBUTTON1 = 0x00010000;
+        public const int MK_XBUTTON2 = 0x00020000;
 
         public enum BINARY_TYPE : uint {
             SCS_32BIT_BINARY = 0, // A 32-bit Windows-based application

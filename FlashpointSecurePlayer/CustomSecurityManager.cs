@@ -21,7 +21,7 @@ namespace FlashpointSecurePlayer {
         private bool useFlashActiveXControl = false;
 
         // https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/platform-apis/ms537182(v=vs.85)?redirectedfrom=MSDN
-        public CustomSecurityManager(System.Windows.Forms.WebBrowser webBrowser, bool _useFlashActiveXControl = false) {
+        public CustomSecurityManager(System.Windows.Forms.WebBrowser webBrowser, bool useFlashActiveXControl = false) {
             InternetInterfaces.IServiceProvider webBrowserServiceProviderInterface = webBrowser.ActiveXInstance as InternetInterfaces.IServiceProvider;
             IntPtr profferServiceInterfacePointer = IntPtr.Zero;
 
@@ -47,7 +47,7 @@ namespace FlashpointSecurePlayer {
                 throw new Win32Exception("An External Exception was encountered while creating the Custom Security Manager.");
             }
 
-            useFlashActiveXControl = _useFlashActiveXControl;
+            this.useFlashActiveXControl = useFlashActiveXControl;
         }
 
         int InternetInterfaces.IServiceProvider.QueryService(ref Guid guidService, ref Guid riid, out IntPtr ppvObject) {
