@@ -706,34 +706,34 @@ namespace FlashpointSecurePlayer {
                 case Keys.Alt | Keys.Left:
                 case Keys.BrowserBack:
                 BrowserBack();
-                break;
+                return true;
                 case Keys.Control | Keys.Right:
                 case Keys.Alt | Keys.Right:
                 case Keys.BrowserForward:
                 BrowserForward();
-                break;
+                return true;
                 case Keys.Escape:
                 case Keys.BrowserStop:
                 BrowserStop();
-                break;
+                return true;
                 case Keys.F5:
                 case Keys.Control | Keys.R:
                 case Keys.BrowserRefresh:
                 BrowserRefresh();
-                break;
+                return true;
                 case Keys.Control | Keys.S:
                 BrowserSaveAsWebpage();
-                break;
+                return true;
                 case Keys.Control | Keys.P:
                 BrowserPrint();
-                break;
+                return true;
                 case Keys.Control | Keys.N:
                 BrowserNewWindow();
-                break;
+                return true;
                 case Keys.F11:
                 case Keys.Alt | Keys.Enter:
                 BrowserFullscreen();
-                break;
+                return true;
             }
             // don't forget to call the base!
             // (better fix for Atmosphere plugin)
