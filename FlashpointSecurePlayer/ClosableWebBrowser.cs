@@ -21,53 +21,10 @@ namespace FlashpointSecurePlayer {
             // this breaks ProcessCmdKey, but is needed for Atmosphere plugin
             // so the hotkeys from the WebBrowserMode are moved here
             this.PreviewKeyDown += ClosableWebBrowser_PreviewKeyDown;
-            this.KeyDown += ClosableWebBrowser_KeyDown;
         }
 
         private void ClosableWebBrowser_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e) {
             e.IsInputKey = true;
-        }
-
-        private void ClosableWebBrowser_KeyDown(object sender, KeyEventArgs e) {
-            if (WebBrowserMode == null) {
-                return;
-            }
-
-            switch (e.KeyData) {
-                case Keys.Back:
-                case Keys.Control | Keys.Left:
-                case Keys.Alt | Keys.Left:
-                case Keys.BrowserBack:
-                WebBrowserMode.BrowserBack();
-                break;
-                case Keys.Control | Keys.Right:
-                case Keys.Alt | Keys.Right:
-                case Keys.BrowserForward:
-                WebBrowserMode.BrowserForward();
-                break;
-                case Keys.Escape:
-                case Keys.BrowserStop:
-                WebBrowserMode.BrowserStop();
-                break;
-                case Keys.F5:
-                case Keys.Control | Keys.R:
-                case Keys.BrowserRefresh:
-                WebBrowserMode.BrowserRefresh();
-                break;
-                case Keys.Control | Keys.S:
-                WebBrowserMode.BrowserSaveAsWebpage();
-                break;
-                case Keys.Control | Keys.P:
-                WebBrowserMode.BrowserPrint();
-                break;
-                case Keys.Control | Keys.N:
-                WebBrowserMode.BrowserNewWindow();
-                break;
-                case Keys.F11:
-                case Keys.Alt | Keys.Enter:
-                WebBrowserMode.BrowserFullscreen();
-                break;
-            }
         }
 
         protected override void OnPaint(PaintEventArgs pe) {

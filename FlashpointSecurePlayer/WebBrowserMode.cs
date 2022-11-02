@@ -698,9 +698,7 @@ namespace FlashpointSecurePlayer {
 
             closableWebBrowser.GoForward();
         }
-
-        // moved to ClosableWebBrowser
-        /*
+        
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
             switch (keyData) {
                 case Keys.Back:
@@ -739,6 +737,5 @@ namespace FlashpointSecurePlayer {
             }
             return true;
         }
-        */
     }
 }
