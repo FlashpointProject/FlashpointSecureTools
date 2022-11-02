@@ -15,7 +15,7 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Templat
 
 namespace FlashpointSecurePlayer {
     class DownloadsBefore : Modifications {
-        public DownloadsBefore(Form form) : base(form) { }
+        public DownloadsBefore(EventHandler ImportStart, EventHandler ImportStop) : base(ImportStart, ImportStop) { }
 
         private void Activate() { }
 

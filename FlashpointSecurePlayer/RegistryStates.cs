@@ -184,7 +184,7 @@ namespace FlashpointSecurePlayer {
             }
         }
         
-        public RegistryStates(Form form) : base(form) { }
+        public RegistryStates(EventHandler ImportStart, EventHandler ImportStop) : base(ImportStart, ImportStop) { }
 
         ~RegistryStates() {
             if (ImportStarted) {
@@ -812,7 +812,6 @@ namespace FlashpointSecurePlayer {
 
             // lock close button
             ImportStarted = true;
-            SetControlBox();
 
             try {
                 modificationsElement.RegistryStates.BinaryType = binaryType;
@@ -875,8 +874,6 @@ namespace FlashpointSecurePlayer {
             } catch {
                 ImportStarted = false;
             }
-
-            SetControlBox();
         }
 
         private async Task StopImportAsync(bool sync) {
@@ -927,7 +924,6 @@ namespace FlashpointSecurePlayer {
                 this.kernelSession.Dispose();
                 this.kernelSession = null;
                 ImportStarted = false;
-                SetControlBox();
             }
         }
 
@@ -1362,7 +1358,7 @@ namespace FlashpointSecurePlayer {
             if (registryTraceData.ProcessID == Process.GetCurrentProcess().Id || registryTraceData.ProcessID == -1) {
                 if (ImportPaused) {
                     if (registryTraceData.ValueName.ToUpperInvariant() == IMPORT_RESUME) {
-                        ResumeImport();
+                        ImportPaused = false;
                         // hold here until after the control has installed
                         // that way we can recieve registry messages as they come in
                         // with reassurance the control has installed already
@@ -1371,7 +1367,7 @@ namespace FlashpointSecurePlayer {
                     }
                 } else {
                     if (registryTraceData.ValueName.ToUpperInvariant() == IMPORT_PAUSE) {
-                        PauseImport();
+                        ImportPaused = true;
                     }
                 }
             }

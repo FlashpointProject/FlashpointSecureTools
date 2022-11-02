@@ -12,12 +12,62 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 namespace FlashpointSecurePlayer {
     // virtual class for modifications
     public abstract class Modifications {
-        protected readonly Form form = null;
+        private readonly EventHandler ImportStart;
+        private readonly EventHandler ImportStop;
+
+        public Modifications(EventHandler ImportStart, EventHandler ImportStop) {
+            this.ImportStart = ImportStart;
+            this.ImportStop = ImportStop;
+        }
+
+        ~Modifications() {
+            if (ImportStarted) {
+                StopImport();
+            }
+
+            Deactivate();
+        }
+
+        protected virtual void OnImportStart(EventArgs e) {
+            EventHandler handler = ImportStart;
+
+            if (handler == null) {
+                return;
+            }
+
+            handler(this, e);
+        }
+
+        protected virtual void OnImportStop(EventArgs e) {
+            EventHandler handler = ImportStop;
+
+            if (handler == null) {
+                return;
+            }
+
+            handler(this, e);
+        }
+
+        private bool importStarted = false;
+
+        protected bool ImportStarted {
+            get {
+                return importStarted;
+            }
+
+            set {
+                importStarted = value;
+
+                if (importStarted) {
+                    OnImportStart(EventArgs.Empty);
+                } else {
+                    OnImportStop(EventArgs.Empty);
+                }
+            }
+        }
+
         private readonly object importPausedLock = new object();
         private bool importPaused = true;
-
-        protected string TemplateName { get; set; } = String.Empty;
-        protected bool ImportStarted { get; set; } = false;
 
         protected bool ImportPaused {
             get {
@@ -33,31 +83,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        public Modifications(Form form) {
-            this.form = form;
-        }
-
-        ~Modifications() {
-            if (ImportStarted) {
-                StopImport();
-            }
-
-            Deactivate();
-        }
-
-        protected void SetControlBox() {
-            if (form != null) {
-                form.ControlBox = !ImportStarted;
-            }
-        }
-
-        public void PauseImport() {
-            ImportPaused = true;
-        }
-
-        public void ResumeImport() {
-            ImportPaused = false;
-        }
+        protected string TemplateName { get; set; } = String.Empty;
 
         protected void StartImport(string templateName) {
             if (ImportStarted) {

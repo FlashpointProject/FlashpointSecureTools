@@ -75,12 +75,12 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
-            runAsAdministrator = new RunAsAdministrator(this);
-            environmentVariables = new EnvironmentVariables(this);
-            downloadsBefore = new DownloadsBefore(this);
-            registryState = new RegistryStates(this);
-            singleInstance = new SingleInstance(this);
-            oldCPUSimulator = new OldCPUSimulator(this);
+            runAsAdministrator = new RunAsAdministrator(ImportStart, ImportStop);
+            environmentVariables = new EnvironmentVariables(ImportStart, ImportStop);
+            downloadsBefore = new DownloadsBefore(ImportStart, ImportStop);
+            registryState = new RegistryStates(ImportStart, ImportStop);
+            singleInstance = new SingleInstance(ImportStart, ImportStop);
+            oldCPUSimulator = new OldCPUSimulator(ImportStart, ImportStop);
         }
 
         private void ShowOutput(string errorLabelText) {
@@ -1056,6 +1056,14 @@ namespace FlashpointSecurePlayer {
                 // delegate handles error
                 return;
             }
+        }
+
+        private void ImportStart(object sender, EventArgs e) {
+            ControlBox = false;
+        }
+
+        private void ImportStop(object sender, EventArgs e) {
+            ControlBox = true;
         }
 
         private async void FlashpointSecurePlayer_Load(object sender, EventArgs e) {

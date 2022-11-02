@@ -145,28 +145,46 @@ namespace FlashpointSecurePlayer {
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         private class MessageFilter : IMessageFilter {
-            private readonly WebBrowserMode webBrowserMode = null;
+            private readonly EventHandler Back;
+            private readonly EventHandler Forward;
 
-            public MessageFilter(WebBrowserMode webBrowserMode) {
-                this.webBrowserMode = webBrowserMode;
+            public MessageFilter(EventHandler Back, EventHandler Forward) {
+                this.Back = Back;
+                this.Forward = Forward;
+            }
+
+            protected virtual void OnBack(EventArgs e) {
+                EventHandler handler = Back;
+
+                if (handler == null) {
+                    return;
+                }
+
+                handler(this, e);
+            }
+
+            protected virtual void OnForward(EventArgs e) {
+                EventHandler handler = Forward;
+
+                if (handler == null) {
+                    return;
+                }
+
+                handler(this, e);
             }
 
             [SecurityPermission(SecurityAction.Demand)]
             public bool PreFilterMessage(ref Message m) {
-                if (webBrowserMode == null) {
-                    return false;
-                }
-
                 if (m.Msg == WM_XBUTTONUP) {
                     int wParam = m.WParam.ToInt32();
 
                     if ((wParam & MK_XBUTTON1) == MK_XBUTTON1) {
-                        webBrowserMode.BrowserBack();
+                        OnBack(EventArgs.Empty);
                         return true;
                     }
 
                     if ((wParam & MK_XBUTTON2) == MK_XBUTTON2) {
-                        webBrowserMode.BrowserForward();
+                        OnForward(EventArgs.Empty);
                         return true;
                     }
                 }
@@ -205,24 +223,39 @@ namespace FlashpointSecurePlayer {
             return CallNextHookEx(mouseHook, nCode, wParam, lParam);
         }
 
+        public class TitleChangedEventArgs : EventArgs {
+            public string Text { get; set; } = null;
+
+            public TitleChangedEventArgs(string text) {
+                Text = text;
+            }
+        }
+
         private class WebBrowserModeTitle {
-            protected readonly Form form = null;
+            private readonly EventHandler<TitleChangedEventArgs> TitleChanged;
+
             private readonly string applicationTitle = "Flashpoint Secure Player";
             private string documentTitle = null;
             private int progress = -1;
 
-            public WebBrowserModeTitle(Form form) {
-                this.form = form;
+            public WebBrowserModeTitle(EventHandler<TitleChangedEventArgs> TitleChanged) {
+                this.TitleChanged = TitleChanged;
                 this.applicationTitle += " " + typeof(WebBrowserModeTitle).Assembly.GetName().Version;
 
                 Show();
             }
 
-            private void Show() {
-                if (form == null) {
+            protected virtual void OnTitleChanged(TitleChangedEventArgs e) {
+                EventHandler<TitleChangedEventArgs> handler = TitleChanged;
+
+                if (handler == null) {
                     return;
                 }
 
+                handler(this, e);
+            }
+
+            private void Show() {
                 StringBuilder text = new StringBuilder();
 
                 if (!String.IsNullOrEmpty(documentTitle)) {
@@ -238,7 +271,7 @@ namespace FlashpointSecurePlayer {
                     text.Append("%]");
                 }
 
-                form.Text = text.ToString();
+                OnTitleChanged(new TitleChangedEventArgs(text.ToString()));
             }
 
             public string DocumentTitle {
@@ -280,7 +313,7 @@ namespace FlashpointSecurePlayer {
 
             statusBarStatusStrip.Renderer = new EndEllipsisTextRenderer();
 
-            messageFilter = new MessageFilter(this);
+            messageFilter = new MessageFilter(Back, Forward);
 
             lowLevelMouseProc = new HookProc(LowLevelMouseProc);
 
@@ -291,13 +324,13 @@ namespace FlashpointSecurePlayer {
 
         public WebBrowserMode(bool useFlashActiveXControl = false) {
             _WebBrowserMode(useFlashActiveXControl);
-            webBrowserModeTitle = new WebBrowserModeTitle(this);
+            webBrowserModeTitle = new WebBrowserModeTitle(TitleChanged);
         }
 
-        public WebBrowserMode(Uri _webBrowserURL, bool useFlashActiveXControl = false) {
+        public WebBrowserMode(Uri webBrowserURL, bool useFlashActiveXControl = false) {
             _WebBrowserMode(useFlashActiveXControl);
-            webBrowserModeTitle = new WebBrowserModeTitle(this);
-            webBrowserURL = _webBrowserURL;
+            webBrowserModeTitle = new WebBrowserModeTitle(TitleChanged);
+            this.webBrowserURL = webBrowserURL;
         }
 
         ~WebBrowserMode() {
@@ -406,6 +439,18 @@ namespace FlashpointSecurePlayer {
 
         public void BrowserFullscreen() {
             Fullscreen = !Fullscreen;
+        }
+
+        private void Back(object sender, EventArgs e) {
+            BrowserBack();
+        }
+
+        private void Forward(object sender, EventArgs e) {
+            BrowserForward();
+        }
+
+        private void TitleChanged(object sender, TitleChangedEventArgs e) {
+            Text = e.Text;
         }
 
         private void WebBrowserMode_Load(object sender, EventArgs e) {

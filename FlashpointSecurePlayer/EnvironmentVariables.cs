@@ -21,7 +21,7 @@ namespace FlashpointSecurePlayer {
         private object activationLock = new object();
         private object deactivationLock = new object();
 
-        public EnvironmentVariables(Form form) : base(form) { }
+        public EnvironmentVariables(EventHandler ImportStart, EventHandler ImportStop) : base(ImportStart, ImportStop) { }
 
         private string GetComparableName(string name) {
             int comparableNameLength = name.IndexOf('\0');
