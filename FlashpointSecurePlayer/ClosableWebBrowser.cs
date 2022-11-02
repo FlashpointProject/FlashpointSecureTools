@@ -29,23 +29,23 @@ namespace FlashpointSecurePlayer {
         }
 
         protected virtual void OnWebBrowserClose(EventArgs e) {
-            EventHandler handler = WebBrowserClose;
+            EventHandler eventHandler = WebBrowserClose;
 
-            if (handler == null) {
+            if (eventHandler == null) {
                 return;
             }
 
-            handler(this, e);
+            eventHandler(this, e);
         }
 
         protected virtual void OnWebBrowserPaint(EventArgs e) {
-            EventHandler handler = WebBrowserPaint;
+            EventHandler eventHandler = WebBrowserPaint;
 
-            if (handler == null) {
+            if (eventHandler == null) {
                 return;
             }
 
-            handler(this, e);
+            eventHandler(this, e);
         }
 
         protected override void WndProc(ref Message m) {

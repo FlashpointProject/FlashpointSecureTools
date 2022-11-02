@@ -48,6 +48,35 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        private HookProc lowLevelMouseProc = null;
+        private IntPtr mouseHook = IntPtr.Zero;
+
+        private IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam) {
+            if (nCode >= 0) {
+                if (Fullscreen) {
+                    if (wParam.ToInt32() == WM_MOUSEMOVE) {
+                        // this is checked in LowLevelMouseProc because
+                        // otherwise plugins such as Viscape which
+                        // create their own window can steal the
+                        // mouse move event
+                        Point toolBarToolStripMousePosition = toolBarToolStrip.PointToClient(Control.MousePosition);
+
+                        if (toolBarToolStrip.Visible) {
+                            if (!toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
+                                toolBarToolStrip.Visible = false;
+                            }
+                        } else {
+                            if (toolBarToolStripMousePosition.Y == 0
+                                && toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
+                                toolBarToolStrip.Visible = true;
+                            }
+                        }
+                    }
+                }
+            }
+            return CallNextHookEx(mouseHook, nCode, wParam, lParam);
+        }
+
         private const int FULLSCREEN_EXIT_LABEL_TIMER_TIME = 2500;
 
         private System.Windows.Forms.Timer exitFullscreenLabelTimer = null;
@@ -116,9 +145,19 @@ namespace FlashpointSecurePlayer {
                     // now that we've changed states, bring the window to the front
                     BringToFront();
 
+                    if (mouseHook == IntPtr.Zero && lowLevelMouseProc != null) {
+                        mouseHook = SetWindowsHookEx(HookType.WH_MOUSE_LL, lowLevelMouseProc, IntPtr.Zero, 0);
+                    }
+
                     ExitFullscreenLabelTimer = true;
                 } else {
                     ExitFullscreenLabelTimer = false;
+
+                    if (mouseHook != IntPtr.Zero) {
+                        if (UnhookWindowsHookEx(mouseHook)) {
+                            mouseHook = IntPtr.Zero;
+                        }
+                    }
 
                     // need to do this first to reset the window to its former size
                     Resizable = fullscreenResizable;
@@ -154,23 +193,23 @@ namespace FlashpointSecurePlayer {
             }
 
             protected virtual void OnBack(EventArgs e) {
-                EventHandler handler = Back;
+                EventHandler eventHandler = Back;
 
-                if (handler == null) {
+                if (eventHandler == null) {
                     return;
                 }
 
-                handler(this, e);
+                eventHandler(this, e);
             }
 
             protected virtual void OnForward(EventArgs e) {
-                EventHandler handler = Forward;
+                EventHandler eventHandler = Forward;
 
-                if (handler == null) {
+                if (eventHandler == null) {
                     return;
                 }
 
-                handler(this, e);
+                eventHandler(this, e);
             }
 
             [SecurityPermission(SecurityAction.Demand)]
@@ -193,35 +232,6 @@ namespace FlashpointSecurePlayer {
         }
 
         private MessageFilter messageFilter = null;
-
-        private HookProc lowLevelMouseProc = null;
-        private IntPtr mouseHook = IntPtr.Zero;
-
-        private IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam) {
-            if (nCode >= 0) {
-                if (Fullscreen) {
-                    if (wParam.ToInt32() == WM_MOUSEMOVE) {
-                        // this is checked in LowLevelMouseProc because
-                        // otherwise plugins such as Viscape which
-                        // create their own window can steal the
-                        // mouse move event
-                        Point toolBarToolStripMousePosition = toolBarToolStrip.PointToClient(Control.MousePosition);
-
-                        if (toolBarToolStrip.Visible) {
-                            if (!toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
-                                toolBarToolStrip.Visible = false;
-                            }
-                        } else {
-                            if (toolBarToolStripMousePosition.Y == 0
-                                && toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
-                                toolBarToolStrip.Visible = true;
-                            }
-                        }
-                    }
-                }
-            }
-            return CallNextHookEx(mouseHook, nCode, wParam, lParam);
-        }
 
         public class TitleChangedEventArgs : EventArgs {
             public string Text { get; set; } = null;
@@ -246,13 +256,13 @@ namespace FlashpointSecurePlayer {
             }
 
             protected virtual void OnTitleChanged(TitleChangedEventArgs e) {
-                EventHandler<TitleChangedEventArgs> handler = TitleChanged;
+                EventHandler<TitleChangedEventArgs> eventHandler = TitleChanged;
 
-                if (handler == null) {
+                if (eventHandler == null) {
                     return;
                 }
 
-                handler(this, e);
+                eventHandler(this, e);
             }
 
             private void Show() {
@@ -316,10 +326,6 @@ namespace FlashpointSecurePlayer {
             messageFilter = new MessageFilter(Back, Forward);
 
             lowLevelMouseProc = new HookProc(LowLevelMouseProc);
-
-            if (mouseHook == IntPtr.Zero) {
-                mouseHook = SetWindowsHookEx(HookType.WH_MOUSE_LL, lowLevelMouseProc, IntPtr.Zero, 0);
-            }
         }
 
         public WebBrowserMode(bool useFlashActiveXControl = false) {
@@ -354,6 +360,7 @@ namespace FlashpointSecurePlayer {
             if (mouseHook != IntPtr.Zero) {
                 if (UnhookWindowsHookEx(mouseHook)) {
                     mouseHook = IntPtr.Zero;
+                    lowLevelMouseProc = null;
                 }
             }
         }

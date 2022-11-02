@@ -29,23 +29,23 @@ namespace FlashpointSecurePlayer {
         }
 
         protected virtual void OnImportStart(EventArgs e) {
-            EventHandler handler = ImportStart;
+            EventHandler eventHandler = ImportStart;
 
-            if (handler == null) {
+            if (eventHandler == null) {
                 return;
             }
 
-            handler(this, e);
+            eventHandler(this, e);
         }
 
         protected virtual void OnImportStop(EventArgs e) {
-            EventHandler handler = ImportStop;
+            EventHandler eventHandler = ImportStop;
 
-            if (handler == null) {
+            if (eventHandler == null) {
                 return;
             }
 
-            handler(this, e);
+            eventHandler(this, e);
         }
 
         private bool importStarted = false;
