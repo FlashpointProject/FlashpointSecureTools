@@ -152,7 +152,7 @@ namespace FlashpointSecurePlayer {
                     }
                 } else {
                     if (fullscreen) {
-                        MaximizeBox = fullscreenResizable;
+                        //MaximizeBox = fullscreenResizable;
                         FormBorderStyle = FormBorderStyle.None;
                         return;
                     }
