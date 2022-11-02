@@ -606,6 +606,13 @@ namespace FlashpointSecurePlayer {
 
             int progress = e.MaximumProgress > 0 ? (int)Math.Min((double)e.CurrentProgress / e.MaximumProgress * 100, 100) : 0;
             webBrowserModeTitle.Progress = progress;
+
+            if (progress == 0) {
+                progressToolStripProgressBar.Style = ProgressBarStyle.Marquee;
+            } else {
+                progressToolStripProgressBar.Style = ProgressBarStyle.Continuous;
+            }
+
             progressToolStripProgressBar.Value = progress;
             progressToolStripProgressBar.ToolTipText = progress + "%";
         }
@@ -722,10 +729,11 @@ namespace FlashpointSecurePlayer {
 
             DownloadCompleted = false;
             webBrowserModeTitle.Progress = 0;
+            progressToolStripProgressBar.Style = ProgressBarStyle.Marquee;
             progressToolStripProgressBar.Value = 0;
             progressToolStripProgressBar.ToolTipText = "0%";
-            UseWaitCursor = true;
-            closableWebBrowserControl.Enabled = false;
+            //UseWaitCursor = true;
+            //closableWebBrowserControl.Enabled = false;
         }
 
         private void ShDocVwWebBrowser_DownloadComplete() {
@@ -741,10 +749,11 @@ namespace FlashpointSecurePlayer {
 
             DownloadCompleted = true;
             webBrowserModeTitle.Progress = -1;
+            progressToolStripProgressBar.Style = ProgressBarStyle.Blocks;
             progressToolStripProgressBar.Value = 0;
             progressToolStripProgressBar.ToolTipText = String.Empty;
-            closableWebBrowserControl.Enabled = true;
-            UseWaitCursor = false;
+            //closableWebBrowserControl.Enabled = true;
+            //UseWaitCursor = false;
         }
 
         private void backButton_Click(object sender, EventArgs e) {
