@@ -84,17 +84,16 @@ namespace FlashpointSecurePlayer {
                 switch (m.Msg) {
                     case WM_MOUSEMOVE:
                     if (webBrowserMode.Fullscreen) {
-                        int lParamY = m.LParam.ToInt32() >> 16;
-
                         ToolStrip toolBarToolStrip = webBrowserMode.toolBarToolStrip;
-                        int toolBarToolStripY = webBrowserMode.Location.Y + toolBarToolStrip.Location.Y;
-
+                        Point toolBarToolStripMousePosition = toolBarToolStrip.PointToClient(Control.MousePosition);
+                        
                         if (toolBarToolStrip.Visible) {
-                            if (lParamY < toolBarToolStripY || lParamY > toolBarToolStripY + toolBarToolStrip.Size.Height) {
+                            if (!toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
                                 toolBarToolStrip.Visible = false;
                             }
                         } else {
-                            if (lParamY == toolBarToolStripY) {
+                            if (toolBarToolStripMousePosition.Y == 0
+                                && toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
                                 toolBarToolStrip.Visible = true;
                             }
                         }
