@@ -1,5 +1,5 @@
 ﻿namespace FlashpointSecurePlayer {
-    partial class WebBrowser {
+    partial class WebBrowserMode {
         /// <summary>
         /// Required designer variable.
         /// </summary>
@@ -23,14 +23,14 @@
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent() {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WebBrowser));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WebBrowserMode));
             this.toolBarToolStrip = new System.Windows.Forms.ToolStrip();
             this.backButton = new System.Windows.Forms.ToolStripButton();
             this.forwardButton = new System.Windows.Forms.ToolStripButton();
             this.stopButton = new System.Windows.Forms.ToolStripButton();
             this.refreshButton = new System.Windows.Forms.ToolStripButton();
             this.toolBarToolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.saveAsButton = new System.Windows.Forms.ToolStripButton();
+            this.saveAsWebpageButton = new System.Windows.Forms.ToolStripButton();
             this.printButton = new System.Windows.Forms.ToolStripButton();
             this.toolBarToolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.addressToolStripSpringTextBox = new FlashpointSecurePlayer.ToolStripSpringTextBox();
@@ -55,7 +55,7 @@
             this.stopButton,
             this.refreshButton,
             this.toolBarToolStripSeparator1,
-            this.saveAsButton,
+            this.saveAsWebpageButton,
             this.printButton,
             this.toolBarToolStripSeparator2,
             this.addressToolStripSpringTextBox,
@@ -122,17 +122,17 @@
             this.toolBarToolStripSeparator1.Name = "toolBarToolStripSeparator1";
             this.toolBarToolStripSeparator1.Size = new System.Drawing.Size(6, 25);
             // 
-            // saveAsButton
+            // saveAsWebpageButton
             // 
-            this.saveAsButton.AutoToolTip = false;
-            this.saveAsButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.saveAsButton.Image = ((System.Drawing.Image)(resources.GetObject("saveAsButton.Image")));
-            this.saveAsButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.saveAsButton.Name = "saveAsButton";
-            this.saveAsButton.Size = new System.Drawing.Size(23, 22);
-            this.saveAsButton.Text = "toolStripButton5";
-            this.saveAsButton.ToolTipText = "Save As Webpage...";
-            this.saveAsButton.Click += new System.EventHandler(this.saveAsButton_Click);
+            this.saveAsWebpageButton.AutoToolTip = false;
+            this.saveAsWebpageButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.saveAsWebpageButton.Image = ((System.Drawing.Image)(resources.GetObject("saveAsWebpageButton.Image")));
+            this.saveAsWebpageButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.saveAsWebpageButton.Name = "saveAsWebpageButton";
+            this.saveAsWebpageButton.Size = new System.Drawing.Size(23, 22);
+            this.saveAsWebpageButton.Text = "toolStripButton5";
+            this.saveAsWebpageButton.ToolTipText = "Save As Webpage...";
+            this.saveAsWebpageButton.Click += new System.EventHandler(this.saveAsWebpageButton_Click);
             // 
             // printButton
             // 
@@ -220,7 +220,7 @@
             this.statusToolStripStatusLabel.BorderStyle = System.Windows.Forms.Border3DStyle.Etched;
             this.statusToolStripStatusLabel.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.statusToolStripStatusLabel.Name = "statusToolStripStatusLabel";
-            this.statusToolStripStatusLabel.Size = new System.Drawing.Size(523, 17);
+            this.statusToolStripStatusLabel.Size = new System.Drawing.Size(492, 17);
             this.statusToolStripStatusLabel.Spring = true;
             this.statusToolStripStatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -235,7 +235,6 @@
             this.closableWebBrowser.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.closableWebBrowser.Form = null;
             this.closableWebBrowser.Location = new System.Drawing.Point(0, 25);
             this.closableWebBrowser.Margin = new System.Windows.Forms.Padding(0);
             this.closableWebBrowser.MinimumSize = new System.Drawing.Size(32, 32);
@@ -244,6 +243,7 @@
             this.closableWebBrowser.Size = new System.Drawing.Size(640, 480);
             this.closableWebBrowser.TabIndex = 1;
             this.closableWebBrowser.Url = new System.Uri("about:blank", System.UriKind.Absolute);
+            this.closableWebBrowser.WebBrowserMode = null;
             this.closableWebBrowser.ProgressChanged += new System.Windows.Forms.WebBrowserProgressChangedEventHandler(this.closableWebBrowser_ProgressChanged);
             // 
             // exitFullscreenLabel
@@ -262,7 +262,7 @@
             this.exitFullscreenLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.exitFullscreenLabel.Visible = false;
             // 
-            // WebBrowser
+            // WebBrowserMode
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -272,13 +272,13 @@
             this.Controls.Add(this.toolBarToolStrip);
             this.Controls.Add(this.closableWebBrowser);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "WebBrowser";
+            this.Name = "WebBrowserMode";
             this.Text = "Flashpoint Secure Player";
-            this.Activated += new System.EventHandler(this.WebBrowser_Activated);
-            this.Deactivate += new System.EventHandler(this.WebBrowser_Deactivate);
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.WebBrowser_FormClosing);
-            this.Load += new System.EventHandler(this.WebBrowser_Load);
-            this.Shown += new System.EventHandler(this.WebBrowser_Shown);
+            this.Activated += new System.EventHandler(this.WebBrowserMode_Activated);
+            this.Deactivate += new System.EventHandler(this.WebBrowserMode_Deactivate);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.WebBrowserMode_FormClosing);
+            this.Load += new System.EventHandler(this.WebBrowserMode_Load);
+            this.Shown += new System.EventHandler(this.WebBrowserMode_Shown);
             this.toolBarToolStrip.ResumeLayout(false);
             this.toolBarToolStrip.PerformLayout();
             this.statusBarStatusStrip.ResumeLayout(false);
@@ -300,7 +300,7 @@
         private System.Windows.Forms.ToolStripButton stopButton;
         private System.Windows.Forms.ToolStripButton refreshButton;
         private System.Windows.Forms.ToolStripSeparator toolBarToolStripSeparator1;
-        private System.Windows.Forms.ToolStripButton saveAsButton;
+        private System.Windows.Forms.ToolStripButton saveAsWebpageButton;
         private System.Windows.Forms.ToolStripButton printButton;
         private System.Windows.Forms.ToolStripSeparator toolBarToolStripSeparator2;
         private ToolStripSpringTextBox addressToolStripSpringTextBox;

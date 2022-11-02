@@ -13,16 +13,58 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 
 namespace FlashpointSecurePlayer {
     public partial class ClosableWebBrowser : System.Windows.Forms.WebBrowser {
-        public Form Form { get; set; } = null;
+        public WebBrowserMode WebBrowserMode { get; set; } = null;
 
         public ClosableWebBrowser() {
             InitializeComponent();
             
+            // this breaks ProcessCmdKey, but is needed for Atmosphere plugin
+            // so the hotkeys from the WebBrowserMode are moved here
             this.PreviewKeyDown += ClosableWebBrowser_PreviewKeyDown;
         }
 
         private void ClosableWebBrowser_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e) {
             e.IsInputKey = true;
+            
+            if (WebBrowserMode == null) {
+                return;
+            }
+
+            switch (e.KeyData) {
+                case Keys.Back:
+                case Keys.Control | Keys.Left:
+                case Keys.Alt | Keys.Left:
+                case Keys.BrowserBack:
+                WebBrowserMode.BrowserBack();
+                break;
+                case Keys.Control | Keys.Right:
+                case Keys.Alt | Keys.Right:
+                case Keys.BrowserForward:
+                WebBrowserMode.BrowserForward();
+                break;
+                case Keys.Escape:
+                case Keys.BrowserStop:
+                WebBrowserMode.BrowserStop();
+                break;
+                case Keys.F5:
+                case Keys.Control | Keys.R:
+                case Keys.BrowserRefresh:
+                WebBrowserMode.BrowserRefresh();
+                break;
+                case Keys.Control | Keys.S:
+                WebBrowserMode.BrowserSaveAsWebpage();
+                break;
+                case Keys.Control | Keys.P:
+                WebBrowserMode.BrowserPrint();
+                break;
+                case Keys.Control | Keys.N:
+                WebBrowserMode.BrowserNewWindow();
+                break;
+                case Keys.F11:
+                case Keys.Alt | Keys.Enter:
+                WebBrowserMode.BrowserFullscreen();
+                break;
+            }
         }
 
         protected override void OnPaint(PaintEventArgs pe) {
@@ -30,7 +72,7 @@ namespace FlashpointSecurePlayer {
         }
 
         protected override void WndProc(ref Message m) {
-            if (!DesignMode && Form != null) {
+            if (!DesignMode && WebBrowserMode != null) {
                 switch (m.Msg) {
                     case WM_PARENTNOTIFY:
                     if (m.WParam.ToInt32() == WM_DESTROY) {
@@ -38,18 +80,18 @@ namespace FlashpointSecurePlayer {
                         // (for example, if window.close is called)
                         // needs to be done here because the event
                         // intended for this does not actually fire
-                        Form.Close();
+                        WebBrowserMode.Close();
                     }
 
                     DefWndProc(ref m);
                     return;
                     case WM_PAINT:
-                    if (Form.WindowState != FormWindowState.Maximized) {
+                    if (WebBrowserMode.WindowState != FormWindowState.Maximized) {
                         // lame fix: browser hangs when window.open top attribute > control height (why?)
                         // Width, Height, and WindowState changes all work here
                         // Width/Height are less obvious and Height doesn't cause text reflow
-                        Form.Height--;
-                        Form.Height++;
+                        WebBrowserMode.Height--;
+                        WebBrowserMode.Height++;
                     }
                     break;
                 }

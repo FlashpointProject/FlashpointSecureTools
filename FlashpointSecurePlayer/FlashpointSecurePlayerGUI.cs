@@ -35,7 +35,7 @@ namespace FlashpointSecurePlayer {
         private readonly OldCPUSimulator oldCPUSimulator;
         
         private bool activeX = false;
-        WebBrowser webBrowserForm = null;
+        WebBrowserMode webBrowserMode = null;
         private ProcessStartInfo softwareProcessStartInfo = null;
         private bool softwareIsOldCPUSimulator = false;
 
@@ -476,13 +476,13 @@ namespace FlashpointSecurePlayer {
                             throw new InvalidModeException("The address (" + URL + ") was not understood by the Mode.");
                         }
 
-                        webBrowserForm = new WebBrowser(webBrowserURL, UseFlashActiveXControl) {
+                        webBrowserMode = new WebBrowserMode(webBrowserURL, UseFlashActiveXControl) {
                             WindowState = FormWindowState.Maximized
                         };
 
-                        webBrowserForm.FormClosing += webBrowserForm_FormClosing;
+                        webBrowserMode.FormClosing += webBrowserMode_FormClosing;
                         Hide();
-                        webBrowserForm.Show();
+                        webBrowserMode.Show();
                         return;
                         case ModeElement.NAME.SOFTWARE:
                         try {
@@ -620,10 +620,10 @@ namespace FlashpointSecurePlayer {
                 }
 
                 try {
-                    if (webBrowserForm != null) {
-                        webBrowserForm.FormClosing -= webBrowserForm_FormClosing;
-                        webBrowserForm.Close();
-                        webBrowserForm = null;
+                    if (webBrowserMode != null) {
+                        webBrowserMode.FormClosing -= webBrowserMode_FormClosing;
+                        webBrowserMode.Close();
+                        webBrowserMode = null;
                     }
                 } finally {
                     modeMutex.ReleaseMutex();
@@ -1435,11 +1435,11 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private void webBrowserForm_FormClosing(object sender, FormClosingEventArgs e) {
+        private void webBrowserMode_FormClosing(object sender, FormClosingEventArgs e) {
             // stop form closing recursion
-            if (webBrowserForm != null) {
-                webBrowserForm.FormClosing -= webBrowserForm_FormClosing;
-                webBrowserForm = null;
+            if (webBrowserMode != null) {
+                webBrowserMode.FormClosing -= webBrowserMode_FormClosing;
+                webBrowserMode = null;
             }
 
             // Set Current Directory

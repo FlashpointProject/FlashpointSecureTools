@@ -16,16 +16,16 @@ using System.Security.Permissions;
 using System.Threading;
 
 namespace FlashpointSecurePlayer {
-    public partial class WebBrowser : Form {
-        private class WebBrowserTitle {
+    public partial class WebBrowserMode : Form {
+        private class WebBrowserModeTitle {
             protected readonly Form form;
             private string applicationTitle = "Flashpoint Secure Player";
             private string documentTitle = null;
             private int progress = -1;
 
-            public WebBrowserTitle(Form form) {
+            public WebBrowserModeTitle(Form form) {
                 this.form = form;
-                this.applicationTitle += " " + typeof(WebBrowserTitle).Assembly.GetName().Version;
+                this.applicationTitle += " " + typeof(WebBrowserModeTitle).Assembly.GetName().Version;
             }
 
             private void Show() {
@@ -104,13 +104,20 @@ namespace FlashpointSecurePlayer {
 
         private bool useFlashActiveXControl = false;
         private CustomSecurityManager customSecurityManager = null;
-        private readonly WebBrowserTitle webBrowserTitle;
+
+        private readonly WebBrowserModeTitle webBrowserModeTitle;
         private Uri webBrowserURL = null;
         private bool addressToolStripSpringTextBoxEntered = false;
-        private bool fullscreen = false;
-        private System.Windows.Forms.Timer exitFullscreenLabelTimer;
-        private MessageFilter messageFilter = null;
+
         private bool resizable = true;
+        private System.Windows.Forms.Timer exitFullscreenLabelTimer;
+        private bool fullscreen = false;
+        private bool fullscreenResizable = true;
+        private FormWindowState fullscreenWindowState = FormWindowState.Maximized;
+        private Point closableWebBrowserAnchorLocation;
+        private Size closableWebBrowserAnchorSize;
+
+        private MessageFilter messageFilter = null;
         private object downloadCompletedLock = new object();
         private bool downloadCompleted = false;
 
@@ -138,8 +145,18 @@ namespace FlashpointSecurePlayer {
 
                 if (resizable) {
                     FormBorderStyle = FormBorderStyle.Sizable;
-                    MaximizeBox = true;
+
+                    // only set to true if it isn't already to avoid bug exiting fullscreen
+                    if (!MaximizeBox) {
+                        MaximizeBox = true;
+                    }
                 } else {
+                    if (fullscreen) {
+                        MaximizeBox = fullscreenResizable;
+                        FormBorderStyle = FormBorderStyle.None;
+                        return;
+                    }
+
                     FormBorderStyle = FormBorderStyle.FixedSingle;
                     MaximizeBox = false;
                 }
@@ -159,7 +176,9 @@ namespace FlashpointSecurePlayer {
                     exitFullscreenLabelTimer = null;
                 }
 
-                if (value) {
+                exitFullscreenLabel.Visible = value;
+
+                if (exitFullscreenLabel.Visible) {
                     exitFullscreenLabelTimer = new System.Windows.Forms.Timer();
                     exitFullscreenLabelTimer.Interval = FULLSCREEN_EXIT_LABEL_TIMER_TIME;
                     exitFullscreenLabelTimer.Tick += exitFullscreenLabelTimer_Tick;
@@ -177,37 +196,51 @@ namespace FlashpointSecurePlayer {
                 fullscreen = value;
 
                 if (fullscreen) {
+                    // make Strips invisible so the Closable Web Browser can fill their space
                     toolBarToolStrip.Visible = false;
                     statusBarStatusStrip.Visible = false;
+
+                    // switch the Closable Web Browser to Docked
+                    closableWebBrowserAnchorLocation = closableWebBrowser.Location;
+                    closableWebBrowserAnchorSize = closableWebBrowser.Size;
                     closableWebBrowser.Dock = DockStyle.Fill;
 
-                    BringToFront();
+                    // get the original properties before modifying them
+                    fullscreenResizable = Resizable;
+                    fullscreenWindowState = WindowState;
 
                     // need to do this first to have an effect if starting maximized
                     WindowState = FormWindowState.Normal;
-                    // knock out borders, temporarily disabling resizing
-                    FormBorderStyle = FormBorderStyle.None;
+                    // disable resizing
+                    Resizable = false;
                     // enter fullscreen
                     WindowState = FormWindowState.Maximized;
 
-                    exitFullscreenLabel.Visible = true;
+                    // now that we've changed states, bring the window to the front
+                    BringToFront();
+
                     ExitFullscreenLabelTimer = true;
                 } else {
                     ExitFullscreenLabelTimer = false;
-                    exitFullscreenLabel.Visible = false;
 
-                    BringToFront();
-
-                    // need to do this first to reset the window to its set size
-                    FormBorderStyle = FormBorderStyle.Sizable;
+                    // need to do this first to reset the window to its former size
+                    Resizable = fullscreenResizable;
                     // exit fullscreen
                     WindowState = FormWindowState.Normal;
-                    // show resizable if this is a resizable window
-                    Resizable = resizable;
+                    // reset window state to the original one before changing it
+                    WindowState = fullscreenWindowState;
 
-                    closableWebBrowser.Dock = DockStyle.None;
+                    // now that we've changed states, bring the window to the front
+                    BringToFront();
+
+                    // make these visible again so the browser can anchor to them
                     toolBarToolStrip.Visible = true;
                     statusBarStatusStrip.Visible = true;
+
+                    // switch the Closable Web Browser to Anchored
+                    closableWebBrowser.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+                    closableWebBrowser.Location = closableWebBrowserAnchorLocation;
+                    closableWebBrowser.Size = closableWebBrowserAnchorSize;
                 }
             }
         }
@@ -221,14 +254,14 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private void _WebBrowser() {
+        private void _WebBrowserMode() {
             InitializeComponent();
 
             if (closableWebBrowser == null) {
                 return;
             }
 
-            closableWebBrowser.Form = this;
+            closableWebBrowser.WebBrowserMode = this;
             closableWebBrowser.CanGoBackChanged += closableWebBrowser_CanGoBackChanged;
             closableWebBrowser.CanGoForwardChanged += closableWebBrowser_CanGoForwardChanged;
             closableWebBrowser.DocumentTitleChanged += closableWebBrowser_DocumentTitleChanged;
@@ -240,20 +273,72 @@ namespace FlashpointSecurePlayer {
             messageFilter = new MessageFilter(this, new EventHandler(OnBack), new EventHandler(OnForward));
         }
 
-        public WebBrowser(bool _useFlashActiveXControl = false) {
-            _WebBrowser();
-            webBrowserTitle = new WebBrowserTitle(this);
+        public WebBrowserMode(bool _useFlashActiveXControl = false) {
+            _WebBrowserMode();
+            webBrowserModeTitle = new WebBrowserModeTitle(this);
             useFlashActiveXControl = _useFlashActiveXControl;
         }
 
-        public WebBrowser(Uri _webBrowserURL, bool _useFlashActiveXControl = false) {
-            _WebBrowser();
-            webBrowserTitle = new WebBrowserTitle(this);
+        public WebBrowserMode(Uri _webBrowserURL, bool _useFlashActiveXControl = false) {
+            _WebBrowserMode();
+            webBrowserModeTitle = new WebBrowserModeTitle(this);
             webBrowserURL = _webBrowserURL;
             useFlashActiveXControl = _useFlashActiveXControl;
         }
 
-        private void Navigate(String URL) {
+        public void BrowserBack() {
+            if (closableWebBrowser == null) {
+                return;
+            }
+
+            closableWebBrowser.GoBack();
+        }
+
+        public void BrowserForward() {
+            if (closableWebBrowser == null) {
+                return;
+            }
+
+            closableWebBrowser.GoForward();
+        }
+
+        public void BrowserStop() {
+            if (closableWebBrowser == null) {
+                return;
+            }
+
+            closableWebBrowser.Stop();
+        }
+
+        public void BrowserRefresh() {
+            if (closableWebBrowser == null) {
+                return;
+            }
+
+            // skip refresh if about:blank is loaded to avoid removing
+            // content specified by the DocumentText property
+            if (!closableWebBrowser.Url.Equals("about:blank")) {
+                closableWebBrowser.Refresh();
+            }
+        }
+
+        public void BrowserSaveAsWebpage() {
+            if (closableWebBrowser == null) {
+                return;
+            }
+
+            closableWebBrowser.ShowSaveAsDialog();
+        }
+
+        public void BrowserPrint() {
+            if (closableWebBrowser == null) {
+                return;
+            }
+
+            closableWebBrowser.ShowPrintDialog();
+        }
+
+        public void BrowserNavigate(String URL) {
             if (closableWebBrowser == null) {
                 return;
             }
@@ -273,8 +358,19 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private void WebBrowser_Load(object sender, EventArgs e) {
-            Text += " " + typeof(WebBrowser).Assembly.GetName().Version;
+        public WebBrowserMode BrowserNewWindow() {
+            // we don't want this window to be the parent, breaks fullscreen and not otherwise useful
+            WebBrowserMode webBrowserForm = new WebBrowserMode(useFlashActiveXControl);
+            webBrowserForm.Show(/*this*/);
+            return webBrowserForm;
+        }
+
+        public void BrowserFullscreen() {
+            Fullscreen = !fullscreen;
+        }
+
+        private void WebBrowserMode_Load(object sender, EventArgs e) {
+            Text += " " + typeof(WebBrowserMode).Assembly.GetName().Version;
 
             // default value is Redirector port
             /*
@@ -334,7 +430,7 @@ namespace FlashpointSecurePlayer {
             Activate();
         }
 
-        private void WebBrowser_Shown(object sender, EventArgs e) {
+        private void WebBrowserMode_Shown(object sender, EventArgs e) {
             if (closableWebBrowser == null || webBrowserURL == null) {
                 return;
             }
@@ -342,7 +438,7 @@ namespace FlashpointSecurePlayer {
             closableWebBrowser.Url = webBrowserURL;
         }
 
-        private void WebBrowser_FormClosing(object sender, FormClosingEventArgs e) {
+        private void WebBrowserMode_FormClosing(object sender, FormClosingEventArgs e) {
             Hide();
             
             if (closableWebBrowser == null) {
@@ -365,12 +461,12 @@ namespace FlashpointSecurePlayer {
 
             // the Form property must be nulled out, otherwise we enter an infinite loop
             // (browser reports being closed > we close the form and so on)
-            closableWebBrowser.Form = null;
+            closableWebBrowser.WebBrowserMode = null;
             closableWebBrowser.Dispose();
             closableWebBrowser = null;
         }
 
-        private void WebBrowser_Activated(object sender, EventArgs e) {
+        private void WebBrowserMode_Activated(object sender, EventArgs e) {
             Application.AddMessageFilter(messageFilter);
 
             if (Fullscreen) {
@@ -378,7 +474,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private void WebBrowser_Deactivate(object sender, EventArgs e) {
+        private void WebBrowserMode_Deactivate(object sender, EventArgs e) {
             Application.RemoveMessageFilter(messageFilter);
 
             if (Fullscreen) {
@@ -396,7 +492,7 @@ namespace FlashpointSecurePlayer {
             }
 
             int progress = e.MaximumProgress > 0 ? (int)Math.Min((double)e.CurrentProgress / e.MaximumProgress * 100, 100) : 0;
-            webBrowserTitle.Progress = progress;
+            webBrowserModeTitle.Progress = progress;
             progressToolStripProgressBar.Value = progress;
             progressToolStripProgressBar.ToolTipText = progress + "%";
         }
@@ -422,7 +518,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            webBrowserTitle.DocumentTitle = closableWebBrowser.DocumentTitle;
+            webBrowserModeTitle.DocumentTitle = closableWebBrowser.DocumentTitle;
         }
 
         private void closableWebBrowser_StatusTextChanged(object sender, EventArgs e) {
@@ -447,9 +543,7 @@ namespace FlashpointSecurePlayer {
         }
 
         private void ShDocVwWebBrowser_NewWindow2(ref object ppDisp, ref bool Cancel) {
-            WebBrowser webBrowserForm = new WebBrowser(useFlashActiveXControl);
-            webBrowserForm.Show(/*this*/);
-            ppDisp = webBrowserForm.PPDisp;
+            ppDisp = BrowserNewWindow().PPDisp;
             Cancel = false;
         }
 
@@ -497,7 +591,7 @@ namespace FlashpointSecurePlayer {
             }
 
             DownloadCompleted = false;
-            webBrowserTitle.Progress = 0;
+            webBrowserModeTitle.Progress = 0;
             progressToolStripProgressBar.Value = 0;
             progressToolStripProgressBar.ToolTipText = "0%";
             UseWaitCursor = true;
@@ -516,7 +610,7 @@ namespace FlashpointSecurePlayer {
             }
 
             DownloadCompleted = true;
-            webBrowserTitle.Progress = -1;
+            webBrowserModeTitle.Progress = -1;
             progressToolStripProgressBar.Value = 0;
             progressToolStripProgressBar.ToolTipText = String.Empty;
             closableWebBrowserControl.Enabled = true;
@@ -524,55 +618,27 @@ namespace FlashpointSecurePlayer {
         }
 
         private void backButton_Click(object sender, EventArgs e) {
-            if (closableWebBrowser == null) {
-                return;
-            }
-
-            closableWebBrowser.GoBack();
+            BrowserBack();
         }
 
         private void forwardButton_Click(object sender, EventArgs e) {
-            if (closableWebBrowser == null) {
-                return;
-            }
-
-            closableWebBrowser.GoForward();
+            BrowserForward();
         }
 
         private void stopButton_Click(object sender, EventArgs e) {
-            if (closableWebBrowser == null) {
-                return;
-            }
-
-            closableWebBrowser.Stop();
+            BrowserStop();
         }
 
         private void refreshButton_Click(object sender, EventArgs e) {
-            if (closableWebBrowser == null) {
-                return;
-            }
-
-            // Skip refresh if about:blank is loaded to avoid removing
-            // content specified by the DocumentText property.
-            if (!closableWebBrowser.Url.Equals("about:blank")) {
-                closableWebBrowser.Refresh();
-            }
+            BrowserRefresh();
         }
 
-        private void saveAsButton_Click(object sender, EventArgs e) {
-            if (closableWebBrowser == null) {
-                return;
-            }
-
-            closableWebBrowser.ShowSaveAsDialog();
+        private void saveAsWebpageButton_Click(object sender, EventArgs e) {
+            BrowserSaveAsWebpage();
         }
 
         private void printButton_Click(object sender, EventArgs e) {
-            if (closableWebBrowser == null) {
-                return;
-            }
-
-            closableWebBrowser.ShowPrintDialog();
+            BrowserPrint();
         }
 
         private void addressToolStripSpringTextBox_Click(object sender, EventArgs e) {
@@ -595,18 +661,16 @@ namespace FlashpointSecurePlayer {
 
         private void addressToolStripTextBox_KeyDown(object sender, KeyEventArgs e) {
             if (e.KeyCode == Keys.Enter) {
-                Navigate(addressToolStripSpringTextBox.Text);
+                BrowserNavigate(addressToolStripSpringTextBox.Text);
             }
         }
 
         private void goButton_Click(object sender, EventArgs e) {
-            Navigate(addressToolStripSpringTextBox.Text);
+            BrowserNavigate(addressToolStripSpringTextBox.Text);
         }
 
         private void newWindowButton_Click(object sender, EventArgs e) {
-            // we don't want this window to be the parent, breaks fullscreen and not otherwise useful
-            WebBrowser webBrowserForm = new WebBrowser(useFlashActiveXControl);
-            webBrowserForm.Show(/*this*/);
+            BrowserNewWindow();
         }
 
         private void fullscreenButton_Click(object sender, EventArgs e) {
@@ -615,8 +679,6 @@ namespace FlashpointSecurePlayer {
 
         private void exitFullscreenLabelTimer_Tick(object sender, EventArgs e) {
             ExitFullscreenLabelTimer = false;
-
-            exitFullscreenLabel.Visible = false;
         }
 
         private void OnBack(object sender, EventArgs e) {
@@ -635,12 +697,46 @@ namespace FlashpointSecurePlayer {
             closableWebBrowser.GoForward();
         }
 
+        // moved to ClosableWebBrowser
+        /*
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
-            // TODO: shouldn't ALT require a different MSG?
-            if (keyData == Keys.F11 || keyData == (Keys.Alt | Keys.Enter)) {
-                Fullscreen = !fullscreen;
+            switch (keyData) {
+                case Keys.Back:
+                case Keys.Control | Keys.Left:
+                case Keys.Alt | Keys.Left:
+                case Keys.BrowserBack:
+                BrowserBack();
+                break;
+                case Keys.Control | Keys.Right:
+                case Keys.Alt | Keys.Right:
+                case Keys.BrowserForward:
+                BrowserForward();
+                break;
+                case Keys.Escape:
+                case Keys.BrowserStop:
+                BrowserStop();
+                break;
+                case Keys.F5:
+                case Keys.Control | Keys.R:
+                case Keys.BrowserRefresh:
+                BrowserRefresh();
+                break;
+                case Keys.Control | Keys.S:
+                BrowserSaveAsWebpage();
+                break;
+                case Keys.Control | Keys.P:
+                BrowserPrint();
+                break;
+                case Keys.Control | Keys.N:
+                BrowserNewWindow();
+                break;
+                case Keys.F11:
+                case Keys.Alt | Keys.Enter:
+                BrowserFullscreen();
+                break;
             }
             return true;
         }
+        */
     }
 }
