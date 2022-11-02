@@ -18,7 +18,7 @@ namespace FlashpointSecurePlayer {
     public partial class WebBrowserMode : Form {
         private bool resizable = true;
 
-        private bool Resizable {
+        public bool Resizable {
             get {
                 return resizable;
             }
@@ -112,7 +112,7 @@ namespace FlashpointSecurePlayer {
         private Point closableWebBrowserAnchorLocation;
         private Size closableWebBrowserAnchorSize;
 
-        private bool Fullscreen {
+        public bool Fullscreen {
             get {
                 return fullscreen;
             }
@@ -182,6 +182,17 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        private class EndEllipsisTextRenderer : ToolStripProfessionalRenderer {
+            protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e) {
+                if (e.Item is ToolStripStatusLabel) {
+                    TextRenderer.DrawText(e.Graphics, e.Text, e.TextFont, e.TextRectangle, e.TextColor, Color.Transparent, e.TextFormat | TextFormatFlags.EndEllipsis);
+                    return;
+                }
+
+                base.OnRenderItemText(e);
+            }
+        }
+
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         private class MessageFilter : IMessageFilter {
             private readonly EventHandler Back;
@@ -233,7 +244,7 @@ namespace FlashpointSecurePlayer {
 
         private MessageFilter messageFilter = null;
 
-        public class TitleChangedEventArgs : EventArgs {
+        private class TitleChangedEventArgs : EventArgs {
             public string Text { get; set; } = null;
 
             public TitleChangedEventArgs(string text) {
