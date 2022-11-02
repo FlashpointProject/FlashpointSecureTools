@@ -17,14 +17,6 @@ namespace FlashpointSecurePlayer {
 
         public ClosableWebBrowser() {
             InitializeComponent();
-
-            // this breaks ProcessCmdKey, but is needed for Atmosphere plugin
-            // so the hotkeys from the WebBrowserMode are moved here
-            this.PreviewKeyDown += ClosableWebBrowser_PreviewKeyDown;
-        }
-
-        private void ClosableWebBrowser_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e) {
-            e.IsInputKey = true;
         }
 
         protected override void OnPaint(PaintEventArgs pe) {

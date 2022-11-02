@@ -735,7 +735,9 @@ namespace FlashpointSecurePlayer {
                 BrowserFullscreen();
                 break;
             }
-            return true;
+            // don't forget to call the base!
+            // (better fix for Atmosphere plugin)
+            return base.ProcessCmdKey(ref msg, keyData);
         }
     }
 }
