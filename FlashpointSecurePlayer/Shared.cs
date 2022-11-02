@@ -901,8 +901,8 @@ namespace FlashpointSecurePlayer {
                                     _properties = new ConfigurationPropertyCollection();
 
                                     _type = new ConfigurationProperty("type",
-                                        typeof(global::FlashpointSecurePlayer.RegistryStates.TYPE),
-                                        global::FlashpointSecurePlayer.RegistryStates.TYPE.KEY, ConfigurationPropertyOptions.None);
+                                        typeof(FlashpointSecurePlayer.RegistryStates.TYPE),
+                                        FlashpointSecurePlayer.RegistryStates.TYPE.KEY, ConfigurationPropertyOptions.None);
                                     _properties.Add(_type);
 
                                     _keyName = new ConfigurationProperty("keyName",
@@ -916,14 +916,6 @@ namespace FlashpointSecurePlayer {
                                     _valueKind = new ConfigurationProperty("valueKind",
                                         typeof(RegistryValueKind?), null, ConfigurationPropertyOptions.None);
                                     _properties.Add(_valueKind);
-
-                                    /*
-                                    if (Type == global::FlashpointSecurePlayer.RegistryStates.TYPE.VALUE) {
-                                        _valueName = new ConfigurationProperty("valueName",
-                                            typeof(string), null, ConfigurationPropertyOptions.IsRequired);
-                                        _properties.Add(_valueName);
-                                    }
-                                    */
 
                                     _valueName = new ConfigurationProperty("valueName",
                                         typeof(string), null, ConfigurationPropertyOptions.None);
@@ -946,65 +938,27 @@ namespace FlashpointSecurePlayer {
                                     }
 
                                     set {
-                                        /*
-                                        if (value != global::FlashpointSecurePlayer.RegistryStates.TYPE.VALUE) {
-                                            base[_valueName] = null;
-                                        }
-                                        */
-
                                         base[_type] = value;
                                     }
                                 }
                                 
                                 public string KeyName {
                                     get {
-                                        if (String.IsNullOrEmpty(base[_keyName] as string)) {
-                                            return base[_keyName] as string;
-                                        }
-                                        return (base[_keyName] as string)/*.ToUpperInvariant()*/;
+                                        return base[_keyName] as string;
                                     }
 
                                     set {
-                                        /*
-                                        if (String.IsNullOrEmpty(value)) {
-                                            base[_keyName] = value;
-                                            return;
-                                        }
-                                        */
-
-                                        base[_keyName] = value/*.ToUpperInvariant()*/;
+                                        base[_keyName] = value;
                                     }
                                 }
                                 
                                 public string ValueName {
                                     get {
-                                        /*
-                                        if (Type != global::FlashpointSecurePlayer.RegistryStates.TYPE.VALUE || _valueName == null) {
-                                            return null;
-                                        }
-                                        */
-
-                                        /*
-                                        if (String.IsNullOrEmpty(base[_valueName] as string)) {
-                                            return base[_valueName] as string;
-                                        }
-                                        */
-                                        return (base[_valueName] as string)/*.ToUpperInvariant()*/;
+                                        return base[_valueName] as string;
                                     }
 
                                     set {
-                                        /*
-                                        if (Type != global::FlashpointSecurePlayer.RegistryStates.TYPE.VALUE || _valueName == null) {
-                                            return;
-                                        }
-                                        */
-
-                                        if (String.IsNullOrEmpty(value)) {
-                                            base[_valueName] = value;
-                                            return;
-                                        }
-
-                                        base[_valueName] = value.ToUpperInvariant();
+                                        base[_valueName] = value;
                                     }
                                 }
                                 
@@ -1074,7 +1028,19 @@ namespace FlashpointSecurePlayer {
 
                                 public string Name {
                                     get {
-                                        return this.KeyName.ToUpperInvariant() + "\\" + this.ValueName.ToUpperInvariant();
+                                        string keyName = this.KeyName;
+
+                                        if (!String.IsNullOrEmpty(keyName)) {
+                                            keyName = keyName.ToUpperInvariant();
+                                        }
+
+                                        string valueName = this.ValueName;
+
+                                        if (!String.IsNullOrEmpty(valueName)) {
+                                            valueName = valueName.ToUpperInvariant();
+                                        }
+
+                                        return keyName + "\\" + valueName;
                                     }
                                 }
 
