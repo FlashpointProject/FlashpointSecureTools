@@ -1960,7 +1960,7 @@ namespace FlashpointSecurePlayer {
             const string HTTPS_LOWER = "https";
             const string FTP_LOWER = "ftp";
 
-            string schemeLower = uri.Scheme.ToLowerInvariant();
+            string schemeLower = uri.Scheme; // scheme is converted to lowercase
             return schemeLower == HTTP_LOWER || schemeLower == HTTPS_LOWER || schemeLower == FTP_LOWER;
         }
 
