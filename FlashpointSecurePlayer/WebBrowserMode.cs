@@ -185,7 +185,7 @@ namespace FlashpointSecurePlayer {
         private class EndEllipsisTextRenderer : ToolStripProfessionalRenderer {
             protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e) {
                 if (e.Item is ToolStripStatusLabel) {
-                    TextRenderer.DrawText(e.Graphics, e.Text, e.TextFont, e.TextRectangle, e.TextColor, Color.Transparent, e.TextFormat | TextFormatFlags.EndEllipsis);
+                    TextRenderer.DrawText(e.Graphics, e.Text, e.TextFont, e.TextRectangle, e.TextColor, e.TextFormat | TextFormatFlags.EndEllipsis);
                     return;
                 }
 
@@ -637,7 +637,10 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            statusToolStripStatusLabel.Text = closableWebBrowser.StatusText;
+            // only set if not equal to prevent flashing tooltip
+            if (statusToolStripStatusLabel.Text != closableWebBrowser.StatusText) {
+                statusToolStripStatusLabel.Text = closableWebBrowser.StatusText;
+            }
         }
 
         private void closableWebBrowser_Navigated(object sender, WebBrowserNavigatedEventArgs e) {
