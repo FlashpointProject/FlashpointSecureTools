@@ -799,6 +799,7 @@ namespace FlashpointSecurePlayer {
 
         private void addressToolStripTextBox_KeyDown(object sender, KeyEventArgs e) {
             if (e.KeyCode == Keys.Enter) {
+                e.SuppressKeyPress = true;
                 BrowserGo(addressToolStripSpringTextBox.Text);
             }
         }
