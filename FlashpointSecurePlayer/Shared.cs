@@ -1859,7 +1859,7 @@ namespace FlashpointSecurePlayer {
                 if (shortPathName != null) {
                     if (shortPathName.Length > 0) {
                         // if the value is a short value...
-                        if (valueString.ToUpperInvariant().IndexOf(shortPathName.ToString().ToUpperInvariant()) == 0) {
+                        if (valueString.ToUpperInvariant().StartsWith(shortPathName.ToString().ToUpperInvariant())) {
                             // get the long path
                             StringBuilder longPathName = null;
 
@@ -1903,7 +1903,7 @@ namespace FlashpointSecurePlayer {
 
                 if (pathName != null) {
                     if (pathName.Length > 0) {
-                        if (valueString.ToUpperInvariant().IndexOf(RemoveTrailingSlash(pathName.ToString()).ToUpperInvariant()) == 0) {
+                        if (valueString.ToUpperInvariant().StartsWith(RemoveTrailingSlash(pathName.ToString()).ToUpperInvariant())) {
                             valueString = "%" + FP_STARTUP_PATH + "%\\" + RemoveValueStringSlash(valueString.Substring(pathName.Length));
                         }
                     }
@@ -1918,7 +1918,7 @@ namespace FlashpointSecurePlayer {
                 return value;
             }
 
-            if (valueString.ToUpper().IndexOf("%" + FLASHPOINT_SECURE_PLAYER_STARTUP_PATH + "%") == 0) {
+            if (valueString.ToUpper().StartsWith("%" + FLASHPOINT_SECURE_PLAYER_STARTUP_PATH + "%")) {
                 valueString = RemoveTrailingSlash(Application.StartupPath) + "\\" + RemoveValueStringSlash(valueString.Substring(35));
             }
             return valueString;
@@ -1926,7 +1926,9 @@ namespace FlashpointSecurePlayer {
         */
 
         public static string AddURLProtocol(string url) {
-            if (url.StartsWith("http://") || url.StartsWith("https://") || url.StartsWith("ftp://")) {
+            string urlLower = url.ToLowerInvariant();
+
+            if (urlLower.StartsWith("http://") || urlLower.StartsWith("https://") || urlLower.StartsWith("ftp://")) {
                 return url;
             }
             return "http://" + url;

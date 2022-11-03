@@ -94,7 +94,7 @@ namespace FlashpointSecurePlayer {
 
             pwszUrl = pwszUrl.ToLowerInvariant();
 
-            if (pwszUrl.IndexOf("http://") != 0 && pwszUrl.IndexOf("https://") != 0 && pwszUrl.IndexOf("ftp://") != 0) {
+            if (!pwszUrl.StartsWith("http://") && !pwszUrl.StartsWith("https://") && !pwszUrl.StartsWith("ftp://")) {
                 // we've wandered off from Flashpoint Server, revert to default zone settings
                 return INET_E_DEFAULT_ACTION;
             }
@@ -143,7 +143,7 @@ namespace FlashpointSecurePlayer {
 
             pwszUrl = pwszUrl.ToLowerInvariant();
 
-            if (pwszUrl.IndexOf("http://") != 0 && pwszUrl.IndexOf("https://") != 0 && pwszUrl.IndexOf("ftp://") != 0) {
+            if (!pwszUrl.StartsWith("http://") && !pwszUrl.StartsWith("https://") && !pwszUrl.StartsWith("ftp://")) {
                 // we've wandered off from Flashpoint Server, don't allow zone elevation
                 if (dwAction == URLACTION_FEATURE_ZONE_ELEVATION) {
                     return S_OK;

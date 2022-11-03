@@ -995,7 +995,7 @@ namespace FlashpointSecurePlayer {
 
             try {
                 await ActivateModificationsAsync(templateElement, delegate (string text) {
-                    if (text.IndexOf("\n") == -1) {
+                    if (!text.Contains("\n")) {
                         ShowError(text);
                     } else {
                         ProgressManager.ShowError();
@@ -1227,7 +1227,7 @@ namespace FlashpointSecurePlayer {
                     // ActiveX Import
                     try {
                         await ImportActiveX(delegate (string text) {
-                            if (text.IndexOf("\n") == -1) {
+                            if (!text.Contains("\n")) {
                                 ShowError(text);
                             } else {
                                 ProgressManager.ShowError();

@@ -214,14 +214,16 @@ namespace FlashpointSecurePlayer {
 
         private string GetUserKeyValueName(string keyValueName) {
             // can be empty, but not null
-            if (TestLaunchedAsAdministratorUser() || keyValueName == null) {
+            if (keyValueName == null || TestLaunchedAsAdministratorUser()) {
                 return keyValueName;
             }
 
+            const string HKEY_LOCAL_MACHINE = "HKEY_LOCAL_MACHINE\\";
+
             keyValueName += "\\";
 
-            if (keyValueName.ToUpperInvariant().IndexOf("HKEY_LOCAL_MACHINE\\") == 0) {
-                keyValueName = "HKEY_CURRENT_USER\\" + keyValueName.Substring(19);
+            if (keyValueName.ToUpperInvariant().StartsWith(HKEY_LOCAL_MACHINE)) {
+                keyValueName = "HKEY_CURRENT_USER\\" + keyValueName.Substring(HKEY_LOCAL_MACHINE.Length);
             }
 
             keyValueName = RemoveTrailingSlash(keyValueName);
@@ -233,24 +235,33 @@ namespace FlashpointSecurePlayer {
             if (kernelRegistryString == null) {
                 return kernelRegistryString;
             }
-            
+
+            const string REGISTRY_MACHINE = "\\REGISTRY\\MACHINE\\";
+
             kernelRegistryString += "\\";
             string kernelRegistryStringUpper = kernelRegistryString.ToUpperInvariant();
             string keyValueName = String.Empty;
 
-            if (kernelRegistryStringUpper.IndexOf("\\REGISTRY\\MACHINE\\") == 0) {
-                keyValueName = "HKEY_LOCAL_MACHINE\\" + kernelRegistryString.Substring(18);
+            if (kernelRegistryStringUpper.StartsWith(REGISTRY_MACHINE)) {
+                keyValueName = "HKEY_LOCAL_MACHINE\\" + kernelRegistryString.Substring(REGISTRY_MACHINE.Length);
             } else {
-                if (kernelRegistryStringUpper.IndexOf("\\REGISTRY\\USER\\") == 0) {
-                    keyValueName = "HKEY_USERS\\" + kernelRegistryString.Substring(15);
+                const string REGISTRY_USER = "\\REGISTRY\\USER\\";
+
+                if (kernelRegistryStringUpper.StartsWith(REGISTRY_USER)) {
+                    const string HKEY_USERS = "HKEY_USERS\\";
+
+                    keyValueName = HKEY_USERS + kernelRegistryString.Substring(REGISTRY_USER.Length);
                     string keyValueNameUpper = keyValueName.ToUpperInvariant();
                     string currentUser = WindowsIdentity.GetCurrent().User.Value.ToUpperInvariant();
+                    string keyValueNameCurrentUser = HKEY_USERS + currentUser + "_CLASSES\\";
 
-                    if (keyValueNameUpper.IndexOf("HKEY_USERS\\" + currentUser + "_CLASSES\\") == 0) {
-                        keyValueName = "HKEY_CURRENT_USER\\SOFTWARE\\CLASSES\\" + keyValueName.Substring(20 + currentUser.Length);
+                    if (keyValueNameUpper.StartsWith(keyValueNameCurrentUser)) {
+                        keyValueName = "HKEY_CURRENT_USER\\SOFTWARE\\CLASSES\\" + keyValueName.Substring(keyValueNameCurrentUser.Length);
                     } else {
-                        if (keyValueNameUpper.IndexOf("HKEY_USERS\\" + currentUser + "\\") == 0) {
-                            keyValueName = "HKEY_CURRENT_USER\\" + keyValueName.Substring(12 + currentUser.Length);
+                        keyValueNameCurrentUser = HKEY_USERS + currentUser + "\\";
+
+                        if (keyValueNameUpper.StartsWith(keyValueNameCurrentUser)) {
+                            keyValueName = "HKEY_CURRENT_USER\\" + keyValueName.Substring(keyValueNameCurrentUser.Length);
                         }
                     }
                 }
@@ -264,19 +275,19 @@ namespace FlashpointSecurePlayer {
             keyName = keyName.ToUpperInvariant() + "\\";
             RegistryHive? registryHive = null;
 
-            if (keyName.IndexOf("HKEY_CURRENT_USER\\") == 0) {
+            if (keyName.StartsWith("HKEY_CURRENT_USER\\")) {
                 registryHive = RegistryHive.CurrentUser;
-            } else if (keyName.IndexOf("HKEY_LOCAL_MACHINE\\") == 0) {
+            } else if (keyName.StartsWith("HKEY_LOCAL_MACHINE\\")) {
                 registryHive = RegistryHive.LocalMachine;
-            } else if (keyName.IndexOf("HKEY_CLASSES_ROOT\\") == 0) {
+            } else if (keyName.StartsWith("HKEY_CLASSES_ROOT\\")) {
                 registryHive = RegistryHive.ClassesRoot;
-            } else if (keyName.IndexOf("HKEY_USERS\\") == 0) {
+            } else if (keyName.StartsWith("HKEY_USERS\\")) {
                 registryHive = RegistryHive.Users;
-            } else if (keyName.IndexOf("HKEY_PERFORMANCE_DATA\\") == 0) {
+            } else if (keyName.StartsWith("HKEY_PERFORMANCE_DATA\\")) {
                 registryHive = RegistryHive.PerformanceData;
-            } else if (keyName.IndexOf("HKEY_CURRENT_CONFIG\\") == 0) {
+            } else if (keyName.StartsWith("HKEY_CURRENT_CONFIG\\")) {
                 registryHive = RegistryHive.CurrentConfig;
-            } else if (keyName.IndexOf("HKEY_DYN_DATA\\") == 0) {
+            } else if (keyName.StartsWith("HKEY_DYN_DATA\\")) {
                 registryHive = RegistryHive.DynData;
             }
             
@@ -646,7 +657,7 @@ namespace FlashpointSecurePlayer {
                 bool removeWOW64Subkey = false;
 
                 for (int i = 0;i < wow64KeyList.Count;i++) {
-                    if (wow64KeyNameUpper.IndexOf(wow64KeyList[i].Name + "\\") == 0) {
+                    if (wow64KeyNameUpper.StartsWith(wow64KeyList[i].Name + "\\")) {
                         effect = wow64KeyList[i].Effect;
                         effectExceptionValueNames = wow64KeyList[i].EffectExceptionValueNames;
 
