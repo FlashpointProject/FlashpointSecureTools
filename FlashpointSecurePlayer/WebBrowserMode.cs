@@ -312,13 +312,13 @@ namespace FlashpointSecurePlayer {
 
         private readonly WebBrowserModeTitle webBrowserModeTitle;
 
-        private bool useFlashActiveXControl = false;
+        private bool UseFlashActiveXControl { get; set; } = false;
         private CustomSecurityManager customSecurityManager = null;
 
         private void _WebBrowserMode(bool useFlashActiveXControl = false) {
             InitializeComponent();
 
-            this.useFlashActiveXControl = useFlashActiveXControl;
+            UseFlashActiveXControl = useFlashActiveXControl;
 
             if (closableWebBrowser == null) {
                 return;
@@ -449,7 +449,7 @@ namespace FlashpointSecurePlayer {
 
         public WebBrowserMode BrowserNewWindow() {
             // we don't want this window to be the parent, breaks fullscreen and not otherwise useful
-            WebBrowserMode webBrowserForm = new WebBrowserMode(useFlashActiveXControl);
+            WebBrowserMode webBrowserForm = new WebBrowserMode(UseFlashActiveXControl);
             webBrowserForm.Show(/*this*/);
             return webBrowserForm;
         }
@@ -502,7 +502,7 @@ namespace FlashpointSecurePlayer {
             }
 
             try {
-                customSecurityManager = new CustomSecurityManager(closableWebBrowser, useFlashActiveXControl);
+                customSecurityManager = new CustomSecurityManager(closableWebBrowser, UseFlashActiveXControl);
             } catch (Win32Exception ex) {
                 LogExceptionToLauncher(ex);
                 ProgressManager.ShowError();

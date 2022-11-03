@@ -54,8 +54,8 @@ namespace FlashpointSecurePlayer {
 
         //private const int IMPORT_TIMEOUT = 5;
         private const int IMPORT_TIMEOUT = 60;
-        private const string IMPORT_RESUME = "FLASHPOINTSECUREPLAYERREGISTRYSTATEIMPORTRESUME";
-        private const string IMPORT_PAUSE = "FLASHPOINTSECUREPLAYERREGISTRYSTATEIMPORTPAUSE";
+        private const string IMPORT_RESUME_UPPER = "FLASHPOINTSECUREPLAYERREGISTRYSTATEIMPORTRESUME";
+        private const string IMPORT_PAUSE_UPPER = "FLASHPOINTSECUREPLAYERREGISTRYSTATEIMPORTPAUSE";
         private object activationLock = new object();
         private object deactivationLock = new object();
         private string fullPath = null;
@@ -218,12 +218,12 @@ namespace FlashpointSecurePlayer {
                 return keyValueName;
             }
 
-            const string HKEY_LOCAL_MACHINE = "HKEY_LOCAL_MACHINE\\";
+            const string HKEY_LOCAL_MACHINE_UPPER = "HKEY_LOCAL_MACHINE\\";
 
             keyValueName += "\\";
 
-            if (keyValueName.ToUpperInvariant().StartsWith(HKEY_LOCAL_MACHINE)) {
-                keyValueName = "HKEY_CURRENT_USER\\" + keyValueName.Substring(HKEY_LOCAL_MACHINE.Length);
+            if (keyValueName.ToUpperInvariant().StartsWith(HKEY_LOCAL_MACHINE_UPPER)) {
+                keyValueName = "HKEY_CURRENT_USER\\" + keyValueName.Substring(HKEY_LOCAL_MACHINE_UPPER.Length);
             }
 
             keyValueName = RemoveTrailingSlash(keyValueName);
@@ -236,32 +236,32 @@ namespace FlashpointSecurePlayer {
                 return kernelRegistryString;
             }
 
-            const string REGISTRY_MACHINE = "\\REGISTRY\\MACHINE\\";
+            const string REGISTRY_MACHINE_UPPER = "\\REGISTRY\\MACHINE\\";
 
             kernelRegistryString += "\\";
             string kernelRegistryStringUpper = kernelRegistryString.ToUpperInvariant();
             string keyValueName = String.Empty;
 
-            if (kernelRegistryStringUpper.StartsWith(REGISTRY_MACHINE)) {
-                keyValueName = "HKEY_LOCAL_MACHINE\\" + kernelRegistryString.Substring(REGISTRY_MACHINE.Length);
+            if (kernelRegistryStringUpper.StartsWith(REGISTRY_MACHINE_UPPER)) {
+                keyValueName = "HKEY_LOCAL_MACHINE\\" + kernelRegistryString.Substring(REGISTRY_MACHINE_UPPER.Length);
             } else {
-                const string REGISTRY_USER = "\\REGISTRY\\USER\\";
+                const string REGISTRY_USER_UPPER = "\\REGISTRY\\USER\\";
 
-                if (kernelRegistryStringUpper.StartsWith(REGISTRY_USER)) {
-                    const string HKEY_USERS = "HKEY_USERS\\";
+                if (kernelRegistryStringUpper.StartsWith(REGISTRY_USER_UPPER)) {
+                    const string HKEY_USERS_UPPER = "HKEY_USERS\\";
 
-                    keyValueName = HKEY_USERS + kernelRegistryString.Substring(REGISTRY_USER.Length);
+                    keyValueName = HKEY_USERS_UPPER + kernelRegistryString.Substring(REGISTRY_USER_UPPER.Length);
                     string keyValueNameUpper = keyValueName.ToUpperInvariant();
-                    string currentUser = WindowsIdentity.GetCurrent().User.Value.ToUpperInvariant();
-                    string keyValueNameCurrentUser = HKEY_USERS + currentUser + "_CLASSES\\";
+                    string currentUserUpper = WindowsIdentity.GetCurrent().User.Value.ToUpperInvariant();
+                    string keyValueNameCurrentUserUpper = HKEY_USERS_UPPER + currentUserUpper + "_CLASSES\\";
 
-                    if (keyValueNameUpper.StartsWith(keyValueNameCurrentUser)) {
-                        keyValueName = "HKEY_CURRENT_USER\\SOFTWARE\\CLASSES\\" + keyValueName.Substring(keyValueNameCurrentUser.Length);
+                    if (keyValueNameUpper.StartsWith(keyValueNameCurrentUserUpper)) {
+                        keyValueName = "HKEY_CURRENT_USER\\SOFTWARE\\CLASSES\\" + keyValueName.Substring(keyValueNameCurrentUserUpper.Length);
                     } else {
-                        keyValueNameCurrentUser = HKEY_USERS + currentUser + "\\";
+                        keyValueNameCurrentUserUpper = HKEY_USERS_UPPER + currentUserUpper + "\\";
 
-                        if (keyValueNameUpper.StartsWith(keyValueNameCurrentUser)) {
-                            keyValueName = "HKEY_CURRENT_USER\\" + keyValueName.Substring(keyValueNameCurrentUser.Length);
+                        if (keyValueNameUpper.StartsWith(keyValueNameCurrentUserUpper)) {
+                            keyValueName = "HKEY_CURRENT_USER\\" + keyValueName.Substring(keyValueNameCurrentUserUpper.Length);
                         }
                     }
                 }
@@ -861,7 +861,7 @@ namespace FlashpointSecurePlayer {
                     // ensure the kernel session is actually processing
                     for (int i = 0;i < IMPORT_TIMEOUT;i++) {
                         // we just ping this value so it gets detected we tried to read it
-                        Registry.GetValue("HKEY_LOCAL_MACHINE", IMPORT_RESUME, null);
+                        Registry.GetValue("HKEY_LOCAL_MACHINE", IMPORT_RESUME_UPPER, null);
 
                         if (!ImportPaused) {
                             break;
@@ -896,7 +896,7 @@ namespace FlashpointSecurePlayer {
                 // we give the registry state a ten second
                 // timeout, which should be enough
                 for (int i = 0;i < IMPORT_TIMEOUT;i++) {
-                    Registry.GetValue("HKEY_LOCAL_MACHINE", IMPORT_PAUSE, null);
+                    Registry.GetValue("HKEY_LOCAL_MACHINE", IMPORT_PAUSE_UPPER, null);
 
                     if (ImportPaused) {
                         break;
@@ -1368,7 +1368,7 @@ namespace FlashpointSecurePlayer {
         private void GotValue(RegistryTraceData registryTraceData) {
             if (registryTraceData.ProcessID == Process.GetCurrentProcess().Id || registryTraceData.ProcessID == -1) {
                 if (ImportPaused) {
-                    if (registryTraceData.ValueName.ToUpperInvariant() == IMPORT_RESUME) {
+                    if (registryTraceData.ValueName.ToUpperInvariant() == IMPORT_RESUME_UPPER) {
                         ImportPaused = false;
                         // hold here until after the control has installed
                         // that way we can recieve registry messages as they come in
@@ -1377,7 +1377,7 @@ namespace FlashpointSecurePlayer {
                         resumeEventWaitHandle.WaitOne();
                     }
                 } else {
-                    if (registryTraceData.ValueName.ToUpperInvariant() == IMPORT_PAUSE) {
+                    if (registryTraceData.ValueName.ToUpperInvariant() == IMPORT_PAUSE_UPPER) {
                         ImportPaused = true;
                     }
                 }

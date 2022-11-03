@@ -448,7 +448,7 @@ namespace FlashpointSecurePlayer {
         public const string FP_HTDOCS_FILE_DIR = nameof(FP_HTDOCS_FILE_DIR);
 
         public const string OLD_CPU_SIMULATOR_PATH = "OldCPUSimulator\\OldCPUSimulator.exe";
-        public const string OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME = "OLDCPUSIMULATOR.EXE";
+        public const string OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME_UPPER = "OLDCPUSIMULATOR.EXE";
 
         public abstract class TemplatesConfigurationElementCollection : ConfigurationElementCollection {
             public override ConfigurationElementCollectionType CollectionType {
@@ -1925,13 +1925,43 @@ namespace FlashpointSecurePlayer {
         }
         */
 
-        public static string AddURLProtocol(string url) {
-            string urlLower = url.ToLowerInvariant();
+        private static int GetURLProtocolLength(string url) {
+            Uri uri;
 
-            if (urlLower.StartsWith("http://") || urlLower.StartsWith("https://") || urlLower.StartsWith("ftp://")) {
-                return url;
+            try {
+                uri = new Uri(url);
+            } catch {
+                return 0;
             }
-            return "http://" + url;
+
+            if (String.IsNullOrEmpty(uri.Scheme)) {
+                return 0;
+            }
+            return (uri.Scheme + "://").Length;
+        }
+
+        public static bool HasURLProtocol(string url) {
+            return GetURLProtocolLength(url) > 0;
+        }
+
+        public static string AddURLProtocol(string url) {
+            if (GetURLProtocolLength(url) == 0) {
+                return "http://" + url;
+            }
+            return url;
+        }
+
+        public static string RemoveURLProtocol(string url) {
+            return url.Substring(GetURLProtocolLength(url));
+        }
+
+        public static bool TestFlashpointURI(Uri uri) {
+            const string HTTP_LOWER = "http";
+            const string HTTPS_LOWER = "https";
+            const string FTP_LOWER = "ftp";
+
+            string schemeLower = uri.Scheme.ToLowerInvariant();
+            return schemeLower == HTTP_LOWER || schemeLower == HTTPS_LOWER || schemeLower == FTP_LOWER;
         }
 
         // https://web.archive.org/web/20190109172835/https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/

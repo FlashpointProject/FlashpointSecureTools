@@ -16,9 +16,9 @@ using static FlashpointSecurePlayer.InternetInterfaces;
 namespace FlashpointSecurePlayer {
     public class CustomSecurityManager : InternetInterfaces.IServiceProvider, InternetInterfaces.IInternetSecurityManager {
         private readonly byte[] FLASH_CONTEXT = new byte[16] { 110, 219, 124, 210, 109, 174, 207, 17, 150, 184, 68, 69, 83, 84, 0, 0 };
-        private const string FLASH_EXTENSION = ".SWF";
+        private const string FLASH_EXTENSION_UPPER = ".SWF";
 
-        private bool useFlashActiveXControl = false;
+        private bool UseFlashActiveXControl { get; set; } = false;
 
         // https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/platform-apis/ms537182(v=vs.85)?redirectedfrom=MSDN
         public CustomSecurityManager(System.Windows.Forms.WebBrowser webBrowser, bool useFlashActiveXControl = false) {
@@ -47,7 +47,7 @@ namespace FlashpointSecurePlayer {
                 throw new Win32Exception("An External Exception was encountered while creating the Custom Security Manager.");
             }
 
-            this.useFlashActiveXControl = useFlashActiveXControl;
+            UseFlashActiveXControl = useFlashActiveXControl;
         }
 
         int InternetInterfaces.IServiceProvider.QueryService(ref Guid guidService, ref Guid riid, out IntPtr ppvObject) {
@@ -92,9 +92,16 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
-            pwszUrl = pwszUrl.ToLowerInvariant();
+            // error if not URI formatted
+            Uri flashpointURI;
 
-            if (!pwszUrl.StartsWith("http://") && !pwszUrl.StartsWith("https://") && !pwszUrl.StartsWith("ftp://")) {
+            try {
+                flashpointURI = new Uri(pwszUrl);
+            } catch {
+                return E_INVALIDARG;
+            }
+
+            if (!TestFlashpointURI(flashpointURI)) {
                 // we've wandered off from Flashpoint Server, revert to default zone settings
                 return INET_E_DEFAULT_ACTION;
             }
@@ -122,6 +129,15 @@ namespace FlashpointSecurePlayer {
                 return E_INVALIDARG;
             }
 
+            // error if not URI formatted
+            Uri flashpointURI;
+
+            try {
+                flashpointURI = new Uri(pwszUrl);
+            } catch {
+                return E_INVALIDARG;
+            }
+
             try {
                 byte[] context = new byte[cbContext];
 
@@ -129,8 +145,8 @@ namespace FlashpointSecurePlayer {
                     Marshal.Copy(pContext, context, 0, (int)cbContext);
                 }
 
-                if (!useFlashActiveXControl) {
-                    if (context.SequenceEqual(FLASH_CONTEXT) || Path.GetExtension(new Uri(pwszUrl).LocalPath).ToUpperInvariant() == FLASH_EXTENSION) {
+                if (!UseFlashActiveXControl) {
+                    if (context.SequenceEqual(FLASH_CONTEXT) || Path.GetExtension(flashpointURI.LocalPath).ToUpperInvariant() == FLASH_EXTENSION_UPPER) {
                         if (dwAction == URLACTION_ACTIVEX_TREATASUNTRUSTED) { // don't trust Flash ActiveX Controls
                             pPolicy = URLPOLICY_ALLOW;
                         }
@@ -141,9 +157,7 @@ namespace FlashpointSecurePlayer {
                 return S_FALSE;
             }
 
-            pwszUrl = pwszUrl.ToLowerInvariant();
-
-            if (!pwszUrl.StartsWith("http://") && !pwszUrl.StartsWith("https://") && !pwszUrl.StartsWith("ftp://")) {
+            if (!TestFlashpointURI(flashpointURI)) {
                 // we've wandered off from Flashpoint Server, don't allow zone elevation
                 if (dwAction == URLACTION_FEATURE_ZONE_ELEVATION) {
                     return S_OK;

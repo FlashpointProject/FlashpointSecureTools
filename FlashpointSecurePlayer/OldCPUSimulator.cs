@@ -24,18 +24,18 @@ namespace FlashpointSecurePlayer {
             // we don't want to start a new instance in that case
             // the user has manually started Old CPU Simulator already
             Process parentProcess = GetParentProcess();
-            string parentProcessFileName = null;
+            string parentProcessFileNameUpper = null;
 
             if (parentProcess != null) {
                 try {
-                    parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess)).ToUpperInvariant();
+                    parentProcessFileNameUpper = Path.GetFileName(GetProcessName(parentProcess)).ToUpperInvariant();
                 } catch (Exception ex) {
                     LogExceptionToLauncher(ex);
                     throw new OldCPUSimulatorFailedException("Failed to get the parent process EXE name.");
                 }
             }
 
-            if (parentProcessFileName == OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME) {
+            if (parentProcessFileNameUpper == OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME_UPPER) {
                 return true;
             }
             return false;
