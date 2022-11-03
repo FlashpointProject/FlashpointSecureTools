@@ -636,11 +636,8 @@ namespace FlashpointSecurePlayer {
             if (closableWebBrowser == null) {
                 return;
             }
-
-            // only set if not equal to prevent flashing tooltip
-            if (statusToolStripStatusLabel.Text != closableWebBrowser.StatusText) {
-                statusToolStripStatusLabel.Text = closableWebBrowser.StatusText;
-            }
+            
+            statusToolStripStatusLabel.Text = closableWebBrowser.StatusText;
         }
 
         private void closableWebBrowser_Navigated(object sender, WebBrowserNavigatedEventArgs e) {
