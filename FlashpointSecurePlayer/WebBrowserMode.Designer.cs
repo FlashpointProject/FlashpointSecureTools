@@ -278,7 +278,6 @@
             this.Deactivate += new System.EventHandler(this.WebBrowserMode_Deactivate);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.WebBrowserMode_FormClosing);
             this.Load += new System.EventHandler(this.WebBrowserMode_Load);
-            this.Shown += new System.EventHandler(this.WebBrowserMode_Shown);
             this.toolBarToolStrip.ResumeLayout(false);
             this.toolBarToolStrip.PerformLayout();
             this.statusBarStatusStrip.ResumeLayout(false);

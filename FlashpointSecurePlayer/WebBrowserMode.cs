@@ -311,7 +311,6 @@ namespace FlashpointSecurePlayer {
         }
 
         private readonly WebBrowserModeTitle webBrowserModeTitle;
-        private Uri webBrowserURL = null;
 
         private bool useFlashActiveXControl = false;
         private CustomSecurityManager customSecurityManager = null;
@@ -347,7 +346,7 @@ namespace FlashpointSecurePlayer {
         public WebBrowserMode(Uri webBrowserURL, bool useFlashActiveXControl = false) {
             _WebBrowserMode(useFlashActiveXControl);
             webBrowserModeTitle = new WebBrowserModeTitle(TitleChanged);
-            this.webBrowserURL = webBrowserURL;
+            closableWebBrowser.Url = webBrowserURL;
         }
 
         ~WebBrowserMode() {
@@ -404,12 +403,8 @@ namespace FlashpointSecurePlayer {
             if (closableWebBrowser == null) {
                 return;
             }
-
-            // skip refresh if about:blank is loaded to avoid removing
-            // content specified by the DocumentText property
-            if (!closableWebBrowser.Url.Equals("about:blank")) {
-                closableWebBrowser.Refresh();
-            }
+            
+            closableWebBrowser.Refresh();
         }
 
         public void BrowserSaveAsWebpage() {
@@ -428,24 +423,28 @@ namespace FlashpointSecurePlayer {
             closableWebBrowser.ShowPrintDialog();
         }
 
-        public void BrowserGo(String URL) {
+        public void BrowserGo(string url) {
             if (closableWebBrowser == null) {
                 return;
             }
 
-            if (String.IsNullOrEmpty(URL)) {
+            if (String.IsNullOrEmpty(url)) {
                 return;
             }
 
-            if (URL.Equals("about:blank")) {
-                return;
-            }
+            Uri webBrowserURL;
 
             try {
-                closableWebBrowser.Navigate(new Uri(AddURLProtocol(URL)));
-            } catch (System.UriFormatException) {
+                try {
+                    webBrowserURL = new Uri(url);
+                } catch (UriFormatException) {
+                    webBrowserURL = new Uri(AddURLProtocol(url));
+                }
+            } catch (Exception) {
                 return;
             }
+
+            closableWebBrowser.Navigate(webBrowserURL);
         }
 
         public WebBrowserMode BrowserNewWindow() {
@@ -528,14 +527,6 @@ namespace FlashpointSecurePlayer {
 
             BringToFront();
             Activate();
-        }
-
-        private void WebBrowserMode_Shown(object sender, EventArgs e) {
-            if (closableWebBrowser == null || webBrowserURL == null) {
-                return;
-            }
-
-            closableWebBrowser.Url = webBrowserURL;
         }
 
         private void WebBrowserMode_FormClosing(object sender, FormClosingEventArgs e) {
@@ -654,12 +645,12 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            if (closableWebBrowser.Url.Equals("about:blank")) {
+            if (e.Url.Equals("about:blank")) {
                 addressToolStripSpringTextBox.Text = String.Empty;
                 return;
             }
 
-            addressToolStripSpringTextBox.Text = closableWebBrowser.Url.ToString();
+            addressToolStripSpringTextBox.Text = e.Url.ToString();
         }
 
         private void closableWebBrowser_WebBrowserClose(object sender, EventArgs e) {
@@ -667,7 +658,13 @@ namespace FlashpointSecurePlayer {
         }
 
         private void closableWebBrowser_WebBrowserPaint(object sender, EventArgs e) {
-
+            if (WindowState != FormWindowState.Maximized) {
+                // lame fix: browser hangs when window.open top attribute > control height (why?)
+                // Width, Height, and WindowState changes all work here
+                // Width/Height are less obvious and Height doesn't cause text reflow
+                Height--;
+                Height++;
+            }
         }
 
         public object PPDisp {
