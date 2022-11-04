@@ -1956,12 +1956,13 @@ namespace FlashpointSecurePlayer {
         }
 
         public static bool TestFlashpointURI(Uri uri) {
-            const string HTTP_LOWER = "http";
-            const string HTTPS_LOWER = "https";
-            const string FTP_LOWER = "ftp";
+            const string SCHEME_HTTP = "http";
+            const string SCHEME_HTTPS = "https";
+            const string SCHEME_FTP = "ftp";
 
-            string schemeLower = uri.Scheme; // scheme is converted to lowercase
-            return schemeLower == HTTP_LOWER || schemeLower == HTTPS_LOWER || schemeLower == FTP_LOWER;
+            // schemes are always lowercase
+            string scheme = uri.Scheme;
+            return scheme == SCHEME_HTTP || scheme == SCHEME_HTTPS || scheme == SCHEME_FTP;
         }
 
         // https://web.archive.org/web/20190109172835/https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
