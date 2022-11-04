@@ -435,12 +435,8 @@ namespace FlashpointSecurePlayer {
             Uri webBrowserURL;
 
             try {
-                try {
-                    webBrowserURL = new Uri(url);
-                } catch (UriFormatException) {
-                    webBrowserURL = new Uri(AddURLProtocol(url));
-                }
-            } catch (Exception) {
+                webBrowserURL = new Uri(AddURLProtocol(url));
+            } catch {
                 return;
             }
 

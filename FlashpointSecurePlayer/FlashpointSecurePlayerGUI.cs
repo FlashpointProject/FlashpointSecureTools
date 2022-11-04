@@ -470,11 +470,7 @@ namespace FlashpointSecurePlayer {
                         Uri webBrowserURL = null;
 
                         try {
-                            try {
-                                webBrowserURL = new Uri(URL);
-                            } catch (UriFormatException) {
-                                webBrowserURL = new Uri(AddURLProtocol(URL));
-                            }
+                            webBrowserURL = new Uri(AddURLProtocol(URL));
                         } catch (Exception ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(String.Format(Properties.Resources.AddressNotUnderstood, URL));
