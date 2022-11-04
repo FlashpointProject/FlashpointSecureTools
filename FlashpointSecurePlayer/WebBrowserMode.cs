@@ -16,38 +16,6 @@ using SHDocVw;
 
 namespace FlashpointSecurePlayer {
     public partial class WebBrowserMode : Form {
-        private bool resizable = true;
-
-        public bool Resizable {
-            get {
-                return resizable;
-            }
-
-            set {
-                resizable = value;
-
-                if (resizable) {
-                    FormBorderStyle = FormBorderStyle.Sizable;
-
-                    // only set to true if it isn't already to avoid bug exiting fullscreen
-                    if (!MaximizeBox) {
-                        MaximizeBox = true;
-                    }
-                } else {
-                    if (fullscreen) {
-                        FormBorderStyle = FormBorderStyle.None;
-                        return;
-                    }
-
-                    FormBorderStyle = FormBorderStyle.FixedSingle;
-
-                    if (MaximizeBox) {
-                        MaximizeBox = false;
-                    }
-                }
-            }
-        }
-
         private HookProc lowLevelMouseProc = null;
         private IntPtr mouseHook = IntPtr.Zero;
 
@@ -106,11 +74,13 @@ namespace FlashpointSecurePlayer {
         }
 
         private bool fullscreen = false;
-        private bool fullscreenResizable = true;
+        private Point fullscreenLocation;
+        private Size fullscreenSize;
+        private FormBorderStyle fullscreenFormBorderStyle = FormBorderStyle.Sizable;
         private FormWindowState fullscreenWindowState = FormWindowState.Maximized;
 
-        private Point closableWebBrowserAnchorLocation;
-        private Size closableWebBrowserAnchorSize;
+        private Point closableWebBrowserLocation;
+        private Size closableWebBrowserSize;
 
         public bool Fullscreen {
             get {
@@ -118,66 +88,78 @@ namespace FlashpointSecurePlayer {
             }
 
             set {
+                if (fullscreen == value) {
+                    return;
+                }
+
                 fullscreen = value;
 
                 if (fullscreen) {
-                    // make Strips invisible so the Closable Web Browser can fill their space
+                    // make strips invisible so the Closable Web Browser can be Docked
                     fullscreenButton.Checked = true;
                     toolBarToolStrip.Visible = false;
                     statusBarStatusStrip.Visible = false;
 
-                    // switch the Closable Web Browser to Docked
-                    closableWebBrowserAnchorLocation = closableWebBrowser.Location;
-                    closableWebBrowserAnchorSize = closableWebBrowser.Size;
-                    closableWebBrowser.Dock = DockStyle.Fill;
-
                     // get the original properties before modifying them
-                    fullscreenResizable = Resizable;
+                    fullscreenLocation = Location;
+                    fullscreenSize = Size;
+                    fullscreenFormBorderStyle = FormBorderStyle;
                     fullscreenWindowState = WindowState;
+
+                    closableWebBrowserLocation = closableWebBrowser.Location;
+                    closableWebBrowserSize = closableWebBrowser.Size;
+                    closableWebBrowser.Dock = DockStyle.Fill;
 
                     // need to do this first to have an effect if starting maximized
                     WindowState = FormWindowState.Normal;
                     // disable resizing
-                    Resizable = false;
+                    FormBorderStyle = FormBorderStyle.None;
                     // enter fullscreen
                     WindowState = FormWindowState.Maximized;
 
-                    // now that we've changed states, bring the window to the front
-                    BringToFront();
-
+                    // set Windows Hook for toolbar
                     if (mouseHook == IntPtr.Zero && lowLevelMouseProc != null) {
                         mouseHook = SetWindowsHookEx(HookType.WH_MOUSE_LL, lowLevelMouseProc, IntPtr.Zero, 0);
                     }
 
+                    // show "Press F11 to Exit Fullscreen" label
                     ExitFullscreenLabelTimer = true;
+
+                    // commit by bringing the window to the front
+                    BringToFront();
                 } else {
+                    // hide "Press F11 to Exit Fullscreen" label
                     ExitFullscreenLabelTimer = false;
 
+                    // unhook Windows Hook for toolbar
                     if (mouseHook != IntPtr.Zero) {
                         if (UnhookWindowsHookEx(mouseHook)) {
                             mouseHook = IntPtr.Zero;
                         }
                     }
 
-                    // need to do this first to reset the window to its former size
-                    Resizable = fullscreenResizable;
-                    // exit fullscreen
-                    WindowState = FormWindowState.Normal;
-                    // reset window state to the original one before changing it
-                    WindowState = fullscreenWindowState;
-
-                    // now that we've changed states, bring the window to the front
-                    BringToFront();
-
-                    // make these visible again so the browser can anchor to them
+                    // make strips visible so the Closable Web Browser can be Anchored
                     fullscreenButton.Checked = false;
                     toolBarToolStrip.Visible = true;
                     statusBarStatusStrip.Visible = true;
 
-                    // switch the Closable Web Browser to Anchored
+                    // need to do this first to reset the window to its former size
+                    FormBorderStyle = FormBorderStyle.Sizable;
+                    // exit fullscreen
+                    WindowState = FormWindowState.Normal;
+
+                    // reset to the original properties before modifying them
+                    FormBorderStyle = fullscreenFormBorderStyle;
+                    WindowState = fullscreenWindowState;
+                    Location = fullscreenLocation;
+                    Size = fullscreenSize;
+                    
                     closableWebBrowser.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-                    closableWebBrowser.Location = closableWebBrowserAnchorLocation;
-                    closableWebBrowser.Size = closableWebBrowserAnchorSize;
+                    closableWebBrowser.Location = closableWebBrowserLocation;
+                    closableWebBrowser.Size = closableWebBrowserSize;
+
+                    // commit by bringing the window to the front
+                    BringToFront();
                 }
             }
         }
@@ -682,10 +664,20 @@ namespace FlashpointSecurePlayer {
         }
 
         private void ShDocVwWebBrowser_WindowSetTop(int top) {
+            if (closableWebBrowser == null) {
+                return;
+            }
+
+            Fullscreen = false;
             Top = top;
         }
 
         private void ShDocVwWebBrowser_WindowSetLeft(int left) {
+            if (closableWebBrowser == null) {
+                return;
+            }
+
+            Fullscreen = false;
             Left = left;
         }
 
@@ -694,7 +686,8 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            Width = Width - closableWebBrowser.Width + width;
+            Fullscreen = false;
+            Width += width - closableWebBrowser.Width;
         }
 
         private void ShDocVwWebBrowser_WindowSetHeight(int height) {
@@ -702,11 +695,24 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            Height = Height - closableWebBrowser.Height + height;
+            Fullscreen = false;
+            Height += height - closableWebBrowser.Height;
         }
 
         private void ShDocVwWebBrowser_WindowSetResizable(bool resizable) {
-            Resizable = resizable;
+            if (closableWebBrowser == null) {
+                return;
+            }
+
+            Fullscreen = false;
+
+            if (resizable) {
+                FormBorderStyle = FormBorderStyle.Sizable;
+                MaximizeBox = true;
+            } else {
+                FormBorderStyle = FormBorderStyle.FixedSingle;
+                MaximizeBox = false;
+            }
         }
 
         private void ShDocVwWebBrowser_DownloadBegin() {
@@ -714,11 +720,13 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
+            /*
             Control closableWebBrowserControl = closableWebBrowser as Control;
 
             if (closableWebBrowserControl == null) {
                 return;
             }
+            */
 
             DownloadCompleted = false;
             webBrowserModeTitle.Progress = 0;
@@ -734,11 +742,13 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
+            /*
             Control closableWebBrowserControl = closableWebBrowser as Control;
 
             if (closableWebBrowserControl == null) {
                 return;
             }
+            */
 
             DownloadCompleted = true;
             webBrowserModeTitle.Progress = -1;
