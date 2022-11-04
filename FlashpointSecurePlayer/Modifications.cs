@@ -15,9 +15,9 @@ namespace FlashpointSecurePlayer {
         private readonly EventHandler ImportStart;
         private readonly EventHandler ImportStop;
 
-        public Modifications(EventHandler ImportStart, EventHandler ImportStop) {
-            this.ImportStart = ImportStart;
-            this.ImportStop = ImportStop;
+        public Modifications(EventHandler importStart, EventHandler importStop) {
+            ImportStart = importStart;
+            ImportStop = importStop;
         }
 
         ~Modifications() {

@@ -18,7 +18,7 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Templat
 
 namespace FlashpointSecurePlayer {
     class SingleInstance : Modifications {
-        public SingleInstance(EventHandler ImportStart, EventHandler ImportStop) : base(ImportStart, ImportStop) { }
+        public SingleInstance(EventHandler importStart, EventHandler importStop) : base(importStart, importStop) { }
 
         // function to create a real MessageBox which
         // automatically closes upon completion of tasks

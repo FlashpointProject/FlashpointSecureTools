@@ -198,9 +198,9 @@ namespace FlashpointSecurePlayer {
             private readonly EventHandler Back;
             private readonly EventHandler Forward;
 
-            public MessageFilter(EventHandler Back, EventHandler Forward) {
-                this.Back = Back;
-                this.Forward = Forward;
+            public MessageFilter(EventHandler back, EventHandler forward) {
+                Back = back;
+                Forward = forward;
             }
 
             protected virtual void OnBack(EventArgs e) {
@@ -259,9 +259,9 @@ namespace FlashpointSecurePlayer {
             private string documentTitle = null;
             private int progress = -1;
 
-            public WebBrowserModeTitle(EventHandler<TitleChangedEventArgs> TitleChanged) {
-                this.TitleChanged = TitleChanged;
-                this.applicationTitle += " " + typeof(WebBrowserModeTitle).Assembly.GetName().Version;
+            public WebBrowserModeTitle(EventHandler<TitleChangedEventArgs> titleChanged) {
+                TitleChanged = titleChanged;
+                applicationTitle += " " + typeof(WebBrowserModeTitle).Assembly.GetName().Version;
 
                 Show();
             }
@@ -681,32 +681,32 @@ namespace FlashpointSecurePlayer {
             ShDocVwWebBrowser_NewWindow2(ref ppDisp, ref Cancel);
         }
 
-        private void ShDocVwWebBrowser_WindowSetTop(int Top) {
-            this.Top = Top;
+        private void ShDocVwWebBrowser_WindowSetTop(int top) {
+            Top = top;
         }
 
-        private void ShDocVwWebBrowser_WindowSetLeft(int Left) {
-            this.Left = Left;
+        private void ShDocVwWebBrowser_WindowSetLeft(int left) {
+            Left = left;
         }
 
-        private void ShDocVwWebBrowser_WindowSetWidth(int Width) {
+        private void ShDocVwWebBrowser_WindowSetWidth(int width) {
             if (closableWebBrowser == null) {
                 return;
             }
 
-            this.Width = this.Width - closableWebBrowser.Width + Width;
+            Width = Width - closableWebBrowser.Width + width;
         }
 
-        private void ShDocVwWebBrowser_WindowSetHeight(int Height) {
+        private void ShDocVwWebBrowser_WindowSetHeight(int height) {
             if (closableWebBrowser == null) {
                 return;
             }
 
-            this.Height = this.Height - closableWebBrowser.Height + Height;
+            Height = Height - closableWebBrowser.Height + height;
         }
 
-        private void ShDocVwWebBrowser_WindowSetResizable(bool Resizable) {
-            this.Resizable = Resizable;
+        private void ShDocVwWebBrowser_WindowSetResizable(bool resizable) {
+            Resizable = resizable;
         }
 
         private void ShDocVwWebBrowser_DownloadBegin() {

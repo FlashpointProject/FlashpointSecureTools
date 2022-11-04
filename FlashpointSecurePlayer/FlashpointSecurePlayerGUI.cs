@@ -85,12 +85,12 @@ namespace FlashpointSecurePlayer {
 
         private void ShowOutput(string errorLabelText) {
             ProgressManager.ShowOutput();
-            this.errorLabel.Text = errorLabelText;
+            errorLabel.Text = errorLabelText;
         }
 
         private void ShowError(string errorLabelText) {
             ProgressManager.ShowError();
-            this.errorLabel.Text = errorLabelText;
+            errorLabel.Text = errorLabelText;
         }
 
         private void ShowNoGameSelected() {

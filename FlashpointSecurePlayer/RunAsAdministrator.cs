@@ -11,7 +11,7 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Templat
 
 namespace FlashpointSecurePlayer {
     class RunAsAdministrator : Modifications {
-        public RunAsAdministrator(EventHandler ImportStart, EventHandler ImportStop) : base(ImportStart, ImportStop) { }
+        public RunAsAdministrator(EventHandler importStart, EventHandler importStop) : base(importStart, importStop) { }
 
         public void Activate(string templateName, bool runAsAdministrator) {
             base.Activate(templateName);

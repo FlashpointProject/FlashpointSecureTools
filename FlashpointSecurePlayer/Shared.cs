@@ -862,7 +862,7 @@ namespace FlashpointSecurePlayer {
 
                                 public string _Key {
                                     get {
-                                        return this.Name + "\\" + this.Find;
+                                        return Name + "\\" + Find;
                                     }
                                 }
 
@@ -1101,13 +1101,13 @@ namespace FlashpointSecurePlayer {
 
                                 public string Name {
                                     get {
-                                        string keyName = this.KeyName;
+                                        string keyName = KeyName;
 
                                         if (!String.IsNullOrEmpty(keyName)) {
                                             keyName = keyName.ToUpperInvariant();
                                         }
 
-                                        string valueName = this.ValueName;
+                                        string valueName = ValueName;
 
                                         if (!String.IsNullOrEmpty(valueName)) {
                                             valueName = valueName.ToUpperInvariant();

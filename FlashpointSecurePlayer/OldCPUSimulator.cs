@@ -17,7 +17,7 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Templat
 
 namespace FlashpointSecurePlayer {
     class OldCPUSimulator : Modifications {
-        public OldCPUSimulator(EventHandler ImportStart, EventHandler ImportStop) : base(ImportStart, ImportStop) { }
+        public OldCPUSimulator(EventHandler importStart, EventHandler importStop) : base(importStart, importStop) { }
 
         public bool TestRunningWithOldCPUSimulator() {
             // now, we might already be running under Old CPU Simulator
