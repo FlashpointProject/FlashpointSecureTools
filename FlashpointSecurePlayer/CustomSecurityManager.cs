@@ -101,7 +101,7 @@ namespace FlashpointSecurePlayer {
                 return E_INVALIDARG;
             }
 
-            if (!TestFlashpointURI(flashpointURI)) {
+            if (!TestInternetURI(flashpointURI)) {
                 // we've wandered off from Flashpoint Server, revert to default zone settings
                 return INET_E_DEFAULT_ACTION;
             }
@@ -157,7 +157,7 @@ namespace FlashpointSecurePlayer {
                 return S_FALSE;
             }
 
-            if (!TestFlashpointURI(flashpointURI)) {
+            if (!TestInternetURI(flashpointURI)) {
                 // we've wandered off from Flashpoint Server, don't allow zone elevation
                 if (dwAction == URLACTION_FEATURE_ZONE_ELEVATION) {
                     return S_OK;

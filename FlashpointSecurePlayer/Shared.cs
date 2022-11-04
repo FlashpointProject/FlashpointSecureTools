@@ -1955,12 +1955,16 @@ namespace FlashpointSecurePlayer {
             return url.Substring(GetURLProtocolLength(url));
         }
 
-        public static bool TestFlashpointURI(Uri uri) {
+        public static bool TestInternetURI(Uri uri) {
+            if (uri.IsFile) {
+                return false;
+            }
+
             const string SCHEME_HTTP = "http";
             const string SCHEME_HTTPS = "https";
             const string SCHEME_FTP = "ftp";
 
-            // schemes are always lowercase
+            // the URI Scheme is always lowercase
             string scheme = uri.Scheme;
             return scheme == SCHEME_HTTP || scheme == SCHEME_HTTPS || scheme == SCHEME_FTP;
         }
