@@ -1782,9 +1782,9 @@ namespace FlashpointSecurePlayer {
             //activeTemplateElement.RegistryStates.LockItem = false;
         }
 
-        public static bool ComparePaths(string path1, string path2) {
-            using (SafeFileHandle safeFileHandle1 = CreateFile(path1, FileAccess.Read, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileFlagsAndAttributes.BackupSemantics, IntPtr.Zero)) {
-                if (safeFileHandle1.IsInvalid) {
+        public static bool ComparePaths(string path, string path2) {
+            using (SafeFileHandle safeFileHandle = CreateFile(path, FileAccess.Read, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileFlagsAndAttributes.BackupSemantics, IntPtr.Zero)) {
+                if (safeFileHandle.IsInvalid) {
                     Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
                 }
 
@@ -1793,17 +1793,12 @@ namespace FlashpointSecurePlayer {
                         Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
                     }
 
-
-                    if (!GetFileInformationByHandle(safeFileHandle1, out BY_HANDLE_FILE_INFORMATION byHandleFileInformation1)) {
-                        throw new IOException("Failed to Get File Information By Handle for Safe File Handle 1");
+                    if (!GetFileInformationByHandle(safeFileHandle, out BY_HANDLE_FILE_INFORMATION byHandleFileInformation)
+                        || !GetFileInformationByHandle(safeFileHandle2, out BY_HANDLE_FILE_INFORMATION byHandleFileInformation2)) {
+                        throw new IOException("Failed to Get File Information By Handle");
                     }
 
-
-                    if (!GetFileInformationByHandle(safeFileHandle2, out BY_HANDLE_FILE_INFORMATION byHandleFileInformation2)) {
-                        throw new IOException("Failed to Get File Information By Handle for Safe File Handle 2");
-                    }
-
-                    if (byHandleFileInformation1.VolumeSerialNumber == byHandleFileInformation2.VolumeSerialNumber && byHandleFileInformation1.FileIndexHigh == byHandleFileInformation2.FileIndexHigh && byHandleFileInformation1.FileIndexLow == byHandleFileInformation2.FileIndexLow) {
+                    if (byHandleFileInformation.VolumeSerialNumber == byHandleFileInformation2.VolumeSerialNumber && byHandleFileInformation.FileIndexHigh == byHandleFileInformation2.FileIndexHigh && byHandleFileInformation.FileIndexLow == byHandleFileInformation2.FileIndexLow) {
                         return true;
                     }
                 }

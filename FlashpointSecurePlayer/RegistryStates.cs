@@ -633,9 +633,8 @@ namespace FlashpointSecurePlayer {
             if (keyValueName == null) {
                 return keyValueName;
             }
-
-            // TODO TODO
-            //keyValueName = keyValueName.ToUpperInvariant();
+            
+            // make these keys uppercase using a regex
             keyValueName = Regex.Replace(keyValueName, "\\\\WOW6432NODE\\\\", "\\WOW6432NODE\\", RegexOptions.IgnoreCase);
             keyValueName = Regex.Replace(keyValueName, "\\\\WOW64AANODE\\\\", "\\WOW64AANODE\\", RegexOptions.IgnoreCase);
 
@@ -1142,7 +1141,6 @@ namespace FlashpointSecurePlayer {
                 } finally {
                     ProgressManager.CurrentGoal.Stop();
                 }
-
             }
         }
 
@@ -1339,8 +1337,7 @@ namespace FlashpointSecurePlayer {
                                         }
                                         break;
                                     }
-
-                                    // save as we go along to handle failure
+                                    
                                     activeModificationsElement.RegistryStates.RemoveAt(0);
                                 }
                             }
@@ -1465,7 +1462,7 @@ namespace FlashpointSecurePlayer {
                 }
 
                 modificationsElement.RegistryStates.Set(registryStateElement);
-                SetFlashpointSecurePlayerSection(TemplateName);
+                //SetFlashpointSecurePlayerSection(TemplateName);
                 return;
             }
 
@@ -1502,7 +1499,7 @@ namespace FlashpointSecurePlayer {
                 }
 
                 modificationsElement.RegistryStates.Set(registryStateElement);
-                SetFlashpointSecurePlayerSection(TemplateName);
+                //SetFlashpointSecurePlayerSection(TemplateName);
                 return;
             }
 
@@ -1685,7 +1682,7 @@ namespace FlashpointSecurePlayer {
 
                     // and out of the queue
                     // (the Key is the TimeStamp)
-                    SetFlashpointSecurePlayerSection(TemplateName);
+                    //SetFlashpointSecurePlayerSection(TemplateName);
                     modificationsQueue[safeKeyHandle].Remove(queuedModification.Key);
                 }
             }
