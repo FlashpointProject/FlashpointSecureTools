@@ -49,23 +49,26 @@ namespace FlashpointSecurePlayer {
         }
 
         protected override void WndProc(ref Message m) {
-            if (!DesignMode) {
-                switch (m.Msg) {
-                    case WM_PARENTNOTIFY:
-                    if (m.WParam.ToInt32() == WM_DESTROY) {
+            // always confirm the message first so we don't do unnecessary work
+            switch (m.Msg) {
+                case WM_PARENTNOTIFY:
+                if (m.WParam.ToInt32() == WM_DESTROY) {
+                    if (!DesignMode) {
                         // close the form if the browser control closes
                         // (for example, if window.close is called)
                         // needs to be done here because the event
                         // intended for this does not actually fire
                         OnWebBrowserClose(EventArgs.Empty);
                     }
-
-                    DefWndProc(ref m);
-                    return;
-                    case WM_PAINT:
-                    OnWebBrowserPaint(EventArgs.Empty);
-                    break;
                 }
+
+                DefWndProc(ref m);
+                return;
+                case WM_PAINT:
+                if (!DesignMode) {
+                    OnWebBrowserPaint(EventArgs.Empty);
+                }
+                break;
             }
 
             base.WndProc(ref m);

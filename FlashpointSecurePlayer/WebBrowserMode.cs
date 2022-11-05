@@ -21,8 +21,9 @@ namespace FlashpointSecurePlayer {
 
         private IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam) {
             if (nCode >= 0) {
-                if (Fullscreen) {
-                    if (wParam.ToInt32() == WM_MOUSEMOVE) {
+                // always confirm the message first so we don't do unnecessary work
+                if (wParam.ToInt32() == WM_MOUSEMOVE) {
+                    if (Fullscreen) {
                         // this is checked in LowLevelMouseProc because
                         // otherwise plugins such as Viscape which
                         // create their own window can steal the
@@ -663,6 +664,9 @@ namespace FlashpointSecurePlayer {
             ShDocVwWebBrowser_NewWindow2(ref ppDisp, ref Cancel);
         }
 
+        // although we don't need closableWebBrowser for the WindowSetTop/WindowSetLeft functions
+        // it'd be weird if they worked but the WindowSetWidth/WindowSetHeight functions did not
+        // so we check if it's null anyway
         private void ShDocVwWebBrowser_WindowSetTop(int top) {
             if (closableWebBrowser == null) {
                 return;
