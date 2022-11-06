@@ -381,7 +381,8 @@ namespace FlashpointSecurePlayer {
             [MarshalAs(UnmanagedType.U4)]
             FileFlagsAndAttributes dwFlagsAndAttributes,
 
-            IntPtr hTemplateFile);
+            IntPtr hTemplateFile
+        );
 
         [StructLayout(LayoutKind.Explicit)]
         public struct BY_HANDLE_FILE_INFORMATION {
