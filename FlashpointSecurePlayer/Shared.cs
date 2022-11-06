@@ -2274,9 +2274,6 @@ namespace FlashpointSecurePlayer {
         }
 
         public static Process GetParentProcess() {
-            int currentProcessID = Process.GetCurrentProcess().Id;
-            int parentProcessID = 0;
-
             IntPtr parentProcessSnapshotHandle = CreateToolhelp32Snapshot(TOOLHELP32CS_SNAPPROCESS, 0);
 
             if (parentProcessSnapshotHandle == IntPtr.Zero) {
@@ -2297,6 +2294,9 @@ namespace FlashpointSecurePlayer {
                         Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
                     }
                 }
+
+                int currentProcessID = Process.GetCurrentProcess().Id;
+                int parentProcessID = 0;
 
                 do {
                     if (currentProcessID == parentProcessEntry.toolHelp32ProcessID) {
