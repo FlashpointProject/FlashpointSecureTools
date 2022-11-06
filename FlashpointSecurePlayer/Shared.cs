@@ -127,6 +127,20 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        public const int ERROR_SUCCESS = 0x00000000;
+        public const int ERROR_NO_MORE_FILES = 0x00000012;
+
+        public const int MAX_PATH = 260;
+
+        public const int WM_DESTROY = 0x00000002;
+        public const int WM_PAINT = 0x0000000F;
+        public const int WM_MOUSEMOVE = 0x00000200;
+        public const int WM_XBUTTONUP = 0x0000020C;
+        public const int WM_PARENTNOTIFY = 0x00000210;
+
+        public const int MK_XBUTTON1 = 0x00010000;
+        public const int MK_XBUTTON2 = 0x00020000;
+
         public const int S_OK = unchecked((int)0x0000);
         public const int S_FALSE = unchecked((int)0x0001);
         public const int E_NOTIMPL = unchecked((int)0x80004001);
@@ -141,17 +155,6 @@ namespace FlashpointSecurePlayer {
         public const int E_INVALIDARG = unchecked((int)0x80070057);
 
         public const int INET_E_DEFAULT_ACTION = unchecked((int)0x800C0011);
-
-        public const int MAX_PATH = 260;
-
-        public const int WM_DESTROY = 0x00000002;
-        public const int WM_PAINT = 0x0000000F;
-        public const int WM_MOUSEMOVE = 0x00000200;
-        public const int WM_XBUTTONUP = 0x0000020C;
-        public const int WM_PARENTNOTIFY = 0x00000210;
-
-        public const int MK_XBUTTON1 = 0x00010000;
-        public const int MK_XBUTTON2 = 0x00020000;
 
         public enum BINARY_TYPE : uint {
             SCS_32BIT_BINARY = 0, // A 32-bit Windows-based application
@@ -241,9 +244,9 @@ namespace FlashpointSecurePlayer {
         public static extern IntPtr LocalFree(IntPtr memoryHandle);
 
         [DllImport("SHELL32.DLL", SetLastError = true)]
-        private static extern IntPtr CommandLineToArgvW([MarshalAs(UnmanagedType.LPWStr)] string commandLine, out int argc);
+        public static extern IntPtr CommandLineToArgvW([MarshalAs(UnmanagedType.LPWStr)] string commandLine, out int argc);
 
-        private enum OS_TYPE : uint {
+        public enum OS_TYPE : uint {
             OS_WINDOWS = 0,
             OS_NT = 1,
             OS_WIN95ORGREATER = 2,
@@ -284,7 +287,11 @@ namespace FlashpointSecurePlayer {
 
         [DllImport("Shlwapi.dll", SetLastError = true, EntryPoint = "#437")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool IsOS(OS_TYPE os);
+        public static extern bool IsOS(OS_TYPE os);
+
+        [DllImport("KERNEL32.DLL", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool CloseHandle([In] IntPtr hObject);
 
         public const uint TOOLHELP32CS_INHERIT = 0x80000000;
         public const uint TOOLHELP32CS_SNAPALL = TOOLHELP32CS_SNAPHEAPLIST | TOOLHELP32CS_SNAPMODULE | TOOLHELP32CS_SNAPPROCESS | TOOLHELP32CS_SNAPTHREAD;
@@ -309,13 +316,13 @@ namespace FlashpointSecurePlayer {
             public string exeFile;
         };
 
-        [DllImport("KERNEL32.DLL", SetLastError = true)]
+        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = System.Runtime.InteropServices.CharSet.Auto)]
         public static extern IntPtr CreateToolhelp32Snapshot(uint flags, uint toolhelp32ProcessID);
 
-        [DllImport("KERNEL32.DLL")]
+        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = System.Runtime.InteropServices.CharSet.Auto)]
         public static extern bool Process32First(IntPtr snapshotHandle, ref PROCESSENTRY32 processEntryPointer);
 
-        [DllImport("KERNEL32.DLL")]
+        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = System.Runtime.InteropServices.CharSet.Auto)]
         public static extern bool Process32Next(IntPtr snapshotHandle, ref PROCESSENTRY32 processEntryPointer);
 
         [DllImport("KERNEL32.DLL", SetLastError = true)]
@@ -361,7 +368,7 @@ namespace FlashpointSecurePlayer {
             IntPtr hTemplateFile);
 
         [StructLayout(LayoutKind.Explicit)]
-        private struct BY_HANDLE_FILE_INFORMATION {
+        public struct BY_HANDLE_FILE_INFORMATION {
             [FieldOffset(0)]
             public uint FileAttributes;
 
@@ -394,7 +401,7 @@ namespace FlashpointSecurePlayer {
         }
 
         [DllImport("KERNEL32.DLL", SetLastError = true)]
-        private static extern bool GetFileInformationByHandle(SafeFileHandle hFile, out BY_HANDLE_FILE_INFORMATION lpFileInformation);
+        public static extern bool GetFileInformationByHandle(SafeFileHandle hFile, out BY_HANDLE_FILE_INFORMATION lpFileInformation);
 
         [DllImport("KERNEL32.DLL", CharSet = CharSet.Auto)]
         public static extern int GetLongPathName(
@@ -1355,11 +1362,14 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        public const string ACTIVE_EXE_CONFIGURATION_NAME = "";
+
         private static readonly object exeConfigurationNameLock = new object();
         private static string exeConfigurationName = null;
-        public const string ACTIVE_EXE_CONFIGURATION_NAME = "";
+
         private static readonly object exeConfigurationLock = new object();
         private static Configuration exeConfiguration = null;
+
         private static readonly object activeEXEConfigurationLock = new object();
         private static Configuration activeEXEConfiguration = null;
 
@@ -1880,14 +1890,13 @@ namespace FlashpointSecurePlayer {
 
         // find path in registry value
         // string must begin with path
-        // string must not exceed MAX_PATH*2+15 characters
         public static object ReplaceStartupPathEnvironmentVariable(object value) {
             // since it's a value we'll just check it exists
             if (!(value is string valueString)) {
                 return value;
             }
 
-            if (valueString.Length <= MAX_PATH * 2 + 15) {
+            if (valueString.Length <= MAX_PATH * 2 + FP_STARTUP_PATH.Length) {
                 StringBuilder pathName = null;
 
                 if (!PathNames.Long.TryGetValue(Application.StartupPath, out pathName) || pathName == null) {
@@ -1906,19 +1915,6 @@ namespace FlashpointSecurePlayer {
             }
             return valueString;
         }
-
-        /*
-        public static object ReplaceStartupPathEnvironmentVariable(object value) {
-            if (!(value is string valueString)) {
-                return value;
-            }
-
-            if (valueString.ToUpper().StartsWith("%" + FLASHPOINT_SECURE_PLAYER_STARTUP_PATH + "%")) {
-                valueString = RemoveTrailingSlash(Application.StartupPath) + "\\" + RemoveValueStringSlash(valueString.Substring(35));
-            }
-            return valueString;
-        }
-        */
 
         private static int GetURLProtocolLength(string url) {
             Uri uri;
@@ -2278,41 +2274,52 @@ namespace FlashpointSecurePlayer {
         }
 
         public static Process GetParentProcess() {
-            Process parentProcess = null;
             int currentProcessID = Process.GetCurrentProcess().Id;
-            int parentProcessID = -1;
+            int parentProcessID = 0;
 
-            IntPtr parentProcessSnapshotHandle = IntPtr.Zero;
-            parentProcessSnapshotHandle = CreateToolhelp32Snapshot(TOOLHELP32CS_SNAPPROCESS, 0);
+            IntPtr parentProcessSnapshotHandle = CreateToolhelp32Snapshot(TOOLHELP32CS_SNAPPROCESS, 0);
 
             if (parentProcessSnapshotHandle == IntPtr.Zero) {
-                return parentProcess;
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
             }
 
-            PROCESSENTRY32 parentProcessEntry = new PROCESSENTRY32 {
-                size = (uint)Marshal.SizeOf(typeof(PROCESSENTRY32))
-            };
+            try {
+                PROCESSENTRY32 parentProcessEntry = new PROCESSENTRY32 {
+                    size = (uint)Marshal.SizeOf(typeof(PROCESSENTRY32))
+                };
 
-            if (!Process32First(parentProcessSnapshotHandle, ref parentProcessEntry)) {
-                return parentProcess;
-            }
+                int lastError = 0;
 
-            do {
-                if (currentProcessID == parentProcessEntry.toolHelp32ProcessID) {
-                    parentProcessID = (int)parentProcessEntry.toolHelp32ParentProcessID;
+                if (!Process32First(parentProcessSnapshotHandle, ref parentProcessEntry)) {
+                    lastError = Marshal.GetHRForLastWin32Error();
+
+                    if (lastError != ERROR_SUCCESS && lastError != ERROR_NO_MORE_FILES) {
+                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                    }
                 }
-            } while (parentProcessID <= 0 && Process32Next(parentProcessSnapshotHandle, ref parentProcessEntry));
 
-            if (parentProcessID > 0) {
-                try {
-                    parentProcess = Process.GetProcessById(parentProcessID);
-                } catch (ArgumentException) {
-                    // Fail silently.
-                } catch (InvalidOperationException) {
-                    // Fail silently.
+                do {
+                    if (currentProcessID == parentProcessEntry.toolHelp32ProcessID) {
+                        parentProcessID = (int)parentProcessEntry.toolHelp32ParentProcessID;
+
+                        if (parentProcessID == 0) {
+                            return null;
+                        }
+                        return Process.GetProcessById(parentProcessID);
+                    }
+                } while (Process32Next(parentProcessSnapshotHandle, ref parentProcessEntry));
+
+                lastError = Marshal.GetHRForLastWin32Error();
+
+                if (lastError != ERROR_SUCCESS && lastError != ERROR_NO_MORE_FILES) {
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                }
+            } finally {
+                if (!CloseHandle(parentProcessSnapshotHandle)) {
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
                 }
             }
-            return parentProcess;
+            return null;
         }
 
         public static string GetProcessName(Process process) {

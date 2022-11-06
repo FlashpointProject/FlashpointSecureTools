@@ -99,7 +99,15 @@ namespace FlashpointSecurePlayer {
             // to reduce the amount of stupid in the #help-me-please channel
             //ShowError(Properties.Resources.GameNotCuratedCorrectly);
             string text = Properties.Resources.NoGameSelected;
-            Process parentProcess = GetParentProcess();
+
+            Process parentProcess = null;
+
+            try {
+                parentProcess = GetParentProcess();
+            } catch {
+                // Fail silently.
+            }
+
             string parentProcessFileNameUpper = null;
 
             if (parentProcess != null) {
@@ -214,7 +222,14 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            Process parentProcess = GetParentProcess();
+            Process parentProcess = null;
+
+            try {
+                parentProcess = GetParentProcess();
+            } catch {
+                // Fail silently.
+            }
+
             string parentProcessFileNameUpper = null;
 
             if (parentProcess != null) {

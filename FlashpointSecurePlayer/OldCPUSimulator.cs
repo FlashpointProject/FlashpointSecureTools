@@ -23,7 +23,14 @@ namespace FlashpointSecurePlayer {
             // now, we might already be running under Old CPU Simulator
             // we don't want to start a new instance in that case
             // the user has manually started Old CPU Simulator already
-            Process parentProcess = GetParentProcess();
+            Process parentProcess = null;
+
+            try {
+                parentProcess = GetParentProcess();
+            } catch {
+                // Fail silently.
+            }
+
             string parentProcessFileNameUpper = null;
 
             if (parentProcess != null) {
