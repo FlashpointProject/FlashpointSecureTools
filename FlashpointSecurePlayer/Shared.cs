@@ -403,22 +403,26 @@ namespace FlashpointSecurePlayer {
         [DllImport("KERNEL32.DLL", SetLastError = true)]
         public static extern bool GetFileInformationByHandle(SafeFileHandle hFile, out BY_HANDLE_FILE_INFORMATION lpFileInformation);
 
-        [DllImport("KERNEL32.DLL", CharSet = CharSet.Auto)]
-        public static extern int GetLongPathName(
+        [DllImport("KERNEL32.DLL", CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern uint GetShortPathName(
             [MarshalAs(UnmanagedType.LPTStr)]
-            string shortPath,
+            string lpszLongPath,
+
             [MarshalAs(UnmanagedType.LPTStr)]
-            StringBuilder longPath,
-            int longPathLength
+            StringBuilder lpszShortPath,
+
+            uint cchBuffer
         );
 
-        [DllImport("KERNEL32.DLL", CharSet = CharSet.Auto)]
-        public static extern int GetShortPathName(
+        [DllImport("KERNEL32.DLL", CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern uint GetLongPathName(
             [MarshalAs(UnmanagedType.LPTStr)]
-            string longPath,
+            string lpszShortPath,
+
             [MarshalAs(UnmanagedType.LPTStr)]
-            StringBuilder shortPath,
-            int bufferSize
+            StringBuilder lpszLongPath,
+
+            uint cchBuffer
         );
 
         public static readonly Task CompletedTask = Task.FromResult(false);
@@ -1416,8 +1420,50 @@ namespace FlashpointSecurePlayer {
         }
 
         private static class PathNames {
-            public static Dictionary<string, StringBuilder> Short { get; set; } = new Dictionary<string, StringBuilder>();
-            public static Dictionary<string, StringBuilder> Long { get; set; } = new Dictionary<string, StringBuilder>();
+            public class PathNamesShort {
+                private readonly IDictionary<string, string> pathNamesShort = new Dictionary<string, string>();
+
+                public string this[string longPath] {
+                    get {
+                        if (!pathNamesShort.ContainsKey(longPath)) {
+                            StringBuilder shortPath = new StringBuilder(MAX_PATH);
+
+                            if (GetShortPathName(longPath, shortPath, (uint)shortPath.Capacity) >= shortPath.Capacity) {
+                                return null;
+                            }
+
+                            string pathNameShort = shortPath.ToString();
+                            pathNamesShort[longPath] = pathNameShort;
+                            return pathNameShort;
+                        }
+                        return pathNamesShort[longPath];
+                    }
+                }
+            }
+
+            public class PathNamesLong {
+                private readonly Dictionary<string, string> pathNamesLong = new Dictionary<string, string>();
+
+                public string this[string shortPath] {
+                    get {
+                        if (!pathNamesLong.ContainsKey(shortPath)) {
+                            StringBuilder longPath = new StringBuilder(MAX_PATH);
+
+                            if (GetLongPathName(shortPath, longPath, (uint)longPath.Capacity) >= longPath.Capacity) {
+                                return null;
+                            }
+
+                            string pathNameLong = longPath.ToString();
+                            pathNamesLong[shortPath] = pathNameLong;
+                            return pathNameLong;
+                        }
+                        return pathNamesLong[shortPath];
+                    }
+                }
+            }
+
+            public static PathNamesShort Short { get; } = new PathNamesShort();
+            public static PathNamesLong Long { get; } = new PathNamesLong();
         }
 
         public enum MODIFICATIONS_REVERT_METHOD {
@@ -1850,37 +1896,19 @@ namespace FlashpointSecurePlayer {
                 return value;
             }
 
-            if (valueString.Length <= MAX_PATH * 2 + 15) {
+            if (valueString.Length <= MAX_PATH * 2 + FP_STARTUP_PATH.Length) {
                 // get the short path
-                StringBuilder shortPathName = null;
+                string shortPathName = PathNames.Short[path];
 
-                // get cached SHORT path if available, less File IO
-                if (!PathNames.Short.TryGetValue(path, out shortPathName) || shortPathName == null) {
-                    shortPathName = new StringBuilder(MAX_PATH);
-                    GetShortPathName(path, shortPathName, shortPathName.Capacity);
-                    PathNames.Short[path] = shortPathName;
-                }
+                if (!String.IsNullOrEmpty(shortPathName)) {
+                    // if the value is a short value...
+                    if (valueString.ToUpperInvariant().StartsWith(shortPathName.ToString().ToUpperInvariant())) {
+                        // get the long path
+                        string longPathName = PathNames.Long[path];
 
-                if (shortPathName != null) {
-                    if (shortPathName.Length > 0) {
-                        // if the value is a short value...
-                        if (valueString.ToUpperInvariant().StartsWith(shortPathName.ToString().ToUpperInvariant())) {
-                            // get the long path
-                            StringBuilder longPathName = null;
-
-                            // get cached LONG path if available, less File IO
-                            if (!PathNames.Long.TryGetValue(path, out longPathName) || longPathName == null) {
-                                longPathName = new StringBuilder(MAX_PATH);
-                                GetLongPathName(path, longPathName, longPathName.Capacity);
-                                PathNames.Long[path] = shortPathName;
-                            }
-
-                            if (longPathName != null) {
-                                if (longPathName.Length > 0) {
-                                    // replace the short path with the long path
-                                    valueString = longPathName.ToString() + valueString.Substring(shortPathName.Length);
-                                }
-                            }
+                        if (!String.IsNullOrEmpty(longPathName)) {
+                            // replace the short path with the long path
+                            valueString = longPathName.ToString() + valueString.Substring(shortPathName.Length);
                         }
                     }
                 }
@@ -1897,19 +1925,11 @@ namespace FlashpointSecurePlayer {
             }
 
             if (valueString.Length <= MAX_PATH * 2 + FP_STARTUP_PATH.Length) {
-                StringBuilder pathName = null;
+                string pathName = PathNames.Long[Application.StartupPath];
 
-                if (!PathNames.Long.TryGetValue(Application.StartupPath, out pathName) || pathName == null) {
-                    pathName = new StringBuilder(MAX_PATH);
-                    GetLongPathName(Application.StartupPath, pathName, pathName.Capacity);
-                    PathNames.Long[Application.StartupPath] = pathName;
-                }
-
-                if (pathName != null) {
-                    if (pathName.Length > 0) {
-                        if (valueString.ToUpperInvariant().StartsWith(RemoveTrailingSlash(pathName.ToString()).ToUpperInvariant())) {
-                            valueString = "%" + FP_STARTUP_PATH + "%\\" + RemoveValueStringSlash(valueString.Substring(pathName.Length));
-                        }
+                if (!String.IsNullOrEmpty(pathName)) {
+                    if (valueString.ToUpperInvariant().StartsWith(RemoveTrailingSlash(pathName.ToString()).ToUpperInvariant())) {
+                        valueString = "%" + FP_STARTUP_PATH + "%\\" + RemoveValueStringSlash(valueString.Substring(pathName.Length));
                     }
                 }
             }

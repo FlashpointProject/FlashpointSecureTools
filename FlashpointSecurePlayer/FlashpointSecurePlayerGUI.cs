@@ -1221,6 +1221,7 @@ namespace FlashpointSecurePlayer {
                 //Show();
                 ShowOutput(Properties.Resources.GameDownloading);
                 Refresh();
+
                 // get Template Element
                 TemplateElement templateElement = null;
 
@@ -1258,6 +1259,7 @@ namespace FlashpointSecurePlayer {
                 }
 
                 await DownloadFlashpointSecurePlayerSectionAsync(TemplateName).ConfigureAwait(true);
+
                 // get template element on start
                 // throw on start
                 try {
@@ -1278,13 +1280,13 @@ namespace FlashpointSecurePlayer {
                 }
 
                 // get HTDOCS File/HTDOCS File Directory (in Software Mode)
-                string htdocsFullFilePath = null;
                 string htdocsFile = null;
                 string htdocsFileDirectory = null;
 
                 if (templateElement.Mode.Name == ModeElement.NAME.SOFTWARE) {
                     try {
                         Uri requestUri = await DownloadAsync(AddURLProtocol(URL)).ConfigureAwait(true);
+
                         StringBuilder htdocsFilePath = new StringBuilder(HTDOCS);
 
                         try {
@@ -1318,8 +1320,10 @@ namespace FlashpointSecurePlayer {
                             }
                         }
 
+                        string fullHTDOCSFilePath = null;
+
                         try {
-                            htdocsFullFilePath = Path.GetFullPath(htdocsFilePath.ToString());
+                            fullHTDOCSFilePath = Path.GetFullPath(htdocsFilePath.ToString());
                         } catch (PathTooLongException) {
                             throw new ArgumentException("The path is too long to \"" + htdocsFilePath.ToString() + "\".");
                         } catch (System.Security.SecurityException) {
@@ -1328,12 +1332,12 @@ namespace FlashpointSecurePlayer {
                             throw new ArgumentException("The path \"" + htdocsFilePath.ToString() + "\" is not supported.");
                         }
 
-                        if (htdocsFullFilePath == null) {
-                            htdocsFullFilePath = String.Empty;
+                        if (fullHTDOCSFilePath == null) {
+                            fullHTDOCSFilePath = String.Empty;
                         }
 
                         try {
-                            htdocsFileDirectory = Path.GetDirectoryName(htdocsFullFilePath);
+                            htdocsFileDirectory = Path.GetDirectoryName(fullHTDOCSFilePath);
                         } catch (ArgumentException ex) {
                             LogExceptionToLauncher(ex);
                             // Fail silently?
@@ -1419,43 +1423,45 @@ namespace FlashpointSecurePlayer {
             }
 
             if (applicationMutex != null) {
-                // don't show, we don't want two windows at once on restart
-                //Show();
-                ProgressManager.ShowOutput();
-
-                // get template element on stop
-                TemplateElement templateElement = null;
-
                 try {
-                    templateElement = GetTemplateElement(false, TemplateName);
-                } catch (System.Configuration.ConfigurationErrorsException ex) {
-                    LogExceptionToLauncher(ex);
-                    return;
-                }
+                    // don't show, we don't want two windows at once on restart
+                    //Show();
+                    ProgressManager.ShowOutput();
 
-                if (templateElement == null) {
-                    return;
-                }
+                    // get template element on stop
+                    TemplateElement templateElement = null;
 
-                try {
-                    await StopSecurePlayback(e, templateElement).ConfigureAwait(false);
-                } catch (ActiveXImportFailedException ex) {
-                    LogExceptionToLauncher(ex);
-                    // Fail silently.
-                } catch (InvalidModeException ex) {
-                    LogExceptionToLauncher(ex);
-                    // Fail silently.
-                } catch (InvalidModificationException ex) {
-                    LogExceptionToLauncher(ex);
-                    // Fail silently.
-                } catch (InvalidTemplateException ex) {
-                    LogExceptionToLauncher(ex);
-                    // Fail silently.
-                }
+                    try {
+                        templateElement = GetTemplateElement(false, TemplateName);
+                    } catch (System.Configuration.ConfigurationErrorsException ex) {
+                        LogExceptionToLauncher(ex);
+                        return;
+                    }
 
-                applicationMutex.ReleaseMutex();
-                applicationMutex.Close();
-                applicationMutex = null;
+                    if (templateElement == null) {
+                        return;
+                    }
+
+                    try {
+                        await StopSecurePlayback(e, templateElement).ConfigureAwait(false);
+                    } catch (ActiveXImportFailedException ex) {
+                        LogExceptionToLauncher(ex);
+                        // Fail silently.
+                    } catch (InvalidModeException ex) {
+                        LogExceptionToLauncher(ex);
+                        // Fail silently.
+                    } catch (InvalidModificationException ex) {
+                        LogExceptionToLauncher(ex);
+                        // Fail silently.
+                    } catch (InvalidTemplateException ex) {
+                        LogExceptionToLauncher(ex);
+                        // Fail silently.
+                    }
+                } finally {
+                    applicationMutex.ReleaseMutex();
+                    applicationMutex.Close();
+                    applicationMutex = null;
+                }
             }
         }
 

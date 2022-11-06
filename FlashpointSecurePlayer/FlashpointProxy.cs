@@ -58,11 +58,8 @@ namespace FlashpointSecurePlayer {
             INTERNET_PER_CONN_FLAGS_UI = 10
         }
 
-        private const int INTERNET_OPEN_TYPE_DIRECT = 1;  // direct to net
-        private const int INTERNET_OPEN_TYPE_PRECONFIG = 0; // read registry
-                                                            /// <summary>
-                                                            /// Constants used in INTERNET_PER_CONN_OPTON struct.
-                                                            /// </summary>
+        private const int INTERNET_OPEN_TYPE_DIRECT = 1;
+        private const int INTERNET_OPEN_TYPE_PRECONFIG = 0;
 
         private enum INTERNET_OPTION_PER_CONN_FLAGS {
             PROXY_TYPE_DIRECT = 0x00000001,   // direct to net
@@ -70,12 +67,7 @@ namespace FlashpointSecurePlayer {
             PROXY_TYPE_AUTO_PROXY_URL = 0x00000004,   // autoproxy URL
             PROXY_TYPE_AUTO_DETECT = 0x00000008   // use autoproxy detection
         }
-
-        /// <summary>
-        /// Used in INTERNET_PER_CONN_OPTION.
-        /// When create a instance of OptionUnion, only one filed will be used.
-        /// The StructLayout and FieldOffset attributes could help to decrease the struct size.
-        /// </summary>
+        
         [StructLayout(LayoutKind.Explicit)]
         private struct INTERNET_PER_CONN_OPTION_OptionUnion {
             // A value in INTERNET_OPTION_PER_CONN_FLAGS.
@@ -93,26 +85,16 @@ namespace FlashpointSecurePlayer {
             public int Option;
             public INTERNET_PER_CONN_OPTION_OptionUnion Value;
         }
-
-        /// <summary>
-        /// Sets an Internet option.
-        /// </summary>
+        
         [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Ansi)]
         private static extern bool InternetSetOption(IntPtr internetHandle, INTERNET_OPTION option, IntPtr bufferPointer, int bufferLength);
-
-        /// <summary>
-        /// Queries an Internet option on the specified handle. The Handle will be always 0.
-        /// </summary>
+        
         [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Ansi, EntryPoint = "InternetQueryOption")]
         private extern static bool InternetQueryOption(IntPtr handle, INTERNET_OPTION optionFlag, ref INTERNET_PER_CONN_OPTION_LIST optionList, ref int size);
         
         // in enabling the proxy we need to set the Agent to use
         private const string AGENT = "Flashpoint Proxy";
-
-        /// <summary>
-        /// Backup the current options for LAN connection.
-        /// Make sure free the memory after restoration.
-        /// </summary>
+        
         private static void GetSystemProxy(ref INTERNET_PER_CONN_OPTION_LIST internetPerConnOptionList, ref INTERNET_PER_CONN_OPTION[] internetPerConnOptionListOptions) {
             int internetPerConnOptionListSize = Marshal.SizeOf(internetPerConnOptionList);
 
@@ -155,10 +137,7 @@ namespace FlashpointSecurePlayer {
                 throw new FlashpointProxyException("Could not query the Internet Options.");
             }
         }
-
-        /// <summary>
-        /// Set the proxy server for LAN connection.
-        /// </summary>
+        
         public static void Enable(string proxyServer) {
             IntPtr internetHandle = IntPtr.Zero;
             internetHandle = InternetOpen(AGENT, INTERNET_OPEN_TYPE_DIRECT, null, null, 0);
@@ -226,12 +205,7 @@ namespace FlashpointSecurePlayer {
                 throw new FlashpointProxyException("Could not set the Internet Options.");
             }
         }
-
-        /// <summary>
-        /// Restore the options for LAN connection.
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
+        
         public static void Disable() {
             IntPtr internetHandle = IntPtr.Zero;
             internetHandle = InternetOpen(AGENT, INTERNET_OPEN_TYPE_DIRECT, null, null, 0);
