@@ -10,21 +10,25 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 
 namespace FlashpointSecurePlayer {
     public class ActiveXControl {
-        // All COM DLLs must export the DllRegisterServer()
-        // and the DllUnregisterServer() APIs for self-registration/unregistration.
-        // They both have the same signature and so only one
-        // delegate is required.
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private delegate UInt32 DllRegisterServerDelegate();
+        private delegate uint DllRegisterServerDelegate();
 
         [DllImport("KERNEL32.DLL", CallingConvention = CallingConvention.StdCall)]
-        private static extern IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPStr)]string libFileName);
+        private static extern IntPtr LoadLibrary(
+            [MarshalAs(UnmanagedType.LPStr)]
+            string lpLibFileName
+        );
 
         [DllImport("KERNEL32.DLL", CallingConvention = CallingConvention.StdCall)]
-        private static extern Int32 FreeLibrary(IntPtr libModuleHandle);
+        private static extern int FreeLibrary(IntPtr hLibModule);
 
         [DllImport("KERNEL32.DLL", CallingConvention = CallingConvention.StdCall)]
-        private static extern IntPtr GetProcAddress(IntPtr moduleHandle, [MarshalAs(UnmanagedType.LPStr)] string procName);
+        private static extern IntPtr GetProcAddress(
+            IntPtr hModule,
+            
+            [MarshalAs(UnmanagedType.LPStr)]
+            string lpProcName
+        );
 
         private IntPtr moduleHandle = IntPtr.Zero;
 
