@@ -127,10 +127,10 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        public const int MAX_PATH = 260;
+
         public const int ERROR_SUCCESS = 0x00000000;
         public const int ERROR_NO_MORE_FILES = 0x00000012;
-
-        public const int MAX_PATH = 260;
 
         public const int WM_DESTROY = 0x00000002;
         public const int WM_PAINT = 0x0000000F;
@@ -214,9 +214,9 @@ namespace FlashpointSecurePlayer {
             LLKHF_ALTDOWN = 0x20,
             LLKHF_UP = 0x80
         }
-        
+
         [DllImport("USER32.DLL")]
-        public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, [In]KBDLLHOOKSTRUCT lParam);
+        public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, KBDLLHOOKSTRUCT lParam);
 
         [StructLayout(LayoutKind.Sequential)]
         public struct POINT {
@@ -232,9 +232,9 @@ namespace FlashpointSecurePlayer {
             public int time;
             public UIntPtr dwExtraInfo;
         }
-        
+
         [DllImport("USER32.DLL")]
-        public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, [In]MSLLHOOKSTRUCT lParam);
+        public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, MSLLHOOKSTRUCT lParam);
 
         [DllImport("USER32.DLL", SetLastError = true)]
         public static extern IntPtr SetWindowsHookEx(HookType hookType, HookProc lpfn, IntPtr hMod, uint dwThreadId);
@@ -250,11 +250,11 @@ namespace FlashpointSecurePlayer {
         public static extern IntPtr CommandLineToArgvW(
             [MarshalAs(UnmanagedType.LPWStr)]
             string lpCmdLine,
-        
+
             out int pNumArgs
         );
 
-        public enum OS_TYPE : uint {
+        public enum OS : uint {
             OS_WINDOWS = 0,
             OS_NT = 1,
             OS_WIN95ORGREATER = 2,
@@ -295,19 +295,21 @@ namespace FlashpointSecurePlayer {
 
         [DllImport("Shlwapi.dll", SetLastError = true, EntryPoint = "#437")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool IsOS(OS_TYPE dwOS);
+        public static extern bool IsOS(OS dwOS);
 
         [DllImport("KERNEL32.DLL", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool CloseHandle([In] IntPtr hObject);
+        public static extern bool CloseHandle(IntPtr hObject);
 
-        public const uint TH32CS_INHERIT = 0x80000000;
-        public const uint TH32CS_SNAPALL = TH32CS_SNAPHEAPLIST | TH32CS_SNAPMODULE | TH32CS_SNAPPROCESS | TH32CS_SNAPTHREAD;
-        public const uint TH32CS_SNAPHEAPLIST = 0x00000001;
-        public const uint TH32CS_SNAPMODULE = 0x00000008;
-        public const uint TH32CS_SNAPMODULE32 = 0x00000010;
-        public const uint TH32CS_SNAPPROCESS = 0x00000002;
-        public const uint TH32CS_SNAPTHREAD = 0x00000004;
+        public enum TH32CS : uint {
+            TH32CS_INHERIT = 0x80000000,
+            TH32CS_SNAPALL = TH32CS_SNAPHEAPLIST | TH32CS_SNAPMODULE | TH32CS_SNAPPROCESS | TH32CS_SNAPTHREAD,
+            TH32CS_SNAPHEAPLIST = 0x00000001,
+            TH32CS_SNAPMODULE = 0x00000008,
+            TH32CS_SNAPMODULE32 = 0x00000010,
+            TH32CS_SNAPPROCESS = 0x00000002,
+            TH32CS_SNAPTHREAD = 0x00000004
+        }
 
         [StructLayout(LayoutKind.Sequential)]
         public struct PROCESSENTRY32 {
@@ -326,7 +328,7 @@ namespace FlashpointSecurePlayer {
         };
 
         [DllImport("KERNEL32.DLL", SetLastError = true)]
-        public static extern IntPtr CreateToolhelp32Snapshot(uint dwFlags, uint th32ProcessID);
+        public static extern IntPtr CreateToolhelp32Snapshot(TH32CS dwFlags, uint th32ProcessID);
 
         [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -338,7 +340,7 @@ namespace FlashpointSecurePlayer {
 
         [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool QueryFullProcessImageName([In]IntPtr hProcess, [In]int dwFlags, [Out]StringBuilder lpExeName, ref int lpdwSize);
+        public static extern bool QueryFullProcessImageName(IntPtr hProcess, int dwFlags, StringBuilder lpExeName, ref int lpdwSize);
 
         [Flags]
         public enum FileFlagsAndAttributes : uint {
@@ -2188,7 +2190,7 @@ namespace FlashpointSecurePlayer {
                     if (operatingSystem.Version.Minor == 0) {
                         versionName += "2000";
                     } else {
-                        if (IsOS(OS_TYPE.OS_ANYSERVER)) {
+                        if (IsOS(OS.OS_ANYSERVER)) {
                             versionName += "Server 2003";
                         } else {
                             versionName += "XP";
@@ -2198,28 +2200,28 @@ namespace FlashpointSecurePlayer {
                     case 6:
                     switch (operatingSystem.Version.Minor) {
                         case 0:
-                        if (IsOS(OS_TYPE.OS_ANYSERVER)) {
+                        if (IsOS(OS.OS_ANYSERVER)) {
                             versionName += "Server 2008";
                         } else {
                             versionName += "Vista";
                         }
                         break;
                         case 1:
-                        if (IsOS(OS_TYPE.OS_ANYSERVER)) {
+                        if (IsOS(OS.OS_ANYSERVER)) {
                             versionName += "Server 2008 R2";
                         } else {
                             versionName += "7";
                         }
                         break;
                         case 2:
-                        if (IsOS(OS_TYPE.OS_ANYSERVER)) {
+                        if (IsOS(OS.OS_ANYSERVER)) {
                             versionName += "Server 2012";
                         } else {
                             versionName += "8";
                         }
                         break;
                         default:
-                        if (IsOS(OS_TYPE.OS_ANYSERVER)) {
+                        if (IsOS(OS.OS_ANYSERVER)) {
                             versionName += "Server 2012 R2";
                         } else {
                             versionName += "8.1";
@@ -2229,7 +2231,7 @@ namespace FlashpointSecurePlayer {
                     break;
                     default:
                     // Windows 10 will be the last version of Windows
-                    if (IsOS(OS_TYPE.OS_ANYSERVER)) {
+                    if (IsOS(OS.OS_ANYSERVER)) {
                         if (operatingSystem.Version.Build < 17763) {
                             versionName += "Server 2016";
                         } else if (operatingSystem.Version.Build < 20348) {
@@ -2299,7 +2301,7 @@ namespace FlashpointSecurePlayer {
         }
 
         public static Process GetParentProcess() {
-            IntPtr parentProcessSnapshotHandle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+            IntPtr parentProcessSnapshotHandle = CreateToolhelp32Snapshot(TH32CS.TH32CS_SNAPPROCESS, 0);
 
             if (parentProcessSnapshotHandle == IntPtr.Zero) {
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
