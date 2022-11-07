@@ -10,14 +10,14 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 namespace FlashpointSecurePlayer {
     // https://blogs.msdn.microsoft.com/jpsanders/2011/04/26/how-to-set-the-proxy-for-the-webbrowser-control-in-net/
     public static class FlashpointProxy {
-        [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Ansi)]
         private static extern IntPtr InternetOpen(string lpszAgent, int dwAccessType, string lpszProxy, string lpszProxyBypass, int dwFlags);
 
-        [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Ansi)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool InternetCloseHandle(IntPtr hInternet);
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
         private struct INTERNET_PER_CONN_OPTION_LIST {
             public int dwSize;
             public string pszConnection;
@@ -72,11 +72,11 @@ namespace FlashpointSecurePlayer {
             public INTERNET_PER_CONN_OPTION_OptionUnion Value;
         }
         
-        [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Ansi)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool InternetSetOption(IntPtr hInternet, INTERNET_OPTION dwOption, IntPtr lpBuffer, int dwBufferLength);
         
-        [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Ansi)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool InternetQueryOption(IntPtr hInternet, INTERNET_OPTION dwOption, ref INTERNET_PER_CONN_OPTION_LIST lpBuffer, ref int lpdwBufferLength);
         
@@ -149,7 +149,7 @@ namespace FlashpointSecurePlayer {
             // set proxy name
             internetPerConnOptionListOptions[1] = new INTERNET_PER_CONN_OPTION();
             internetPerConnOptionListOptions[1].dwOption = (int)INTERNET_PER_CONN_OptionEnum.INTERNET_PER_CONN_PROXY_SERVER;
-            internetPerConnOptionListOptions[1].Value.pszValue = Marshal.StringToHGlobalAuto(proxyServer);
+            internetPerConnOptionListOptions[1].Value.pszValue = Marshal.StringToHGlobalAnsi(proxyServer);
 
             // allocate memory for the INTERNET_PER_CONN_OPTION_LIST Options
             internetPerConnOptionList.pOptions = Marshal.AllocCoTaskMem(Marshal.SizeOf(internetPerConnOptionListOptions[0]) + Marshal.SizeOf(internetPerConnOptionListOptions[1]));
