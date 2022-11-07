@@ -166,10 +166,11 @@ namespace FlashpointSecurePlayer {
             SCS_WOW_BINARY = 2 // A 16-bit Windows-based application
         }
 
-        [DllImport("KERNEL32.DLL")]
+        [DllImport("KERNEL32.DLL", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetBinaryType(string lpApplicationName, out BINARY_TYPE lpBinaryType);
 
-        [DllImport("USER32.DLL", CharSet = CharSet.Auto)]
+        [DllImport("USER32.DLL", SetLastError = true)]
         public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
         public enum HookType : int {
@@ -238,12 +239,13 @@ namespace FlashpointSecurePlayer {
         public static extern IntPtr SetWindowsHookEx(HookType hookType, HookProc lpfn, IntPtr hMod, uint dwThreadId);
 
         [DllImport("USER32.DLL", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool UnhookWindowsHookEx(IntPtr hhk);
 
         [DllImport("KERNEL32.DLL", SetLastError = true)]
         public static extern IntPtr LocalFree(IntPtr hMem);
 
-        [DllImport("SHELL32.DLL", SetLastError = true)]
+        [DllImport("SHELL32.DLL", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern IntPtr CommandLineToArgvW(
             [MarshalAs(UnmanagedType.LPWStr)]
             string lpCmdLine,
@@ -318,20 +320,23 @@ namespace FlashpointSecurePlayer {
             public int pcPriClassBase;
             public uint dwFlags;
 
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MAX_PATH)]
             public string szExeFile;
         };
 
-        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("KERNEL32.DLL", SetLastError = true)]
         public static extern IntPtr CreateToolhelp32Snapshot(uint dwFlags, uint th32ProcessID);
 
         [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool Process32First(IntPtr hSnapshot, ref PROCESSENTRY32 lppe);
 
         [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool Process32Next(IntPtr hSnapshot, ref PROCESSENTRY32 lppe);
 
-        [DllImport("KERNEL32.DLL", SetLastError = true)]
+        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool QueryFullProcessImageName([In]IntPtr hProcess, [In]int dwFlags, [Out]StringBuilder lpExeName, ref int lpdwSize);
 
         [Flags]
@@ -365,6 +370,7 @@ namespace FlashpointSecurePlayer {
 
         [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
         public static extern SafeFileHandle CreateFile(
+            [MarshalAs(UnmanagedType.LPTStr)]
             string lpFileName,
 
             [MarshalAs(UnmanagedType.U4)]

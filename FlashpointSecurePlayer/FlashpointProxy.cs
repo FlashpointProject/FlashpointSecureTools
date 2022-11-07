@@ -10,17 +10,17 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 namespace FlashpointSecurePlayer {
     // https://blogs.msdn.microsoft.com/jpsanders/2011/04/26/how-to-set-the-proxy-for-the-webbrowser-control-in-net/
     public static class FlashpointProxy {
-        [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Ansi)]
+        [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern IntPtr InternetOpen(string lpszAgent, int dwAccessType, string lpszProxy, string lpszProxyBypass, int dwFlags);
 
-        [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Ansi)]
+        [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Auto)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool InternetCloseHandle(IntPtr hInternet);
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
         private struct INTERNET_PER_CONN_OPTION_LIST {
             public int dwSize;
-            public IntPtr pszConnection;
+            public string pszConnection;
             public int dwOptionCount;
             public int dwOptionError;
             public IntPtr pOptions;
@@ -72,11 +72,13 @@ namespace FlashpointSecurePlayer {
             public INTERNET_PER_CONN_OPTION_OptionUnion Value;
         }
         
-        [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Ansi)]
+        [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool InternetSetOption(IntPtr hInternet, INTERNET_OPTION dwOption, IntPtr lpBuffer, int dwBufferLength);
         
-        [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Ansi)]
-        private extern static bool InternetQueryOption(IntPtr hInternet, INTERNET_OPTION dwOption, ref INTERNET_PER_CONN_OPTION_LIST lpBuffer, ref int lpdwBufferLength);
+        [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool InternetQueryOption(IntPtr hInternet, INTERNET_OPTION dwOption, ref INTERNET_PER_CONN_OPTION_LIST lpBuffer, ref int lpdwBufferLength);
         
         // in enabling the proxy we need to set the Agent to use
         private const string AGENT = "Flashpoint Proxy";
@@ -110,7 +112,7 @@ namespace FlashpointSecurePlayer {
             internetPerConnOptionList.dwSize = internetPerConnOptionListSize;
 
             // NULL == LAN, otherwise connectoid name
-            internetPerConnOptionList.pszConnection = IntPtr.Zero;
+            internetPerConnOptionList.pszConnection = null;
 
             // set two options
             internetPerConnOptionList.dwOptionCount = internetPerConnOptionListOptions.Length;
@@ -147,7 +149,7 @@ namespace FlashpointSecurePlayer {
             // set proxy name
             internetPerConnOptionListOptions[1] = new INTERNET_PER_CONN_OPTION();
             internetPerConnOptionListOptions[1].dwOption = (int)INTERNET_PER_CONN_OptionEnum.INTERNET_PER_CONN_PROXY_SERVER;
-            internetPerConnOptionListOptions[1].Value.pszValue = Marshal.StringToHGlobalAnsi(proxyServer);
+            internetPerConnOptionListOptions[1].Value.pszValue = Marshal.StringToHGlobalAuto(proxyServer);
 
             // allocate memory for the INTERNET_PER_CONN_OPTION_LIST Options
             internetPerConnOptionList.pOptions = Marshal.AllocCoTaskMem(Marshal.SizeOf(internetPerConnOptionListOptions[0]) + Marshal.SizeOf(internetPerConnOptionListOptions[1]));
@@ -163,7 +165,7 @@ namespace FlashpointSecurePlayer {
             internetPerConnOptionList.dwSize = Marshal.SizeOf(internetPerConnOptionList);
 
             // NULL == LAN, otherwise connectoid name
-            internetPerConnOptionList.pszConnection = IntPtr.Zero;
+            internetPerConnOptionList.pszConnection = null;
 
             // set two options
             internetPerConnOptionList.dwOptionCount = internetPerConnOptionListOptions.Length;

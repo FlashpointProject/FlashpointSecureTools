@@ -13,20 +13,20 @@ namespace FlashpointSecurePlayer {
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private delegate uint DllRegisterServerDelegate();
 
-        [DllImport("KERNEL32.DLL", CallingConvention = CallingConvention.StdCall)]
+        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern IntPtr LoadLibrary(
-            [MarshalAs(UnmanagedType.LPStr)]
+            [MarshalAs(UnmanagedType.LPTStr)]
             string lpLibFileName
         );
 
-        [DllImport("KERNEL32.DLL", CallingConvention = CallingConvention.StdCall)]
+        [DllImport("KERNEL32.DLL", SetLastError = true)]
         private static extern int FreeLibrary(IntPtr hLibModule);
 
-        [DllImport("KERNEL32.DLL", CallingConvention = CallingConvention.StdCall)]
+        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern IntPtr GetProcAddress(
             IntPtr hModule,
             
-            [MarshalAs(UnmanagedType.LPStr)]
+            [MarshalAs(UnmanagedType.LPTStr)]
             string lpProcName
         );
 
