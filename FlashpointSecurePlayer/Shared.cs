@@ -141,8 +141,9 @@ namespace FlashpointSecurePlayer {
         public const int MK_XBUTTON1 = 0x00010000;
         public const int MK_XBUTTON2 = 0x00020000;
 
-        public const int S_OK = unchecked((int)0x0000);
-        public const int S_FALSE = unchecked((int)0x0001);
+        public const int S_OK = unchecked((int)0x00000000);
+        public const int S_FALSE = unchecked((int)0x00000001);
+
         public const int E_NOTIMPL = unchecked((int)0x80004001);
         public const int E_NOINTERFACE = unchecked((int)0x80004002);
         public const int E_POINTER = unchecked((int)0x80004003);
@@ -300,13 +301,13 @@ namespace FlashpointSecurePlayer {
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool CloseHandle([In] IntPtr hObject);
 
-        public const uint TOOLHELP32CS_INHERIT = 0x80000000;
-        public const uint TOOLHELP32CS_SNAPALL = TOOLHELP32CS_SNAPHEAPLIST | TOOLHELP32CS_SNAPMODULE | TOOLHELP32CS_SNAPPROCESS | TOOLHELP32CS_SNAPTHREAD;
-        public const uint TOOLHELP32CS_SNAPHEAPLIST = 0x00000001;
-        public const uint TOOLHELP32CS_SNAPMODULE = 0x00000008;
-        public const uint TOOLHELP32CS_SNAPMODULE32 = 0x00000010;
-        public const uint TOOLHELP32CS_SNAPPROCESS = 0x00000002;
-        public const uint TOOLHELP32CS_SNAPTHREAD = 0x00000004;
+        public const uint TH32CS_INHERIT = 0x80000000;
+        public const uint TH32CS_SNAPALL = TH32CS_SNAPHEAPLIST | TH32CS_SNAPMODULE | TH32CS_SNAPPROCESS | TH32CS_SNAPTHREAD;
+        public const uint TH32CS_SNAPHEAPLIST = 0x00000001;
+        public const uint TH32CS_SNAPMODULE = 0x00000008;
+        public const uint TH32CS_SNAPMODULE32 = 0x00000010;
+        public const uint TH32CS_SNAPPROCESS = 0x00000002;
+        public const uint TH32CS_SNAPTHREAD = 0x00000004;
 
         [StructLayout(LayoutKind.Sequential)]
         public struct PROCESSENTRY32 {
@@ -390,36 +391,17 @@ namespace FlashpointSecurePlayer {
             IntPtr hTemplateFile
         );
 
-        [StructLayout(LayoutKind.Explicit)]
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct BY_HANDLE_FILE_INFORMATION {
-            [FieldOffset(0)]
             public uint FileAttributes;
-
-            [FieldOffset(4)]
             public System.Runtime.InteropServices.ComTypes.FILETIME CreationTime;
-
-            [FieldOffset(12)]
             public System.Runtime.InteropServices.ComTypes.FILETIME LastAccessTime;
-
-            [FieldOffset(20)]
             public System.Runtime.InteropServices.ComTypes.FILETIME LastWriteTime;
-
-            [FieldOffset(28)]
             public uint VolumeSerialNumber;
-
-            [FieldOffset(32)]
             public uint FileSizeHigh;
-
-            [FieldOffset(36)]
             public uint FileSizeLow;
-
-            [FieldOffset(40)]
             public uint NumberOfLinks;
-
-            [FieldOffset(44)]
             public uint FileIndexHigh;
-
-            [FieldOffset(48)]
             public uint FileIndexLow;
         }
 
@@ -2317,7 +2299,7 @@ namespace FlashpointSecurePlayer {
         }
 
         public static Process GetParentProcess() {
-            IntPtr parentProcessSnapshotHandle = CreateToolhelp32Snapshot(TOOLHELP32CS_SNAPPROCESS, 0);
+            IntPtr parentProcessSnapshotHandle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 
             if (parentProcessSnapshotHandle == IntPtr.Zero) {
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
