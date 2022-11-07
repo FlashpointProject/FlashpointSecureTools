@@ -89,6 +89,10 @@ namespace FlashpointSecurePlayer {
             }
 
             set {
+                if (closableWebBrowser == null) {
+                    return;
+                }
+
                 if (fullscreen == value) {
                     return;
                 }
@@ -329,7 +333,10 @@ namespace FlashpointSecurePlayer {
         public WebBrowserMode(Uri webBrowserURL, bool useFlashActiveXControl = false) {
             _WebBrowserMode(useFlashActiveXControl);
             webBrowserModeTitle = new WebBrowserModeTitle(TitleChanged);
-            closableWebBrowser.Url = webBrowserURL;
+
+            if (closableWebBrowser != null) {
+                closableWebBrowser.Url = webBrowserURL;
+            }
         }
 
         ~WebBrowserMode() {
@@ -340,7 +347,6 @@ namespace FlashpointSecurePlayer {
             // the WebBrowserMode property must be nulled out, otherwise we
             // end up closing the current form when it's already closed
             // (browser reports being closed > we close the form and so on)
-            // TODO
             closableWebBrowser.CanGoBackChanged -= closableWebBrowser_CanGoBackChanged;
             closableWebBrowser.CanGoForwardChanged -= closableWebBrowser_CanGoForwardChanged;
             closableWebBrowser.DocumentTitleChanged -= closableWebBrowser_DocumentTitleChanged;
@@ -620,10 +626,6 @@ namespace FlashpointSecurePlayer {
         }
 
         private void closableWebBrowser_Navigated(object sender, WebBrowserNavigatedEventArgs e) {
-            if (closableWebBrowser == null) {
-                return;
-            }
-
             if (e.Url.Equals("about:blank")) {
                 addressToolStripSpringTextBox.Text = String.Empty;
                 return;
@@ -720,11 +722,11 @@ namespace FlashpointSecurePlayer {
         }
 
         private void ShDocVwWebBrowser_DownloadBegin() {
+            /*
             if (closableWebBrowser == null) {
                 return;
             }
 
-            /*
             Control closableWebBrowserControl = closableWebBrowser as Control;
 
             if (closableWebBrowserControl == null) {
@@ -742,11 +744,11 @@ namespace FlashpointSecurePlayer {
         }
 
         private void ShDocVwWebBrowser_DownloadComplete() {
+            /*
             if (closableWebBrowser == null) {
                 return;
             }
 
-            /*
             Control closableWebBrowserControl = closableWebBrowser as Control;
 
             if (closableWebBrowserControl == null) {
@@ -832,7 +834,7 @@ namespace FlashpointSecurePlayer {
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
             // don't disable keys on e.g. the address bar
-            if (ActiveControl == closableWebBrowser) {
+            if (ActiveControl != null && ActiveControl == closableWebBrowser) {
                 switch (keyData) {
                     case Keys.Back:
                     case Keys.Control | Keys.Left:
