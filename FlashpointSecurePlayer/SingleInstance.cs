@@ -28,6 +28,7 @@ namespace FlashpointSecurePlayer {
             };
 
             closableForm.BringToFront();
+
             // need this because dialogResult defaults to Cancel when
             // we want it to default to null
             bool dialogResultSet = true;

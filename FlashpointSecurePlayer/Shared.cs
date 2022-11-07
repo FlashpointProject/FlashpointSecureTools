@@ -1905,7 +1905,7 @@ namespace FlashpointSecurePlayer {
                 return value;
             }
 
-            if (valueString.Length <= MAX_PATH * 2 + FP_STARTUP_PATH.Length) {
+            if (valueString.Length <= MAX_PATH + MAX_PATH + FP_STARTUP_PATH.Length) {
                 // get the short path
                 string shortPathName = PathNames.Short[path];
 
@@ -1933,7 +1933,7 @@ namespace FlashpointSecurePlayer {
                 return value;
             }
 
-            if (valueString.Length <= MAX_PATH * 2 + FP_STARTUP_PATH.Length) {
+            if (valueString.Length <= MAX_PATH + MAX_PATH + FP_STARTUP_PATH.Length) {
                 string pathName = PathNames.Long[Application.StartupPath];
 
                 if (!String.IsNullOrEmpty(pathName)) {
