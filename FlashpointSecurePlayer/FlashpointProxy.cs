@@ -20,7 +20,10 @@ namespace FlashpointSecurePlayer {
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
         private struct INTERNET_PER_CONN_OPTION_LIST {
             public int dwSize;
+            
+            [MarshalAs(UnmanagedType.LPStr)]
             public string pszConnection;
+
             public int dwOptionCount;
             public int dwOptionError;
             public IntPtr pOptions;
