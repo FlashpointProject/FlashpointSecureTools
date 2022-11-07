@@ -432,10 +432,32 @@ namespace FlashpointSecurePlayer {
             uint cchBuffer
         );
 
-        public static readonly Task CompletedTask = Task.FromResult(false);
+        public enum MODIFICATIONS_REVERT_METHOD {
+            CRASH_RECOVERY,
+            REVERT_ALL,
+            DELETE_ALL
+        }
 
         public const string HTDOCS = "..\\Legacy\\htdocs";
         public static readonly string[] INDEX_EXTENSIONS = new string[2] { "html", "htm" };
+
+        // for best results, this should match
+        // the value of FILE_READ_LENGTH constant
+        // in the Flashpoint Router
+        private const int STREAM_READ_LENGTH = 8192;
+
+        private const string CONFIGURATION_FOLDER_NAME = "FlashpointSecurePlayerConfigs";
+        private const string CONFIGURATION_DOWNLOAD_NAME = "flashpointsecureplayerconfigs";
+
+        public const string OLD_CPU_SIMULATOR_PATH = "OldCPUSimulator\\OldCPUSimulator.exe";
+        public const string OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME_UPPER = "OLDCPUSIMULATOR.EXE";
+
+        public const string FP_STARTUP_PATH = nameof(FP_STARTUP_PATH);
+        public const string FP_URL = nameof(FP_URL);
+        public const string FP_ARGUMENTS = nameof(FP_ARGUMENTS);
+        public const string FP_HTDOCS_FILE = nameof(FP_HTDOCS_FILE);
+        public const string FP_HTDOCS_FILE_DIR = nameof(FP_HTDOCS_FILE_DIR);
+
         // there should be only one HTTP Client per application
         // (as of right now though this is exclusively used by DownloadsBefore class)
         private static readonly HttpClientHandler httpClientHandler = new HttpClientHandler {
@@ -444,29 +466,15 @@ namespace FlashpointSecurePlayer {
         };
 
         public static readonly HttpClient httpClient = new HttpClient(httpClientHandler);
-        // for best results, this should match
-        // the value of FILE_READ_LENGTH constant
-        // in the Flashpoint Router
-        private const int STREAM_READ_LENGTH = 8192;
+
         // no parallel downloads
         // if parallel downloads are ever supported, the max value should
         // be changed to the maximum number of parallel downloads allowed
         // (preferably, no more than eight at a time)
         private static SemaphoreSlim downloadSemaphoreSlim = new SemaphoreSlim(1, 1);
 
-        private const string CONFIGURATION_FOLDER_NAME = "FlashpointSecurePlayerConfigs";
-        private const string CONFIGURATION_DOWNLOAD_NAME = "flashpointsecureplayerconfigs";
         private static FlashpointSecurePlayerSection flashpointSecurePlayerSection = null;
         private static FlashpointSecurePlayerSection activeFlashpointSecurePlayerSection = null;
-
-        public const string FP_STARTUP_PATH = nameof(FP_STARTUP_PATH);
-        public const string FP_URL = nameof(FP_URL);
-        public const string FP_ARGUMENTS = nameof(FP_ARGUMENTS);
-        public const string FP_HTDOCS_FILE = nameof(FP_HTDOCS_FILE);
-        public const string FP_HTDOCS_FILE_DIR = nameof(FP_HTDOCS_FILE_DIR);
-
-        public const string OLD_CPU_SIMULATOR_PATH = "OldCPUSimulator\\OldCPUSimulator.exe";
-        public const string OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME_UPPER = "OLDCPUSIMULATOR.EXE";
 
         public abstract class TemplatesConfigurationElementCollection : ConfigurationElementCollection {
             public override ConfigurationElementCollectionType CollectionType {
@@ -1471,12 +1479,6 @@ namespace FlashpointSecurePlayer {
 
             public static PathNamesShort Short { get; } = new PathNamesShort();
             public static PathNamesLong Long { get; } = new PathNamesLong();
-        }
-
-        public enum MODIFICATIONS_REVERT_METHOD {
-            CRASH_RECOVERY,
-            REVERT_ALL,
-            DELETE_ALL
         }
 
         public static bool TestLaunchedAsAdministratorUser() {
