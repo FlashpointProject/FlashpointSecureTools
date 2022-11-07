@@ -11,7 +11,7 @@ namespace FlashpointSecurePlayer {
     // https://blogs.msdn.microsoft.com/jpsanders/2011/04/26/how-to-set-the-proxy-for-the-webbrowser-control-in-net/
     public static class FlashpointProxy {
         [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Ansi)]
-        private static extern IntPtr InternetOpen(string lpszAgent, int dwAccessType, string lpszProxy, string lpszProxyBypass, int dwFlags);
+        private static extern IntPtr InternetOpen(string lpszAgent, int dwAccessType, IntPtr lpszProxy, IntPtr lpszProxyBypass, int dwFlags);
 
         [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Ansi)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -128,7 +128,7 @@ namespace FlashpointSecurePlayer {
         
         public static void Enable(string proxyServer) {
             IntPtr internetHandle = IntPtr.Zero;
-            internetHandle = InternetOpen(AGENT, INTERNET_OPEN_TYPE_DIRECT, null, null, 0);
+            internetHandle = InternetOpen(AGENT, INTERNET_OPEN_TYPE_DIRECT, IntPtr.Zero, IntPtr.Zero, 0);
 
             if (internetHandle == IntPtr.Zero) {
                 throw new FlashpointProxyException("Could not open the Internet Handle.");
@@ -196,7 +196,7 @@ namespace FlashpointSecurePlayer {
         
         public static void Disable() {
             IntPtr internetHandle = IntPtr.Zero;
-            internetHandle = InternetOpen(AGENT, INTERNET_OPEN_TYPE_DIRECT, null, null, 0);
+            internetHandle = InternetOpen(AGENT, INTERNET_OPEN_TYPE_DIRECT, IntPtr.Zero, IntPtr.Zero, 0);
 
             if (internetHandle == IntPtr.Zero) {
                 throw new FlashpointProxyException("Could not open the Internet Handle.");
