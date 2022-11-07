@@ -20,10 +20,7 @@ namespace FlashpointSecurePlayer {
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
         private struct INTERNET_PER_CONN_OPTION_LIST {
             public int dwSize;
-            
-            [MarshalAs(UnmanagedType.LPStr)]
-            public string pszConnection;
-
+            public IntPtr pszConnection;
             public int dwOptionCount;
             public int dwOptionError;
             public IntPtr pOptions;
@@ -115,7 +112,7 @@ namespace FlashpointSecurePlayer {
             internetPerConnOptionList.dwSize = internetPerConnOptionListSize;
 
             // NULL == LAN, otherwise connectoid name
-            internetPerConnOptionList.pszConnection = null;
+            internetPerConnOptionList.pszConnection = IntPtr.Zero;
 
             // set two options
             internetPerConnOptionList.dwOptionCount = internetPerConnOptionListOptions.Length;
@@ -168,7 +165,7 @@ namespace FlashpointSecurePlayer {
             internetPerConnOptionList.dwSize = Marshal.SizeOf(internetPerConnOptionList);
 
             // NULL == LAN, otherwise connectoid name
-            internetPerConnOptionList.pszConnection = null;
+            internetPerConnOptionList.pszConnection = IntPtr.Zero;
 
             // set two options
             internetPerConnOptionList.dwOptionCount = internetPerConnOptionListOptions.Length;
