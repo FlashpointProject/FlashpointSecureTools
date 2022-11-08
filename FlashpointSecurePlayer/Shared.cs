@@ -439,7 +439,7 @@ namespace FlashpointSecurePlayer {
         }
 
         public const string HTDOCS = "..\\Legacy\\htdocs";
-        public static readonly string[] INDEX_EXTENSIONS = new string[2] { "html", "htm" };
+        public static readonly string[] INDEX_EXTENSIONS = { "html", "htm" };
 
         // for best results, this should match
         // the value of FILE_READ_LENGTH constant
@@ -449,11 +449,7 @@ namespace FlashpointSecurePlayer {
         private const string CONFIGURATION_FOLDER_NAME = "FlashpointSecurePlayerConfigs";
         private const string CONFIGURATION_DOWNLOAD_NAME = "flashpointsecureplayerconfigs";
 
-        public static char[] WHITESPACE {
-            get {
-                return new char[] { ' ', '\t', '\n', '\v', '\"' };
-            }
-        }
+        public static readonly char[] WHITESPACE = { ' ', '\t', '\n', '\v', '\"' };
 
         public const string OLD_CPU_SIMULATOR_PATH = "OldCPUSimulator\\OldCPUSimulator.exe";
         public const string OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME = "OLDCPUSIMULATOR.EXE";
