@@ -141,11 +141,22 @@ namespace FlashpointSecurePlayer {
                 }
 
                 if (!UseFlashActiveXControl) {
-                    if (context.SequenceEqual(FLASH_CONTEXT) || Path.GetExtension(flashpointURI.LocalPath).Equals(FLASH_EXTENSION, StringComparison.InvariantCultureIgnoreCase)) {
+                    if (context.SequenceEqual(FLASH_CONTEXT)) {
                         if (dwAction == URLACTION_ACTIVEX_TREATASUNTRUSTED) { // don't trust Flash ActiveX Controls
                             pPolicy = URLPOLICY_ALLOW;
                         }
                         return S_OK;
+                    }
+
+                    string extension = Path.GetExtension(flashpointURI.LocalPath);
+
+                    if (extension != null) {
+                        if (extension.Equals(FLASH_EXTENSION, StringComparison.InvariantCultureIgnoreCase)) {
+                            if (dwAction == URLACTION_ACTIVEX_TREATASUNTRUSTED) {
+                                pPolicy = URLPOLICY_ALLOW;
+                            }
+                            return S_OK;
+                        }
                     }
                 }
             } catch {

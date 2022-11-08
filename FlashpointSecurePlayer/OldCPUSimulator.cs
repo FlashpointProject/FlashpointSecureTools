@@ -40,8 +40,10 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
-            if (parentProcessFileName.Equals(OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME, StringComparison.InvariantCultureIgnoreCase)) {
-                return true;
+            if (parentProcessFileName != null) {
+                if (parentProcessFileName.Equals(OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME, StringComparison.InvariantCultureIgnoreCase)) {
+                    return true;
+                }
             }
             return false;
         }

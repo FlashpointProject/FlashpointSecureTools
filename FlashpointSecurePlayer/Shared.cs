@@ -1630,8 +1630,10 @@ namespace FlashpointSecurePlayer {
             name = GetValidEXEConfigurationName(name);
 
             // caching...
-            if (name.Equals(EXEConfigurationName, StringComparison.InvariantCultureIgnoreCase)) {
-                return EXEConfiguration;
+            if (name != null) {
+                if (name.Equals(EXEConfigurationName, StringComparison.InvariantCultureIgnoreCase)) {
+                    return EXEConfiguration;
+                }
             }
 
             // now goal is to set EXEConfiguration...
@@ -1713,8 +1715,12 @@ namespace FlashpointSecurePlayer {
 
                 exeConfiguration = GetActiveEXEConfiguration();
             } else {
-                if (GetValidEXEConfigurationName(exeConfigurationName).Equals(EXEConfigurationName, StringComparison.InvariantCultureIgnoreCase) && Shared.flashpointSecurePlayerSection != null) {
-                    return Shared.flashpointSecurePlayerSection;
+                string name = GetValidEXEConfigurationName(exeConfigurationName);
+
+                if (name != null && Shared.flashpointSecurePlayerSection != null) {
+                    if (name.Equals(EXEConfigurationName, StringComparison.InvariantCultureIgnoreCase)) {
+                        return Shared.flashpointSecurePlayerSection;
+                    }
                 }
 
                 exeConfiguration = GetEXEConfiguration(create, exeConfigurationName);
@@ -1910,6 +1916,10 @@ namespace FlashpointSecurePlayer {
                 return value;
             }
 
+            if (valueString == null) {
+                return value;
+            }
+
             if (String.IsNullOrEmpty(path)) {
                 return value;
             }
@@ -1939,6 +1949,10 @@ namespace FlashpointSecurePlayer {
         public static object ReplaceStartupPathEnvironmentVariable(object value) {
             // since it's a value we'll just check it exists
             if (!(value is string valueString)) {
+                return value;
+            }
+
+            if (valueString == null) {
                 return value;
             }
 

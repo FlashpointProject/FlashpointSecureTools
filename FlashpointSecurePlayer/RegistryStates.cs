@@ -269,6 +269,10 @@ namespace FlashpointSecurePlayer {
         }
 
         private RegistryKey OpenBaseKeyInRegistryView(string keyName, RegistryView registryView) {
+            if (keyName == null) {
+                return null;
+            }
+
             keyName += "\\";
             RegistryHive? registryHive = null;
 
@@ -1360,7 +1364,9 @@ namespace FlashpointSecurePlayer {
         }
 
         private void GotValue(RegistryTraceData registryTraceData) {
-            if (registryTraceData.ProcessID == Process.GetCurrentProcess().Id || registryTraceData.ProcessID == -1) {
+            if (registryTraceData.ValueName != null
+                && (registryTraceData.ProcessID == Process.GetCurrentProcess().Id
+                || registryTraceData.ProcessID == -1)) {
                 if (ImportPaused) {
                     if (registryTraceData.ValueName.Equals(IMPORT_RESUME, StringComparison.InvariantCultureIgnoreCase)) {
                         ImportPaused = false;

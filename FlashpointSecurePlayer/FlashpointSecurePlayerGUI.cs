@@ -119,7 +119,8 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
-            if (!parentProcessFileName.Equals(FLASHPOINT_LAUNCHER_PARENT_PROCESS_FILE_NAME, StringComparison.InvariantCultureIgnoreCase)) {
+            if (parentProcessFileName == null
+                || !parentProcessFileName.Equals(FLASHPOINT_LAUNCHER_PARENT_PROCESS_FILE_NAME, StringComparison.InvariantCultureIgnoreCase)) {
                 text += " " + Properties.Resources.UseFlashpointLauncher;
                 Process[] processesByName;
 
@@ -245,8 +246,10 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
-            if (parentProcessFileName.Equals(OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME, StringComparison.InvariantCultureIgnoreCase)) {
-                return;
+            if (parentProcessFileName != null) {
+                if (parentProcessFileName.Equals(OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME, StringComparison.InvariantCultureIgnoreCase)) {
+                    return;
+                }
             }
 
             AskLaunch(Properties.Resources.WithOldCPUSimulator, Properties.Resources.OldCPUSimulatorSlow);
