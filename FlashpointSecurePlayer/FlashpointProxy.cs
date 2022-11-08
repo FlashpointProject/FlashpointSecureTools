@@ -17,7 +17,7 @@ namespace FlashpointSecurePlayer {
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool InternetCloseHandle(IntPtr hInternet);
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+        [StructLayout(LayoutKind.Sequential)]
         private struct INTERNET_PER_CONN_OPTION_LIST {
             public int dwSize;
             public IntPtr pszConnection;

@@ -12,12 +12,12 @@ namespace FlashpointSecurePlayer {
     public static class ProcessSync {
         [StructLayout(LayoutKind.Sequential)]
         private struct IOCounters {
-            public UInt64 ReadOperationCount;
-            public UInt64 WriteOperationCount;
-            public UInt64 OtherOperationCount;
-            public UInt64 ReadTransferCount;
-            public UInt64 WriteTransferCount;
-            public UInt64 OtherTransferCount;
+            public ulong ReadOperationCount;
+            public ulong WriteOperationCount;
+            public ulong OtherOperationCount;
+            public ulong ReadTransferCount;
+            public ulong WriteTransferCount;
+            public ulong OtherTransferCount;
         }
 
         private enum JOBOBJECTINFOCLASS {
@@ -57,15 +57,15 @@ namespace FlashpointSecurePlayer {
 
         [StructLayout(LayoutKind.Sequential)]
         private struct JOBOBJECT_BASIC_LIMIT_INFORMATION {
-            public Int64 PerProcessUserTimeLimit;
-            public Int64 PerJobUserTimeLimit;
+            public long PerProcessUserTimeLimit;
+            public long PerJobUserTimeLimit;
             public JOB_OBJECT_LIMIT LimitFlags;
             public UIntPtr MinimumWorkingSetSize;
             public UIntPtr MaximumWorkingSetSize;
-            public UInt32 ActiveProcessLimit;
-            public Int64 Affinity;
-            public UInt32 PriorityClass;
-            public UInt32 SchedulingClass;
+            public uint ActiveProcessLimit;
+            public long Affinity;
+            public uint PriorityClass;
+            public uint SchedulingClass;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -78,13 +78,20 @@ namespace FlashpointSecurePlayer {
             public UIntPtr PeakJobMemoryUsed;
         }
 
-        [DllImport("KERNEL32.DLL", CharSet = CharSet.Unicode)]
-        private static extern IntPtr CreateJobObject(IntPtr jobAttributesPointer, string name);
+        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
+        private static extern IntPtr CreateJobObject(
+            IntPtr jobAttributesPointer,
 
-        [DllImport("KERNEL32.DLL")]
+            [MarshalAs(UnmanagedType.LPTStr)]
+            string name
+        );
+
+        [DllImport("KERNEL32.DLL", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool SetInformationJobObject(IntPtr job, JOBOBJECTINFOCLASS jobObjectInformationClass, IntPtr jobObjectInfoPointer, uint jobObjectInfoLengthSize);
 
         [DllImport("KERNEL32.DLL", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool AssignProcessToJobObject(IntPtr job, IntPtr process);
 
         private static IntPtr jobHandle = IntPtr.Zero;

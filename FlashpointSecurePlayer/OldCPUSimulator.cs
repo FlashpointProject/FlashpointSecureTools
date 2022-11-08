@@ -151,7 +151,7 @@ namespace FlashpointSecurePlayer {
                 // but still launch the executable from a path
                 // potentially relative to this executable
                 try {
-                    string[] argv = CommandLineToArgv(commandLineExpanded, out int argc);
+                    string[] argv = GetCommandLineToArgv(commandLineExpanded, out int argc);
 
                     if (argc <= 0) {
                         throw new IndexOutOfRangeException("The command line argument is out of range.");

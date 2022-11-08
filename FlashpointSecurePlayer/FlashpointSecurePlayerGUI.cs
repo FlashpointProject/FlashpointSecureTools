@@ -503,7 +503,7 @@ namespace FlashpointSecurePlayer {
                         case ModeElement.NAME.SOFTWARE:
                         try {
                             string commandLineExpanded = Environment.ExpandEnvironmentVariables(modeElement.CommandLine);
-                            string[] argv = CommandLineToArgv(commandLineExpanded, out int argc);
+                            string[] argv = GetCommandLineToArgv(commandLineExpanded, out int argc);
 
                             if (argc <= 0) {
                                 throw new IndexOutOfRangeException("The command line argument is out of range.");

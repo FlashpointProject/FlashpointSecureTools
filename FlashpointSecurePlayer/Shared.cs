@@ -247,7 +247,7 @@ namespace FlashpointSecurePlayer {
         public static extern IntPtr LocalFree(IntPtr hMem);
 
         [DllImport("SHELL32.DLL", SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern IntPtr CommandLineToArgvW(
+        public static extern IntPtr CommandLineToArgv(
             [MarshalAs(UnmanagedType.LPWStr)]
             string lpCmdLine,
 
@@ -330,11 +330,11 @@ namespace FlashpointSecurePlayer {
         [DllImport("KERNEL32.DLL", SetLastError = true)]
         public static extern IntPtr CreateToolhelp32Snapshot(TH32CS dwFlags, uint th32ProcessID);
 
-        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("KERNEL32.DLL", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool Process32First(IntPtr hSnapshot, ref PROCESSENTRY32 lppe);
 
-        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("KERNEL32.DLL", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool Process32Next(IntPtr hSnapshot, ref PROCESSENTRY32 lppe);
 
@@ -2055,11 +2055,10 @@ namespace FlashpointSecurePlayer {
             return argumentSlice;
         }
 
-        public static string[] CommandLineToArgv(string commandLine, out int argc) {
+        public static string[] GetCommandLineToArgv(string commandLine, out int argc) {
             argc = 0;
             string[] argv;
-            IntPtr argvPointer = IntPtr.Zero;
-            argvPointer = CommandLineToArgvW(commandLine, out argc);
+            IntPtr argvPointer = CommandLineToArgv(commandLine, out argc);
 
             if (argvPointer == IntPtr.Zero) {
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());

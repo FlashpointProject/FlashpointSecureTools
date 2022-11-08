@@ -86,7 +86,7 @@ namespace FlashpointSecurePlayer {
             string executable = singleInstanceElement.Executable;
 
             if (String.IsNullOrEmpty(executable)) {
-                string[] argv = CommandLineToArgv(Environment.ExpandEnvironmentVariables(modeElement.CommandLine), out int argc);
+                string[] argv = GetCommandLineToArgv(Environment.ExpandEnvironmentVariables(modeElement.CommandLine), out int argc);
 
                 if (argc > 0) {
                     executable = argv[0];
