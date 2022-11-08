@@ -183,16 +183,16 @@ namespace FlashpointSecurePlayer {
 
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         private class MessageFilter : IMessageFilter {
-            private readonly EventHandler Back;
-            private readonly EventHandler Forward;
+            private readonly EventHandler back;
+            private readonly EventHandler forward;
 
             public MessageFilter(EventHandler back, EventHandler forward) {
-                Back = back;
-                Forward = forward;
+                this.back = back;
+                this.forward = forward;
             }
 
             protected virtual void OnBack(EventArgs e) {
-                EventHandler eventHandler = Back;
+                EventHandler eventHandler = back;
 
                 if (eventHandler == null) {
                     return;
@@ -202,7 +202,7 @@ namespace FlashpointSecurePlayer {
             }
 
             protected virtual void OnForward(EventArgs e) {
-                EventHandler eventHandler = Forward;
+                EventHandler eventHandler = forward;
 
                 if (eventHandler == null) {
                     return;
@@ -241,21 +241,21 @@ namespace FlashpointSecurePlayer {
         }
 
         private class WebBrowserModeTitle {
-            private readonly EventHandler<TitleChangedEventArgs> TitleChanged;
+            private readonly EventHandler<TitleChangedEventArgs> titleChanged;
 
             private readonly string applicationTitle = "Flashpoint Secure Player";
             private string documentTitle = null;
             private int progress = -1;
 
             public WebBrowserModeTitle(EventHandler<TitleChangedEventArgs> titleChanged) {
-                TitleChanged = titleChanged;
+                this.titleChanged = titleChanged;
                 applicationTitle += " " + typeof(WebBrowserModeTitle).Assembly.GetName().Version;
 
                 Show();
             }
 
             protected virtual void OnTitleChanged(TitleChangedEventArgs e) {
-                EventHandler<TitleChangedEventArgs> eventHandler = TitleChanged;
+                EventHandler<TitleChangedEventArgs> eventHandler = titleChanged;
 
                 if (eventHandler == null) {
                     return;

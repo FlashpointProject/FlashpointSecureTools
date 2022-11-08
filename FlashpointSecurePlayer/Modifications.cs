@@ -11,12 +11,12 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 namespace FlashpointSecurePlayer {
     // virtual class for modifications
     public abstract class Modifications {
-        private readonly EventHandler ImportStart;
-        private readonly EventHandler ImportStop;
+        private readonly EventHandler importStart;
+        private readonly EventHandler importStop;
 
         public Modifications(EventHandler importStart, EventHandler importStop) {
-            ImportStart = importStart;
-            ImportStop = importStop;
+            this.importStart = importStart;
+            this.importStop = importStop;
         }
 
         ~Modifications() {
@@ -28,7 +28,7 @@ namespace FlashpointSecurePlayer {
         }
 
         protected virtual void OnImportStart(EventArgs e) {
-            EventHandler eventHandler = ImportStart;
+            EventHandler eventHandler = importStart;
 
             if (eventHandler == null) {
                 return;
@@ -38,7 +38,7 @@ namespace FlashpointSecurePlayer {
         }
 
         protected virtual void OnImportStop(EventArgs e) {
-            EventHandler eventHandler = ImportStop;
+            EventHandler eventHandler = importStop;
 
             if (eventHandler == null) {
                 return;

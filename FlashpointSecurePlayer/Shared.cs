@@ -1438,7 +1438,7 @@ namespace FlashpointSecurePlayer {
 
         private static class PathNames {
             public class PathNamesShort {
-                private readonly IDictionary<string, string> pathNamesShort = new Dictionary<string, string>();
+                private readonly Dictionary<string, string> pathNamesShort = new Dictionary<string, string>();
 
                 public string this[string longPath] {
                     get {
