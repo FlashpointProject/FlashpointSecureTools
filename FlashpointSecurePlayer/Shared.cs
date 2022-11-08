@@ -449,6 +449,12 @@ namespace FlashpointSecurePlayer {
         private const string CONFIGURATION_FOLDER_NAME = "FlashpointSecurePlayerConfigs";
         private const string CONFIGURATION_DOWNLOAD_NAME = "flashpointsecureplayerconfigs";
 
+        public static char[] WHITESPACE {
+            get {
+                return new char[] { ' ', '\t', '\n', '\v', '\"' };
+            }
+        }
+
         public const string OLD_CPU_SIMULATOR_PATH = "OldCPUSimulator\\OldCPUSimulator.exe";
         public const string OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME = "OLDCPUSIMULATOR.EXE";
 
@@ -1998,7 +2004,7 @@ namespace FlashpointSecurePlayer {
 
         // https://web.archive.org/web/20190109172835/https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
         public static void GetValidArgument(ref string argument, bool force = false) {
-            if (force || argument == String.Empty || argument.IndexOfAny(new char[] { ' ', '\t', '\n', '\v', '\"' }) != -1) {
+            if (force || argument == String.Empty || argument.IndexOfAny(WHITESPACE) != -1) {
                 int backslashes = 0;
                 StringBuilder validArgument = new StringBuilder();
 

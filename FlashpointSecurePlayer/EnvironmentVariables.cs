@@ -181,17 +181,17 @@ namespace FlashpointSecurePlayer {
                         }
 
                         // now throw up a restart in Web Browser Mode for Compatibility Settings
-                        if (comparableName == __COMPAT_LAYER && modeElement.Name == ModeElement.NAME.WEB_BROWSER) {
+                        if (comparableName.Equals(__COMPAT_LAYER, StringComparison.InvariantCultureIgnoreCase) && modeElement.Name == ModeElement.NAME.WEB_BROWSER) {
                             values = new List<string>();
 
                             // the compatibility layers may contain more values
                             // but we're only concerned if it contains the values we want
                             if (compatibilityLayerValue != null) {
-                                compatibilityLayerValues = compatibilityLayerValue.Split(' ').ToList();
+                                compatibilityLayerValues = compatibilityLayerValue.Split(WHITESPACE).ToList();
                             }
 
                             if (value != null) {
-                                values = value.Split(' ').ToList();
+                                values = value.Split(WHITESPACE).ToList();
                             }
 
                             // we have to restart in this case in server mode
@@ -276,7 +276,7 @@ namespace FlashpointSecurePlayer {
                 // we get this right away here
                 // as opposed to after the variable has been potentially set like during activation
                 if (compatibilityLayerValue != null) {
-                    compatibilityLayerValues = compatibilityLayerValue.Split(' ').ToList();
+                    compatibilityLayerValues = compatibilityLayerValue.Split(WHITESPACE).ToList();
                 }
 
                 ProgressManager.CurrentGoal.Start(activeModificationsElement.EnvironmentVariables.Count);
@@ -305,7 +305,7 @@ namespace FlashpointSecurePlayer {
                             values = new List<string>();
 
                             if (value != null) {
-                                values = value.Split(' ').ToList();
+                                values = value.Split(WHITESPACE).ToList();
                             }
 
                             if (modificationsRevertMethod == MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
@@ -318,7 +318,7 @@ namespace FlashpointSecurePlayer {
                                 }
                             } else {
                                 // don't reset Compatibility Settings if we're restarting for Web Browser Mode
-                                if (comparableName != __COMPAT_LAYER || values.Except(compatibilityLayerValues, StringComparer.InvariantCultureIgnoreCase).Any() || modeElement.Name != ModeElement.NAME.WEB_BROWSER) {
+                                if (comparableName.Equals(__COMPAT_LAYER, StringComparison.InvariantCultureIgnoreCase) || values.Except(compatibilityLayerValues, StringComparer.InvariantCultureIgnoreCase).Any() || modeElement.Name != ModeElement.NAME.WEB_BROWSER) {
                                     try {
                                         Environment.SetEnvironmentVariable(activeEnvironmentVariablesElement.Name, activeEnvironmentVariablesElement.Value, EnvironmentVariableTarget.Process);
                                     } catch (ArgumentException) {
