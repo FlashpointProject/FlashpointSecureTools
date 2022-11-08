@@ -726,7 +726,7 @@ namespace FlashpointSecurePlayer {
                             errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                         }
 
-                        if (ModificationsRevertMethod != MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
+                        if (ModificationsRevertMethod == MODIFICATIONS_REVERT_METHOD.CRASH_RECOVERY) {
                             ModificationsRevertMethod = MODIFICATIONS_REVERT_METHOD.REVERT_ALL;
                         }
 
@@ -1172,6 +1172,7 @@ namespace FlashpointSecurePlayer {
 
                 if (ModificationsRevertMethod == MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
                     if (MessageBox.Show(Properties.Resources.ForceDeleteAllWarning, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No) {
+                        ModificationsRevertMethod = MODIFICATIONS_REVERT_METHOD.CRASH_RECOVERY;
                         Application.Exit();
                         return;
                     }
