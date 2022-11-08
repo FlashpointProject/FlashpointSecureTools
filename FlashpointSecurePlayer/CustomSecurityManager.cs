@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
 using static FlashpointSecurePlayer.Shared;
 using static FlashpointSecurePlayer.Shared.Exceptions;

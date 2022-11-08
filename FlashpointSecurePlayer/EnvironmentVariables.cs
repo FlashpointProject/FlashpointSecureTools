@@ -5,7 +5,6 @@ using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
 using static FlashpointSecurePlayer.Shared;
 using static FlashpointSecurePlayer.Shared.Exceptions;

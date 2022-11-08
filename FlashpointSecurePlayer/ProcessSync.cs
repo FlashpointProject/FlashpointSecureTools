@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
+using static FlashpointSecurePlayer.Shared;
 using static FlashpointSecurePlayer.Shared.Exceptions;
 
 namespace FlashpointSecurePlayer {

@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
 
+using static FlashpointSecurePlayer.Shared;
+using static FlashpointSecurePlayer.Shared.Exceptions;
+
 namespace FlashpointSecurePlayer {
     [ToolStripItemDesignerAvailability(ToolStripItemDesignerAvailability.ToolStrip)]
     public partial class ToolStripSpringTextBox : System.Windows.Forms.ToolStripTextBox {
