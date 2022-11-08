@@ -402,6 +402,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
+            Fullscreen = false;
             closableWebBrowser.ShowSaveAsDialog();
         }
 
@@ -410,6 +411,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
+            Fullscreen = false;
             closableWebBrowser.ShowPrintDialog();
         }
 
@@ -434,6 +436,8 @@ namespace FlashpointSecurePlayer {
         }
 
         public WebBrowserMode BrowserNewWindow() {
+            Fullscreen = false;
+
             // we don't want this window to be the parent, breaks fullscreen and not otherwise useful
             WebBrowserMode webBrowserForm = new WebBrowserMode(UseFlashActiveXControl);
             webBrowserForm.Show(/*this*/);
