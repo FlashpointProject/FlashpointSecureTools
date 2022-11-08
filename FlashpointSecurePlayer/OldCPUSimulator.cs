@@ -29,18 +29,18 @@ namespace FlashpointSecurePlayer {
                 // Fail silently.
             }
 
-            string parentProcessFileNameUpper = null;
+            string parentProcessFileName = null;
 
             if (parentProcess != null) {
                 try {
-                    parentProcessFileNameUpper = Path.GetFileName(GetProcessName(parentProcess)).ToUpperInvariant();
+                    parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess));
                 } catch (Exception ex) {
                     LogExceptionToLauncher(ex);
                     throw new OldCPUSimulatorFailedException("Failed to get the parent process EXE name.");
                 }
             }
 
-            if (parentProcessFileNameUpper == OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME_UPPER) {
+            if (parentProcessFileName.Equals(OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME, StringComparison.InvariantCultureIgnoreCase)) {
                 return true;
             }
             return false;

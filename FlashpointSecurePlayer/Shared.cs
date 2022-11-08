@@ -450,7 +450,7 @@ namespace FlashpointSecurePlayer {
         private const string CONFIGURATION_DOWNLOAD_NAME = "flashpointsecureplayerconfigs";
 
         public const string OLD_CPU_SIMULATOR_PATH = "OldCPUSimulator\\OldCPUSimulator.exe";
-        public const string OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME_UPPER = "OLDCPUSIMULATOR.EXE";
+        public const string OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME = "OLDCPUSIMULATOR.EXE";
 
         public const string FP_STARTUP_PATH = nameof(FP_STARTUP_PATH);
         public const string FP_URL = nameof(FP_URL);
@@ -1628,7 +1628,7 @@ namespace FlashpointSecurePlayer {
             name = GetValidEXEConfigurationName(name);
 
             // caching...
-            if (name == EXEConfigurationName) {
+            if (name.Equals(EXEConfigurationName, StringComparison.InvariantCultureIgnoreCase)) {
                 return EXEConfiguration;
             }
 
@@ -1711,7 +1711,7 @@ namespace FlashpointSecurePlayer {
 
                 exeConfiguration = GetActiveEXEConfiguration();
             } else {
-                if (GetValidEXEConfigurationName(exeConfigurationName) == EXEConfigurationName && Shared.flashpointSecurePlayerSection != null) {
+                if (GetValidEXEConfigurationName(exeConfigurationName).Equals(EXEConfigurationName, StringComparison.InvariantCultureIgnoreCase) && Shared.flashpointSecurePlayerSection != null) {
                     return Shared.flashpointSecurePlayerSection;
                 }
 
@@ -1918,7 +1918,7 @@ namespace FlashpointSecurePlayer {
 
                 if (!String.IsNullOrEmpty(shortPathName)) {
                     // if the value is a short value...
-                    if (valueString.ToUpperInvariant().StartsWith(shortPathName.ToString().ToUpperInvariant())) {
+                    if (valueString.StartsWith(shortPathName.ToString(), StringComparison.InvariantCultureIgnoreCase)) {
                         // get the long path
                         string longPathName = PathNames.Long[path];
 
@@ -1944,7 +1944,7 @@ namespace FlashpointSecurePlayer {
                 string pathName = PathNames.Long[Application.StartupPath];
 
                 if (!String.IsNullOrEmpty(pathName)) {
-                    if (valueString.ToUpperInvariant().StartsWith(RemoveTrailingSlash(pathName.ToString()).ToUpperInvariant())) {
+                    if (valueString.StartsWith(RemoveTrailingSlash(pathName.ToString()), StringComparison.InvariantCultureIgnoreCase)) {
                         valueString = "%" + FP_STARTUP_PATH + "%\\" + RemoveValueStringSlash(valueString.Substring(pathName.Length));
                     }
                 }

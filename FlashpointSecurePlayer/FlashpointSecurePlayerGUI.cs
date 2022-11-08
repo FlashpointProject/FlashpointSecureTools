@@ -23,7 +23,7 @@ namespace FlashpointSecurePlayer {
         private const string APPLICATION_MUTEX_NAME = "Flashpoint Secure Player";
         private const string MODE_MUTEX_NAME = "Flashpoint Secure Player Mode";
         private const string MODIFICATIONS_MUTEX_NAME = "Flashpoint Secure Player Modifications";
-        private const string FLASHPOINT_LAUNCHER_PARENT_PROCESS_FILE_NAME_UPPER = "CMD.EXE";
+        private const string FLASHPOINT_LAUNCHER_PARENT_PROCESS_FILE_NAME = "CMD.EXE";
         private const string FLASHPOINT_LAUNCHER_PROCESS_NAME = "FLASHPOINT";
 
         private Mutex applicationMutex = null;
@@ -109,17 +109,17 @@ namespace FlashpointSecurePlayer {
                 // Fail silently.
             }
 
-            string parentProcessFileNameUpper = null;
+            string parentProcessFileName = null;
 
             if (parentProcess != null) {
                 try {
-                    parentProcessFileNameUpper = Path.GetFileName(GetProcessName(parentProcess)).ToUpperInvariant();
+                    parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess));
                 } catch {
                     // Fail silently.
                 }
             }
 
-            if (parentProcessFileNameUpper != FLASHPOINT_LAUNCHER_PARENT_PROCESS_FILE_NAME_UPPER) {
+            if (!parentProcessFileName.Equals(FLASHPOINT_LAUNCHER_PARENT_PROCESS_FILE_NAME, StringComparison.InvariantCultureIgnoreCase)) {
                 text += " " + Properties.Resources.UseFlashpointLauncher;
                 Process[] processesByName;
 
@@ -231,11 +231,11 @@ namespace FlashpointSecurePlayer {
                 // Fail silently.
             }
 
-            string parentProcessFileNameUpper = null;
+            string parentProcessFileName = null;
 
             if (parentProcess != null) {
                 try {
-                    parentProcessFileNameUpper = Path.GetFileName(GetProcessName(parentProcess)).ToUpperInvariant();
+                    parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess));
                 } catch (Exception ex) {
                     LogExceptionToLauncher(ex);
                     ProgressManager.ShowError();
@@ -245,7 +245,7 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
-            if (parentProcessFileNameUpper == OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME_UPPER) {
+            if (parentProcessFileName.Equals(OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME, StringComparison.InvariantCultureIgnoreCase)) {
                 return;
             }
 

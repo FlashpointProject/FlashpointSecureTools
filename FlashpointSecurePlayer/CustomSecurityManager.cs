@@ -14,7 +14,7 @@ using static FlashpointSecurePlayer.InternetInterfaces;
 namespace FlashpointSecurePlayer {
     public class CustomSecurityManager : InternetInterfaces.IServiceProvider, InternetInterfaces.IInternetSecurityManager {
         private readonly byte[] FLASH_CONTEXT = new byte[16] { 110, 219, 124, 210, 109, 174, 207, 17, 150, 184, 68, 69, 83, 84, 0, 0 };
-        private const string FLASH_EXTENSION_UPPER = ".SWF";
+        private const string FLASH_EXTENSION = ".SWF";
 
         private bool UseFlashActiveXControl { get; set; } = false;
 
@@ -141,7 +141,7 @@ namespace FlashpointSecurePlayer {
                 }
 
                 if (!UseFlashActiveXControl) {
-                    if (context.SequenceEqual(FLASH_CONTEXT) || Path.GetExtension(flashpointURI.LocalPath).ToUpperInvariant() == FLASH_EXTENSION_UPPER) {
+                    if (context.SequenceEqual(FLASH_CONTEXT) || Path.GetExtension(flashpointURI.LocalPath).Equals(FLASH_EXTENSION, StringComparison.InvariantCultureIgnoreCase)) {
                         if (dwAction == URLACTION_ACTIVEX_TREATASUNTRUSTED) { // don't trust Flash ActiveX Controls
                             pPolicy = URLPOLICY_ALLOW;
                         }
