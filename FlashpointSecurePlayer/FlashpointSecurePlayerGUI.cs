@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -324,7 +325,18 @@ namespace FlashpointSecurePlayer {
                             throw new ActiveXImportFailedException("The ActiveX Import failed because the DLL is not an ActiveX Control.");
                         }
 
-                        GetBinaryType(TemplateName, out BINARY_TYPE binaryType);
+                        BINARY_TYPE binaryType = BINARY_TYPE.SCS_64BIT_BINARY;
+
+                        try {
+                            if (!GetBinaryType(TemplateName, out binaryType)) {
+                                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                                return;
+                            }
+                        } catch (Win32Exception ex) {
+                            LogExceptionToLauncher(ex);
+                            errorDelegate(Properties.Resources.GameNotActiveXControl);
+                            throw new ActiveXImportFailedException("The ActiveX Import failed because getting the Binary Type failed.");
+                        }
 
                         // first, we install the control without a registry state running
                         // this is so we can be sure we can uninstall the control

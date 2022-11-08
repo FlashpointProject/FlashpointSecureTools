@@ -11,7 +11,7 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 namespace FlashpointSecurePlayer {
     public class ActiveXControl {
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private delegate uint DllRegisterServerDelegate();
+        private delegate int DllRegisterServerDelegate();
 
         [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern IntPtr LoadLibrary(
@@ -36,24 +36,44 @@ namespace FlashpointSecurePlayer {
         private readonly DllRegisterServerDelegate DllUnregisterServer;
 
         public ActiveXControl(string libFileName) {
-            moduleHandle = LoadLibrary(libFileName);
+            try {
+                moduleHandle = LoadLibrary(libFileName);
 
-            if (moduleHandle == IntPtr.Zero) {
+                if (moduleHandle == IntPtr.Zero) {
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                    return;
+                }
+            } catch (Win32Exception ex) {
+                LogExceptionToLauncher(ex);
                 throw new DllNotFoundException("The library \"" + libFileName + "\" could not be found.");
             }
 
             IntPtr dllRegisterServerProcAddress = IntPtr.Zero;
-            dllRegisterServerProcAddress = GetProcAddress(moduleHandle, "DllRegisterServer");
 
-            if (dllRegisterServerProcAddress == IntPtr.Zero) {
+            try {
+                dllRegisterServerProcAddress = GetProcAddress(moduleHandle, "DllRegisterServer");
+
+                if (dllRegisterServerProcAddress == IntPtr.Zero) {
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                    return;
+                }
+            } catch (Win32Exception ex) {
+                LogExceptionToLauncher(ex);
                 throw new InvalidActiveXControlException("The library does not have a DllRegisterServer export.");
             }
 
             IntPtr dllUnregisterServerProcAddress = IntPtr.Zero;
-            dllUnregisterServerProcAddress = GetProcAddress(moduleHandle, "DllUnregisterServer");
 
-            if (dllUnregisterServerProcAddress == IntPtr.Zero) {
-                throw new InvalidActiveXControlException("The library does not have a DllUnregisterServer export.");
+            try {
+                dllUnregisterServerProcAddress = GetProcAddress(moduleHandle, "DllUnregisterServer");
+
+                if (dllUnregisterServerProcAddress == IntPtr.Zero) {
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                    return;
+                }
+            } catch (Win32Exception ex) {
+                LogExceptionToLauncher(ex);
+                throw new InvalidActiveXControlException("The library does not have a DllRegisterServer export.");
             }
 
             DllRegisterServer = Marshal.GetDelegateForFunctionPointer(dllRegisterServerProcAddress, typeof(DllRegisterServerDelegate)) as DllRegisterServerDelegate;
@@ -68,10 +88,10 @@ namespace FlashpointSecurePlayer {
         }
 
         private void RegisterServer(DllRegisterServerDelegate DllRegisterServer) {
-            uint errorCode = DllRegisterServer();
+            int err = DllRegisterServer();
 
-            if (errorCode != 0) {
-                throw new Win32Exception("Failed to register the DLL Server (" + errorCode + ").");
+            if (err != 0) {
+                Marshal.ThrowExceptionForHR(err);
             }
         }
 

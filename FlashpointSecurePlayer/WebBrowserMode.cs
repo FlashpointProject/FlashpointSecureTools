@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using System.Text;
 using System.Windows.Forms;
@@ -494,6 +495,18 @@ namespace FlashpointSecurePlayer {
                 MessageBox.Show(Properties.Resources.FailedCreateCustomSecurityManager, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Application.Exit();
                 return;
+            } catch (SEHException ex) {
+                LogExceptionToLauncher(ex);
+                ProgressManager.ShowError();
+                MessageBox.Show(Properties.Resources.FailedCreateCustomSecurityManager, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Application.Exit();
+                return;
+            } catch (ExternalException ex) {
+                LogExceptionToLauncher(ex);
+                ProgressManager.ShowError();
+                MessageBox.Show(Properties.Resources.FailedCreateCustomSecurityManager, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Application.Exit();
+                return;
             }
 
             if (closableWebBrowser.ActiveXInstance is SHDocVw.WebBrowser shDocVwWebBrowser) {
@@ -554,7 +567,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private object downloadCompletedLock = new object();
+        private readonly object downloadCompletedLock = new object();
         private bool downloadCompleted = false;
 
         private bool DownloadCompleted {

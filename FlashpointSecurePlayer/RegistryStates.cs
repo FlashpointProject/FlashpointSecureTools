@@ -56,8 +56,8 @@ namespace FlashpointSecurePlayer {
         private const int IMPORT_TIMEOUT = 60;
         private const string IMPORT_RESUME_UPPER = "FLASHPOINTSECUREPLAYERREGISTRYSTATEIMPORTRESUME";
         private const string IMPORT_PAUSE_UPPER = "FLASHPOINTSECUREPLAYERREGISTRYSTATEIMPORTPAUSE";
-        private object activationLock = new object();
-        private object deactivationLock = new object();
+        private readonly object activationLock = new object();
+        private readonly object deactivationLock = new object();
         private string fullPath = null;
         private EventWaitHandle resumeEventWaitHandle = new ManualResetEvent(false);
         private Dictionary<ulong, SortedList<DateTime, RegistryStateElement>> modificationsQueue = null;

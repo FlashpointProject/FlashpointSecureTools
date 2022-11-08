@@ -1851,16 +1851,23 @@ namespace FlashpointSecurePlayer {
             using (SafeFileHandle safeFileHandle = CreateFile(path, FileAccess.Read, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileFlagsAndAttributes.BackupSemantics, IntPtr.Zero)) {
                 if (safeFileHandle.IsInvalid) {
                     Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                    return false;
                 }
 
                 using (SafeFileHandle safeFileHandle2 = CreateFile(path2, FileAccess.Read, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileFlagsAndAttributes.BackupSemantics, IntPtr.Zero)) {
                     if (safeFileHandle2.IsInvalid) {
                         Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                        return false;
                     }
 
-                    if (!GetFileInformationByHandle(safeFileHandle, out BY_HANDLE_FILE_INFORMATION byHandleFileInformation)
-                        || !GetFileInformationByHandle(safeFileHandle2, out BY_HANDLE_FILE_INFORMATION byHandleFileInformation2)) {
-                        throw new IOException("Failed to Get File Information By Handle");
+                    if (!GetFileInformationByHandle(safeFileHandle, out BY_HANDLE_FILE_INFORMATION byHandleFileInformation)) {
+                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                        return false;
+                    }
+
+                    if (!GetFileInformationByHandle(safeFileHandle2, out BY_HANDLE_FILE_INFORMATION byHandleFileInformation2)) {
+                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                        return false;
                     }
 
                     if (byHandleFileInformation.VolumeSerialNumber == byHandleFileInformation2.VolumeSerialNumber && byHandleFileInformation.FileIndexHigh == byHandleFileInformation2.FileIndexHigh && byHandleFileInformation.FileIndexLow == byHandleFileInformation2.FileIndexLow) {
@@ -2062,6 +2069,7 @@ namespace FlashpointSecurePlayer {
 
             if (argvPointer == IntPtr.Zero) {
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                return null;
             }
 
             try {
@@ -2306,6 +2314,7 @@ namespace FlashpointSecurePlayer {
 
             if (parentProcessSnapshotHandle == IntPtr.Zero) {
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                return null;
             }
 
             try {
@@ -2320,6 +2329,7 @@ namespace FlashpointSecurePlayer {
 
                     if (lastError != ERROR_SUCCESS && lastError != ERROR_NO_MORE_FILES) {
                         Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                        return null;
                     }
                 }
 
@@ -2341,6 +2351,7 @@ namespace FlashpointSecurePlayer {
 
                 if (lastError != ERROR_SUCCESS && lastError != ERROR_NO_MORE_FILES) {
                     Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                    return null;
                 }
             } finally {
                 if (!CloseHandle(parentProcessSnapshotHandle)) {
@@ -2369,6 +2380,7 @@ namespace FlashpointSecurePlayer {
 
             if (!queryResult) {
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                return null;
             }
             return processName.ToString();
         }

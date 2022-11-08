@@ -18,8 +18,8 @@ namespace FlashpointSecurePlayer {
     class EnvironmentVariables : Modifications {
         private const string __COMPAT_LAYER = nameof(__COMPAT_LAYER);
         private IList<string> UnmodifiableComparableNames { get; } = new List<string> { FP_STARTUP_PATH, FP_HTDOCS_FILE }.AsReadOnly();
-        private object activationLock = new object();
-        private object deactivationLock = new object();
+        private readonly object activationLock = new object();
+        private readonly object deactivationLock = new object();
 
         public EnvironmentVariables(EventHandler importStart, EventHandler importStop) : base(importStart, importStop) { }
 

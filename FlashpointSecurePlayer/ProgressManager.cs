@@ -32,8 +32,10 @@ namespace FlashpointSecurePlayer {
             private class Goal {
                 private int size = 1;
                 private int steps = 0;
+
                 private readonly object timeoutLock = new object();
                 private bool timeout = false;
+
                 private System.Timers.Timer timer;
 
                 public int Size {

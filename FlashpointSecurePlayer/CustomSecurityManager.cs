@@ -24,27 +24,24 @@ namespace FlashpointSecurePlayer {
         public CustomSecurityManager(System.Windows.Forms.WebBrowser webBrowser, bool useFlashActiveXControl = false) {
             InternetInterfaces.IServiceProvider webBrowserServiceProviderInterface = webBrowser.ActiveXInstance as InternetInterfaces.IServiceProvider;
             IntPtr profferServiceInterfacePointer = IntPtr.Zero;
+            
+            int err = webBrowserServiceProviderInterface.QueryService(ref InternetInterfaces.SID_SProfferService, ref InternetInterfaces.IID_IProfferService, out profferServiceInterfacePointer);
 
-            try {
-                int err = webBrowserServiceProviderInterface.QueryService(ref InternetInterfaces.SID_SProfferService, ref InternetInterfaces.IID_IProfferService, out profferServiceInterfacePointer);
-
-                if (err != S_OK) {
-                    throw new Win32Exception("Failed to query the Web Browser Service.");
-                }
+            if (err != S_OK) {
+                Marshal.ThrowExceptionForHR(err);
+                return;
+            }
                 
-                if (!(Marshal.GetObjectForIUnknown(profferServiceInterfacePointer) is InternetInterfaces.IProfferService profferServiceInterface)) {
-                    throw new Win32Exception("Failed to get the Proffer Service Interface.");
-                }
+            if (!(Marshal.GetObjectForIUnknown(profferServiceInterfacePointer) is InternetInterfaces.IProfferService profferServiceInterface)) {
+                Marshal.ThrowExceptionForHR(err);
+                return;
+            }
 
-                err = profferServiceInterface.ProfferService(ref InternetInterfaces.IID_IInternetSecurityManager, this, out int cookie);
+            err = profferServiceInterface.ProfferService(ref InternetInterfaces.IID_IInternetSecurityManager, this, out int cookie);
 
-                if (err != S_OK) {
-                    throw new Win32Exception("Failed to proffer the Internet Security Manager Service.");
-                }
-            } catch (SEHException) {
-                throw new Win32Exception("An SEH Exception was encountered while creating the Custom Security Manager.");
-            } catch (ExternalException) {
-                throw new Win32Exception("An External Exception was encountered while creating the Custom Security Manager.");
+            if (err != S_OK) {
+                Marshal.ThrowExceptionForHR(err);
+                return;
             }
 
             UseFlashActiveXControl = useFlashActiveXControl;
