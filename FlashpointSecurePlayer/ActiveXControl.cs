@@ -22,11 +22,11 @@ namespace FlashpointSecurePlayer {
         [DllImport("KERNEL32.DLL", SetLastError = true)]
         private static extern int FreeLibrary(IntPtr hLibModule);
 
-        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Ansi)]
         private static extern IntPtr GetProcAddress(
             IntPtr hModule,
             
-            [MarshalAs(UnmanagedType.LPTStr)]
+            [MarshalAs(UnmanagedType.LPStr)]
             string lpProcName
         );
 

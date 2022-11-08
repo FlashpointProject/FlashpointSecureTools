@@ -726,7 +726,9 @@ namespace FlashpointSecurePlayer {
                             errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                         }
 
-                        ModificationsRevertMethod = MODIFICATIONS_REVERT_METHOD.REVERT_ALL;
+                        if (ModificationsRevertMethod != MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
+                            ModificationsRevertMethod = MODIFICATIONS_REVERT_METHOD.REVERT_ALL;
+                        }
 
                         ProgressManager.CurrentGoal.Steps++;
 
