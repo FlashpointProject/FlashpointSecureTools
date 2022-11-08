@@ -308,16 +308,14 @@ namespace FlashpointSecurePlayer {
 
             UseFlashActiveXControl = useFlashActiveXControl;
 
-            if (closableWebBrowser == null) {
-                return;
+            if (closableWebBrowser != null) {
+                closableWebBrowser.CanGoBackChanged += closableWebBrowser_CanGoBackChanged;
+                closableWebBrowser.CanGoForwardChanged += closableWebBrowser_CanGoForwardChanged;
+                closableWebBrowser.DocumentTitleChanged += closableWebBrowser_DocumentTitleChanged;
+                closableWebBrowser.StatusTextChanged += closableWebBrowser_StatusTextChanged;
+                closableWebBrowser.WebBrowserClose += closableWebBrowser_WebBrowserClose;
+                closableWebBrowser.WebBrowserPaint += closableWebBrowser_WebBrowserPaint;
             }
-            
-            closableWebBrowser.CanGoBackChanged += closableWebBrowser_CanGoBackChanged;
-            closableWebBrowser.CanGoForwardChanged += closableWebBrowser_CanGoForwardChanged;
-            closableWebBrowser.DocumentTitleChanged += closableWebBrowser_DocumentTitleChanged;
-            closableWebBrowser.StatusTextChanged += closableWebBrowser_StatusTextChanged;
-            closableWebBrowser.WebBrowserClose += closableWebBrowser_WebBrowserClose;
-            closableWebBrowser.WebBrowserPaint += closableWebBrowser_WebBrowserPaint;
 
             statusBarStatusStrip.Renderer = new EndEllipsisTextRenderer();
 
@@ -341,21 +339,19 @@ namespace FlashpointSecurePlayer {
         }
 
         ~WebBrowserMode() {
-            if (closableWebBrowser == null) {
-                return;
+            if (closableWebBrowser != null) {
+                // the WebBrowserMode property must be nulled out, otherwise we
+                // end up closing the current form when it's already closed
+                // (browser reports being closed > we close the form and so on)
+                closableWebBrowser.CanGoBackChanged -= closableWebBrowser_CanGoBackChanged;
+                closableWebBrowser.CanGoForwardChanged -= closableWebBrowser_CanGoForwardChanged;
+                closableWebBrowser.DocumentTitleChanged -= closableWebBrowser_DocumentTitleChanged;
+                closableWebBrowser.StatusTextChanged -= closableWebBrowser_StatusTextChanged;
+                closableWebBrowser.WebBrowserClose -= closableWebBrowser_WebBrowserClose;
+                closableWebBrowser.WebBrowserPaint -= closableWebBrowser_WebBrowserPaint;
+                closableWebBrowser.Dispose();
+                closableWebBrowser = null;
             }
-
-            // the WebBrowserMode property must be nulled out, otherwise we
-            // end up closing the current form when it's already closed
-            // (browser reports being closed > we close the form and so on)
-            closableWebBrowser.CanGoBackChanged -= closableWebBrowser_CanGoBackChanged;
-            closableWebBrowser.CanGoForwardChanged -= closableWebBrowser_CanGoForwardChanged;
-            closableWebBrowser.DocumentTitleChanged -= closableWebBrowser_DocumentTitleChanged;
-            closableWebBrowser.StatusTextChanged -= closableWebBrowser_StatusTextChanged;
-            closableWebBrowser.WebBrowserClose -= closableWebBrowser_WebBrowserClose;
-            closableWebBrowser.WebBrowserPaint -= closableWebBrowser_WebBrowserPaint;
-            closableWebBrowser.Dispose();
-            closableWebBrowser = null;
 
             if (mouseHook != IntPtr.Zero) {
                 if (UnhookWindowsHookEx(mouseHook)) {
