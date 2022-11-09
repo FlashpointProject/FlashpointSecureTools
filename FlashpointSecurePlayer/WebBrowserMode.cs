@@ -412,7 +412,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            Fullscreen = false;
+            //Fullscreen = false;
             closableWebBrowser.ShowSaveAsDialog();
         }
 
@@ -421,7 +421,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            Fullscreen = false;
+            //Fullscreen = false;
             closableWebBrowser.ShowPrintDialog();
         }
 
@@ -446,7 +446,7 @@ namespace FlashpointSecurePlayer {
         }
 
         public WebBrowserMode BrowserNewWindow() {
-            Fullscreen = false;
+            //Fullscreen = false;
 
             // we don't want this window to be the parent, breaks fullscreen and not otherwise useful
             WebBrowserMode webBrowserForm = new WebBrowserMode(UseFlashActiveXControl);
@@ -567,13 +567,21 @@ namespace FlashpointSecurePlayer {
             Application.RemoveMessageFilter(messageFilter);
 
             if (Fullscreen) {
-                if (GetActiveWindow() == GetForegroundWindow()) {
-                    // we opened a window
-                    Fullscreen = false;
+                IntPtr activeWindow = GetActiveWindow();
+
+                // if the active window is zero, this process doesn't have an active window
+                // if this process has the foreground window, it'll be the active window
+                if (activeWindow != IntPtr.Zero && activeWindow == GetForegroundWindow()) {
+                    // this process opened a window
+                    if (IsWindowEnabled(Handle)) {
+                        // the new window isn't a dialog
+                        Fullscreen = false;
+                        return;
+                    }
                     return;
                 }
-                
-                // someone else opened a window
+
+                // another process opened a window
                 WindowState = FormWindowState.Minimized;
             }
         }
