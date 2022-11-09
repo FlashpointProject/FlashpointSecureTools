@@ -229,9 +229,6 @@ namespace FlashpointSecurePlayer {
         public static extern bool IsOS(OS dwOS);
 
         [DllImport("USER32.DLL")]
-        public static extern IntPtr GetActiveWindow();
-
-        [DllImport("USER32.DLL")]
         public static extern IntPtr GetForegroundWindow();
 
         public enum GW : uint {

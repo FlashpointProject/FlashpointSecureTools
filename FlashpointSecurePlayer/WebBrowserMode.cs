@@ -563,11 +563,9 @@ namespace FlashpointSecurePlayer {
             Application.RemoveMessageFilter(messageFilter);
 
             if (Fullscreen) {
-                IntPtr activeWindow = GetActiveWindow();
-
-                // if the active window is zero, this process doesn't have an active window
+                // we are the active window, because we are only now deactivating
                 // if this process has the foreground window, it'll be the active window
-                if (activeWindow != IntPtr.Zero && activeWindow == GetForegroundWindow()) {
+                if (Handle == GetForegroundWindow()) {
                     // this process opened a window
                     if (!CanFocus) {
                         // if there is a window above us in the z-order
