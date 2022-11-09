@@ -879,6 +879,7 @@ namespace FlashpointSecurePlayer {
                     case Keys.BrowserForward:
                     BrowserForward();
                     return true;
+                    case Keys.Escape:
                     case Keys.BrowserStop:
                     BrowserStop();
                     return true;
