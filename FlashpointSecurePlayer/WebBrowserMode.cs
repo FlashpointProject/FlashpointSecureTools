@@ -569,11 +569,20 @@ namespace FlashpointSecurePlayer {
                 // if this process has the foreground window, it'll be the active window
                 if (activeWindow != IntPtr.Zero && activeWindow == GetForegroundWindow()) {
                     // this process opened a window
-                    if (CanFocus) {
-                        // the new window isn't a dialog
-                        Fullscreen = false;
-                        return;
+                    if (!CanFocus) {
+                        // if there is a window above us in the z-order
+                        IntPtr previousWindow = GetWindow(Handle, GW.GW_HWNDPREV);
+
+                        if (previousWindow != IntPtr.Zero) {
+                            // if we own the window above us in the z-order
+                            if (Handle == GetWindow(previousWindow, GW.GW_OWNER)) {
+                                // the new window is a dialog
+                                return;
+                            }
+                        }
                     }
+
+                    Fullscreen = false;
                     return;
                 }
 
