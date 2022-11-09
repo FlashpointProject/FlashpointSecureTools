@@ -163,6 +163,143 @@ namespace FlashpointSecurePlayer {
 
         public const int INET_E_DEFAULT_ACTION = unchecked((int)0x800C0011);
 
+        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern uint GetShortPathName(
+            [MarshalAs(UnmanagedType.LPTStr)]
+            string lpszLongPath,
+
+            [MarshalAs(UnmanagedType.LPTStr)]
+            StringBuilder lpszShortPath,
+
+            uint cchBuffer
+        );
+
+        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern uint GetLongPathName(
+            [MarshalAs(UnmanagedType.LPTStr)]
+            string lpszShortPath,
+
+            [MarshalAs(UnmanagedType.LPTStr)]
+            StringBuilder lpszLongPath,
+
+            uint cchBuffer
+        );
+
+        public enum OS : uint {
+            OS_WINDOWS = 0,
+            OS_NT = 1,
+            OS_WIN95ORGREATER = 2,
+            OS_NT4ORGREATER = 3,
+            OS_WIN98ORGREATER = 5,
+            OS_WIN98_GOLD = 6,
+            OS_WIN2000ORGREATER = 7,
+            OS_WIN2000PRO = 8,
+            OS_WIN2000SERVER = 9,
+            OS_WIN2000ADVSERVER = 10,
+            OS_WIN2000DATACENTER = 11,
+            OS_WIN2000TERMINAL = 12,
+            OS_EMBEDDED = 13,
+            OS_TERMINALCLIENT = 14,
+            OS_TERMINALREMOTEADMIN = 15,
+            OS_WIN95_GOLD = 16,
+            OS_MEORGREATER = 17,
+            OS_XPORGREATER = 18,
+            OS_HOME = 19,
+            OS_PROFESSIONAL = 20,
+            OS_DATACENTER = 21,
+            OS_ADVSERVER = 22,
+            OS_SERVER = 23,
+            OS_TERMINALSERVER = 24,
+            OS_PERSONALTERMINALSERVER = 25,
+            OS_FASTUSERSWITCHING = 26,
+            OS_WELCOMELOGONUI = 27,
+            OS_DOMAINMEMBER = 28,
+            OS_ANYSERVER = 29,
+            OS_WOW6432 = 30,
+            OS_WEBSERVER = 31,
+            OS_SMALLBUSINESSSERVER = 32,
+            OS_TABLETPC = 33,
+            OS_SERVERADMINUI = 34,
+            OS_MEDIACENTER = 35,
+            OS_APPLIANCE = 36
+        }
+
+        [DllImport("Shlwapi.dll", SetLastError = true, EntryPoint = "#437")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool IsOS(OS dwOS);
+
+        [DllImport("USER32.DLL", SetLastError = true)]
+        public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+        public enum HookType : int {
+            WH_MSGFILTER = -1,
+            WH_JOURNALRECORD = 0,
+            WH_JOURNALPLAYBACK = 1,
+            WH_KEYBOARD = 2,
+            WH_GETMESSAGE = 3,
+            WH_CALLWNDPROC = 4,
+            WH_CBT = 5,
+            WH_SYSMSGFILTER = 6,
+            WH_MOUSE = 7,
+            WH_HARDWARE = 8,
+            WH_DEBUG = 9,
+            WH_SHELL = 10,
+            WH_FOREGROUNDIDLE = 11,
+            WH_CALLWNDPROCRET = 12,
+            WH_KEYBOARD_LL = 13,
+            WH_MOUSE_LL = 14
+        }
+
+        public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("USER32.DLL")]
+        public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct KBDLLHOOKSTRUCT {
+            public uint vkCode;
+            public uint scanCode;
+            public KBDLLHOOKSTRUCTFlags flags;
+            public uint time;
+            public UIntPtr dwExtraInfo;
+        }
+
+        [Flags]
+        public enum KBDLLHOOKSTRUCTFlags : uint {
+            LLKHF_EXTENDED = 0x01,
+            LLKHF_INJECTED = 0x10,
+            LLKHF_ALTDOWN = 0x20,
+            LLKHF_UP = 0x80
+        }
+
+        [DllImport("USER32.DLL")]
+        public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, KBDLLHOOKSTRUCT lParam);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct POINT {
+            public int X;
+            public int Y;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct MSLLHOOKSTRUCT {
+            public POINT pt;
+            public int mouseData;
+            public int flags;
+            public int time;
+            public UIntPtr dwExtraInfo;
+        }
+
+        [DllImport("USER32.DLL")]
+        public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, MSLLHOOKSTRUCT lParam);
+
+        [DllImport("USER32.DLL", SetLastError = true)]
+        public static extern IntPtr SetWindowsHookEx(HookType hookType, HookProc lpfn, IntPtr hMod, uint dwThreadId);
+
+        [DllImport("USER32.DLL", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
         public enum BINARY_TYPE : uint {
             SCS_32BIT_BINARY = 0, // A 32-bit Windows-based application
             SCS_64BIT_BINARY = 6, // A 64-bit Windows-based application.
@@ -173,6 +310,7 @@ namespace FlashpointSecurePlayer {
             SCS_WOW_BINARY = 2 // A 16-bit Windows-based application
         }
 
+        /*
         [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetBinaryType(
@@ -180,6 +318,50 @@ namespace FlashpointSecurePlayer {
             string lpApplicationName,
 
             out BINARY_TYPE lpBinaryType
+        );
+        */
+
+        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern IntPtr LoadLibrary(
+            [MarshalAs(UnmanagedType.LPTStr)]
+            string lpLibFileName
+        );
+
+        [Flags]
+        public enum LoadLibraryFlags : uint {
+            Zero = 0,
+            DONT_RESOLVE_DLL_REFERENCES = 0x00000001,
+            LOAD_IGNORE_CODE_AUTHZ_LEVEL = 0x00000010,
+            LOAD_LIBRARY_AS_DATAFILE = 0x00000002,
+            LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE = 0x00000040,
+            LOAD_LIBRARY_AS_IMAGE_RESOURCE = 0x00000020,
+            LOAD_LIBRARY_SEARCH_APPLICATION_DIR = 0x00000200,
+            LOAD_LIBRARY_SEARCH_DEFAULT_DIRS = 0x00001000,
+            LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR = 0x00000100,
+            LOAD_LIBRARY_SEARCH_SYSTEM32 = 0x00000800,
+            LOAD_LIBRARY_SEARCH_USER_DIRS = 0x00000400,
+            LOAD_WITH_ALTERED_SEARCH_PATH = 0x00000008
+        }
+
+        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern IntPtr LoadLibraryEx(
+            [MarshalAs(UnmanagedType.LPTStr)]
+            string lpLibFileName,
+
+            IntPtr hFile,
+            LoadLibraryFlags dwFlags
+        );
+
+        [DllImport("KERNEL32.DLL", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool FreeLibrary(IntPtr hLibModule);
+
+        [DllImport("KERNEL32.DLL", SetLastError = true)]
+        public static extern IntPtr GetProcAddress(
+            IntPtr hModule,
+
+            [MarshalAs(UnmanagedType.LPStr)]
+            string lpProcName
         );
 
         public static readonly ushort IMAGE_DOS_SIGNATURE = 0x5A4D;
@@ -214,7 +396,7 @@ namespace FlashpointSecurePlayer {
             public int e_lfanew;
         }
 
-        public const ushort IMAGE_FILE_MACHINE_I386 = 0x014c;
+        public const ushort IMAGE_FILE_MACHINE_I386 = 0x014C;
 
         [StructLayout(LayoutKind.Sequential)]
         public struct IMAGE_FILE_HEADER {
@@ -389,220 +571,6 @@ namespace FlashpointSecurePlayer {
         [DllImport("dbghelp.dll", SetLastError = true, CallingConvention = CallingConvention.StdCall)]
         public static extern IntPtr ImageNtHeader(IntPtr Base);
 
-        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
-        public static extern IntPtr LoadLibrary(
-            [MarshalAs(UnmanagedType.LPTStr)]
-            string lpLibFileName
-        );
-
-        [Flags]
-        public enum LoadLibraryFlags : uint {
-            Zero = 0,
-            DONT_RESOLVE_DLL_REFERENCES = 0x00000001,
-            LOAD_IGNORE_CODE_AUTHZ_LEVEL = 0x00000010,
-            LOAD_LIBRARY_AS_DATAFILE = 0x00000002,
-            LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE = 0x00000040,
-            LOAD_LIBRARY_AS_IMAGE_RESOURCE = 0x00000020,
-            LOAD_LIBRARY_SEARCH_APPLICATION_DIR = 0x00000200,
-            LOAD_LIBRARY_SEARCH_DEFAULT_DIRS = 0x00001000,
-            LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR = 0x00000100,
-            LOAD_LIBRARY_SEARCH_SYSTEM32 = 0x00000800,
-            LOAD_LIBRARY_SEARCH_USER_DIRS = 0x00000400,
-            LOAD_WITH_ALTERED_SEARCH_PATH = 0x00000008
-        }
-
-        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
-        public static extern IntPtr LoadLibraryEx(
-            [MarshalAs(UnmanagedType.LPTStr)]
-            string lpLibFileName,
-
-            IntPtr hFile,
-            LoadLibraryFlags dwFlags
-        );
-
-        [DllImport("KERNEL32.DLL", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool FreeLibrary(IntPtr hLibModule);
-
-        [DllImport("KERNEL32.DLL")]
-        public static extern IntPtr GetProcAddress(
-            IntPtr hModule,
-
-            [MarshalAs(UnmanagedType.LPStr)]
-            string lpProcName
-        );
-
-        [DllImport("USER32.DLL", SetLastError = true)]
-        public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
-
-        public enum HookType : int {
-            WH_MSGFILTER = -1,
-            WH_JOURNALRECORD = 0,
-            WH_JOURNALPLAYBACK = 1,
-            WH_KEYBOARD = 2,
-            WH_GETMESSAGE = 3,
-            WH_CALLWNDPROC = 4,
-            WH_CBT = 5,
-            WH_SYSMSGFILTER = 6,
-            WH_MOUSE = 7,
-            WH_HARDWARE = 8,
-            WH_DEBUG = 9,
-            WH_SHELL = 10,
-            WH_FOREGROUNDIDLE = 11,
-            WH_CALLWNDPROCRET = 12,
-            WH_KEYBOARD_LL = 13,
-            WH_MOUSE_LL = 14
-        }
-
-        public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
-
-        [DllImport("USER32.DLL")]
-        public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
-
-        [StructLayout(LayoutKind.Sequential)]
-        public class KBDLLHOOKSTRUCT {
-            public uint vkCode;
-            public uint scanCode;
-            public KBDLLHOOKSTRUCTFlags flags;
-            public uint time;
-            public UIntPtr dwExtraInfo;
-        }
-
-        [Flags]
-        public enum KBDLLHOOKSTRUCTFlags : uint {
-            LLKHF_EXTENDED = 0x01,
-            LLKHF_INJECTED = 0x10,
-            LLKHF_ALTDOWN = 0x20,
-            LLKHF_UP = 0x80
-        }
-
-        [DllImport("USER32.DLL")]
-        public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, KBDLLHOOKSTRUCT lParam);
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct POINT {
-            public int X;
-            public int Y;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct MSLLHOOKSTRUCT {
-            public POINT pt;
-            public int mouseData;
-            public int flags;
-            public int time;
-            public UIntPtr dwExtraInfo;
-        }
-
-        [DllImport("USER32.DLL")]
-        public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, MSLLHOOKSTRUCT lParam);
-
-        [DllImport("USER32.DLL", SetLastError = true)]
-        public static extern IntPtr SetWindowsHookEx(HookType hookType, HookProc lpfn, IntPtr hMod, uint dwThreadId);
-
-        [DllImport("USER32.DLL", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool UnhookWindowsHookEx(IntPtr hhk);
-
-        [DllImport("KERNEL32.DLL", SetLastError = true)]
-        public static extern IntPtr LocalFree(IntPtr hMem);
-
-        [DllImport("SHELL32.DLL", SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern IntPtr CommandLineToArgv(
-            [MarshalAs(UnmanagedType.LPWStr)]
-            string lpCmdLine,
-
-            out int pNumArgs
-        );
-
-        public enum OS : uint {
-            OS_WINDOWS = 0,
-            OS_NT = 1,
-            OS_WIN95ORGREATER = 2,
-            OS_NT4ORGREATER = 3,
-            OS_WIN98ORGREATER = 5,
-            OS_WIN98_GOLD = 6,
-            OS_WIN2000ORGREATER = 7,
-            OS_WIN2000PRO = 8,
-            OS_WIN2000SERVER = 9,
-            OS_WIN2000ADVSERVER = 10,
-            OS_WIN2000DATACENTER = 11,
-            OS_WIN2000TERMINAL = 12,
-            OS_EMBEDDED = 13,
-            OS_TERMINALCLIENT = 14,
-            OS_TERMINALREMOTEADMIN = 15,
-            OS_WIN95_GOLD = 16,
-            OS_MEORGREATER = 17,
-            OS_XPORGREATER = 18,
-            OS_HOME = 19,
-            OS_PROFESSIONAL = 20,
-            OS_DATACENTER = 21,
-            OS_ADVSERVER = 22,
-            OS_SERVER = 23,
-            OS_TERMINALSERVER = 24,
-            OS_PERSONALTERMINALSERVER = 25,
-            OS_FASTUSERSWITCHING = 26,
-            OS_WELCOMELOGONUI = 27,
-            OS_DOMAINMEMBER = 28,
-            OS_ANYSERVER = 29,
-            OS_WOW6432 = 30,
-            OS_WEBSERVER = 31,
-            OS_SMALLBUSINESSSERVER = 32,
-            OS_TABLETPC = 33,
-            OS_SERVERADMINUI = 34,
-            OS_MEDIACENTER = 35,
-            OS_APPLIANCE = 36
-        }
-
-        [DllImport("Shlwapi.dll", SetLastError = true, EntryPoint = "#437")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool IsOS(OS dwOS);
-
-        [DllImport("KERNEL32.DLL", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool CloseHandle(IntPtr hObject);
-
-        public enum TH32CS : uint {
-            TH32CS_INHERIT = 0x80000000,
-            TH32CS_SNAPALL = TH32CS_SNAPHEAPLIST | TH32CS_SNAPMODULE | TH32CS_SNAPPROCESS | TH32CS_SNAPTHREAD,
-            TH32CS_SNAPHEAPLIST = 0x00000001,
-            TH32CS_SNAPMODULE = 0x00000008,
-            TH32CS_SNAPMODULE32 = 0x00000010,
-            TH32CS_SNAPPROCESS = 0x00000002,
-            TH32CS_SNAPTHREAD = 0x00000004
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct PROCESSENTRY32 {
-            public uint dwSize;
-            public uint cntUsage;
-            public uint th32ProcessID;
-            public IntPtr th32DefaultHeapID;
-            public uint th32ModuleID;
-            public uint cntThreads;
-            public uint th32ParentProcessID;
-            public int pcPriClassBase;
-            public uint dwFlags;
-
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MAX_PATH)]
-            public string szExeFile;
-        };
-
-        [DllImport("KERNEL32.DLL", SetLastError = true)]
-        public static extern IntPtr CreateToolhelp32Snapshot(TH32CS dwFlags, uint th32ProcessID);
-
-        [DllImport("KERNEL32.DLL", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool Process32First(IntPtr hSnapshot, ref PROCESSENTRY32 lppe);
-
-        [DllImport("KERNEL32.DLL", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool Process32Next(IntPtr hSnapshot, ref PROCESSENTRY32 lppe);
-
-        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool QueryFullProcessImageName(IntPtr hProcess, int dwFlags, StringBuilder lpExeName, ref int lpdwSize);
-
         [Flags]
         public enum FileFlagsAndAttributes : uint {
             ReadOnly = 0x00000001,
@@ -669,28 +637,63 @@ namespace FlashpointSecurePlayer {
         }
 
         [DllImport("KERNEL32.DLL", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetFileInformationByHandle(SafeFileHandle hFile, out BY_HANDLE_FILE_INFORMATION lpFileInformation);
 
+        [DllImport("KERNEL32.DLL", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool CloseHandle(IntPtr hObject);
+
+        public enum TH32CS : uint {
+            TH32CS_INHERIT = 0x80000000,
+            TH32CS_SNAPALL = TH32CS_SNAPHEAPLIST | TH32CS_SNAPMODULE | TH32CS_SNAPPROCESS | TH32CS_SNAPTHREAD,
+            TH32CS_SNAPHEAPLIST = 0x00000001,
+            TH32CS_SNAPMODULE = 0x00000008,
+            TH32CS_SNAPMODULE32 = 0x00000010,
+            TH32CS_SNAPPROCESS = 0x00000002,
+            TH32CS_SNAPTHREAD = 0x00000004
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct PROCESSENTRY32 {
+            public uint dwSize;
+            public uint cntUsage;
+            public uint th32ProcessID;
+            public IntPtr th32DefaultHeapID;
+            public uint th32ModuleID;
+            public uint cntThreads;
+            public uint th32ParentProcessID;
+            public int pcPriClassBase;
+            public uint dwFlags;
+
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MAX_PATH)]
+            public string szExeFile;
+        };
+
+        [DllImport("KERNEL32.DLL", SetLastError = true)]
+        public static extern IntPtr CreateToolhelp32Snapshot(TH32CS dwFlags, uint th32ProcessID);
+
+        [DllImport("KERNEL32.DLL", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool Process32First(IntPtr hSnapshot, ref PROCESSENTRY32 lppe);
+
+        [DllImport("KERNEL32.DLL", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool Process32Next(IntPtr hSnapshot, ref PROCESSENTRY32 lppe);
+
         [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
-        public static extern uint GetShortPathName(
-            [MarshalAs(UnmanagedType.LPTStr)]
-            string lpszLongPath,
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool QueryFullProcessImageName(IntPtr hProcess, int dwFlags, StringBuilder lpExeName, ref int lpdwSize);
 
-            [MarshalAs(UnmanagedType.LPTStr)]
-            StringBuilder lpszShortPath,
+        [DllImport("KERNEL32.DLL", SetLastError = true)]
+        public static extern IntPtr LocalFree(IntPtr hMem);
 
-            uint cchBuffer
-        );
+        [DllImport("SHELL32.DLL", SetLastError = true, CharSet = CharSet.Unicode)]
+        public static extern IntPtr CommandLineToArgv(
+            [MarshalAs(UnmanagedType.LPWStr)]
+            string lpCmdLine,
 
-        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
-        public static extern uint GetLongPathName(
-            [MarshalAs(UnmanagedType.LPTStr)]
-            string lpszShortPath,
-
-            [MarshalAs(UnmanagedType.LPTStr)]
-            StringBuilder lpszLongPath,
-
-            uint cchBuffer
+            out int pNumArgs
         );
 
         public enum MODIFICATIONS_REVERT_METHOD {
@@ -1744,65 +1747,128 @@ namespace FlashpointSecurePlayer {
             public static PathNamesLong Long { get; } = new PathNamesLong();
         }
 
-        public static BINARY_TYPE GetLibraryBinaryType(string libFileName) {
-            IntPtr moduleHandle = IntPtr.Zero;
-            
-            moduleHandle = LoadLibraryEx(libFileName, IntPtr.Zero, LoadLibraryFlags.LOAD_LIBRARY_AS_DATAFILE);
+        public static string GetWindowsVersionName(bool edition, bool servicePack, bool architecture) {
+            OperatingSystem operatingSystem = Environment.OSVersion;
+            string versionName = "Windows ";
 
-            if (moduleHandle == IntPtr.Zero) {
-                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            if (operatingSystem.Platform == PlatformID.Win32Windows) {
+                switch (operatingSystem.Version.Minor) {
+                    case 0:
+                    versionName += "95";
+                    break;
+                    case 10:
+                    if (operatingSystem.Version.Revision.ToString() == "2222A") {
+                        versionName += "98 SE";
+                    } else {
+                        versionName += "98";
+                    }
+                    break;
+                    default:
+                    // Windows ME is the last version of Windows before Windows NT
+                    versionName += "ME";
+                    break;
+                }
+            } else {
+                switch (operatingSystem.Version.Major) {
+                    case 3:
+                    versionName += "NT 3.51";
+                    break;
+                    case 4:
+                    versionName += "NT 4.0";
+                    break;
+                    case 5:
+                    if (operatingSystem.Version.Minor == 0) {
+                        versionName += "2000";
+                    } else {
+                        if (IsOS(OS.OS_ANYSERVER)) {
+                            versionName += "Server 2003";
+                        } else {
+                            versionName += "XP";
+                        }
+                    }
+                    break;
+                    case 6:
+                    switch (operatingSystem.Version.Minor) {
+                        case 0:
+                        if (IsOS(OS.OS_ANYSERVER)) {
+                            versionName += "Server 2008";
+                        } else {
+                            versionName += "Vista";
+                        }
+                        break;
+                        case 1:
+                        if (IsOS(OS.OS_ANYSERVER)) {
+                            versionName += "Server 2008 R2";
+                        } else {
+                            versionName += "7";
+                        }
+                        break;
+                        case 2:
+                        if (IsOS(OS.OS_ANYSERVER)) {
+                            versionName += "Server 2012";
+                        } else {
+                            versionName += "8";
+                        }
+                        break;
+                        default:
+                        if (IsOS(OS.OS_ANYSERVER)) {
+                            versionName += "Server 2012 R2";
+                        } else {
+                            versionName += "8.1";
+                        }
+                        break;
+                    }
+                    break;
+                    default:
+                    // Windows 10 will be the last version of Windows
+                    if (IsOS(OS.OS_ANYSERVER)) {
+                        if (operatingSystem.Version.Build < 17763) {
+                            versionName += "Server 2016";
+                        } else if (operatingSystem.Version.Build < 20348) {
+                            versionName += "Server 2019";
+                        } else {
+                            versionName += "Server 2022";
+                        }
+                    } else {
+                        versionName += "10";
+                    }
+                    break;
+                }
             }
 
-            try {
-                IntPtr imageDOSHeaderPointer = moduleHandle;
-
-                if (imageDOSHeaderPointer == IntPtr.Zero) {
-                    throw new Exceptions.LibraryBinaryFormatException("imageDOSHeaderPointer must not be NULL");
-                }
-
-                IMAGE_DOS_HEADER imageDOSHeader = (IMAGE_DOS_HEADER)Marshal.PtrToStructure(imageDOSHeaderPointer, typeof(IMAGE_DOS_HEADER));
-
-                if (imageDOSHeader.e_magic != IMAGE_DOS_SIGNATURE) {
-                    throw new Exceptions.LibraryBinaryFormatException("e_magic must be IMAGE_DOS_SIGNATURE");
-                }
-
-                IntPtr imageNTHeadersPointer = IntPtr.Zero;
+            if (edition) {
+                string editionID = null;
 
                 try {
-                    imageNTHeadersPointer = ImageNtHeader(moduleHandle);
-
-                    if (imageNTHeadersPointer == IntPtr.Zero) {
-                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                    }
-                } catch {
-                    throw new Exceptions.LibraryBinaryFormatException("imageNTHeadersPointer must not be NULL");
+                    editionID = Microsoft.Win32.Registry.GetValue("HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/Windows NT/CurrentVersion", "EditionID", null) as string;
+                } catch (SecurityException) {
+                    // value exists but we can't get it
+                    editionID = String.Empty;
+                } catch (IOException) {
+                    // value marked for deletion
+                    editionID = null;
+                } catch (ArgumentException) {
+                    // value doesn't exist
+                    editionID = null;
                 }
 
-                IMAGE_NT_HEADERS imageNTHeaders = (IMAGE_NT_HEADERS)Marshal.PtrToStructure(imageNTHeadersPointer, typeof(IMAGE_NT_HEADERS));
-
-                if (imageNTHeaders.Signature != IMAGE_NT_SIGNATURE) {
-                    throw new Exceptions.LibraryBinaryFormatException("Signature must be IMAGE_NT_SIGNATURE");
-                }
-
-                if (imageNTHeaders.FileHeader.Machine == IMAGE_FILE_MACHINE_I386) {
-                    return BINARY_TYPE.SCS_32BIT_BINARY;
-                }
-            } finally {
-                if (!FreeLibrary(moduleHandle)) {
-                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                // no way to get the edition before Windows 7
+                if (!String.IsNullOrEmpty(editionID)) {
+                    versionName += " " + editionID;
                 }
             }
-            return BINARY_TYPE.SCS_64BIT_BINARY;
-        }
 
-        public static bool TestLaunchedAsAdministratorUser() {
-            AppDomain.CurrentDomain.SetPrincipalPolicy(PrincipalPolicy.WindowsPrincipal);
-
-            try {
-                return (Thread.CurrentPrincipal as WindowsPrincipal).IsInRole(WindowsBuiltInRole.Administrator);
-            } catch (NullReferenceException) {
-                return false;
+            if (servicePack) {
+                // can be empty if no service pack is installed
+                if (!String.IsNullOrEmpty(operatingSystem.ServicePack)) {
+                    versionName += " " + operatingSystem.ServicePack;
+                }
             }
+
+            if (architecture) {
+                versionName += " " + (Environment.Is64BitOperatingSystem ? "64" : "32") + "-bit";
+            }
+            return versionName;
         }
 
         public static void HandleAntecedentTask(Task antecedentTask) {
@@ -2167,6 +2233,173 @@ namespace FlashpointSecurePlayer {
             //activeTemplateElement.RegistryStates.LockItem = false;
         }
 
+        public static bool TestLaunchedAsAdministratorUser() {
+            AppDomain.CurrentDomain.SetPrincipalPolicy(PrincipalPolicy.WindowsPrincipal);
+
+            try {
+                return (Thread.CurrentPrincipal as WindowsPrincipal).IsInRole(WindowsBuiltInRole.Administrator);
+            } catch (NullReferenceException) {
+                return false;
+            }
+        }
+
+        public static void SetWorkingDirectory(ref ProcessStartInfo processStartInfo, string workingDirectory) {
+            if (processStartInfo == null) {
+                processStartInfo = new ProcessStartInfo();
+            }
+
+            processStartInfo.WorkingDirectory = Environment.ExpandEnvironmentVariables(workingDirectory);
+        }
+
+        public static void HideWindow(ref ProcessStartInfo processStartInfo) {
+            if (processStartInfo == null) {
+                processStartInfo = new ProcessStartInfo();
+            }
+
+            processStartInfo.UseShellExecute = false;
+            processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            processStartInfo.CreateNoWindow = true;
+            processStartInfo.ErrorDialog = false;
+        }
+
+        public static void RestartApplication(bool runAsAdministrator, Form form, ref Mutex applicationMutex, ProcessStartInfo processStartInfo = null) {
+            if (processStartInfo == null) {
+                processStartInfo = new ProcessStartInfo {
+                    FileName = Application.ExecutablePath,
+                    // can't use GetCommandLineArgs() and String.Join because arguments that were in quotes will lose their quotes
+                    // need to use Environment.CommandLine and find arguments
+                    Arguments = GetArgumentSliceFromCommandLine(Environment.CommandLine, 1)
+                };
+            }
+
+            processStartInfo.RedirectStandardError = false;
+            processStartInfo.RedirectStandardOutput = false;
+            processStartInfo.RedirectStandardInput = false;
+
+            if (runAsAdministrator) {
+                processStartInfo.UseShellExecute = true;
+                processStartInfo.Verb = "runas";
+            }
+
+            if (applicationMutex != null) {
+                applicationMutex.ReleaseMutex();
+                applicationMutex.Close();
+                applicationMutex = null;
+            }
+
+            // hide the current form so two windows are not open at once
+            try {
+                form.Hide();
+                form.ControlBox = true;
+                // no this is not a race condition
+                // https://stackoverflow.com/questions/33042010/in-what-cases-does-the-process-start-method-return-false
+                Process.Start(processStartInfo);
+                Application.Exit();
+            } catch (Exception ex) {
+                Exceptions.LogExceptionToLauncher(ex);
+                form.Show();
+                ProgressManager.ShowError();
+                MessageBox.Show(Properties.Resources.ProcessFailedStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Application.Exit();
+                throw new Exceptions.ApplicationRestartRequiredException("The application failed to restart.");
+            }
+        }
+
+        private static int GetURLProtocolLength(string url) {
+            Uri uri;
+
+            try {
+                uri = new Uri(url);
+            } catch {
+                return 0;
+            }
+
+            if (String.IsNullOrEmpty(uri.Scheme)) {
+                return 0;
+            }
+            return (uri.Scheme + "://").Length;
+        }
+
+        public static bool HasURLProtocol(string url) {
+            return GetURLProtocolLength(url) > 0;
+        }
+
+        public static string AddURLProtocol(string url) {
+            if (GetURLProtocolLength(url) == 0) {
+                return "http://" + url;
+            }
+            return url;
+        }
+
+        public static string RemoveURLProtocol(string url) {
+            return url.Substring(GetURLProtocolLength(url));
+        }
+
+        public static bool TestInternetURI(Uri uri) {
+            if (uri.IsFile) {
+                return false;
+            }
+
+            const string SCHEME_HTTP = "http";
+            const string SCHEME_HTTPS = "https";
+            const string SCHEME_FTP = "ftp";
+
+            // the URI Scheme is always lowercase
+            string scheme = uri.Scheme;
+            return scheme == SCHEME_HTTP || scheme == SCHEME_HTTPS || scheme == SCHEME_FTP;
+        }
+
+        public static BINARY_TYPE GetLibraryBinaryType(string libFileName) {
+            IntPtr moduleHandle = IntPtr.Zero;
+
+            moduleHandle = LoadLibraryEx(libFileName, IntPtr.Zero, LoadLibraryFlags.LOAD_LIBRARY_AS_DATAFILE);
+
+            if (moduleHandle == IntPtr.Zero) {
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            }
+
+            try {
+                IntPtr imageDOSHeaderPointer = moduleHandle;
+
+                if (imageDOSHeaderPointer == IntPtr.Zero) {
+                    throw new Exceptions.LibraryBinaryFormatException("imageDOSHeaderPointer must not be NULL");
+                }
+
+                IMAGE_DOS_HEADER imageDOSHeader = (IMAGE_DOS_HEADER)Marshal.PtrToStructure(imageDOSHeaderPointer, typeof(IMAGE_DOS_HEADER));
+
+                if (imageDOSHeader.e_magic != IMAGE_DOS_SIGNATURE) {
+                    throw new Exceptions.LibraryBinaryFormatException("e_magic must be IMAGE_DOS_SIGNATURE");
+                }
+
+                IntPtr imageNTHeadersPointer = IntPtr.Zero;
+
+                try {
+                    imageNTHeadersPointer = ImageNtHeader(moduleHandle);
+
+                    if (imageNTHeadersPointer == IntPtr.Zero) {
+                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                    }
+                } catch {
+                    throw new Exceptions.LibraryBinaryFormatException("imageNTHeadersPointer must not be NULL");
+                }
+
+                IMAGE_NT_HEADERS imageNTHeaders = (IMAGE_NT_HEADERS)Marshal.PtrToStructure(imageNTHeadersPointer, typeof(IMAGE_NT_HEADERS));
+
+                if (imageNTHeaders.Signature != IMAGE_NT_SIGNATURE) {
+                    throw new Exceptions.LibraryBinaryFormatException("Signature must be IMAGE_NT_SIGNATURE");
+                }
+
+                if (imageNTHeaders.FileHeader.Machine == IMAGE_FILE_MACHINE_I386) {
+                    return BINARY_TYPE.SCS_32BIT_BINARY;
+                }
+            } finally {
+                if (!FreeLibrary(moduleHandle)) {
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                }
+            }
+            return BINARY_TYPE.SCS_64BIT_BINARY;
+        }
+
         public static bool ComparePaths(string path, string path2) {
             using (SafeFileHandle safeFileHandle = CreateFile(path, FileAccess.Read, FileShare.ReadWrite, IntPtr.Zero, FileMode.Open, FileFlagsAndAttributes.BackupSemantics, IntPtr.Zero)) {
                 if (safeFileHandle.IsInvalid) {
@@ -2279,364 +2512,7 @@ namespace FlashpointSecurePlayer {
             }
             return valueString;
         }
-
-        private static int GetURLProtocolLength(string url) {
-            Uri uri;
-
-            try {
-                uri = new Uri(url);
-            } catch {
-                return 0;
-            }
-
-            if (String.IsNullOrEmpty(uri.Scheme)) {
-                return 0;
-            }
-            return (uri.Scheme + "://").Length;
-        }
-
-        public static bool HasURLProtocol(string url) {
-            return GetURLProtocolLength(url) > 0;
-        }
-
-        public static string AddURLProtocol(string url) {
-            if (GetURLProtocolLength(url) == 0) {
-                return "http://" + url;
-            }
-            return url;
-        }
-
-        public static string RemoveURLProtocol(string url) {
-            return url.Substring(GetURLProtocolLength(url));
-        }
-
-        public static bool TestInternetURI(Uri uri) {
-            if (uri.IsFile) {
-                return false;
-            }
-
-            const string SCHEME_HTTP = "http";
-            const string SCHEME_HTTPS = "https";
-            const string SCHEME_FTP = "ftp";
-
-            // the URI Scheme is always lowercase
-            string scheme = uri.Scheme;
-            return scheme == SCHEME_HTTP || scheme == SCHEME_HTTPS || scheme == SCHEME_FTP;
-        }
-
-        // https://web.archive.org/web/20190109172835/https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
-        public static void GetValidArgument(ref string argument, bool force = false) {
-            if (force || argument == String.Empty || argument.IndexOfAny(WHITESPACE) != -1) {
-                int backslashes = 0;
-                StringBuilder validArgument = new StringBuilder();
-
-                for (int i = 0; i < argument.Length; i++) {
-                    backslashes = 0;
-
-                    while (i != argument.Length && argument[i] == '\\') {
-                        backslashes++;
-                        i++;
-                    }
-
-                    if (i != argument.Length) {
-                        if (argument[i] == '"') {
-                            validArgument.Append('\\', backslashes + backslashes + 1);
-                        } else {
-                            validArgument.Append('\\', backslashes);
-                        }
-
-                        validArgument.Append(argument[i]);
-                    }
-                }
-
-                validArgument.Append('\\', backslashes + backslashes);
-                argument = "\"" + validArgument.ToString() + "\"";
-            }
-        }
-
-        public static string GetArgumentSliceFromCommandLine(string commandLine, int begin = 0, int end = -1) {
-            List<string> arguments = new List<string>();
-
-            {
-                Regex commandLineArguments = new Regex("^\\s*(?:\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*\"?|(?:[^\"\\\\\\s]+|\\\\\\S)+|\\\\|\\s+$)+\\s?");
-                Match match = commandLineArguments.Match(commandLine);
-
-                while (match.Success) {
-                    arguments.Add(match.Value);
-                    commandLine = commandLine.Substring(match.Length);
-                    match = commandLineArguments.Match(commandLine);
-                }
-            }
-
-            int argumentsCount = arguments.Count + 1;
-
-            if (begin < 0) {
-                begin += argumentsCount;
-            }
-
-            begin = Math.Max(begin, 0);
-
-            if (end < 0) {
-                end += argumentsCount;
-            }
-
-            end = Math.Min(end, argumentsCount - 1);
-
-            string argumentSlice = String.Empty;
-
-            for (int i = begin; i < end; i++) {
-                argumentSlice += arguments[i];
-            }
-            return argumentSlice;
-        }
-
-        public static string[] GetCommandLineToArgv(string commandLine, out int argc) {
-            argc = 0;
-            string[] argv;
-            IntPtr argvPointer = CommandLineToArgv(commandLine, out argc);
-
-            if (argvPointer == IntPtr.Zero) {
-                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                return null;
-            }
-
-            try {
-                argv = new string[argc];
-
-                for (int i = 0;i < argc;i++) {
-                    argv[i] = Marshal.PtrToStringUni(Marshal.ReadIntPtr(argvPointer, i * IntPtr.Size));
-                }
-            } finally {
-                LocalFree(argvPointer);
-            }
-            return argv;
-        }
-
-        public static string GetOldCPUSimulatorProcessStartInfoArguments(FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement.OldCPUSimulatorElement oldCPUSimulatorElement, string software) {
-            StringBuilder oldCPUSimulatorProcessStartInfoArguments = new StringBuilder("-t ");
-
-            if (!int.TryParse(Environment.ExpandEnvironmentVariables(oldCPUSimulatorElement.TargetRate), out int targetRate)) {
-                throw new ArgumentException("The Old CPU Simulator Element has an invalid Target Rate.");
-            }
-
-            oldCPUSimulatorProcessStartInfoArguments.Append(targetRate);
-
-            if (!String.IsNullOrEmpty(oldCPUSimulatorElement.RefreshRate)) {
-                if (!int.TryParse(Environment.ExpandEnvironmentVariables(oldCPUSimulatorElement.RefreshRate), out int refreshRate)) {
-                    throw new ArgumentException("The Old CPU Simulator Element has an invalid Refresh Rate.");
-                }
-
-                oldCPUSimulatorProcessStartInfoArguments.Append(" -r ");
-                oldCPUSimulatorProcessStartInfoArguments.Append(refreshRate);
-            }
-
-            if (oldCPUSimulatorElement.SetProcessPriorityHigh) {
-                oldCPUSimulatorProcessStartInfoArguments.Append(" -ph");
-            }
-
-            if (oldCPUSimulatorElement.SetSyncedProcessAffinityOne) {
-                oldCPUSimulatorProcessStartInfoArguments.Append(" -a1");
-            }
-
-            if (oldCPUSimulatorElement.SyncedProcessMainThreadOnly) {
-                oldCPUSimulatorProcessStartInfoArguments.Append(" -mt");
-            }
-
-            if (oldCPUSimulatorElement.RefreshRateFloorFifteen) {
-                oldCPUSimulatorProcessStartInfoArguments.Append(" -rf");
-            }
-
-            oldCPUSimulatorProcessStartInfoArguments.Append(" -sw ");
-            oldCPUSimulatorProcessStartInfoArguments.Append(software);
-            return oldCPUSimulatorProcessStartInfoArguments.ToString();
-        }
-
-        public static void RestartApplication(bool runAsAdministrator, Form form, ref Mutex applicationMutex, ProcessStartInfo processStartInfo = null) {
-            if (processStartInfo == null) {
-                processStartInfo = new ProcessStartInfo {
-                    FileName = Application.ExecutablePath,
-                    // can't use GetCommandLineArgs() and String.Join because arguments that were in quotes will lose their quotes
-                    // need to use Environment.CommandLine and find arguments
-                    Arguments = GetArgumentSliceFromCommandLine(Environment.CommandLine, 1)
-                };
-            }
-
-            processStartInfo.RedirectStandardError = false;
-            processStartInfo.RedirectStandardOutput = false;
-            processStartInfo.RedirectStandardInput = false;
-
-            if (runAsAdministrator) {
-                processStartInfo.UseShellExecute = true;
-                processStartInfo.Verb = "runas";
-            }
-            
-            if (applicationMutex != null) {
-                applicationMutex.ReleaseMutex();
-                applicationMutex.Close();
-                applicationMutex = null;
-            }
-
-            // hide the current form so two windows are not open at once
-            try {
-                form.Hide();
-                form.ControlBox = true;
-                // no this is not a race condition
-                // https://stackoverflow.com/questions/33042010/in-what-cases-does-the-process-start-method-return-false
-                Process.Start(processStartInfo);
-                Application.Exit();
-            } catch (Exception ex) {
-                Exceptions.LogExceptionToLauncher(ex);
-                form.Show();
-                ProgressManager.ShowError();
-                MessageBox.Show(Properties.Resources.ProcessFailedStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Application.Exit();
-                throw new Exceptions.ApplicationRestartRequiredException("The application failed to restart.");
-            }
-        }
-
-        public static string GetWindowsVersionName(bool edition, bool servicePack, bool architecture) {
-            OperatingSystem operatingSystem = Environment.OSVersion;
-            string versionName = "Windows ";
-
-            if (operatingSystem.Platform == PlatformID.Win32Windows) {
-                switch (operatingSystem.Version.Minor) {
-                    case 0:
-                    versionName += "95";
-                    break;
-                    case 10:
-                    if (operatingSystem.Version.Revision.ToString() == "2222A") {
-                        versionName += "98 SE";
-                    } else {
-                        versionName += "98";
-                    }
-                    break;
-                    default:
-                    // Windows ME is the last version of Windows before Windows NT
-                    versionName += "ME";
-                    break;
-                }
-            } else {
-                switch (operatingSystem.Version.Major) {
-                    case 3:
-                    versionName += "NT 3.51";
-                    break;
-                    case 4:
-                    versionName += "NT 4.0";
-                    break;
-                    case 5:
-                    if (operatingSystem.Version.Minor == 0) {
-                        versionName += "2000";
-                    } else {
-                        if (IsOS(OS.OS_ANYSERVER)) {
-                            versionName += "Server 2003";
-                        } else {
-                            versionName += "XP";
-                        }
-                    }
-                    break;
-                    case 6:
-                    switch (operatingSystem.Version.Minor) {
-                        case 0:
-                        if (IsOS(OS.OS_ANYSERVER)) {
-                            versionName += "Server 2008";
-                        } else {
-                            versionName += "Vista";
-                        }
-                        break;
-                        case 1:
-                        if (IsOS(OS.OS_ANYSERVER)) {
-                            versionName += "Server 2008 R2";
-                        } else {
-                            versionName += "7";
-                        }
-                        break;
-                        case 2:
-                        if (IsOS(OS.OS_ANYSERVER)) {
-                            versionName += "Server 2012";
-                        } else {
-                            versionName += "8";
-                        }
-                        break;
-                        default:
-                        if (IsOS(OS.OS_ANYSERVER)) {
-                            versionName += "Server 2012 R2";
-                        } else {
-                            versionName += "8.1";
-                        }
-                        break;
-                    }
-                    break;
-                    default:
-                    // Windows 10 will be the last version of Windows
-                    if (IsOS(OS.OS_ANYSERVER)) {
-                        if (operatingSystem.Version.Build < 17763) {
-                            versionName += "Server 2016";
-                        } else if (operatingSystem.Version.Build < 20348) {
-                            versionName += "Server 2019";
-                        } else {
-                            versionName += "Server 2022";
-                        }
-                    } else {
-                        versionName += "10";
-                    }
-                    break;
-                }
-            }
-
-            if (edition) {
-                string editionID = null;
-
-                try {
-                    editionID = Microsoft.Win32.Registry.GetValue("HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/Windows NT/CurrentVersion", "EditionID", null) as string;
-                } catch (SecurityException) {
-                    // value exists but we can't get it
-                    editionID = String.Empty;
-                } catch (IOException) {
-                    // value marked for deletion
-                    editionID = null;
-                } catch (ArgumentException) {
-                    // value doesn't exist
-                    editionID = null;
-                }
-
-                // no way to get the edition before Windows 7
-                if (!String.IsNullOrEmpty(editionID)) {
-                    versionName += " " + editionID;
-                }
-            }
-
-            if (servicePack) {
-                // can be empty if no service pack is installed
-                if (!String.IsNullOrEmpty(operatingSystem.ServicePack)) {
-                    versionName += " " + operatingSystem.ServicePack;
-                }
-            }
-
-            if (architecture) {
-                versionName += " " + (Environment.Is64BitOperatingSystem ? "64" : "32") + "-bit";
-            }
-            return versionName;
-        }
-
-        public static void SetWorkingDirectory(ref ProcessStartInfo processStartInfo, string workingDirectory) {
-            if (processStartInfo == null) {
-                processStartInfo = new ProcessStartInfo();
-            }
-
-            processStartInfo.WorkingDirectory = Environment.ExpandEnvironmentVariables(workingDirectory);
-        }
-
-        public static void HideWindow(ref ProcessStartInfo processStartInfo) {
-            if (processStartInfo == null) {
-                processStartInfo = new ProcessStartInfo();
-            }
-
-            processStartInfo.UseShellExecute = false;
-            processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-            processStartInfo.CreateNoWindow = true;
-            processStartInfo.ErrorDialog = false;
-        }
-
+        
         public static Process GetParentProcess() {
             IntPtr parentProcessSnapshotHandle = CreateToolhelp32Snapshot(TH32CS.TH32CS_SNAPPROCESS, 0);
 
@@ -2707,6 +2583,133 @@ namespace FlashpointSecurePlayer {
                 return null;
             }
             return processName.ToString();
+        }
+
+        public static string[] GetCommandLineToArgv(string commandLine, out int argc) {
+            argc = 0;
+            string[] argv;
+            IntPtr argvPointer = CommandLineToArgv(commandLine, out argc);
+
+            if (argvPointer == IntPtr.Zero) {
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                return null;
+            }
+
+            try {
+                argv = new string[argc];
+
+                for (int i = 0; i < argc; i++) {
+                    argv[i] = Marshal.PtrToStringUni(Marshal.ReadIntPtr(argvPointer, i * IntPtr.Size));
+                }
+            } finally {
+                LocalFree(argvPointer);
+            }
+            return argv;
+        }
+
+        // https://web.archive.org/web/20190109172835/https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
+        public static void GetValidArgument(ref string argument, bool force = false) {
+            if (force || argument == String.Empty || argument.IndexOfAny(WHITESPACE) != -1) {
+                int backslashes = 0;
+                StringBuilder validArgument = new StringBuilder();
+
+                for (int i = 0; i < argument.Length; i++) {
+                    backslashes = 0;
+
+                    while (i != argument.Length && argument[i] == '\\') {
+                        backslashes++;
+                        i++;
+                    }
+
+                    if (i != argument.Length) {
+                        if (argument[i] == '"') {
+                            validArgument.Append('\\', backslashes + backslashes + 1);
+                        } else {
+                            validArgument.Append('\\', backslashes);
+                        }
+
+                        validArgument.Append(argument[i]);
+                    }
+                }
+
+                validArgument.Append('\\', backslashes + backslashes);
+                argument = "\"" + validArgument.ToString() + "\"";
+            }
+        }
+
+        public static string GetArgumentSliceFromCommandLine(string commandLine, int begin = 0, int end = -1) {
+            List<string> arguments = new List<string>();
+
+            {
+                Regex commandLineArguments = new Regex("^\\s*(?:\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*\"?|(?:[^\"\\\\\\s]+|\\\\\\S)+|\\\\|\\s+$)+\\s?");
+                Match match = commandLineArguments.Match(commandLine);
+
+                while (match.Success) {
+                    arguments.Add(match.Value);
+                    commandLine = commandLine.Substring(match.Length);
+                    match = commandLineArguments.Match(commandLine);
+                }
+            }
+
+            int argumentsCount = arguments.Count + 1;
+
+            if (begin < 0) {
+                begin += argumentsCount;
+            }
+
+            begin = Math.Max(begin, 0);
+
+            if (end < 0) {
+                end += argumentsCount;
+            }
+
+            end = Math.Min(end, argumentsCount - 1);
+
+            string argumentSlice = String.Empty;
+
+            for (int i = begin; i < end; i++) {
+                argumentSlice += arguments[i];
+            }
+            return argumentSlice;
+        }
+
+        public static string GetOldCPUSimulatorProcessStartInfoArguments(FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement.OldCPUSimulatorElement oldCPUSimulatorElement, string software) {
+            StringBuilder oldCPUSimulatorProcessStartInfoArguments = new StringBuilder("-t ");
+
+            if (!int.TryParse(Environment.ExpandEnvironmentVariables(oldCPUSimulatorElement.TargetRate), out int targetRate)) {
+                throw new ArgumentException("The Old CPU Simulator Element has an invalid Target Rate.");
+            }
+
+            oldCPUSimulatorProcessStartInfoArguments.Append(targetRate);
+
+            if (!String.IsNullOrEmpty(oldCPUSimulatorElement.RefreshRate)) {
+                if (!int.TryParse(Environment.ExpandEnvironmentVariables(oldCPUSimulatorElement.RefreshRate), out int refreshRate)) {
+                    throw new ArgumentException("The Old CPU Simulator Element has an invalid Refresh Rate.");
+                }
+
+                oldCPUSimulatorProcessStartInfoArguments.Append(" -r ");
+                oldCPUSimulatorProcessStartInfoArguments.Append(refreshRate);
+            }
+
+            if (oldCPUSimulatorElement.SetProcessPriorityHigh) {
+                oldCPUSimulatorProcessStartInfoArguments.Append(" -ph");
+            }
+
+            if (oldCPUSimulatorElement.SetSyncedProcessAffinityOne) {
+                oldCPUSimulatorProcessStartInfoArguments.Append(" -a1");
+            }
+
+            if (oldCPUSimulatorElement.SyncedProcessMainThreadOnly) {
+                oldCPUSimulatorProcessStartInfoArguments.Append(" -mt");
+            }
+
+            if (oldCPUSimulatorElement.RefreshRateFloorFifteen) {
+                oldCPUSimulatorProcessStartInfoArguments.Append(" -rf");
+            }
+
+            oldCPUSimulatorProcessStartInfoArguments.Append(" -sw ");
+            oldCPUSimulatorProcessStartInfoArguments.Append(software);
+            return oldCPUSimulatorProcessStartInfoArguments.ToString();
         }
     }
 }
