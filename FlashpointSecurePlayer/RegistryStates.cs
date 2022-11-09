@@ -189,7 +189,7 @@ namespace FlashpointSecurePlayer {
             if (ImportStarted) {
                 try {
                     StopImport();
-                } catch (RegistryStateFailedException) {
+                } catch (InvalidRegistryStateException) {
                     // Fail silently.
                 } catch (System.Configuration.ConfigurationErrorsException) {
                     // Fail silently.
@@ -200,7 +200,7 @@ namespace FlashpointSecurePlayer {
 
             try {
                 Deactivate();
-            } catch (RegistryStateFailedException) {
+            } catch (InvalidRegistryStateException) {
                 // Fail silently.
             } catch (System.Configuration.ConfigurationErrorsException) {
                 // Fail silently.
@@ -875,7 +875,7 @@ namespace FlashpointSecurePlayer {
                     }
 
                     if (ImportPaused) {
-                        throw new RegistryStateFailedException("A timeout occured while starting the Import.");
+                        throw new InvalidRegistryStateException("A timeout occured while starting the Import.");
                     }
                 } catch {
                     kernelSession.Dispose();
@@ -910,7 +910,7 @@ namespace FlashpointSecurePlayer {
                 }
 
                 if (!ImportPaused) {
-                    throw new RegistryStateFailedException("A timeout occured while stopping the Import.");
+                    throw new InvalidRegistryStateException("A timeout occured while stopping the Import.");
                 }
 
                 kernelSession.Stop();
@@ -1105,7 +1105,7 @@ namespace FlashpointSecurePlayer {
                                 } catch (InvalidOperationException) {
                                     // key marked for deletion
                                     Deactivate();
-                                    throw new RegistryStateFailedException("The key \"" + keyName + "\" is marked for deletion.");
+                                    throw new InvalidRegistryStateException("The key \"" + keyName + "\" is marked for deletion.");
                                 } catch (ArgumentException) {
                                     // key doesn't exist and can't be created
                                     Deactivate();
@@ -1120,11 +1120,11 @@ namespace FlashpointSecurePlayer {
                                 } catch (FormatException) {
                                     // value marked for deletion
                                     Deactivate();
-                                    throw new RegistryStateFailedException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" must be Base64.");
+                                    throw new InvalidRegistryStateException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" must be Base64.");
                                 } catch (InvalidOperationException) {
                                     // value marked for deletion
                                     Deactivate();
-                                    throw new RegistryStateFailedException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" is marked for deletion.");
+                                    throw new InvalidRegistryStateException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" is marked for deletion.");
                                 } catch (ArgumentException) {
                                     // value doesn't exist and can't be created
                                     Deactivate();
@@ -1319,10 +1319,10 @@ namespace FlashpointSecurePlayer {
                                                 SetValueInRegistryView(keyName, activeRegistryStateElement.ValueName, activeRegistryStateElement.Value, activeRegistryStateElement.ValueKind.GetValueOrDefault(), registryView);
                                             } catch (InvalidOperationException) {
                                                 // value doesn't exist and can't be created
-                                                throw new RegistryStateFailedException("The value \"" + activeRegistryStateElement.ValueName + "\" in key \"" + keyName + "\" cannot be created.");
+                                                throw new InvalidRegistryStateException("The value \"" + activeRegistryStateElement.ValueName + "\" in key \"" + keyName + "\" cannot be created.");
                                             } catch (ArgumentException) {
                                                 // value doesn't exist and can't be created
-                                                throw new RegistryStateFailedException("The value \"" + activeRegistryStateElement.ValueName + "\" in key \"" + keyName + "\" cannot be created.");
+                                                throw new InvalidRegistryStateException("The value \"" + activeRegistryStateElement.ValueName + "\" in key \"" + keyName + "\" cannot be created.");
                                             } catch (SecurityException) {
                                                 // value exists and we can't modify it
                                                 throw new TaskRequiresElevationException("Setting the value \"" + activeRegistryStateElement.ValueName + "\" in key \"" + keyName + "\" requires elevation.");

@@ -22,7 +22,7 @@ using Microsoft.Win32.SafeHandles;
 namespace FlashpointSecurePlayer {
     public static class Shared {
         public static class Exceptions {
-            public class ApplicationRestartRequiredException : InvalidOperationException {
+            public class ApplicationRestartRequiredException : Exception {
                 public ApplicationRestartRequiredException() : base() { }
                 public ApplicationRestartRequiredException(string message) : base(message) { }
                 public ApplicationRestartRequiredException(string message, Exception inner) : base(message, inner) { }
@@ -46,13 +46,13 @@ namespace FlashpointSecurePlayer {
                 public OldCPUSimulatorRequiresApplicationRestartException(string message, Exception inner) : base(message, inner) { }
             }
 
-            public class DownloadFailedException : InvalidOperationException {
+            public class DownloadFailedException : Exception {
                 public DownloadFailedException() : base() { }
                 public DownloadFailedException(string message) : base(message) { }
                 public DownloadFailedException(string message, Exception inner) : base(message, inner) { }
             }
 
-            public class ImportFailedException : InvalidOperationException {
+            public class ImportFailedException : Exception {
                 public ImportFailedException() { }
                 public ImportFailedException(string message) : base(message) { }
                 public ImportFailedException(string message, Exception inner) : base(message, inner) { }
@@ -64,16 +64,22 @@ namespace FlashpointSecurePlayer {
                 public ActiveXImportFailedException(string message, Exception inner) : base(message, inner) { }
             }
 
-            public class JobObjectException : Win32Exception {
+            public class JobObjectException : Exception {
                 public JobObjectException() { }
                 public JobObjectException(string message) : base(message) { }
                 public JobObjectException(string message, Exception inner) : base(message, inner) { }
             }
 
-            public class FlashpointProxyException : Win32Exception {
+            public class FlashpointProxyException : Exception {
                 public FlashpointProxyException() { }
                 public FlashpointProxyException(string message) : base(message) { }
                 public FlashpointProxyException(string message, Exception inner) : base(message, inner) { }
+            }
+
+            public class LibraryBinaryFormatException : FormatException {
+                public LibraryBinaryFormatException() { }
+                public LibraryBinaryFormatException(string message) : base(message) { }
+                public LibraryBinaryFormatException(string message, Exception inner) : base(message, inner) { }
             }
 
             public class InvalidActiveXControlException : InvalidOperationException {
@@ -100,22 +106,22 @@ namespace FlashpointSecurePlayer {
                 public InvalidModificationException(string message, Exception inner) : base(message, inner) { }
             }
 
-            public class OldCPUSimulatorFailedException : InvalidModificationException {
-                public OldCPUSimulatorFailedException() { }
-                public OldCPUSimulatorFailedException(string message) : base(message) { }
-                public OldCPUSimulatorFailedException(string message, Exception inner) : base(message, inner) { }
+            public class InvalidOldCPUSimulatorException : InvalidModificationException {
+                public InvalidOldCPUSimulatorException() { }
+                public InvalidOldCPUSimulatorException(string message) : base(message) { }
+                public InvalidOldCPUSimulatorException(string message, Exception inner) : base(message, inner) { }
             }
 
-            public class EnvironmentVariablesFailedException : InvalidModificationException {
-                public EnvironmentVariablesFailedException() { }
-                public EnvironmentVariablesFailedException(string message) : base(message) { }
-                public EnvironmentVariablesFailedException(string message, Exception inner) : base(message, inner) { }
+            public class InvalidEnvironmentVariablesException : InvalidModificationException {
+                public InvalidEnvironmentVariablesException() { }
+                public InvalidEnvironmentVariablesException(string message) : base(message) { }
+                public InvalidEnvironmentVariablesException(string message, Exception inner) : base(message, inner) { }
             }
 
-            public class RegistryStateFailedException : InvalidModificationException {
-                public RegistryStateFailedException() { }
-                public RegistryStateFailedException(string message) : base(message) { }
-                public RegistryStateFailedException(string message, Exception inner) : base(message, inner) { }
+            public class InvalidRegistryStateException : InvalidModificationException {
+                public InvalidRegistryStateException() { }
+                public InvalidRegistryStateException(string message) : base(message) { }
+                public InvalidRegistryStateException(string message, Exception inner) : base(message, inner) { }
             }
 
             public static void LogExceptionToLauncher(Exception ex) {
@@ -167,9 +173,273 @@ namespace FlashpointSecurePlayer {
             SCS_WOW_BINARY = 2 // A 16-bit Windows-based application
         }
 
+        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetBinaryType(
+            [MarshalAs(UnmanagedType.LPTStr)]
+            string lpApplicationName,
+
+            out BINARY_TYPE lpBinaryType
+        );
+
+        public static readonly ushort IMAGE_DOS_SIGNATURE = 0x5A4D;
+        public static readonly ushort IMAGE_OS2_SIGNATURE = 0x454E;
+        public static readonly ushort IMAGE_OS2_SIGNATURE_LE = 0x454C;
+        public static readonly ushort IMAGE_VXD_SIGNATURE = 0x454C;
+        public static readonly uint IMAGE_NT_SIGNATURE = 0x00004550;
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct IMAGE_DOS_HEADER {
+            public ushort e_magic;
+            public ushort e_cblp;
+            public ushort e_cp;
+            public ushort e_crlc;
+            public ushort e_cparhdr;
+            public ushort e_minalloc;
+            public ushort e_maxalloc;
+            public ushort e_ss;
+            public ushort e_sp;
+            public ushort e_csum;
+            public ushort e_ip;
+            public ushort e_cs;
+            public ushort e_lfarlc;
+            public ushort e_ovno;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            public ushort[] e_res1;
+
+            public ushort e_oemid;
+            public ushort e_oeminfo;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
+            public ushort[] e_res2;
+
+            public int e_lfanew;
+        }
+
+        public const ushort IMAGE_FILE_MACHINE_I386 = 0x014c;
+        public const ushort IMAGE_FILE_MACHINE_IA64 = 0x0200;
+        public const ushort IMAGE_FILE_MACHINE_AMD64 = 0x8664;
+
+        public struct IMAGE_FILE_HEADER {
+            public ushort Machine;
+            public ushort NumberOfSections;
+            public uint TimeDateStamp;
+            public uint PointerToSymbolTable;
+            public uint NumberOfSymbols;
+            public ushort SizeOfOptionalHeader;
+            public ushort Characteristics;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct IMAGE_DATA_DIRECTORY {
+            public UInt32 VirtualAddress;
+            public UInt32 Size;
+        }
+
+        public const ushort IMAGE_NT_OPTIONAL_HDR32_MAGIC = 0x010B;
+        public const ushort IMAGE_NT_OPTIONAL_HDR64_MAGIC = 0x020B;
+        public const ushort IMAGE_ROM_OPTIONAL_HDR_MAGIC = 0x0107;
+
+        [StructLayout(LayoutKind.Explicit)]
+        public struct IMAGE_OPTIONAL_HEADER {
+            [FieldOffset(0)]
+            public ushort Magic;
+
+            [FieldOffset(2)]
+            public byte MajorLinkerVersion;
+
+            [FieldOffset(3)]
+            public byte MinorLinkerVersion;
+
+            [FieldOffset(4)]
+            public uint SizeOfCode;
+
+            [FieldOffset(8)]
+            public uint SizeOfInitializedData;
+
+            [FieldOffset(12)]
+            public uint SizeOfUninitializedData;
+
+            [FieldOffset(16)]
+            public uint AddressOfEntryPoint;
+
+            [FieldOffset(20)]
+            public uint BaseOfCode;
+
+            // PE32 contains this additional field
+            [FieldOffset(24)]
+            public uint BaseOfData;
+
+            [FieldOffset(28)]
+            public uint ImageBase;
+
+            [FieldOffset(32)]
+            public uint SectionAlignment;
+
+            [FieldOffset(36)]
+            public uint FileAlignment;
+
+            [FieldOffset(40)]
+            public ushort MajorOperatingSystemVersion;
+
+            [FieldOffset(42)]
+            public ushort MinorOperatingSystemVersion;
+
+            [FieldOffset(44)]
+            public ushort MajorImageVersion;
+
+            [FieldOffset(46)]
+            public ushort MinorImageVersion;
+
+            [FieldOffset(48)]
+            public ushort MajorSubsystemVersion;
+
+            [FieldOffset(50)]
+            public ushort MinorSubsystemVersion;
+
+            [FieldOffset(52)]
+            public uint Win32VersionValue;
+
+            [FieldOffset(56)]
+            public uint SizeOfImage;
+
+            [FieldOffset(60)]
+            public uint SizeOfHeaders;
+
+            [FieldOffset(64)]
+            public uint CheckSum;
+
+            [FieldOffset(68)]
+            public ushort Subsystem;
+
+            [FieldOffset(70)]
+            public ushort DllCharacteristics;
+
+            [FieldOffset(72)]
+            public uint SizeOfStackReserve;
+
+            [FieldOffset(76)]
+            public uint SizeOfStackCommit;
+
+            [FieldOffset(80)]
+            public uint SizeOfHeapReserve;
+
+            [FieldOffset(84)]
+            public uint SizeOfHeapCommit;
+
+            [FieldOffset(88)]
+            public uint LoaderFlags;
+
+            [FieldOffset(92)]
+            public uint NumberOfRvaAndSizes;
+
+            [FieldOffset(96)]
+            public IMAGE_DATA_DIRECTORY ExportTable;
+
+            [FieldOffset(104)]
+            public IMAGE_DATA_DIRECTORY ImportTable;
+
+            [FieldOffset(112)]
+            public IMAGE_DATA_DIRECTORY ResourceTable;
+
+            [FieldOffset(120)]
+            public IMAGE_DATA_DIRECTORY ExceptionTable;
+
+            [FieldOffset(128)]
+            public IMAGE_DATA_DIRECTORY CertificateTable;
+
+            [FieldOffset(136)]
+            public IMAGE_DATA_DIRECTORY BaseRelocationTable;
+
+            [FieldOffset(144)]
+            public IMAGE_DATA_DIRECTORY Debug;
+
+            [FieldOffset(152)]
+            public IMAGE_DATA_DIRECTORY Architecture;
+
+            [FieldOffset(160)]
+            public IMAGE_DATA_DIRECTORY GlobalPtr;
+
+            [FieldOffset(168)]
+            public IMAGE_DATA_DIRECTORY TLSTable;
+
+            [FieldOffset(176)]
+            public IMAGE_DATA_DIRECTORY LoadConfigTable;
+
+            [FieldOffset(184)]
+            public IMAGE_DATA_DIRECTORY BoundImport;
+
+            [FieldOffset(192)]
+            public IMAGE_DATA_DIRECTORY IAT;
+
+            [FieldOffset(200)]
+            public IMAGE_DATA_DIRECTORY DelayImportDescriptor;
+
+            [FieldOffset(208)]
+            public IMAGE_DATA_DIRECTORY CLRRuntimeHeader;
+
+            [FieldOffset(216)]
+            public IMAGE_DATA_DIRECTORY Reserved;
+        }
+
+        [StructLayout(LayoutKind.Explicit)]
+        public struct IMAGE_NT_HEADERS {
+            [FieldOffset(0)]
+            public uint Signature;
+
+            [FieldOffset(4)]
+            public IMAGE_FILE_HEADER FileHeader;
+
+            [FieldOffset(24)]
+            public IMAGE_OPTIONAL_HEADER OptionalHeader;
+        }
+
+        [DllImport("dbghelp.dll", SetLastError = true, CallingConvention = CallingConvention.StdCall)]
+        public static extern IntPtr ImageNtHeader(IntPtr Base);
+
+        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern IntPtr LoadLibrary(
+            [MarshalAs(UnmanagedType.LPTStr)]
+            string lpLibFileName
+        );
+
+        [Flags]
+        public enum LoadLibraryFlags : uint {
+            None = 0,
+            DONT_RESOLVE_DLL_REFERENCES = 0x00000001,
+            LOAD_IGNORE_CODE_AUTHZ_LEVEL = 0x00000010,
+            LOAD_LIBRARY_AS_DATAFILE = 0x00000002,
+            LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE = 0x00000040,
+            LOAD_LIBRARY_AS_IMAGE_RESOURCE = 0x00000020,
+            LOAD_LIBRARY_SEARCH_APPLICATION_DIR = 0x00000200,
+            LOAD_LIBRARY_SEARCH_DEFAULT_DIRS = 0x00001000,
+            LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR = 0x00000100,
+            LOAD_LIBRARY_SEARCH_SYSTEM32 = 0x00000800,
+            LOAD_LIBRARY_SEARCH_USER_DIRS = 0x00000400,
+            LOAD_WITH_ALTERED_SEARCH_PATH = 0x00000008
+        }
+
+        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern IntPtr LoadLibraryEx(
+            [MarshalAs(UnmanagedType.LPTStr)]
+            string lpLibFileName,
+
+            IntPtr hFile,
+            LoadLibraryFlags dwFlags
+        );
+
         [DllImport("KERNEL32.DLL", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetBinaryType(string lpApplicationName, out BINARY_TYPE lpBinaryType);
+        public static extern bool FreeLibrary(IntPtr hLibModule);
+
+        [DllImport("KERNEL32.DLL")]
+        public static extern IntPtr GetProcAddress(
+            IntPtr hModule,
+
+            [MarshalAs(UnmanagedType.LPStr)]
+            string lpProcName
+        );
 
         [DllImport("USER32.DLL", SetLastError = true)]
         public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
@@ -1483,6 +1753,57 @@ namespace FlashpointSecurePlayer {
             public static PathNamesLong Long { get; } = new PathNamesLong();
         }
 
+        public static BINARY_TYPE GetLibraryBinaryType(string libFileName) {
+            IntPtr moduleHandle = IntPtr.Zero;
+            
+            moduleHandle = LoadLibraryEx(libFileName, IntPtr.Zero, LoadLibraryFlags.LOAD_LIBRARY_AS_DATAFILE);
+
+            if (moduleHandle == IntPtr.Zero) {
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+            }
+
+            try {
+                IntPtr imageDOSHeaderPointer = moduleHandle;
+
+                if (imageDOSHeaderPointer == IntPtr.Zero) {
+                    throw new Exceptions.LibraryBinaryFormatException("imageDOSHeaderPointer must not be NULL");
+                }
+
+                IMAGE_DOS_HEADER imageDOSHeader = (IMAGE_DOS_HEADER)Marshal.PtrToStructure(imageDOSHeaderPointer, typeof(IMAGE_DOS_HEADER));
+
+                if (imageDOSHeader.e_magic != IMAGE_DOS_SIGNATURE) {
+                    throw new Exceptions.LibraryBinaryFormatException("e_magic must be IMAGE_DOS_SIGNATURE");
+                }
+
+                IntPtr imageNTHeadersPointer = IntPtr.Zero;
+
+                try {
+                    imageNTHeadersPointer = ImageNtHeader(moduleHandle);
+
+                    if (imageNTHeadersPointer == IntPtr.Zero) {
+                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                    }
+                } catch {
+                    throw new Exceptions.LibraryBinaryFormatException("imageNTHeadersPointer must not be NULL");
+                }
+
+                IMAGE_NT_HEADERS imageNTHeaders = (IMAGE_NT_HEADERS)Marshal.PtrToStructure(imageNTHeadersPointer, typeof(IMAGE_NT_HEADERS));
+
+                if (imageNTHeaders.Signature != IMAGE_NT_SIGNATURE) {
+                    throw new Exceptions.LibraryBinaryFormatException("Signature must be IMAGE_NT_SIGNATURE");
+                }
+
+                if (imageNTHeaders.FileHeader.Machine == IMAGE_FILE_MACHINE_I386) {
+                    return BINARY_TYPE.SCS_32BIT_BINARY;
+                }
+            } finally {
+                if (!FreeLibrary(moduleHandle)) {
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                }
+            }
+            return BINARY_TYPE.SCS_64BIT_BINARY;
+        }
+
         public static bool TestLaunchedAsAdministratorUser() {
             AppDomain.CurrentDomain.SetPrincipalPolicy(PrincipalPolicy.WindowsPrincipal);
 
@@ -2386,11 +2707,7 @@ namespace FlashpointSecurePlayer {
                 string processMainModuleFileName = process.MainModule.FileName;
                 queryResult = true;
                 processName = new StringBuilder(processMainModuleFileName);
-            } catch (NotSupportedException) {
-                queryResult = QueryFullProcessImageName(process.Handle, 0, processName, ref size);
-            } catch (Win32Exception) {
-                queryResult = QueryFullProcessImageName(process.Handle, 0, processName, ref size);
-            } catch (InvalidOperationException) {
+            } catch (Exception) {
                 queryResult = QueryFullProcessImageName(process.Handle, 0, processName, ref size);
             }
 

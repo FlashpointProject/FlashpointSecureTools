@@ -13,67 +13,29 @@ namespace FlashpointSecurePlayer {
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private delegate int DllRegisterServerDelegate();
 
-        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
-        private static extern IntPtr LoadLibrary(
-            [MarshalAs(UnmanagedType.LPTStr)]
-            string lpLibFileName
-        );
-
-        [DllImport("KERNEL32.DLL", SetLastError = true)]
-        private static extern int FreeLibrary(IntPtr hLibModule);
-
-        [DllImport("KERNEL32.DLL", SetLastError = true)]
-        private static extern IntPtr GetProcAddress(
-            IntPtr hModule,
-            
-            [MarshalAs(UnmanagedType.LPStr)]
-            string lpProcName
-        );
-
         private IntPtr moduleHandle = IntPtr.Zero;
 
         private readonly DllRegisterServerDelegate DllRegisterServer;
         private readonly DllRegisterServerDelegate DllUnregisterServer;
 
         public ActiveXControl(string libFileName) {
-            try {
-                moduleHandle = LoadLibrary(libFileName);
+            moduleHandle = LoadLibrary(libFileName);
 
-                if (moduleHandle == IntPtr.Zero) {
-                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                    return;
-                }
-            } catch (Win32Exception ex) {
-                LogExceptionToLauncher(ex);
-                throw new DllNotFoundException("The library \"" + libFileName + "\" could not be found.");
+            if (moduleHandle == IntPtr.Zero) {
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                return;
             }
 
-            IntPtr dllRegisterServerProcAddress = IntPtr.Zero;
+            IntPtr dllRegisterServerProcAddress = GetProcAddress(moduleHandle, "DllRegisterServer");
 
-            try {
-                dllRegisterServerProcAddress = GetProcAddress(moduleHandle, "DllRegisterServer");
-
-                if (dllRegisterServerProcAddress == IntPtr.Zero) {
-                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                    return;
-                }
-            } catch (Win32Exception ex) {
-                LogExceptionToLauncher(ex);
+            if (dllRegisterServerProcAddress == IntPtr.Zero) {
                 throw new InvalidActiveXControlException("The library does not have a DllRegisterServer export.");
             }
 
-            IntPtr dllUnregisterServerProcAddress = IntPtr.Zero;
+            IntPtr dllUnregisterServerProcAddress = GetProcAddress(moduleHandle, "DllUnregisterServer");
 
-            try {
-                dllUnregisterServerProcAddress = GetProcAddress(moduleHandle, "DllUnregisterServer");
-
-                if (dllUnregisterServerProcAddress == IntPtr.Zero) {
-                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                    return;
-                }
-            } catch (Win32Exception ex) {
-                LogExceptionToLauncher(ex);
-                throw new InvalidActiveXControlException("The library does not have a DllRegisterServer export.");
+            if (dllUnregisterServerProcAddress == IntPtr.Zero) {
+                throw new InvalidActiveXControlException("The library does not have a DllUnregisterServer export.");
             }
 
             DllRegisterServer = Marshal.GetDelegateForFunctionPointer(dllRegisterServerProcAddress, typeof(DllRegisterServerDelegate)) as DllRegisterServerDelegate;
@@ -82,8 +44,14 @@ namespace FlashpointSecurePlayer {
 
         ~ActiveXControl() {
             if (moduleHandle != IntPtr.Zero) {
-                FreeLibrary(moduleHandle);
-                moduleHandle = IntPtr.Zero;
+                try {
+                    if (!FreeLibrary(moduleHandle)) {
+                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                        return;
+                    }
+                } catch (Exception ex) {
+                    LogExceptionToLauncher(ex);
+                }
             }
         }
 

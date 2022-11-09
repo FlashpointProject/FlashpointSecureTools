@@ -36,7 +36,7 @@ namespace FlashpointSecurePlayer {
                     parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess));
                 } catch (Exception ex) {
                     LogExceptionToLauncher(ex);
-                    throw new OldCPUSimulatorFailedException("Failed to get the parent process EXE name.");
+                    throw new InvalidOldCPUSimulatorException("Failed to get the parent process EXE name.");
                 }
             }
 
@@ -81,7 +81,7 @@ namespace FlashpointSecurePlayer {
             // sigh... okay
             // first, we check the target rate
             if (!int.TryParse(Environment.ExpandEnvironmentVariables(oldCPUSimulatorElement.TargetRate), out int targetRate)) {
-                throw new OldCPUSimulatorFailedException("The Target Rate is required.");
+                throw new InvalidOldCPUSimulatorException("The Target Rate is required.");
             }
 
             if (TestRunningWithOldCPUSimulator()) {
@@ -122,11 +122,11 @@ namespace FlashpointSecurePlayer {
                 }
 
                 if (oldCPUSimulatorProcess.ExitCode != 0 || !long.TryParse(oldCPUSimulatorProcessStandardOutput.Split('\n').Last(), out maxRate)) {
-                    throw new OldCPUSimulatorFailedException("Failed to get Max Rate.");
+                    throw new InvalidOldCPUSimulatorException("Failed to get Max Rate.");
                 }
             } catch (Exception ex) {
                 LogExceptionToLauncher(ex);
-                throw new OldCPUSimulatorFailedException("Failed to get Max Rate.");
+                throw new InvalidOldCPUSimulatorException("Failed to get Max Rate.");
             }
 
             // if our CPU is too slow, just ignore the modification
@@ -162,7 +162,7 @@ namespace FlashpointSecurePlayer {
                     oldCPUSimulatorSoftware.Append(fullPath);
                 } catch (Exception ex) {
                     LogExceptionToLauncher(ex);
-                    throw new OldCPUSimulatorFailedException("The command line is invalid.");
+                    throw new InvalidOldCPUSimulatorException("The command line is invalid.");
                 }
 
                 oldCPUSimulatorSoftware.Append(" ");
@@ -192,7 +192,7 @@ namespace FlashpointSecurePlayer {
                 }
                 return;
             }
-            throw new OldCPUSimulatorFailedException("The Old CPU Simulator in this Mode is not supported.");
+            throw new InvalidOldCPUSimulatorException("The Old CPU Simulator in this Mode is not supported.");
         }
     }
 }

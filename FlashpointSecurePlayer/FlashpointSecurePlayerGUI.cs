@@ -318,24 +318,21 @@ namespace FlashpointSecurePlayer {
 
                         try {
                             activeXControl = new ActiveXControl(TemplateName);
-                        } catch (DllNotFoundException ex) {
-                            LogExceptionToLauncher(ex);
-                            errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, TemplateName));
-                            throw new ActiveXImportFailedException("The ActiveX Import failed because the DLL was not found.");
                         } catch (InvalidActiveXControlException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.GameNotActiveXControl);
                             throw new ActiveXImportFailedException("The ActiveX Import failed because the DLL is not an ActiveX Control.");
+                        } catch (Exception ex) {
+                            LogExceptionToLauncher(ex);
+                            errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, TemplateName));
+                            throw new ActiveXImportFailedException("The ActiveX Import failed because the DLL was not found.");
                         }
 
-                        BINARY_TYPE binaryType = BINARY_TYPE.SCS_64BIT_BINARY;
+                        BINARY_TYPE binaryType;
 
                         try {
-                            if (!GetBinaryType(TemplateName, out binaryType)) {
-                                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                                return;
-                            }
-                        } catch (Win32Exception ex) {
+                            binaryType = GetLibraryBinaryType(TemplateName);
+                        } catch (Exception ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.GameNotActiveXControl);
                             throw new ActiveXImportFailedException("The ActiveX Import failed because getting the Binary Type failed.");
@@ -345,7 +342,7 @@ namespace FlashpointSecurePlayer {
                         // this is so we can be sure we can uninstall the control
                         try {
                             activeXControl.Install();
-                        } catch (Win32Exception ex) {
+                        } catch (Exception ex) {
                             LogExceptionToLauncher(ex);
 
                             if (!IgnoreActiveXControlInstallFailure) {
@@ -362,7 +359,7 @@ namespace FlashpointSecurePlayer {
                         // doesn't interfere with our registry state results
                         try {
                             activeXControl.Uninstall();
-                        } catch (Win32Exception ex) {
+                        } catch (Exception ex) {
                             LogExceptionToLauncher(ex);
 
                             if (!IgnoreActiveXControlInstallFailure) {
@@ -376,7 +373,7 @@ namespace FlashpointSecurePlayer {
                         try {
                             try {
                                 await registryState.StartImportAsync(TemplateName, binaryType).ConfigureAwait(true);
-                            } catch (RegistryStateFailedException ex) {
+                            } catch (InvalidRegistryStateException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.RegistryStateFailed);
                                 throw new ActiveXImportFailedException("The ActiveX Import failed because the Registry States failed when the ActiveX Import was started.");
@@ -404,7 +401,7 @@ namespace FlashpointSecurePlayer {
                             // a registry states is running, install the control
                             try {
                                 activeXControl.Install();
-                            } catch (Win32Exception ex) {
+                            } catch (Exception ex) {
                                 LogExceptionToLauncher(ex);
 
                                 if (!IgnoreActiveXControlInstallFailure) {
@@ -417,7 +414,7 @@ namespace FlashpointSecurePlayer {
 
                             try {
                                 await registryState.StopImportAsync().ConfigureAwait(true);
-                            } catch (RegistryStateFailedException ex) {
+                            } catch (InvalidRegistryStateException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.RegistryStateFailed);
                                 throw new ActiveXImportFailedException("The ActiveX Import failed because the Registry States failed when the ActiveX Import was stopped.");
@@ -443,7 +440,7 @@ namespace FlashpointSecurePlayer {
                         // (which is the point of creating the state so we can)
                         try {
                             activeXControl.Uninstall();
-                        } catch (Win32Exception ex) {
+                        } catch (Exception ex) {
                             LogExceptionToLauncher(ex);
 
                             if (!IgnoreActiveXControlInstallFailure) {
@@ -763,7 +760,7 @@ namespace FlashpointSecurePlayer {
                             if (modificationsElement.EnvironmentVariables.Count > 0) {
                                 try {
                                     environmentVariables.Activate(TemplateName);
-                                } catch (EnvironmentVariablesFailedException ex) {
+                                } catch (InvalidEnvironmentVariablesException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.EnvironmentVariablesFailed);
                                 } catch (System.Configuration.ConfigurationErrorsException ex) {
@@ -840,7 +837,7 @@ namespace FlashpointSecurePlayer {
                             if (modificationsElement.RegistryStates.Count > 0) {
                                 try {
                                     registryState.Activate(TemplateName);
-                                } catch (RegistryStateFailedException ex) {
+                                } catch (InvalidRegistryStateException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.RegistryStateFailed);
                                 } catch (System.Configuration.ConfigurationErrorsException ex) {
@@ -884,7 +881,7 @@ namespace FlashpointSecurePlayer {
                             if (modificationsElement.OldCPUSimulator.ElementInformation.IsPresent) {
                                 try {
                                     oldCPUSimulator.Activate(TemplateName, ref softwareProcessStartInfo, out softwareIsOldCPUSimulator);
-                                } catch (OldCPUSimulatorFailedException ex) {
+                                } catch (InvalidOldCPUSimulatorException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.OldCPUSimulatorFailed);
                                 } catch (System.Configuration.ConfigurationErrorsException ex) {
@@ -950,7 +947,7 @@ namespace FlashpointSecurePlayer {
                             // this one really needs to work
                             // we can't continue if it does not
                             registryState.Deactivate(ModificationsRevertMethod);
-                        } catch (RegistryStateFailedException ex) {
+                        } catch (InvalidRegistryStateException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.RegistryStateFailed);
                         } catch (System.Configuration.ConfigurationErrorsException ex) {
@@ -974,7 +971,7 @@ namespace FlashpointSecurePlayer {
                         
                         try {
                             environmentVariables.Deactivate(ModificationsRevertMethod);
-                        } catch (EnvironmentVariablesFailedException ex) {
+                        } catch (InvalidEnvironmentVariablesException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.EnvironmentVariablesFailed);
                         } catch (System.Configuration.ConfigurationErrorsException ex) {

@@ -489,19 +489,7 @@ namespace FlashpointSecurePlayer {
 
             try {
                 customSecurityManager = new CustomSecurityManager(closableWebBrowser, UseFlashActiveXControl);
-            } catch (Win32Exception ex) {
-                LogExceptionToLauncher(ex);
-                ProgressManager.ShowError();
-                MessageBox.Show(Properties.Resources.FailedCreateCustomSecurityManager, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Application.Exit();
-                return;
-            } catch (SEHException ex) {
-                LogExceptionToLauncher(ex);
-                ProgressManager.ShowError();
-                MessageBox.Show(Properties.Resources.FailedCreateCustomSecurityManager, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Application.Exit();
-                return;
-            } catch (ExternalException ex) {
+            } catch (Exception ex) {
                 LogExceptionToLauncher(ex);
                 ProgressManager.ShowError();
                 MessageBox.Show(Properties.Resources.FailedCreateCustomSecurityManager, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
