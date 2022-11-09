@@ -307,18 +307,17 @@ namespace FlashpointSecurePlayer {
 
             UseFlashActiveXControl = useFlashActiveXControl;
 
-            if (closableWebBrowser != null) {
-                closableWebBrowser.CanGoBackChanged += closableWebBrowser_CanGoBackChanged;
-                closableWebBrowser.CanGoForwardChanged += closableWebBrowser_CanGoForwardChanged;
-                closableWebBrowser.DocumentTitleChanged += closableWebBrowser_DocumentTitleChanged;
-                closableWebBrowser.StatusTextChanged += closableWebBrowser_StatusTextChanged;
-
-                closableWebBrowser.WebBrowserClose += closableWebBrowser_WebBrowserClose;
-                closableWebBrowser.WebBrowserPaint += closableWebBrowser_WebBrowserPaint;
-                closableWebBrowser.WebBrowserSaveAsWebpage += closableWebBrowser_WebBrowserSaveAsWebpage;
-                closableWebBrowser.WebBrowserPrint += closableWebBrowser_WebBrowserPrint;
-                closableWebBrowser.WebBrowserNewWindow += closableWebBrowser_WebBrowserNewWindow;
+            if (closableWebBrowser == null) {
+                closableWebBrowser = new ClosableWebBrowser();
             }
+
+            closableWebBrowser.CanGoBackChanged += closableWebBrowser_CanGoBackChanged;
+            closableWebBrowser.CanGoForwardChanged += closableWebBrowser_CanGoForwardChanged;
+            closableWebBrowser.DocumentTitleChanged += closableWebBrowser_DocumentTitleChanged;
+            closableWebBrowser.StatusTextChanged += closableWebBrowser_StatusTextChanged;
+
+            closableWebBrowser.WebBrowserClose += closableWebBrowser_WebBrowserClose;
+            closableWebBrowser.WebBrowserPaint += closableWebBrowser_WebBrowserPaint;
 
             statusBarStatusStrip.Renderer = new EndEllipsisTextRenderer();
 
@@ -342,10 +341,10 @@ namespace FlashpointSecurePlayer {
         }
 
         ~WebBrowserMode() {
+            // the WebBrowserClose event must be disabled, otherwise we
+            // end up closing the current form when it's already closed
+            // (browser reports being closed > we close the form and so on)
             if (closableWebBrowser != null) {
-                // the WebBrowserMode property must be nulled out, otherwise we
-                // end up closing the current form when it's already closed
-                // (browser reports being closed > we close the form and so on)
                 closableWebBrowser.CanGoBackChanged -= closableWebBrowser_CanGoBackChanged;
                 closableWebBrowser.CanGoForwardChanged -= closableWebBrowser_CanGoForwardChanged;
                 closableWebBrowser.DocumentTitleChanged -= closableWebBrowser_DocumentTitleChanged;
@@ -353,9 +352,7 @@ namespace FlashpointSecurePlayer {
 
                 closableWebBrowser.WebBrowserClose -= closableWebBrowser_WebBrowserClose;
                 closableWebBrowser.WebBrowserPaint -= closableWebBrowser_WebBrowserPaint;
-                closableWebBrowser.WebBrowserSaveAsWebpage -= closableWebBrowser_WebBrowserSaveAsWebpage;
-                closableWebBrowser.WebBrowserPrint -= closableWebBrowser_WebBrowserPrint;
-                closableWebBrowser.WebBrowserNewWindow -= closableWebBrowser_WebBrowserNewWindow;
+
                 closableWebBrowser.Dispose();
                 closableWebBrowser = null;
             }
@@ -571,6 +568,15 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        private void closableWebBrowser_Navigated(object sender, WebBrowserNavigatedEventArgs e) {
+            if (e.Url.Equals("about:blank")) {
+                addressToolStripSpringTextBox.Text = String.Empty;
+                return;
+            }
+
+            addressToolStripSpringTextBox.Text = e.Url.ToString();
+        }
+
         private readonly object downloadCompletedLock = new object();
         private bool downloadCompleted = false;
 
@@ -610,6 +616,24 @@ namespace FlashpointSecurePlayer {
             progressToolStripProgressBar.ToolTipText = progress + "%";
         }
 
+        private void closableWebBrowser_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e) {
+            // see ProcessCmdKey for an explanation of why this is here
+            switch (e.KeyData) {
+                case Keys.Control | Keys.S:
+                e.IsInputKey = true;
+                BrowserSaveAsWebpage();
+                break;
+                case Keys.Control | Keys.P:
+                e.IsInputKey = true;
+                BrowserPrint();
+                break;
+                case Keys.Control | Keys.N:
+                e.IsInputKey = true;
+                BrowserNewWindow();
+                break;
+            }
+        }
+
         private void closableWebBrowser_CanGoBackChanged(object sender, EventArgs e) {
             if (closableWebBrowser == null) {
                 return;
@@ -642,39 +666,18 @@ namespace FlashpointSecurePlayer {
             statusToolStripStatusLabel.Text = closableWebBrowser.StatusText;
         }
 
-        private void closableWebBrowser_Navigated(object sender, WebBrowserNavigatedEventArgs e) {
-            if (e.Url.Equals("about:blank")) {
-                addressToolStripSpringTextBox.Text = String.Empty;
-                return;
-            }
-
-            addressToolStripSpringTextBox.Text = e.Url.ToString();
-        }
-
         private void closableWebBrowser_WebBrowserClose(object sender, EventArgs e) {
             Close();
         }
 
         private void closableWebBrowser_WebBrowserPaint(object sender, EventArgs e) {
+            // lame fix: browser hangs when window.open top attribute > control height (why?)
+            // Width, Height, and WindowState changes all work here
+            // Width/Height are less obvious and Height doesn't cause text reflow
             if (WindowState != FormWindowState.Maximized) {
-                // lame fix: browser hangs when window.open top attribute > control height (why?)
-                // Width, Height, and WindowState changes all work here
-                // Width/Height are less obvious and Height doesn't cause text reflow
                 Height--;
                 Height++;
             }
-        }
-
-        private void closableWebBrowser_WebBrowserSaveAsWebpage(object sender, EventArgs e) {
-            BrowserSaveAsWebpage();
-        }
-
-        private void closableWebBrowser_WebBrowserPrint(object sender, EventArgs e) {
-            BrowserPrint();
-        }
-
-        private void closableWebBrowser_WebBrowserNewWindow(object sender, EventArgs e) {
-            BrowserNewWindow();
         }
 
         public object PPDisp {
@@ -866,16 +869,18 @@ namespace FlashpointSecurePlayer {
             if (ActiveControl != null && ActiveControl == closableWebBrowser) {
                 // some keys (Back, Alt + Arrows, F5) are already handled by
                 // the WebBrowser control without us needing to do anything
+                // they're not passed to us when they're automatically handled though
+                // so we still handle them just in case
                 // Ctrl + S/Ctrl + P/Ctrl + N are like this, but in those cases we
                 // actually need to exit fullscreen so the dialog can open on top
-                // they are handled in the ClosableWebBrowser control instead
+                // they are handled on the PreviewKeyDown event instead
                 switch (keyData) {
-                    //case Keys.Back:
-                    //case Keys.Alt | Keys.Left:
+                    case Keys.Back:
+                    case Keys.Alt | Keys.Left:
                     case Keys.BrowserBack:
                     BrowserBack();
                     return true;
-                    //case Keys.Alt | Keys.Right:
+                    case Keys.Alt | Keys.Right:
                     case Keys.BrowserForward:
                     BrowserForward();
                     return true;
@@ -883,7 +888,7 @@ namespace FlashpointSecurePlayer {
                     case Keys.BrowserStop:
                     BrowserStop();
                     return true;
-                    //case Keys.F5:
+                    case Keys.F5:
                     case Keys.Control | Keys.R:
                     case Keys.BrowserRefresh:
                     BrowserRefresh();

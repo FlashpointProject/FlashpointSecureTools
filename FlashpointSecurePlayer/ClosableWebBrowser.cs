@@ -16,14 +16,9 @@ namespace FlashpointSecurePlayer {
     public partial class ClosableWebBrowser : System.Windows.Forms.WebBrowser {
         public event EventHandler WebBrowserClose;
         public event EventHandler WebBrowserPaint;
-        public event EventHandler WebBrowserSaveAsWebpage;
-        public event EventHandler WebBrowserPrint;
-        public event EventHandler WebBrowserNewWindow;
 
         public ClosableWebBrowser() {
             InitializeComponent();
-
-            this.PreviewKeyDown += ClosableWebBrowser_PreviewKeyDown;
         }
 
         protected virtual void OnWebBrowserClose(EventArgs e) {
@@ -38,36 +33,6 @@ namespace FlashpointSecurePlayer {
 
         protected virtual void OnWebBrowserPaint(EventArgs e) {
             EventHandler eventHandler = WebBrowserPaint;
-
-            if (eventHandler == null) {
-                return;
-            }
-
-            eventHandler(this, e);
-        }
-
-        protected virtual void OnWebBrowserSaveAsWebpage(EventArgs e) {
-            EventHandler eventHandler = WebBrowserSaveAsWebpage;
-
-            if (eventHandler == null) {
-                return;
-            }
-
-            eventHandler(this, e);
-        }
-
-        protected virtual void OnWebBrowserPrint(EventArgs e) {
-            EventHandler eventHandler = WebBrowserPrint;
-
-            if (eventHandler == null) {
-                return;
-            }
-
-            eventHandler(this, e);
-        }
-
-        protected virtual void OnWebBrowserNewWindow(EventArgs e) {
-            EventHandler eventHandler = WebBrowserNewWindow;
 
             if (eventHandler == null) {
                 return;
@@ -100,24 +65,6 @@ namespace FlashpointSecurePlayer {
             }
 
             base.WndProc(ref m);
-        }
-
-        private void ClosableWebBrowser_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e) {
-            // see ProcessCmdKey in WebBrowserMode for an explanation of why this is here
-            switch (e.KeyData) {
-                case Keys.Control | Keys.S:
-                e.IsInputKey = true;
-                OnWebBrowserSaveAsWebpage(EventArgs.Empty);
-                break;
-                case Keys.Control | Keys.P:
-                e.IsInputKey = true;
-                OnWebBrowserPrint(EventArgs.Empty);
-                break;
-                case Keys.Control | Keys.N:
-                e.IsInputKey = true;
-                OnWebBrowserNewWindow(EventArgs.Empty);
-                break;
-            }
         }
     }
 }

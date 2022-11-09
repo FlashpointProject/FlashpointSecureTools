@@ -245,6 +245,7 @@
             this.closableWebBrowser.Url = new System.Uri("about:blank", System.UriKind.Absolute);
             this.closableWebBrowser.Navigated += new System.Windows.Forms.WebBrowserNavigatedEventHandler(this.closableWebBrowser_Navigated);
             this.closableWebBrowser.ProgressChanged += new System.Windows.Forms.WebBrowserProgressChangedEventHandler(this.closableWebBrowser_ProgressChanged);
+            this.closableWebBrowser.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.closableWebBrowser_PreviewKeyDown);
             // 
             // exitFullscreenLabel
             // 
