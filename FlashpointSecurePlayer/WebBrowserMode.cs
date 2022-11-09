@@ -411,8 +411,7 @@ namespace FlashpointSecurePlayer {
             if (closableWebBrowser == null) {
                 return;
             }
-
-            //Fullscreen = false;
+            
             closableWebBrowser.ShowSaveAsDialog();
         }
 
@@ -420,8 +419,7 @@ namespace FlashpointSecurePlayer {
             if (closableWebBrowser == null) {
                 return;
             }
-
-            //Fullscreen = false;
+            
             closableWebBrowser.ShowPrintDialog();
         }
 
@@ -446,8 +444,6 @@ namespace FlashpointSecurePlayer {
         }
 
         public WebBrowserMode BrowserNewWindow() {
-            //Fullscreen = false;
-
             // we don't want this window to be the parent, breaks fullscreen and not otherwise useful
             WebBrowserMode webBrowserForm = new WebBrowserMode(UseFlashActiveXControl);
             webBrowserForm.Show(/*this*/);
@@ -632,29 +628,6 @@ namespace FlashpointSecurePlayer {
 
             progressToolStripProgressBar.Value = progress;
             progressToolStripProgressBar.ToolTipText = progress + "%";
-        }
-
-        private void closableWebBrowser_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e) {
-            // usually, Ctrl + S/P/N are handled automatically by the
-            // browser control, but we actually don't want this because we
-            // need to exit fullscreen first so the dialogs can open on top
-            // these keys are handled on the PreviewKeyDown event, which means
-            // the browser control itself, and ProcessCmdKey, never see them
-            // this is fine, because these shortcuts are always active
-            switch (e.KeyData) {
-                case Keys.Control | Keys.S:
-                e.IsInputKey = true;
-                BrowserSaveAsWebpage();
-                break;
-                case Keys.Control | Keys.P:
-                e.IsInputKey = true;
-                BrowserPrint();
-                break;
-                case Keys.Control | Keys.N:
-                e.IsInputKey = true;
-                BrowserNewWindow();
-                break;
-            }
         }
 
         private void closableWebBrowser_CanGoBackChanged(object sender, EventArgs e) {
@@ -896,8 +869,6 @@ namespace FlashpointSecurePlayer {
                 // for example, while editing a textbox, Backspace should
                 // erase characters, not navigate back
                 // ProcessCmdKey handles this properly, PreviewKeyDown would circumvent this
-                // Ctrl + S/P/N are exempt from this and are handled
-                // on the PreviewKeyDown event instead
                 switch (keyData) {
                     case Keys.Back:
                     case Keys.Alt | Keys.Left:
@@ -917,7 +888,6 @@ namespace FlashpointSecurePlayer {
                     case Keys.BrowserRefresh:
                     BrowserRefresh();
                     return true;
-                    /*
                     case Keys.Control | Keys.S:
                     BrowserSaveAsWebpage();
                     return true;
@@ -927,7 +897,6 @@ namespace FlashpointSecurePlayer {
                     case Keys.Control | Keys.N:
                     BrowserNewWindow();
                     return true;
-                    */
                     case Keys.F11:
                     case Keys.Alt | Keys.Enter:
                     BrowserFullscreen();
