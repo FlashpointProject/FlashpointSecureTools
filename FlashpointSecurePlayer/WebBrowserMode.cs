@@ -573,7 +573,7 @@ namespace FlashpointSecurePlayer {
                 // if this process has the foreground window, it'll be the active window
                 if (activeWindow != IntPtr.Zero && activeWindow == GetForegroundWindow()) {
                     // this process opened a window
-                    if (IsWindowEnabled(Handle)) {
+                    if (CanFocus) {
                         // the new window isn't a dialog
                         Fullscreen = false;
                         return;
