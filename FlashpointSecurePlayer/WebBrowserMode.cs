@@ -5,7 +5,6 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using System.Text;
 using System.Windows.Forms;
@@ -313,8 +312,12 @@ namespace FlashpointSecurePlayer {
                 closableWebBrowser.CanGoForwardChanged += closableWebBrowser_CanGoForwardChanged;
                 closableWebBrowser.DocumentTitleChanged += closableWebBrowser_DocumentTitleChanged;
                 closableWebBrowser.StatusTextChanged += closableWebBrowser_StatusTextChanged;
+
                 closableWebBrowser.WebBrowserClose += closableWebBrowser_WebBrowserClose;
                 closableWebBrowser.WebBrowserPaint += closableWebBrowser_WebBrowserPaint;
+                closableWebBrowser.WebBrowserSaveAsWebpage += closableWebBrowser_WebBrowserSaveAsWebpage;
+                closableWebBrowser.WebBrowserPrint += closableWebBrowser_WebBrowserPrint;
+                closableWebBrowser.WebBrowserNewWindow += closableWebBrowser_WebBrowserNewWindow;
             }
 
             statusBarStatusStrip.Renderer = new EndEllipsisTextRenderer();
@@ -347,8 +350,12 @@ namespace FlashpointSecurePlayer {
                 closableWebBrowser.CanGoForwardChanged -= closableWebBrowser_CanGoForwardChanged;
                 closableWebBrowser.DocumentTitleChanged -= closableWebBrowser_DocumentTitleChanged;
                 closableWebBrowser.StatusTextChanged -= closableWebBrowser_StatusTextChanged;
+
                 closableWebBrowser.WebBrowserClose -= closableWebBrowser_WebBrowserClose;
                 closableWebBrowser.WebBrowserPaint -= closableWebBrowser_WebBrowserPaint;
+                closableWebBrowser.WebBrowserSaveAsWebpage -= closableWebBrowser_WebBrowserSaveAsWebpage;
+                closableWebBrowser.WebBrowserPrint -= closableWebBrowser_WebBrowserPrint;
+                closableWebBrowser.WebBrowserNewWindow -= closableWebBrowser_WebBrowserNewWindow;
                 closableWebBrowser.Dispose();
                 closableWebBrowser = null;
             }
@@ -543,7 +550,9 @@ namespace FlashpointSecurePlayer {
             Application.AddMessageFilter(messageFilter);
 
             if (Fullscreen) {
-                BringToFront();
+                if (WindowState == FormWindowState.Minimized) {
+                    BringToFront();
+                }
             }
         }
 
@@ -551,6 +560,13 @@ namespace FlashpointSecurePlayer {
             Application.RemoveMessageFilter(messageFilter);
 
             if (Fullscreen) {
+                if (GetActiveWindow() == GetForegroundWindow()) {
+                    // we opened a window
+                    Fullscreen = false;
+                    return;
+                }
+                
+                // someone else opened a window
                 WindowState = FormWindowState.Minimized;
             }
         }
@@ -647,6 +663,18 @@ namespace FlashpointSecurePlayer {
                 Height--;
                 Height++;
             }
+        }
+
+        private void closableWebBrowser_WebBrowserSaveAsWebpage(object sender, EventArgs e) {
+            BrowserSaveAsWebpage();
+        }
+
+        private void closableWebBrowser_WebBrowserPrint(object sender, EventArgs e) {
+            BrowserPrint();
+        }
+
+        private void closableWebBrowser_WebBrowserNewWindow(object sender, EventArgs e) {
+            BrowserNewWindow();
         }
 
         public object PPDisp {
@@ -836,27 +864,30 @@ namespace FlashpointSecurePlayer {
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
             // don't disable keys on e.g. the address bar
             if (ActiveControl != null && ActiveControl == closableWebBrowser) {
+                // some keys (Back, Alt + Arrows, F5) are already handled by
+                // the WebBrowser control without us needing to do anything
+                // Ctrl + S/Ctrl + P/Ctrl + N are like this, but in those cases we
+                // actually need to exit fullscreen so the dialog can open on top
+                // they are handled in the ClosableWebBrowser control instead
                 switch (keyData) {
-                    case Keys.Back:
-                    case Keys.Control | Keys.Left:
-                    case Keys.Alt | Keys.Left:
+                    //case Keys.Back:
+                    //case Keys.Alt | Keys.Left:
                     case Keys.BrowserBack:
                     BrowserBack();
                     return true;
-                    case Keys.Control | Keys.Right:
-                    case Keys.Alt | Keys.Right:
+                    //case Keys.Alt | Keys.Right:
                     case Keys.BrowserForward:
                     BrowserForward();
                     return true;
-                    case Keys.Escape:
                     case Keys.BrowserStop:
                     BrowserStop();
                     return true;
-                    case Keys.F5:
+                    //case Keys.F5:
                     case Keys.Control | Keys.R:
                     case Keys.BrowserRefresh:
                     BrowserRefresh();
                     return true;
+                    /*
                     case Keys.Control | Keys.S:
                     BrowserSaveAsWebpage();
                     return true;
@@ -866,6 +897,7 @@ namespace FlashpointSecurePlayer {
                     case Keys.Control | Keys.N:
                     BrowserNewWindow();
                     return true;
+                    */
                     case Keys.F11:
                     case Keys.Alt | Keys.Enter:
                     BrowserFullscreen();

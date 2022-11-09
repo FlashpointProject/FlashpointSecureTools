@@ -228,6 +228,12 @@ namespace FlashpointSecurePlayer {
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool IsOS(OS dwOS);
 
+        [DllImport("USER32.DLL")]
+        public static extern IntPtr GetActiveWindow();
+
+        [DllImport("USER32.DLL")]
+        public static extern IntPtr GetForegroundWindow();
+
         [DllImport("USER32.DLL", SetLastError = true)]
         public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
