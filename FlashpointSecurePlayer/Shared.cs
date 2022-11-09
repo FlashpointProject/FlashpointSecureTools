@@ -183,9 +183,6 @@ namespace FlashpointSecurePlayer {
         );
 
         public static readonly ushort IMAGE_DOS_SIGNATURE = 0x5A4D;
-        public static readonly ushort IMAGE_OS2_SIGNATURE = 0x454E;
-        public static readonly ushort IMAGE_OS2_SIGNATURE_LE = 0x454C;
-        public static readonly ushort IMAGE_VXD_SIGNATURE = 0x454C;
         public static readonly uint IMAGE_NT_SIGNATURE = 0x00004550;
 
         [StructLayout(LayoutKind.Sequential)]
@@ -218,9 +215,8 @@ namespace FlashpointSecurePlayer {
         }
 
         public const ushort IMAGE_FILE_MACHINE_I386 = 0x014c;
-        public const ushort IMAGE_FILE_MACHINE_IA64 = 0x0200;
-        public const ushort IMAGE_FILE_MACHINE_AMD64 = 0x8664;
 
+        [StructLayout(LayoutKind.Sequential)]
         public struct IMAGE_FILE_HEADER {
             public ushort Machine;
             public ushort NumberOfSections;
@@ -233,13 +229,9 @@ namespace FlashpointSecurePlayer {
 
         [StructLayout(LayoutKind.Sequential)]
         public struct IMAGE_DATA_DIRECTORY {
-            public UInt32 VirtualAddress;
-            public UInt32 Size;
+            public uint VirtualAddress;
+            public uint Size;
         }
-
-        public const ushort IMAGE_NT_OPTIONAL_HDR32_MAGIC = 0x010B;
-        public const ushort IMAGE_NT_OPTIONAL_HDR64_MAGIC = 0x020B;
-        public const ushort IMAGE_ROM_OPTIONAL_HDR_MAGIC = 0x0107;
 
         [StructLayout(LayoutKind.Explicit)]
         public struct IMAGE_OPTIONAL_HEADER {
@@ -266,8 +258,7 @@ namespace FlashpointSecurePlayer {
 
             [FieldOffset(20)]
             public uint BaseOfCode;
-
-            // PE32 contains this additional field
+            
             [FieldOffset(24)]
             public uint BaseOfData;
 
@@ -406,7 +397,7 @@ namespace FlashpointSecurePlayer {
 
         [Flags]
         public enum LoadLibraryFlags : uint {
-            None = 0,
+            Zero = 0,
             DONT_RESOLVE_DLL_REFERENCES = 0x00000001,
             LOAD_IGNORE_CODE_AUTHZ_LEVEL = 0x00000010,
             LOAD_LIBRARY_AS_DATAFILE = 0x00000002,
