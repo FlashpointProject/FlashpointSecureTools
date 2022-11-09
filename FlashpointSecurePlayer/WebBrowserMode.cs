@@ -28,6 +28,10 @@ namespace FlashpointSecurePlayer {
                         // otherwise plugins such as Viscape which
                         // create their own window can steal the
                         // mouse move event
+                        // it cannot happen in PreFilterMessage!
+                        // our window may not even get these messages
+                        // all that matters is the mouse position, regardless
+                        // of if our window is active
                         Point toolBarToolStripMousePosition = toolBarToolStrip.PointToClient(Control.MousePosition);
 
                         if (toolBarToolStrip.Visible) {
@@ -212,6 +216,12 @@ namespace FlashpointSecurePlayer {
 
             [SecurityPermission(SecurityAction.Demand)]
             public bool PreFilterMessage(ref Message m) {
+                // this happens in PreFilterMessage because
+                // the mouse back/forward buttons should only
+                // have an effect if our window is active
+                // for example, if there is a popup, the
+                // mouse buttons shouldn't navigate both the
+                // main and popup windows
                 if (m.Msg == WM_XBUTTONUP) {
                     int wParam = m.WParam.ToInt32();
 
@@ -617,7 +627,12 @@ namespace FlashpointSecurePlayer {
         }
 
         private void closableWebBrowser_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e) {
-            // see ProcessCmdKey for an explanation of why this is here
+            // usually, Ctrl + S/P/N are handled automatically by the
+            // browser control, but we actually don't want this because we
+            // need to exit fullscreen first so the dialogs can open on top
+            // these keys are handled on the PreviewKeyDown event, which means
+            // the browser control itself, and ProcessCmdKey, never see them
+            // this is fine, because these shortcuts are always active
             switch (e.KeyData) {
                 case Keys.Control | Keys.S:
                 e.IsInputKey = true;
@@ -867,13 +882,14 @@ namespace FlashpointSecurePlayer {
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
             // don't disable keys on e.g. the address bar
             if (ActiveControl != null && ActiveControl == closableWebBrowser) {
-                // some keys (Back, Alt + Arrows, F5) are already handled by
-                // the WebBrowser control without us needing to do anything
-                // they're not passed to us when they're automatically handled though
-                // so we still handle them just in case
-                // Ctrl + S/Ctrl + P/Ctrl + N are like this, but in those cases we
-                // actually need to exit fullscreen so the dialog can open on top
-                // they are handled on the PreviewKeyDown event instead
+                // IMPORTANT: these controls (such as Backspace to navigate back)
+                // must be handled here in ProcessCmdKey, not on PreviewKeyDown!
+                // otherwise, controls on the page won't recieve the input
+                // for example, while editing a textbox, Backspace should
+                // erase characters, not navigate back
+                // ProcessCmdKey handles this properly, PreviewKeyDown would circumvent this
+                // Ctrl + S/P/N are exempt from this and are handled
+                // on the PreviewKeyDown event instead
                 switch (keyData) {
                     case Keys.Back:
                     case Keys.Alt | Keys.Left:
