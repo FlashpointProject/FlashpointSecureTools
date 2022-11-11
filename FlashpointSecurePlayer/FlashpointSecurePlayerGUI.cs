@@ -1093,6 +1093,8 @@ namespace FlashpointSecurePlayer {
         private void ImportStop(object sender, EventArgs e) {
             ControlBox = true;
         }
+        
+        private bool loaded = false;
 
         private async void FlashpointSecurePlayer_Load(object sender, EventArgs e) {
             Text += " " + typeof(FlashpointSecurePlayerGUI).Assembly.GetName().Version;
@@ -1146,7 +1148,7 @@ namespace FlashpointSecurePlayer {
                 URL = args[2];
                 string arg = null;
 
-                for (int i = 3;i < args.Length;i++) {
+                for (int i = 3; i < args.Length; i++) {
                     arg = args[i].ToLowerInvariant();
 
                     // instead of switch I use else if because C# is too lame for multiple case statements
@@ -1228,10 +1230,16 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
             }
+
+            loaded = true;
         }
 
         private async void FlashpointSecurePlayer_Shown(object sender, EventArgs e) {
             try {
+                if (!loaded) {
+                    return;
+                }
+
                 //Show();
                 ShowOutput(Properties.Resources.GameDownloading);
                 Refresh();
