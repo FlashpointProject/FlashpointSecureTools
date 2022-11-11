@@ -830,7 +830,10 @@ namespace FlashpointSecurePlayer {
         private void addressToolStripSpringTextBox_Click(object sender, EventArgs e) {
             if (addressToolStripSpringTextBoxEntered) {
                 addressToolStripSpringTextBoxEntered = false;
-                addressToolStripSpringTextBox.SelectAll();
+
+                if (String.IsNullOrEmpty(addressToolStripSpringTextBox.SelectedText)) {
+                    addressToolStripSpringTextBox.SelectAll();
+                }
             }
         }
 
