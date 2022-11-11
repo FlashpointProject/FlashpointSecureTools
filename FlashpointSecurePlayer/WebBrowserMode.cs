@@ -509,6 +509,8 @@ namespace FlashpointSecurePlayer {
         }
 
         private void WebBrowserMode_FormClosing(object sender, FormClosingEventArgs e) {
+            // disposing the browser can actually take a while
+            // to keep things snappy, we hide the window here
             Hide();
 
             // important that this is done first so that
