@@ -647,7 +647,7 @@ namespace FlashpointSecurePlayer {
             }
 
             string wow64KeyUpper = keyValueNameSplit[0].ToUpperInvariant();
-            string wow64KeyName = (keyValueNameSplit[1] + "\\");
+            string wow64KeyName = keyValueNameSplit[1] + "\\";
 
             if (WOW64KeyLists.ContainsKey(wow64KeyUpper)) {
                 List<WOW64Key> wow64KeyList = WOW64KeyLists[wow64KeyUpper];

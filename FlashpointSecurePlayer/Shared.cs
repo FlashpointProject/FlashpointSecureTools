@@ -2024,7 +2024,7 @@ namespace FlashpointSecurePlayer {
             name = GetValidEXEConfigurationName(name);
 
             // caching...
-            if (name != null) {
+            if (!String.IsNullOrEmpty(name)) {
                 if (name.Equals(EXEConfigurationName, StringComparison.InvariantCultureIgnoreCase)) {
                     return EXEConfiguration;
                 }
@@ -2111,7 +2111,7 @@ namespace FlashpointSecurePlayer {
             } else {
                 string name = GetValidEXEConfigurationName(exeConfigurationName);
 
-                if (name != null && Shared.flashpointSecurePlayerSection != null) {
+                if (!String.IsNullOrEmpty(name) && Shared.flashpointSecurePlayerSection != null) {
                     if (name.Equals(EXEConfigurationName, StringComparison.InvariantCultureIgnoreCase)) {
                         return Shared.flashpointSecurePlayerSection;
                     }
@@ -2447,6 +2447,18 @@ namespace FlashpointSecurePlayer {
             return false;
         }
 
+        public static string AddTrailingSlash(string path) {
+            // can be empty, but not null
+            if (path == null) {
+                return path;
+            }
+
+            if (path.Length > 0 && path.Substring(path.Length - 1) != "\\") {
+                path += "\\";
+            }
+            return path;
+        }
+
         public static string RemoveTrailingSlash(string path) {
             // can be empty, but not null
             if (path == null) {
@@ -2481,52 +2493,66 @@ namespace FlashpointSecurePlayer {
                 return value;
             }
 
+            if (valueString.Length > MAX_PATH + MAX_PATH + FP_STARTUP_PATH.Length) {
+                return value;
+            }
+
             if (String.IsNullOrEmpty(path)) {
                 return value;
             }
 
-            if (valueString.Length <= MAX_PATH + MAX_PATH + FP_STARTUP_PATH.Length) {
-                // get the short path
-                string shortPathName = PathNames.Short[path];
+            // get the short path
+            string shortPathName = PathNames.Short[path];
 
-                if (!String.IsNullOrEmpty(shortPathName)) {
-                    // if the value is a short value...
-                    if (valueString.StartsWith(shortPathName.ToString(), StringComparison.InvariantCultureIgnoreCase)) {
-                        // get the long path
-                        string longPathName = PathNames.Long[path];
-
-                        if (!String.IsNullOrEmpty(longPathName)) {
-                            // replace the short path with the long path
-                            valueString = longPathName.ToString() + valueString.Substring(shortPathName.Length);
-                        }
-                    }
-                }
+            if (String.IsNullOrEmpty(shortPathName)) {
+                return value;
             }
-            return valueString;
+
+            // if the value is a short value...
+            if (!valueString.StartsWith(shortPathName, StringComparison.InvariantCultureIgnoreCase)) {
+                return value;
+            }
+
+            // get the long path
+            string longPathName = PathNames.Long[path];
+
+            if (String.IsNullOrEmpty(longPathName)) {
+                return value;
+            }
+            // replace the short path with the long path
+            return longPathName + valueString.Substring(shortPathName.Length);
         }
 
         // find path in registry value
         // string must begin with path
-        public static object ReplaceStartupPathEnvironmentVariable(object value) {
+        public static object ReplaceStartupPathEnvironmentVariable(object lengthenedValue) {
             // since it's a value we'll just check it exists
-            if (!(value is string valueString)) {
-                return value;
+            if (!(lengthenedValue is string lengthenedValueString)) {
+                return lengthenedValue;
             }
 
-            if (valueString == null) {
-                return value;
+            if (lengthenedValueString == null) {
+                return lengthenedValue;
             }
 
-            if (valueString.Length <= MAX_PATH + MAX_PATH + FP_STARTUP_PATH.Length) {
-                string pathName = PathNames.Long[Application.StartupPath];
-
-                if (!String.IsNullOrEmpty(pathName)) {
-                    if (valueString.StartsWith(RemoveTrailingSlash(pathName.ToString()), StringComparison.InvariantCultureIgnoreCase)) {
-                        valueString = "%" + FP_STARTUP_PATH + "%\\" + RemoveValueStringSlash(valueString.Substring(pathName.Length));
-                    }
-                }
+            if (lengthenedValueString.Length > MAX_PATH + MAX_PATH + FP_STARTUP_PATH.Length) {
+                return lengthenedValue;
             }
-            return valueString;
+            
+            string longStartupPathName = PathNames.Long[Application.StartupPath];
+
+            if (String.IsNullOrEmpty(longStartupPathName)) {
+                return lengthenedValue;
+            }
+
+            if (lengthenedValueString.Equals(RemoveTrailingSlash(longStartupPathName), StringComparison.InvariantCultureIgnoreCase)) {
+                return "%" + FP_STARTUP_PATH + "%";
+            }
+
+            if (lengthenedValueString.StartsWith(AddTrailingSlash(longStartupPathName), StringComparison.InvariantCultureIgnoreCase)) {
+                return "%" + FP_STARTUP_PATH + "%\\" + RemoveValueStringSlash(lengthenedValueString.Substring(longStartupPathName.Length));
+            }
+            return lengthenedValue;
         }
         
         public static Process GetParentProcess() {
