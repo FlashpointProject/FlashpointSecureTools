@@ -16,7 +16,7 @@ using SHDocVw;
 
 namespace FlashpointSecurePlayer {
     public partial class WebBrowserMode : Form {
-        private HookProc lowLevelMouseProc = null;
+        private readonly HookProc lowLevelMouseProc;
         private IntPtr mouseHook = IntPtr.Zero;
 
         private IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam) {
@@ -177,17 +177,6 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private class EndEllipsisTextRenderer : ToolStripProfessionalRenderer {
-            protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e) {
-                if (e.Item is ToolStripStatusLabel) {
-                    TextRenderer.DrawText(e.Graphics, e.Text, e.TextFont, e.TextRectangle, e.TextColor, e.TextFormat | TextFormatFlags.EndEllipsis);
-                    return;
-                }
-
-                base.OnRenderItemText(e);
-            }
-        }
-
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         private class MessageFilter : IMessageFilter {
             private readonly EventHandler back;
@@ -243,7 +232,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private MessageFilter messageFilter = null;
+        private readonly MessageFilter messageFilter;
 
         private class TitleChangedEventArgs : EventArgs {
             public string Text { get; set; } = null;
@@ -313,46 +302,41 @@ namespace FlashpointSecurePlayer {
 
         private readonly WebBrowserModeTitle webBrowserModeTitle;
 
-        private bool UseFlashActiveXControl { get; set; } = false;
-        private CustomSecurityManager customSecurityManager = null;
+        private class EndEllipsisTextRenderer : ToolStripProfessionalRenderer {
+            protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e) {
+                if (e.Item is ToolStripStatusLabel) {
+                    TextRenderer.DrawText(e.Graphics, e.Text, e.TextFont, e.TextRectangle, e.TextColor, e.TextFormat | TextFormatFlags.EndEllipsis);
+                    return;
+                }
 
-        private void _WebBrowserMode(bool useFlashActiveXControl = false) {
+                base.OnRenderItemText(e);
+            }
+        }
+
+        private Uri WebBrowserURL { get; set; } = null;
+        private bool UseFlashActiveXControl { get; set; } = false;
+
+        public WebBrowserMode(bool useFlashActiveXControl = false) {
             InitializeComponent();
 
             UseFlashActiveXControl = useFlashActiveXControl;
 
-            // events are created/destroyed on form load/closing instead of here
-            // to avoid bugs with window.open/window.close
-            if (closableWebBrowser == null) {
-                closableWebBrowser = new ClosableWebBrowser();
-            }
-
-            statusBarStatusStrip.Renderer = new EndEllipsisTextRenderer();
-
-            messageFilter = new MessageFilter(Back, Forward);
-
             lowLevelMouseProc = new HookProc(LowLevelMouseProc);
-        }
-
-        public WebBrowserMode(bool useFlashActiveXControl = false) {
-            _WebBrowserMode(useFlashActiveXControl);
+            messageFilter = new MessageFilter(Back, Forward);
             webBrowserModeTitle = new WebBrowserModeTitle(TitleChanged);
+            statusBarStatusStrip.Renderer = new EndEllipsisTextRenderer();
         }
 
         public WebBrowserMode(Uri webBrowserURL, bool useFlashActiveXControl = false) {
-            _WebBrowserMode(useFlashActiveXControl);
+            InitializeComponent();
+
+            WebBrowserURL = webBrowserURL;
+            UseFlashActiveXControl = useFlashActiveXControl;
+
+            lowLevelMouseProc = new HookProc(LowLevelMouseProc);
+            messageFilter = new MessageFilter(Back, Forward);
             webBrowserModeTitle = new WebBrowserModeTitle(TitleChanged);
-
-            if (closableWebBrowser != null) {
-                closableWebBrowser.Url = webBrowserURL;
-            }
-        }
-
-        ~WebBrowserMode() {
-            if (closableWebBrowser != null) {
-                closableWebBrowser.Dispose();
-                closableWebBrowser = null;
-            }
+            statusBarStatusStrip.Renderer = new EndEllipsisTextRenderer();
         }
 
         public void BrowserBack() {
@@ -446,6 +430,8 @@ namespace FlashpointSecurePlayer {
             Text = e.Text;
         }
 
+        private CustomSecurityManager customSecurityManager = null;
+
         private void WebBrowserMode_Load(object sender, EventArgs e) {
             // default value is Redirector port
             /*
@@ -463,9 +449,9 @@ namespace FlashpointSecurePlayer {
                 catch (OverflowException) { }
             }
             */
-
+            
             if (closableWebBrowser == null) {
-                return;
+                closableWebBrowser = new ClosableWebBrowser();
             }
 
             try {
@@ -487,6 +473,8 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
+            // events are created/destroyed here
+            // to avoid bugs with window.open/window.close
             closableWebBrowser.CanGoBackChanged += closableWebBrowser_CanGoBackChanged;
             closableWebBrowser.CanGoForwardChanged += closableWebBrowser_CanGoForwardChanged;
             closableWebBrowser.DocumentTitleChanged += closableWebBrowser_DocumentTitleChanged;
@@ -509,6 +497,11 @@ namespace FlashpointSecurePlayer {
                 shDocVwWebBrowser.DownloadComplete += ShDocVwWebBrowser_DownloadComplete;
             }
 
+            // now that we've created events, load the URL
+            if (WebBrowserURL != null) {
+                closableWebBrowser.Url = WebBrowserURL;
+            }
+
             BringToFront();
             Activate();
         }
@@ -521,7 +514,6 @@ namespace FlashpointSecurePlayer {
             if (mouseHook != IntPtr.Zero) {
                 if (UnhookWindowsHookEx(mouseHook)) {
                     mouseHook = IntPtr.Zero;
-                    lowLevelMouseProc = null;
                 }
             }
 
@@ -555,6 +547,9 @@ namespace FlashpointSecurePlayer {
                 shDocVwWebBrowser.DownloadBegin -= ShDocVwWebBrowser_DownloadBegin;
                 shDocVwWebBrowser.DownloadComplete -= ShDocVwWebBrowser_DownloadComplete;
             }
+            
+            closableWebBrowser.Dispose();
+            closableWebBrowser = null;
         }
 
         private void WebBrowserMode_Activated(object sender, EventArgs e) {
@@ -759,9 +754,11 @@ namespace FlashpointSecurePlayer {
             if (resizable) {
                 FormBorderStyle = FormBorderStyle.Sizable;
                 MaximizeBox = true;
+                statusBarStatusStrip.SizingGrip = true;
             } else {
                 FormBorderStyle = FormBorderStyle.FixedSingle;
                 MaximizeBox = false;
+                statusBarStatusStrip.SizingGrip = false;
             }
         }
 
