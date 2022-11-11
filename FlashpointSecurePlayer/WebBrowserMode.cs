@@ -324,6 +324,7 @@ namespace FlashpointSecurePlayer {
             lowLevelMouseProc = new HookProc(LowLevelMouseProc);
             messageFilter = new MessageFilter(Back, Forward);
             webBrowserModeTitle = new WebBrowserModeTitle(TitleChanged);
+
             statusBarStatusStrip.Renderer = new EndEllipsisTextRenderer();
         }
 
@@ -336,6 +337,7 @@ namespace FlashpointSecurePlayer {
             lowLevelMouseProc = new HookProc(LowLevelMouseProc);
             messageFilter = new MessageFilter(Back, Forward);
             webBrowserModeTitle = new WebBrowserModeTitle(TitleChanged);
+
             statusBarStatusStrip.Renderer = new EndEllipsisTextRenderer();
         }
 
