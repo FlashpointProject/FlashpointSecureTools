@@ -253,12 +253,12 @@
             this.exitFullscreenLabel.BackColor = System.Drawing.Color.DimGray;
             this.exitFullscreenLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.exitFullscreenLabel.ForeColor = System.Drawing.Color.White;
-            this.exitFullscreenLabel.Location = new System.Drawing.Point(174, 50);
+            this.exitFullscreenLabel.Location = new System.Drawing.Point(171, 50);
             this.exitFullscreenLabel.Name = "exitFullscreenLabel";
             this.exitFullscreenLabel.Padding = new System.Windows.Forms.Padding(10);
-            this.exitFullscreenLabel.Size = new System.Drawing.Size(308, 45);
+            this.exitFullscreenLabel.Size = new System.Drawing.Size(299, 45);
             this.exitFullscreenLabel.TabIndex = 3;
-            this.exitFullscreenLabel.Text = "Press F11 to Exit Fullscreen.";
+            this.exitFullscreenLabel.Text = "Press F11 to exit fullscreen.";
             this.exitFullscreenLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.exitFullscreenLabel.Visible = false;
             // 
