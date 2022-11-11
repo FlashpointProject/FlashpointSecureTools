@@ -213,12 +213,19 @@ namespace FlashpointSecurePlayer {
 
         private string GetUserKeyValueName(string keyValueName, bool requireAdministrator = true) {
             // can be empty, but not null
-            // if requireAdministrator is false, we use HKEY_CURRENT_USER anyway
-            // because the registry state was created as a non-admin
-            if (keyValueName == null || (requireAdministrator && TestLaunchedAsAdministratorUser())) {
+            if (keyValueName == null) {
                 return keyValueName;
             }
 
+            if (requireAdministrator) {
+                if (!TestLaunchedAsAdministratorUser()) {
+                    throw new TaskRequiresElevationException("Getting the User Key Value Name requires elevation.");
+                }
+                return keyValueName;
+            }
+
+            // if requireAdministrator is false, we use HKEY_CURRENT_USER anyway
+            // because the registry state was created as a non-admin
             const string HKEY_LOCAL_MACHINE = "HKEY_LOCAL_MACHINE\\";
 
             keyValueName += "\\";
