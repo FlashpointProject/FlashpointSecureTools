@@ -20,32 +20,36 @@ namespace FlashpointSecurePlayer {
         private IntPtr mouseHook = IntPtr.Zero;
 
         private IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam) {
-            if (nCode >= 0) {
-                // always confirm the message first so we don't do unnecessary work
-                if (wParam.ToInt32() == WM_MOUSEMOVE) {
-                    if (Fullscreen) {
-                        // this is checked in LowLevelMouseProc because
-                        // otherwise plugins such as Viscape which
-                        // create their own window can steal the
-                        // mouse move event
-                        // it cannot happen in PreFilterMessage!
-                        // our window may not even get these messages
-                        // all that matters is the mouse position, regardless
-                        // of if our window is active
-                        Point toolBarToolStripMousePosition = toolBarToolStrip.PointToClient(Control.MousePosition);
+            try {
+                if (nCode >= 0) {
+                    // always confirm the message first so we don't do unnecessary work
+                    if (wParam.ToInt32() == WM_MOUSEMOVE) {
+                        if (Fullscreen) {
+                            // this is checked in LowLevelMouseProc because
+                            // otherwise plugins such as Viscape which
+                            // create their own window can steal the
+                            // mouse move event
+                            // it cannot happen in PreFilterMessage!
+                            // our window may not even get these messages
+                            // all that matters is the mouse position, regardless
+                            // of if our window is active
+                            Point toolBarToolStripMousePosition = toolBarToolStrip.PointToClient(Control.MousePosition);
 
-                        if (toolBarToolStrip.Visible) {
-                            if (!toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
-                                toolBarToolStrip.Visible = false;
-                            }
-                        } else {
-                            if (toolBarToolStripMousePosition.Y == 0
-                                && toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
-                                toolBarToolStrip.Visible = true;
+                            if (toolBarToolStrip.Visible) {
+                                if (!toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
+                                    toolBarToolStrip.Visible = false;
+                                }
+                            } else {
+                                if (toolBarToolStripMousePosition.Y == 0
+                                    && toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
+                                    toolBarToolStrip.Visible = true;
+                                }
                             }
                         }
                     }
                 }
+            } catch {
+                // Fail silently.
             }
             return CallNextHookEx(mouseHook, nCode, wParam, lParam);
         }
@@ -317,17 +321,11 @@ namespace FlashpointSecurePlayer {
 
             UseFlashActiveXControl = useFlashActiveXControl;
 
+            // events are created/destroyed on form load/closing instead of here
+            // to avoid bugs with window.open/window.close
             if (closableWebBrowser == null) {
                 closableWebBrowser = new ClosableWebBrowser();
             }
-
-            closableWebBrowser.CanGoBackChanged += closableWebBrowser_CanGoBackChanged;
-            closableWebBrowser.CanGoForwardChanged += closableWebBrowser_CanGoForwardChanged;
-            closableWebBrowser.DocumentTitleChanged += closableWebBrowser_DocumentTitleChanged;
-            closableWebBrowser.StatusTextChanged += closableWebBrowser_StatusTextChanged;
-
-            closableWebBrowser.WebBrowserClose += closableWebBrowser_WebBrowserClose;
-            closableWebBrowser.WebBrowserPaint += closableWebBrowser_WebBrowserPaint;
 
             statusBarStatusStrip.Renderer = new EndEllipsisTextRenderer();
 
@@ -351,27 +349,9 @@ namespace FlashpointSecurePlayer {
         }
 
         ~WebBrowserMode() {
-            // the WebBrowserClose event must be disabled, otherwise we
-            // end up closing the current form when it's already closed
-            // (browser reports being closed > we close the form and so on)
             if (closableWebBrowser != null) {
-                closableWebBrowser.CanGoBackChanged -= closableWebBrowser_CanGoBackChanged;
-                closableWebBrowser.CanGoForwardChanged -= closableWebBrowser_CanGoForwardChanged;
-                closableWebBrowser.DocumentTitleChanged -= closableWebBrowser_DocumentTitleChanged;
-                closableWebBrowser.StatusTextChanged -= closableWebBrowser_StatusTextChanged;
-
-                closableWebBrowser.WebBrowserClose -= closableWebBrowser_WebBrowserClose;
-                closableWebBrowser.WebBrowserPaint -= closableWebBrowser_WebBrowserPaint;
-
                 closableWebBrowser.Dispose();
                 closableWebBrowser = null;
-            }
-
-            if (mouseHook != IntPtr.Zero) {
-                if (UnhookWindowsHookEx(mouseHook)) {
-                    mouseHook = IntPtr.Zero;
-                    lowLevelMouseProc = null;
-                }
             }
         }
 
@@ -507,6 +487,14 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
+            closableWebBrowser.CanGoBackChanged += closableWebBrowser_CanGoBackChanged;
+            closableWebBrowser.CanGoForwardChanged += closableWebBrowser_CanGoForwardChanged;
+            closableWebBrowser.DocumentTitleChanged += closableWebBrowser_DocumentTitleChanged;
+            closableWebBrowser.StatusTextChanged += closableWebBrowser_StatusTextChanged;
+
+            closableWebBrowser.WebBrowserClose += closableWebBrowser_WebBrowserClose;
+            closableWebBrowser.WebBrowserPaint += closableWebBrowser_WebBrowserPaint;
+
             if (closableWebBrowser.ActiveXInstance is SHDocVw.WebBrowser shDocVwWebBrowser) {
                 // IE5
                 shDocVwWebBrowser.NewWindow2 += ShDocVwWebBrowser_NewWindow2;
@@ -528,11 +516,31 @@ namespace FlashpointSecurePlayer {
         private void WebBrowserMode_FormClosing(object sender, FormClosingEventArgs e) {
             Hide();
 
+            // important that this is done first so that
+            // we don't access the disposed toolbar
+            if (mouseHook != IntPtr.Zero) {
+                if (UnhookWindowsHookEx(mouseHook)) {
+                    mouseHook = IntPtr.Zero;
+                    lowLevelMouseProc = null;
+                }
+            }
+
             if (closableWebBrowser == null) {
                 return;
             }
 
             customSecurityManager = null;
+
+            // the WebBrowserClose event must be disabled here, otherwise we
+            // end up closing the current form when it's already closed
+            // (browser reports being closed > we close the form and so on)
+            closableWebBrowser.CanGoBackChanged -= closableWebBrowser_CanGoBackChanged;
+            closableWebBrowser.CanGoForwardChanged -= closableWebBrowser_CanGoForwardChanged;
+            closableWebBrowser.DocumentTitleChanged -= closableWebBrowser_DocumentTitleChanged;
+            closableWebBrowser.StatusTextChanged -= closableWebBrowser_StatusTextChanged;
+
+            closableWebBrowser.WebBrowserClose -= closableWebBrowser_WebBrowserClose;
+            closableWebBrowser.WebBrowserPaint -= closableWebBrowser_WebBrowserPaint;
 
             if (closableWebBrowser.ActiveXInstance is SHDocVw.WebBrowser shDocVwWebBrowser) {
                 // IE5
