@@ -217,10 +217,7 @@ namespace FlashpointSecurePlayer {
                 return keyValueName;
             }
 
-            if (activeAdministrator) {
-                if (!TestLaunchedAsAdministratorUser()) {
-                    throw new TaskRequiresElevationException("Getting the User Key Value Name requires elevation.");
-                }
+            if (activeAdministrator && TestLaunchedAsAdministratorUser()) {
                 return keyValueName;
             }
 
