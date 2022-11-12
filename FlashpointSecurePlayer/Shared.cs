@@ -2616,7 +2616,8 @@ namespace FlashpointSecurePlayer {
                 string processMainModuleFileName = process.MainModule.FileName;
                 queryResult = true;
                 processName = new StringBuilder(processMainModuleFileName);
-            } catch (Exception) {
+            } catch {
+                // fallback if the standard way fails
                 queryResult = QueryFullProcessImageName(process.Handle, 0, processName, ref size);
             }
 
@@ -2629,12 +2630,13 @@ namespace FlashpointSecurePlayer {
 
         public static string[] GetCommandLineToArgv(string commandLine, out int argc) {
             argc = 0;
-            string[] argv;
+            string[] argv = null;
+
             IntPtr argvPointer = CommandLineToArgv(commandLine, out argc);
 
             if (argvPointer == IntPtr.Zero) {
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                return null;
+                return argv;
             }
 
             try {
