@@ -1879,7 +1879,7 @@ namespace FlashpointSecurePlayer {
                 string editionID = null;
 
                 try {
-                    editionID = Microsoft.Win32.Registry.GetValue("HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/Windows NT/CurrentVersion", "EditionID", null) as string;
+                    editionID = Registry.GetValue("HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/Windows NT/CurrentVersion", "EditionID", null) as string;
                 } catch (SecurityException) {
                     // value exists but we can't get it
                     editionID = String.Empty;
