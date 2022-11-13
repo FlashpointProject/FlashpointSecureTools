@@ -1004,6 +1004,7 @@ namespace FlashpointSecurePlayer {
                 */
 
                 // to prevent issues with HKEY_LOCAL_MACHINE and crash recovery
+                activeModificationsElement.RegistryStates._CurrentUser = WindowsIdentity.GetCurrent().User.Value;
                 activeModificationsElement.RegistryStates._Administrator = TestLaunchedAsAdministratorUser();
                 RegistryView registryView = RegistryView.Registry32;
 
