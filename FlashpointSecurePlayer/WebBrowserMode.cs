@@ -526,8 +526,6 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            customSecurityManager = null;
-
             // the WebBrowserClose event must be disabled here, otherwise we
             // end up closing the current form when it's already closed
             // (browser reports being closed > we close the form and so on)
@@ -555,6 +553,8 @@ namespace FlashpointSecurePlayer {
             
             closableWebBrowser.Dispose();
             closableWebBrowser = null;
+
+            customSecurityManager = null;
         }
 
         private void WebBrowserMode_Activated(object sender, EventArgs e) {
