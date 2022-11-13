@@ -217,18 +217,25 @@ namespace FlashpointSecurePlayer {
                 return keyValueName;
             }
 
-            if (activeAdministrator && TestLaunchedAsAdministratorUser()) {
-                return keyValueName;
-            }
+            keyValueName = AddTrailingSlash(keyValueName);
 
-            // if activeAdministrator is false, we use HKEY_CURRENT_USER anyway
-            // because the registry state was created as a non-admin
-            const string HKEY_LOCAL_MACHINE = "HKEY_LOCAL_MACHINE\\";
+            const string HKEY_CURRENT_USER = "HKEY_CURRENT_USER\\";
 
-            keyValueName += "\\";
+            string keyValueNameCurrentUser = "HKEY_USERS\\" + WindowsIdentity.GetCurrent().User.Value + "\\";
 
-            if (keyValueName.StartsWith(HKEY_LOCAL_MACHINE, StringComparison.InvariantCultureIgnoreCase)) {
-                keyValueName = "HKEY_CURRENT_USER\\" + keyValueName.Substring(HKEY_LOCAL_MACHINE.Length);
+            if (keyValueName.StartsWith(HKEY_CURRENT_USER, StringComparison.InvariantCultureIgnoreCase)) {
+                // make this explicit in case this is a shared computer
+                keyValueName = keyValueNameCurrentUser + keyValueName.Substring(HKEY_CURRENT_USER.Length);
+            } else {
+                if (!activeAdministrator || !TestLaunchedAsAdministratorUser()) {
+                    // if activeAdministrator is false, we use HKEY_USERS anyway
+                    // because the registry state was created as a non-admin
+                    const string HKEY_LOCAL_MACHINE = "HKEY_LOCAL_MACHINE\\";
+
+                    if (keyValueName.StartsWith(HKEY_LOCAL_MACHINE, StringComparison.InvariantCultureIgnoreCase)) {
+                        keyValueName = keyValueNameCurrentUser + keyValueName.Substring(HKEY_LOCAL_MACHINE.Length);
+                    }
+                }
             }
 
             keyValueName = RemoveTrailingSlash(keyValueName);
@@ -243,8 +250,8 @@ namespace FlashpointSecurePlayer {
 
             const string REGISTRY_MACHINE = "\\REGISTRY\\MACHINE\\";
 
-            kernelRegistryString += "\\";
             string keyValueName = String.Empty;
+            kernelRegistryString = AddTrailingSlash(kernelRegistryString);
 
             if (kernelRegistryString.StartsWith(REGISTRY_MACHINE, StringComparison.InvariantCultureIgnoreCase)) {
                 keyValueName = "HKEY_LOCAL_MACHINE\\" + kernelRegistryString.Substring(REGISTRY_MACHINE.Length);
@@ -279,7 +286,8 @@ namespace FlashpointSecurePlayer {
                 return null;
             }
 
-            keyName += "\\";
+            keyName = AddTrailingSlash(keyName);
+
             RegistryHive? registryHive = null;
 
             if (keyName.StartsWith("HKEY_CURRENT_USER\\", StringComparison.InvariantCultureIgnoreCase)) {
@@ -642,8 +650,8 @@ namespace FlashpointSecurePlayer {
             }
             
             // make these keys uppercase using a regex
-            keyValueName = Regex.Replace(keyValueName, "\\\\WOW6432NODE\\\\", "\\WOW6432NODE\\", RegexOptions.IgnoreCase);
-            keyValueName = Regex.Replace(keyValueName, "\\\\WOW64AANODE\\\\", "\\WOW64AANODE\\", RegexOptions.IgnoreCase);
+            keyValueName = Regex.Replace(keyValueName, "\\\\WOW6432NODE\\\\", "\\WOW6432NODE\\", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+            keyValueName = Regex.Replace(keyValueName, "\\\\WOW64AANODE\\\\", "\\WOW64AANODE\\", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
             // remove Wow6432Node and WowAA32Node after affected keys
             List<string> keyValueNameSplit = keyValueName.Split(new string[] { "\\WOW6432NODE\\", "\\WOW64AANODE\\" }, StringSplitOptions.None).ToList();
