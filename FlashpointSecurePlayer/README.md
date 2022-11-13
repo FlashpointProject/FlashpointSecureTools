@@ -172,7 +172,7 @@ Here is a `template` element that finds and replaces within the `FP_URL` environ
 <template name="shiva3d">
 	<modifications>
 		<environmentVariables>
-		  <environmentVariable name="FP_URL" find="http://" replace="http://localhost:22500/" />
+			<environmentVariable name="FP_URL" find="http://" replace="http://localhost:22500/" />
 		</environmentVariables>
 	</modifications>
 </template>
@@ -180,13 +180,13 @@ Here is a `template` element that finds and replaces within the `FP_URL` environ
 
 **Compatibility Layers**
 
-It is possible to use the Environment Variables Modification to set compatibility layers by setting the `__COMPAT_LAYERS` environment variable to a [compatibility fix.](http://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-7/cc765984(v=ws.10)) Here is a `template` element that starts the software in 640 x 480 resolution.
+It is possible to use the Environment Variables Modification to set compatibility layers by setting the `__COMPAT_LAYER` environment variable to a [compatibility fix.](http://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-7/cc765984(v=ws.10)) Here is a `template` element that starts the software in 640 x 480 resolution.
 
 ```
 <template name="lowresolution">
 	<modifications>
 		<environmentVariables>
-			<environmentVariable name="__COMPAT_LAYERS" value="640x480" />
+			<environmentVariable name="__COMPAT_LAYER" value="640x480" />
 		</environmentVariables>
 	</modifications>
 </template>
@@ -240,7 +240,7 @@ If the `type` attribute is `KEY`, the `valueName`, `value`, and `valueKind` attr
 
 There is no way to delete a registry key or value, only set them. The player may set a `_deleted` attribute, which is for internal use by the player only, and is ignored outside of the active configuration file (see the section about [Crash Recovery](#crash-recovery) below.)
 
-Furthermore, the player may set an `_administrator` attribute, for internal use by the player only. The Run As Administrator Modification should be used to run the application as Administrator User. For more information, see the section about the [Run As Administrator Modification](#run-as-administrator) above.
+Furthermore, the player may set `currentUser` and `administrator` attributes, for internal use by the player only. The Run As Administrator Modification should be used to run the application as Administrator User. For more information, see the section about the [Run As Administrator Modification](#run-as-administrator) above.
 
 **binaryType Attribute and WOW64 Keys**
 
@@ -343,9 +343,6 @@ First, the FlashpointSecurePlayerConfigs folder should be copied to the FPSoftwa
 
 Additionally, in order to support the Old CPU Simulator Modification, Old CPU Simulator is required. For more information, see the [Old CPU Simulator](#old-cpu-simulator) section above.
 
-# Planned Features
- - Currently, there is no way to edit configuration files other than manually, and a generic "configuration file failed to load" error occurs when there is a syntax error. It would be nice to have a seperate visual editor for configuration files.
-
 # Questions And Answers
 **Is there is Linux version?**
 
@@ -357,4 +354,4 @@ It provides additional redundancy, ensuring the configuration file loaded was th
 
 **Shouldn't the Flashpoint Launcher just have these features built in?**
 
-No.
+Launcher Extensions can replace the Flashpoint Secure Player to some extent, but the most advanced features are available exclusively within Flashpoint Secure Player.
