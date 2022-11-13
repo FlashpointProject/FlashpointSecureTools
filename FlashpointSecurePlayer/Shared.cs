@@ -1252,6 +1252,7 @@ namespace FlashpointSecurePlayer {
                         public class RegistryStateElementCollection : TemplatesConfigurationElementCollection {
                             protected ConfigurationPropertyCollection _properties = null;
                             protected ConfigurationProperty _binaryType = null;
+                            protected ConfigurationProperty _currentUser = null;
                             protected ConfigurationProperty _administrator = null;
 
                             public RegistryStateElementCollection() {
@@ -1262,6 +1263,10 @@ namespace FlashpointSecurePlayer {
                                 _properties.Add(_binaryType);
 
                                 //if (String.IsNullOrEmpty(templateName)) {
+                                _currentUser = new ConfigurationProperty("currentUser",
+                                    typeof(string), null, ConfigurationPropertyOptions.None);
+                                _properties.Add(_currentUser);
+
                                 _administrator = new ConfigurationProperty("administrator",
                                     typeof(bool?), false, ConfigurationPropertyOptions.None);
                                 _properties.Add(_administrator);
@@ -1460,7 +1465,25 @@ namespace FlashpointSecurePlayer {
                                     base[_binaryType] = value;
                                 }
                             }
-                            
+
+                            public string _CurrentUser {
+                                get {
+                                    if (_currentUser == null) {
+                                        return null;
+                                    }
+
+                                    return base[_currentUser] as string;
+                                }
+
+                                set {
+                                    if (_currentUser == null) {
+                                        return;
+                                    }
+
+                                    base[_currentUser] = value;
+                                }
+                            }
+
                             public bool? _Administrator {
                                 get {
                                     if (_administrator == null) {
