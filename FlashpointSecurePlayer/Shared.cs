@@ -2470,6 +2470,34 @@ namespace FlashpointSecurePlayer {
             return false;
         }
 
+        /*
+        public static string AddLeadingSlash(string path) {
+            // can be empty, but not null
+            if (path == null) {
+                return path;
+            }
+
+            if (path.Length > 0 && path.Substring(0, 1) != "\\") {
+                path = "\\" + path;
+            }
+            return path;
+        }
+
+        public static string RemoveLeadingSlash(string path) {
+            // can be empty, but not null
+            if (path == null) {
+                return path;
+            }
+
+            const int INDEX = 1;
+
+            while (path.Length > 0 && path.Substring(0, INDEX) == "\\") {
+                path = path.Substring(INDEX);
+            }
+            return path;
+        }
+        */
+
         public static string AddTrailingSlash(string path) {
             // can be empty, but not null
             if (path == null) {
@@ -2477,7 +2505,7 @@ namespace FlashpointSecurePlayer {
             }
 
             if (path.Length > 0 && path.Substring(path.Length - 1) != "\\") {
-                path += "\\";
+                path = path + "\\";
             }
             return path;
         }
@@ -2488,22 +2516,12 @@ namespace FlashpointSecurePlayer {
                 return path;
             }
 
-            while (path.Length > 0 && path.Substring(path.Length - 1) == "\\") {
-                path = path.Substring(0, path.Length - 1);
+            int index = path.Length - 1;
+
+            while (path.Length > 0 && path.Substring(index) == "\\") {
+                path = path.Substring(0, index);
             }
             return path;
-        }
-
-        public static string RemoveValueStringSlash(string valueString) {
-            // can be empty, but not null
-            if (valueString == null) {
-                return valueString;
-            }
-
-            while (valueString.Length > 0 && valueString.Substring(0, 1) == "\\") {
-                valueString = valueString.Substring(1);
-            }
-            return valueString;
         }
 
         public static object LengthenValue(object value, string path) {
@@ -2568,12 +2586,16 @@ namespace FlashpointSecurePlayer {
                 return lengthenedValue;
             }
 
-            if (lengthenedValueString.Equals(RemoveTrailingSlash(longStartupPathName), StringComparison.InvariantCultureIgnoreCase)) {
+            longStartupPathName = RemoveTrailingSlash(longStartupPathName);
+
+            if (lengthenedValueString.Equals(longStartupPathName, StringComparison.InvariantCultureIgnoreCase)) {
                 return "%" + FP_STARTUP_PATH + "%";
             }
 
-            if (lengthenedValueString.StartsWith(AddTrailingSlash(longStartupPathName), StringComparison.InvariantCultureIgnoreCase)) {
-                return "%" + FP_STARTUP_PATH + "%\\" + RemoveValueStringSlash(lengthenedValueString.Substring(longStartupPathName.Length));
+            longStartupPathName = AddTrailingSlash(longStartupPathName);
+
+            if (lengthenedValueString.StartsWith(longStartupPathName, StringComparison.InvariantCultureIgnoreCase)) {
+                return "%" + FP_STARTUP_PATH + "%\\" + lengthenedValueString.Substring(longStartupPathName.Length);
             }
             return lengthenedValue;
         }

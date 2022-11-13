@@ -177,8 +177,7 @@ namespace FlashpointSecurePlayer {
                 }
             }
         }
-
-        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+        
         private class MessageFilter : IMessageFilter {
             private readonly EventHandler back;
             private readonly EventHandler forward;
@@ -207,8 +206,7 @@ namespace FlashpointSecurePlayer {
 
                 eventHandler(this, e);
             }
-
-            [SecurityPermission(SecurityAction.Demand)]
+            
             public bool PreFilterMessage(ref Message m) {
                 // this happens in PreFilterMessage because
                 // the mouse back/forward buttons should only
