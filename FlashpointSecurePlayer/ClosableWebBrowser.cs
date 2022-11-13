@@ -13,7 +13,7 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 
 namespace FlashpointSecurePlayer {
     // http://blogs.msdn.com/b/jpsanders/archive/2007/05/25/how-to-close-the-form-hosting-the-webbrowser-control-when-scripting-calls-window-close-in-the-net-framework-version-2-0.aspx
-    public partial class ClosableWebBrowser : System.Windows.Forms.WebBrowser {
+    public partial class ClosableWebBrowser : WebBrowser {
         public event EventHandler WebBrowserClose;
         public event EventHandler WebBrowserPaint;
 

@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 using static FlashpointSecurePlayer.Shared;
 using static FlashpointSecurePlayer.Shared.Exceptions;
@@ -19,7 +20,7 @@ namespace FlashpointSecurePlayer {
         private bool UseFlashActiveXControl { get; set; } = false;
 
         // https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/platform-apis/ms537182(v=vs.85)?redirectedfrom=MSDN
-        public CustomSecurityManager(System.Windows.Forms.WebBrowser webBrowser, bool useFlashActiveXControl = false) {
+        public CustomSecurityManager(WebBrowser webBrowser, bool useFlashActiveXControl = false) {
             InternetInterfaces.IServiceProvider webBrowserServiceProviderInterface = webBrowser.ActiveXInstance as InternetInterfaces.IServiceProvider;
             IntPtr profferServiceInterfacePointer = IntPtr.Zero;
             

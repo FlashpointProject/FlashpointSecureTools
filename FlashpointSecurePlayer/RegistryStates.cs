@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -191,7 +192,7 @@ namespace FlashpointSecurePlayer {
                     StopImport();
                 } catch (InvalidRegistryStateException) {
                     // Fail silently.
-                } catch (System.Configuration.ConfigurationErrorsException) {
+                } catch (ConfigurationErrorsException) {
                     // Fail silently.
                 } catch (InvalidOperationException) {
                     // Fail silently.
@@ -202,7 +203,7 @@ namespace FlashpointSecurePlayer {
                 Deactivate();
             } catch (InvalidRegistryStateException) {
                 // Fail silently.
-            } catch (System.Configuration.ConfigurationErrorsException) {
+            } catch (ConfigurationErrorsException) {
                 // Fail silently.
             } catch (TaskRequiresElevationException) {
                 // Fail silently.
@@ -1009,7 +1010,7 @@ namespace FlashpointSecurePlayer {
 
                         if (registryStateElement == null) {
                             Deactivate();
-                            throw new System.Configuration.ConfigurationErrorsException("The Registry State Element (" + i + ") is null.");
+                            throw new ConfigurationErrorsException("The Registry State Element (" + i + ") is null.");
                         }
 
                         // GOAL: find the CURRENT value in the REAL REGISTRY
@@ -1086,14 +1087,14 @@ namespace FlashpointSecurePlayer {
 
                         if (registryStateElement == null) {
                             Deactivate();
-                            throw new System.Configuration.ConfigurationErrorsException("The Registry State Element (" + i + ") is null.");
+                            throw new ConfigurationErrorsException("The Registry State Element (" + i + ") is null.");
                         }
 
                         activeRegistryStateElement = activeModificationsElement.RegistryStates.Get(registryStateElement.Name) as RegistryStateElement;
 
                         if (activeRegistryStateElement == null) {
                             Deactivate();
-                            throw new System.Configuration.ConfigurationErrorsException("The Active Registry State Element (" + registryStateElement.Name + ") is null.");
+                            throw new ConfigurationErrorsException("The Active Registry State Element (" + registryStateElement.Name + ") is null.");
                         }
 
                         keyName = GetUserKeyValueName(registryStateElement.KeyName);
@@ -1406,7 +1407,7 @@ namespace FlashpointSecurePlayer {
             // must catch exceptions here for thread safety
             try {
                 templateElement = GetTemplateElement(false, TemplateName);
-            } catch (System.Configuration.ConfigurationErrorsException) {
+            } catch (ConfigurationErrorsException) {
                 return;
             }
 
@@ -1536,7 +1537,7 @@ namespace FlashpointSecurePlayer {
             // must catch exceptions here for thread safety
             try {
                 templateElement = GetTemplateElement(false, TemplateName);
-            } catch (System.Configuration.ConfigurationErrorsException) {
+            } catch (ConfigurationErrorsException) {
                 return;
             }
 
@@ -1617,7 +1618,7 @@ namespace FlashpointSecurePlayer {
 
             try {
                 templateElement = GetTemplateElement(false, TemplateName);
-            } catch (System.Configuration.ConfigurationErrorsException) {
+            } catch (ConfigurationErrorsException) {
                 return;
             }
 

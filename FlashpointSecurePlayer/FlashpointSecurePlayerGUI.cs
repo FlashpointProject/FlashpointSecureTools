@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Security;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -376,7 +378,7 @@ namespace FlashpointSecurePlayer {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.RegistryStateFailed);
                                 throw new ActiveXImportFailedException("The ActiveX Import failed because the Registry States failed when the ActiveX Import was started.");
-                            } catch (System.Configuration.ConfigurationErrorsException ex) {
+                            } catch (ConfigurationErrorsException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                                 throw new ActiveXImportFailedException("The ActiveX Import failed because the configuration failed to load when the ActiveX Import was started.");
@@ -417,7 +419,7 @@ namespace FlashpointSecurePlayer {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.RegistryStateFailed);
                                 throw new ActiveXImportFailedException("The ActiveX Import failed because the Registry States failed when the ActiveX Import was stopped.");
-                            } catch (System.Configuration.ConfigurationErrorsException ex) {
+                            } catch (ConfigurationErrorsException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                                 throw new ActiveXImportFailedException("The ActiveX Import failed because the configuration failed to load when the ActiveX Import was stopped.");
@@ -479,7 +481,7 @@ namespace FlashpointSecurePlayer {
                         if (!String.IsNullOrEmpty(modeElement.WorkingDirectory)) {
                             try {
                                 Directory.SetCurrentDirectory(Environment.ExpandEnvironmentVariables(modeElement.WorkingDirectory));
-                            } catch (System.Security.SecurityException ex) {
+                            } catch (SecurityException ex) {
                                 LogExceptionToLauncher(ex);
                                 throw new TaskRequiresElevationException("Setting the Current Directory requires elevation.");
                             } catch (ArgumentNullException ex) {
@@ -684,7 +686,7 @@ namespace FlashpointSecurePlayer {
 
                         try {
                             activeTemplateElement = GetActiveTemplateElement(false);
-                        } catch (System.Configuration.ConfigurationErrorsException ex) {
+                        } catch (ConfigurationErrorsException ex) {
                             LogExceptionToLauncher(ex);
                             // Fail silently.
                         }
@@ -723,7 +725,7 @@ namespace FlashpointSecurePlayer {
                                         downloadsBeforeElement = modificationsElement.DownloadsBefore.Get(i) as ModificationsElement.DownloadBeforeElementCollection.DownloadBeforeElement;
 
                                         if (downloadsBeforeElement == null) {
-                                            throw new System.Configuration.ConfigurationErrorsException("The Downloads Before Element (" + i + ") is null.");
+                                            throw new ConfigurationErrorsException("The Downloads Before Element (" + i + ") is null.");
                                         }
 
                                         DownloadsBeforeModificationNames.Add(downloadsBeforeElement.Name);
@@ -732,7 +734,7 @@ namespace FlashpointSecurePlayer {
                                     //SetModificationsElement(modificationsElement, Name);
                                 }
                             }
-                        } catch (System.Configuration.ConfigurationErrorsException ex) {
+                        } catch (ConfigurationErrorsException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                         }
@@ -745,7 +747,7 @@ namespace FlashpointSecurePlayer {
 
                         try {
                             runAsAdministrator.Activate(TemplateName, RunAsAdministratorModification);
-                        } catch (System.Configuration.ConfigurationErrorsException ex) {
+                        } catch (ConfigurationErrorsException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                         } catch (TaskRequiresElevationException ex) {
@@ -762,7 +764,7 @@ namespace FlashpointSecurePlayer {
                                 } catch (InvalidEnvironmentVariablesException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.EnvironmentVariablesFailed);
-                                } catch (System.Configuration.ConfigurationErrorsException ex) {
+                                } catch (ConfigurationErrorsException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                                 } catch (TaskRequiresElevationException ex) {
@@ -785,7 +787,7 @@ namespace FlashpointSecurePlayer {
                                 } catch (ModeTemplatesFailedException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.ModeTemplatesFailed);
-                                } catch (System.Configuration.ConfigurationErrorsException ex) {
+                                } catch (ConfigurationErrorsException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                                 } catch (TaskRequiresElevationException ex) {
@@ -803,7 +805,7 @@ namespace FlashpointSecurePlayer {
                             } catch (DownloadFailedException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, DownloadSourceModificationName));
-                            } catch (System.Configuration.ConfigurationErrorsException ex) {
+                            } catch (ConfigurationErrorsException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                             } catch (TaskRequiresElevationException ex) {
@@ -824,7 +826,7 @@ namespace FlashpointSecurePlayer {
                             } catch (DownloadFailedException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, String.Join(", ", DownloadsBeforeModificationNames)));
-                            } catch (System.Configuration.ConfigurationErrorsException ex) {
+                            } catch (ConfigurationErrorsException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                             }
@@ -839,7 +841,7 @@ namespace FlashpointSecurePlayer {
                                 } catch (InvalidRegistryStateException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.RegistryStateFailed);
-                                } catch (System.Configuration.ConfigurationErrorsException ex) {
+                                } catch (ConfigurationErrorsException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                                 } catch (TaskRequiresElevationException ex) {
@@ -883,7 +885,7 @@ namespace FlashpointSecurePlayer {
                                 } catch (InvalidOldCPUSimulatorException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.OldCPUSimulatorFailed);
-                                } catch (System.Configuration.ConfigurationErrorsException ex) {
+                                } catch (ConfigurationErrorsException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                                 } catch (TaskRequiresElevationException ex) {
@@ -898,7 +900,7 @@ namespace FlashpointSecurePlayer {
                         } finally {
                             try {
                                 LockActiveModificationsElement();
-                            } catch (System.Configuration.ConfigurationErrorsException ex) {
+                            } catch (ConfigurationErrorsException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                             }
@@ -933,7 +935,7 @@ namespace FlashpointSecurePlayer {
                         /*
                         try {
                             UnlockActiveModificationsElement();
-                        } catch (System.Configuration.ConfigurationErrorsException ex) {
+                        } catch (ConfigurationErrorsException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                         }
@@ -949,7 +951,7 @@ namespace FlashpointSecurePlayer {
                         } catch (InvalidRegistryStateException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.RegistryStateFailed);
-                        } catch (System.Configuration.ConfigurationErrorsException ex) {
+                        } catch (ConfigurationErrorsException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                         } catch (TaskRequiresElevationException ex) {
@@ -973,7 +975,7 @@ namespace FlashpointSecurePlayer {
                         } catch (InvalidEnvironmentVariablesException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.EnvironmentVariablesFailed);
-                        } catch (System.Configuration.ConfigurationErrorsException ex) {
+                        } catch (ConfigurationErrorsException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                         } catch (TaskRequiresElevationException ex) {
@@ -996,7 +998,7 @@ namespace FlashpointSecurePlayer {
                                 activeTemplateElement.Active = ACTIVE_EXE_CONFIGURATION_NAME;
                                 SetFlashpointSecurePlayerSection(ACTIVE_EXE_CONFIGURATION_NAME);
                             }
-                        } catch (System.Configuration.ConfigurationErrorsException ex) {
+                        } catch (ConfigurationErrorsException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.ConfigurationFailedLoad);
                         }
@@ -1129,7 +1131,7 @@ namespace FlashpointSecurePlayer {
                 // Set Current Directory
                 try {
                     Directory.SetCurrentDirectory(Application.StartupPath);
-                } catch (System.Security.SecurityException ex) {
+                } catch (SecurityException ex) {
                     LogExceptionToLauncher(ex);
                     throw new TaskRequiresElevationException("Setting the Current Directory requires elevation.");
                 } catch {
@@ -1286,7 +1288,7 @@ namespace FlashpointSecurePlayer {
                 // throw on start
                 try {
                     templateElement = GetTemplateElement(false, TemplateName);
-                } catch (System.Configuration.ConfigurationErrorsException ex) {
+                } catch (ConfigurationErrorsException ex) {
                     LogExceptionToLauncher(ex);
                     ProgressManager.ShowError();
                     MessageBox.Show(Properties.Resources.ConfigurationFailedLoad, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -1348,7 +1350,7 @@ namespace FlashpointSecurePlayer {
                             fullHTDOCSFilePath = Path.GetFullPath(htdocsFilePath.ToString());
                         } catch (PathTooLongException) {
                             throw new ArgumentException("The path is too long to \"" + htdocsFilePath.ToString() + "\".");
-                        } catch (System.Security.SecurityException) {
+                        } catch (SecurityException) {
                             throw new TaskRequiresElevationException("Getting the Full Path to \"" + htdocsFilePath.ToString() + "\" requires elevation.");
                         } catch (NotSupportedException) {
                             throw new ArgumentException("The path \"" + htdocsFilePath.ToString() + "\" is not supported.");
@@ -1397,7 +1399,7 @@ namespace FlashpointSecurePlayer {
                     LogExceptionToLauncher(ex);
                     Application.Exit();
                     return;
-                } catch (System.Security.SecurityException ex) {
+                } catch (SecurityException ex) {
                     LogExceptionToLauncher(ex);
                     throw new TaskRequiresElevationException("Setting the Environment Variables requires elevation.");
                 }
@@ -1455,7 +1457,7 @@ namespace FlashpointSecurePlayer {
 
                     try {
                         templateElement = GetTemplateElement(false, TemplateName);
-                    } catch (System.Configuration.ConfigurationErrorsException ex) {
+                    } catch (ConfigurationErrorsException ex) {
                         LogExceptionToLauncher(ex);
                         return;
                     }
@@ -1497,7 +1499,7 @@ namespace FlashpointSecurePlayer {
             // Set Current Directory
             try {
                 Directory.SetCurrentDirectory(Application.StartupPath);
-            } catch (System.Security.SecurityException ex) {
+            } catch (SecurityException ex) {
                 LogExceptionToLauncher(ex);
                 throw new TaskRequiresElevationException("Setting the Current Directory requires elevation.");
             } catch {

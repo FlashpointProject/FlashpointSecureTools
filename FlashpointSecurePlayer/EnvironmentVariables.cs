@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Security;
 using System.Text;
@@ -131,7 +132,7 @@ namespace FlashpointSecurePlayer {
                         environmentVariablesElement = modificationsElement.EnvironmentVariables.Get(i) as EnvironmentVariablesElement;
 
                         if (environmentVariablesElement == null) {
-                            throw new System.Configuration.ConfigurationErrorsException("The Environment Variables Element (" + i + ") is null while creating the Active Environment Variables Element.");
+                            throw new ConfigurationErrorsException("The Environment Variables Element (" + i + ") is null while creating the Active Environment Variables Element.");
                         }
 
                         comparableName = GetComparableName(environmentVariablesElement.Name);
@@ -165,7 +166,7 @@ namespace FlashpointSecurePlayer {
                         environmentVariablesElement = modificationsElement.EnvironmentVariables.Get(i) as EnvironmentVariablesElement;
 
                         if (environmentVariablesElement == null) {
-                            throw new System.Configuration.ConfigurationErrorsException("The Environment Variables Element (" + i + ") is null.");
+                            throw new ConfigurationErrorsException("The Environment Variables Element (" + i + ") is null.");
                         }
 
                         comparableName = GetComparableName(environmentVariablesElement.Name);

@@ -14,7 +14,7 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 
 namespace FlashpointSecurePlayer {
     [ToolStripItemDesignerAvailability(ToolStripItemDesignerAvailability.ToolStrip)]
-    public partial class ToolStripSpringTextBox : System.Windows.Forms.ToolStripTextBox {
+    public partial class ToolStripSpringTextBox : ToolStripTextBox {
         public ToolStripSpringTextBox() {
             InitializeComponent();
         }
