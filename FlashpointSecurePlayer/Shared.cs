@@ -660,7 +660,8 @@ namespace FlashpointSecurePlayer {
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool CloseHandle(IntPtr hObject);
 
-        public enum TH32CS : uint {
+        [Flags]
+        public enum TH32CSFlags : uint {
             TH32CS_INHERIT = 0x80000000,
             TH32CS_SNAPALL = TH32CS_SNAPHEAPLIST | TH32CS_SNAPMODULE | TH32CS_SNAPPROCESS | TH32CS_SNAPTHREAD,
             TH32CS_SNAPHEAPLIST = 0x00000001,
@@ -687,7 +688,7 @@ namespace FlashpointSecurePlayer {
         };
 
         [DllImport("KERNEL32.DLL", SetLastError = true)]
-        public static extern IntPtr CreateToolhelp32Snapshot(TH32CS dwFlags, uint th32ProcessID);
+        public static extern IntPtr CreateToolhelp32Snapshot(TH32CSFlags dwFlags, uint th32ProcessID);
 
         [DllImport("KERNEL32.DLL", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -2274,9 +2275,8 @@ namespace FlashpointSecurePlayer {
 
         public static bool TestLaunchedAsAdministratorUser() {
             AppDomain.CurrentDomain.SetPrincipalPolicy(PrincipalPolicy.WindowsPrincipal);
-            WindowsPrincipal currentPrinciple = Thread.CurrentPrincipal as WindowsPrincipal;
 
-            if (currentPrinciple == null) {
+            if (!(Thread.CurrentPrincipal is WindowsPrincipal currentPrinciple)) {
                 return false;
             }
             return currentPrinciple.IsInRole(WindowsBuiltInRole.Administrator);
@@ -2395,6 +2395,7 @@ namespace FlashpointSecurePlayer {
 
             if (moduleHandle == IntPtr.Zero) {
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                return BINARY_TYPE.SCS_64BIT_BINARY;
             }
 
             try {
@@ -2417,6 +2418,7 @@ namespace FlashpointSecurePlayer {
 
                     if (imageNTHeadersPointer == IntPtr.Zero) {
                         Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                        return BINARY_TYPE.SCS_64BIT_BINARY;
                     }
                 } catch {
                     throw new Exceptions.LibraryBinaryFormatException("imageNTHeadersPointer must not be NULL");
@@ -2601,7 +2603,7 @@ namespace FlashpointSecurePlayer {
         }
         
         public static Process GetParentProcess() {
-            IntPtr parentProcessSnapshotHandle = CreateToolhelp32Snapshot(TH32CS.TH32CS_SNAPPROCESS, 0);
+            IntPtr parentProcessSnapshotHandle = CreateToolhelp32Snapshot(TH32CSFlags.TH32CS_SNAPPROCESS, 0);
 
             if (parentProcessSnapshotHandle == IntPtr.Zero) {
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
@@ -2696,7 +2698,7 @@ namespace FlashpointSecurePlayer {
             return argv;
         }
 
-        // https://web.archive.org/web/20190109172835/https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
+        // http://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
         public static void GetValidArgument(ref string argument, bool force = false) {
             if (force || argument == String.Empty || argument.IndexOfAny(WHITESPACE) != -1) {
                 int backslashes = 0;

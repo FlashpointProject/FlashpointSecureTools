@@ -8,7 +8,7 @@ using static FlashpointSecurePlayer.Shared;
 using static FlashpointSecurePlayer.Shared.Exceptions;
 
 namespace FlashpointSecurePlayer {
-    // https://blogs.msdn.microsoft.com/jpsanders/2011/04/26/how-to-set-the-proxy-for-the-webbrowser-control-in-net/
+    // http://blogs.msdn.microsoft.com/jpsanders/2011/04/26/how-to-set-the-proxy-for-the-webbrowser-control-in-net/
     public static class FlashpointProxy {
         [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Ansi)]
         private static extern IntPtr InternetOpen(string lpszAgent, int dwAccessType, IntPtr lpszProxy, IntPtr lpszProxyBypass, int dwFlags);

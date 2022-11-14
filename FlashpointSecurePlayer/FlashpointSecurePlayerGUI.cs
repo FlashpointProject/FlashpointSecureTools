@@ -169,7 +169,6 @@ namespace FlashpointSecurePlayer {
         private void AskLaunchAsAdministratorUser() {
             if (!TestLaunchedAsAdministratorUser()) {
                 // popup message box and restart program here
-                // https://docs.microsoft.com/en-us/dotnet/api/system.windows.forms.messagebox?view=netframework-4.8
                 /*
                  this dialog is not purely here for aesthetic/politeness reasons
                  it's a stopgap to prevent the program from reloading infinitely

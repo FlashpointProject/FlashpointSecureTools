@@ -27,7 +27,7 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Templat
 
 namespace FlashpointSecurePlayer {
     public class RegistryStates : Modifications {
-        // https://social.msdn.microsoft.com/Forums/vstudio/en-US/0f3557ee-16bd-4a36-a4f3-00efbeae9b0d/app-config-multiple-sections-in-sectiongroup-with-same-name?forum=csharpgeneral
+        // http://social.msdn.microsoft.com/Forums/vstudio/en-US/0f3557ee-16bd-4a36-a4f3-00efbeae9b0d/app-config-multiple-sections-in-sectiongroup-with-same-name?forum=csharpgeneral
         private class WOW64Key {
             public enum EFFECT {
                 SHARED,
@@ -221,21 +221,18 @@ namespace FlashpointSecurePlayer {
             keyValueName = AddTrailingSlash(keyValueName);
 
             const string HKEY_CURRENT_USER = "HKEY_CURRENT_USER\\";
+            const string HKEY_LOCAL_MACHINE = "HKEY_LOCAL_MACHINE\\";
 
             string keyValueNameCurrentUser = "HKEY_USERS\\" + (String.IsNullOrEmpty(activeCurrentUser) ? WindowsIdentity.GetCurrent().User.Value : activeCurrentUser) + "\\";
 
             if (keyValueName.StartsWith(HKEY_CURRENT_USER, StringComparison.InvariantCultureIgnoreCase)) {
                 // make this explicit in case this is a shared computer
                 keyValueName = keyValueNameCurrentUser + keyValueName.Substring(HKEY_CURRENT_USER.Length);
-            } else {
+            } else if (keyValueName.StartsWith(HKEY_LOCAL_MACHINE, StringComparison.InvariantCultureIgnoreCase)) {
                 if (!activeAdministrator || !TestLaunchedAsAdministratorUser()) {
                     // if activeAdministrator is false, we use HKEY_USERS anyway
                     // because the registry state was created as a non-admin
-                    const string HKEY_LOCAL_MACHINE = "HKEY_LOCAL_MACHINE\\";
-
-                    if (keyValueName.StartsWith(HKEY_LOCAL_MACHINE, StringComparison.InvariantCultureIgnoreCase)) {
-                        keyValueName = keyValueNameCurrentUser + keyValueName.Substring(HKEY_LOCAL_MACHINE.Length);
-                    }
+                    keyValueName = keyValueNameCurrentUser + keyValueName.Substring(HKEY_LOCAL_MACHINE.Length);
                 }
             }
 
@@ -604,8 +601,8 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        // this function deals with this utter trashfire
-        // https://docs.microsoft.com/en-us/windows/win32/winprog64/shared-registry-keys#redirected-shared-and-reflected-keys-under-wow64
+        // blah
+        // http://docs.microsoft.com/en-us/windows/win32/winprog64/shared-registry-keys#redirected-shared-and-reflected-keys-under-wow64
         private string GetRedirectedKeyValueName(string keyValueName, BINARY_TYPE binaryType) {
             // does our OS use WOW64?
             string windowsVersionName = GetWindowsVersionName(false, false, true);
@@ -846,7 +843,7 @@ namespace FlashpointSecurePlayer {
 
                 //kernelSession.Source.Kernel.RegistryFlush += RegistryModified;
 
-                // https://social.msdn.microsoft.com/Forums/en-US/ff07fc25-31e3-4b6f-810e-7a1ee458084b/etw-registry-monitoring?forum=etw
+                // http://social.msdn.microsoft.com/Forums/en-US/ff07fc25-31e3-4b6f-810e-7a1ee458084b/etw-registry-monitoring?forum=etw
                 kernelSession.Source.Kernel.RegistryKCBCreate += KCBStarted;
                 kernelSession.Source.Kernel.RegistryKCBRundownBegin += KCBStarted;
 
