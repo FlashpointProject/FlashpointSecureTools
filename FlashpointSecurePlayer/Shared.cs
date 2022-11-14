@@ -2274,12 +2274,12 @@ namespace FlashpointSecurePlayer {
 
         public static bool TestLaunchedAsAdministratorUser() {
             AppDomain.CurrentDomain.SetPrincipalPolicy(PrincipalPolicy.WindowsPrincipal);
+            WindowsPrincipal currentPrinciple = Thread.CurrentPrincipal as WindowsPrincipal;
 
-            try {
-                return (Thread.CurrentPrincipal as WindowsPrincipal).IsInRole(WindowsBuiltInRole.Administrator);
-            } catch (NullReferenceException) {
+            if (currentPrinciple == null) {
                 return false;
             }
+            return currentPrinciple.IsInRole(WindowsBuiltInRole.Administrator);
         }
 
         public static void SetWorkingDirectory(ref ProcessStartInfo processStartInfo, string workingDirectory) {

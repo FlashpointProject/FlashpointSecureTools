@@ -1201,6 +1201,10 @@ namespace FlashpointSecurePlayer {
                     MessageBox.Show(Properties.Resources.UseFlashActiveXControlWarning, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
 
+                // ignore force deleting all during crash recovery
+                MODIFICATIONS_REVERT_METHOD modificationsRevertMethod = ModificationsRevertMethod;
+                ModificationsRevertMethod = MODIFICATIONS_REVERT_METHOD.CRASH_RECOVERY;
+
                 // this is where we do crash recovery
                 // we attempt to deactivate whatever was in the config file first
                 // it's important this succeeds
@@ -1217,6 +1221,8 @@ namespace FlashpointSecurePlayer {
                     Application.Exit();
                     return;
                 }
+
+                ModificationsRevertMethod = modificationsRevertMethod;
             } catch (InvalidTemplateException ex) {
                 LogExceptionToLauncher(ex);
                 // catch on load
@@ -1315,16 +1321,16 @@ namespace FlashpointSecurePlayer {
 
                         try {
                             // ignore host if going through localhost (no proxy)
-                            if (requestUri.Host.ToLowerInvariant() != "localhost") {
-                                htdocsFilePath.Append("\\");
-                                htdocsFilePath.Append(requestUri.Host);
-                            }
+                            if (requestUri != null) {
+                                if (requestUri.Host.Equals("localhost", StringComparison.InvariantCultureIgnoreCase)) {
+                                    htdocsFilePath.Append("\\");
+                                    htdocsFilePath.Append(requestUri.Host);
+                                }
 
-                            htdocsFilePath.Append(requestUri.LocalPath);
+                                htdocsFilePath.Append(requestUri.LocalPath);
+                            }
                         } catch (UriFormatException) {
                             throw new ArgumentException("The URL \"" + URL + "\" is malformed.");
-                        } catch (NullReferenceException) {
-                            throw new ArgumentNullException("The URL is null.");
                         } catch (InvalidOperationException) {
                             throw new ArgumentException("The URL \"" + URL + "\" is invalid.");
                         }
