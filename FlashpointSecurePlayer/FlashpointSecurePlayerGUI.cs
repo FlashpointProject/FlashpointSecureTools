@@ -1322,7 +1322,7 @@ namespace FlashpointSecurePlayer {
                         try {
                             // ignore host if going through localhost (no proxy)
                             if (requestUri != null) {
-                                if (requestUri.Host.Equals("localhost", StringComparison.InvariantCultureIgnoreCase)) {
+                                if (!requestUri.Host.Equals("localhost", StringComparison.InvariantCultureIgnoreCase)) {
                                     htdocsFilePath.Append("\\");
                                     htdocsFilePath.Append(requestUri.Host);
                                 }
