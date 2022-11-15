@@ -145,8 +145,9 @@ namespace FlashpointSecurePlayer {
                     if (context.SequenceEqual(FLASH_CONTEXT)) {
                         if (dwAction == URLACTION_ACTIVEX_TREATASUNTRUSTED) { // don't trust Flash ActiveX Controls
                             pPolicy = URLPOLICY_ALLOW;
+                            return S_OK;
                         }
-                        return S_OK;
+                        return S_FALSE;
                     }
 
                     string extension = Path.GetExtension(flashpointURI.LocalPath);
@@ -155,8 +156,9 @@ namespace FlashpointSecurePlayer {
                         if (extension.Equals(FLASH_EXTENSION, StringComparison.InvariantCultureIgnoreCase)) {
                             if (dwAction == URLACTION_ACTIVEX_TREATASUNTRUSTED) {
                                 pPolicy = URLPOLICY_ALLOW;
+                                return S_OK;
                             }
-                            return S_OK;
+                            return S_FALSE;
                         }
                     }
                 }
@@ -167,7 +169,7 @@ namespace FlashpointSecurePlayer {
             if (!TestInternetURI(flashpointURI)) {
                 // we've wandered off from Flashpoint Server, don't allow zone elevation
                 if (dwAction == URLACTION_FEATURE_ZONE_ELEVATION) {
-                    return S_OK;
+                    return S_FALSE;
                 }
                 return INET_E_DEFAULT_ACTION;
             }
@@ -179,12 +181,15 @@ namespace FlashpointSecurePlayer {
                 || dwAction == URLACTION_ALLOW_APEVALUATION // the phishing filter is not applicable to this application
                 || dwAction == URLACTION_LOWRIGHTS // turn off Protected Mode
                 || dwAction == URLACTION_ALLOW_ACTIVEX_FILTERING) { // don't allow ActiveX filtering
-                return S_OK;
+                return S_FALSE;
             }
 
             pPolicy = URLPOLICY_JAVA_LOW;
 
             if (dwAction == URLACTION_JAVA_PERMISSIONS) { // allow Java applets to be as terrible as they need to be to function
+                // for URLACTION_JAVA_PERMISSIONS, should return S_OK if
+                // the policy is not URLPOLICY_JAVA_PROHIBIT
+                // (though in practice, return value seems to not matter?)
                 return S_OK;
             }
 
