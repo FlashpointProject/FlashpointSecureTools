@@ -1881,14 +1881,7 @@ namespace FlashpointSecurePlayer {
 
                 try {
                     editionID = Registry.GetValue("HKEY_LOCAL_MACHINE/SOFTWARE/Microsoft/Windows NT/CurrentVersion", "EditionID", null) as string;
-                } catch (SecurityException) {
-                    // value exists but we can't get it
-                    editionID = String.Empty;
-                } catch (IOException) {
-                    // value marked for deletion
-                    editionID = null;
-                } catch (ArgumentException) {
-                    // value doesn't exist
+                } catch {
                     editionID = null;
                 }
 
@@ -1955,17 +1948,7 @@ namespace FlashpointSecurePlayer {
                                 // just ignore this download
                                 try {
                                     characterNumber = await stream.ReadAsync(streamReadBuffer, 0, STREAM_READ_LENGTH).ConfigureAwait(true);
-                                } catch (ArgumentNullException) {
-                                    break;
-                                } catch (ArgumentOutOfRangeException) {
-                                    break;
-                                } catch (ArgumentException) {
-                                    break;
-                                } catch (NotSupportedException) {
-                                    break;
-                                } catch (ObjectDisposedException) {
-                                    break;
-                                } catch (InvalidOperationException) {
+                                } catch {
                                     break;
                                 }
 
@@ -2157,7 +2140,7 @@ namespace FlashpointSecurePlayer {
                 // create the section
                 try {
                     exeConfiguration.Sections.Add("flashpointSecurePlayer", new FlashpointSecurePlayerSection());
-                } catch (ArgumentException) {
+                } catch {
                     throw configurationErrorsException;
                 }
 
@@ -2200,13 +2183,11 @@ namespace FlashpointSecurePlayer {
             try {
                 // important to use this function particularly - GetEXEConfiguration is for internal use by GetModificationsElement only
                 GetFlashpointSecurePlayerSection(false, name);
-            } catch (ConfigurationErrorsException) {
+            } catch {
                 try {
                     name = GetValidEXEConfigurationName(name);
                     await DownloadAsync("http://" + CONFIGURATION_DOWNLOAD_NAME + "/" + name + ".config").ConfigureAwait(false);
-                } catch (Exceptions.DownloadFailedException) {
-                    // Fail silently.
-                } catch (ConfigurationErrorsException) {
+                } catch {
                     // Fail silently.
                 }
             }

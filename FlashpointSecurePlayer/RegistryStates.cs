@@ -190,24 +190,14 @@ namespace FlashpointSecurePlayer {
             if (ImportStarted) {
                 try {
                     StopImport();
-                } catch (InvalidRegistryStateException) {
-                    // Fail silently.
-                } catch (ConfigurationErrorsException) {
-                    // Fail silently.
-                } catch (InvalidOperationException) {
+                } catch {
                     // Fail silently.
                 }
             }
 
             try {
                 Deactivate();
-            } catch (InvalidRegistryStateException) {
-                // Fail silently.
-            } catch (ConfigurationErrorsException) {
-                // Fail silently.
-            } catch (TaskRequiresElevationException) {
-                // Fail silently.
-            } catch (InvalidOperationException) {
+            } catch {
                 // Fail silently.
             }
         }
@@ -329,14 +319,7 @@ namespace FlashpointSecurePlayer {
             if (subKeyNameIndex > 0) {
                 try {
                     registryKey = registryKey.OpenSubKey(keyName.Substring(subKeyNameIndex), writable);
-                } catch (ArgumentNullException) {
-                    // key name is null
-                    return null;
-                } catch (NullReferenceException) {
-                    // registry key is null
-                    return null;
-                } catch (ObjectDisposedException) {
-                    // key is closed (could not be opened)
+                } catch {
                     return null;
                 }
             }
@@ -361,15 +344,8 @@ namespace FlashpointSecurePlayer {
                 for (int i = 0;i < keyNames.Count - 1;i++) {
                     try {
                         registryKey = registryKey.OpenSubKey(keyNames[i + 1]);
-                    } catch (ArgumentNullException) {
-                        // key name is null
-                        return String.Join("\\", keyNames.Take(i + 2).ToArray());
-                    } catch (NullReferenceException) {
-                        // registry key is null
-                        return String.Join("\\", keyNames.Take(i + 2).ToArray());
-                    } catch (ObjectDisposedException) {
-                        // key is closed (could not be opened)
-                        return String.Join("\\", keyNames.Take(i + 2).ToArray());
+                    } catch {
+                        registryKey = null;
                     }
 
                     if (registryKey == null) {
@@ -401,14 +377,10 @@ namespace FlashpointSecurePlayer {
             if (subKeyNameIndex > 0) {
                 try {
                     registryKey = registryKey.CreateSubKey(keyName.Substring(subKeyNameIndex), registryKeyPermissionCheck);
-                } catch (NullReferenceException) {
-                    // registry key is null
-                    return null;
                 } catch (ObjectDisposedException) {
                     // key is closed (could not be opened)
                     throw new ArgumentException("The key \"" + keyName + "\" is closed.");
-                } catch (IOException) {
-                    // the key is marked for deletion
+                } catch {
                     return null;
                 }
             }
@@ -429,17 +401,7 @@ namespace FlashpointSecurePlayer {
                 if (subKeyNameIndex > 0) {
                     try {
                         registryKey.DeleteSubKeyTree(keyName.Substring(subKeyNameIndex), false);
-                    } catch (ArgumentNullException) {
-                        // key name is null
-                        return;
-                    } catch (ArgumentException) {
-                        // subkey doesn't exist
-                        return;
-                    } catch (NullReferenceException) {
-                        // registry key is null
-                        return;
-                    } catch (ObjectDisposedException) {
-                        // key is closed (could not be opened)
+                    } catch {
                         return;
                     }
                 }
@@ -478,17 +440,7 @@ namespace FlashpointSecurePlayer {
             try {
                 try {
                     value = registryKey.GetValue(valueName, null, RegistryValueOptions.DoNotExpandEnvironmentNames);
-                } catch (ArgumentNullException) {
-                    // value name is null
-                    return null;
-                } catch (NullReferenceException) {
-                    // registry key is null
-                    return null;
-                } catch (ObjectDisposedException) {
-                    // key is closed (could not be opened)
-                    return null;
-                } catch (IOException) {
-                    // the key is marked for deletion
+                } catch {
                     return null;
                 }
 
@@ -584,14 +536,7 @@ namespace FlashpointSecurePlayer {
             try {
                 try {
                     return registryKey.GetValueKind(valueName);
-                } catch (ArgumentNullException) {
-                    // value name is null
-                    return null;
-                } catch (NullReferenceException) {
-                    // registry key is null
-                    return null;
-                } catch (IOException) {
-                    // value does not exist
+                } catch {
                     return null;
                 }
             } finally {
@@ -1037,7 +982,7 @@ namespace FlashpointSecurePlayer {
                                 if (valueExpanded != registryStateElement.Value) {
                                     activeRegistryStateElement._ValueExpanded = valueExpanded;
                                 }
-                            } catch (ArgumentNullException) {
+                            } catch {
                                 // Fail silently.
                             }
 
@@ -1404,7 +1349,7 @@ namespace FlashpointSecurePlayer {
             // must catch exceptions here for thread safety
             try {
                 templateElement = GetTemplateElement(false, TemplateName);
-            } catch (ConfigurationErrorsException) {
+            } catch {
                 return;
             }
 
@@ -1480,8 +1425,7 @@ namespace FlashpointSecurePlayer {
 
                 try {
                     value = ReplaceStartupPathEnvironmentVariable(LengthenValue(GetValueInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView), fullPath));
-                } catch (ArgumentException) {
-                } catch (UnauthorizedAccessException) {
+                } catch {
                     // we have permission to access the key at this point so this must not be important
                 }
 
@@ -1534,7 +1478,7 @@ namespace FlashpointSecurePlayer {
             // must catch exceptions here for thread safety
             try {
                 templateElement = GetTemplateElement(false, TemplateName);
-            } catch (ConfigurationErrorsException) {
+            } catch {
                 return;
             }
 
@@ -1615,7 +1559,7 @@ namespace FlashpointSecurePlayer {
 
             try {
                 templateElement = GetTemplateElement(false, TemplateName);
-            } catch (ConfigurationErrorsException) {
+            } catch {
                 return;
             }
 

@@ -434,29 +434,11 @@ namespace FlashpointSecurePlayer {
         private CustomSecurityManager customSecurityManager = null;
 
         private void WebBrowserMode_Load(object sender, EventArgs e) {
-            // default value is Redirector port
-            /*
-            short port = 8888;
-            Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-
-            if (configuration.AppSettings.Settings["Port"].Value != null) {
-                string portString = configuration.AppSettings.Settings["Port"].Value;
-
-                try {
-                    port = short.Parse(portString);
-                }
-                catch (ArgumentNullException) { }
-                catch (FormatException) { }
-                catch (OverflowException) { }
-            }
-            */
-            
             if (closableWebBrowser == null) {
                 closableWebBrowser = new ClosableWebBrowser();
             }
 
             try {
-                //string portString = port.ToString();
                 FlashpointProxy.Enable("http=127.0.0.1:22500;https=127.0.0.1:22500;ftp=127.0.0.1:22500");
             } catch (FlashpointProxyException ex) {
                 // popup message box but allow through anyway

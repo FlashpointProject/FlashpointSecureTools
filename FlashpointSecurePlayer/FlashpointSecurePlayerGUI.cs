@@ -393,7 +393,7 @@ namespace FlashpointSecurePlayer {
                             } catch (InvalidOperationException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.RegistryStateAlreadyInProgress);
-                                throw new ActiveXImportFailedException("The ActiveX Import failed because a Registry States is already in progress.");
+                                throw new ActiveXImportFailedException("The ActiveX Import failed because a Registry State is already in progress.");
                             }
 
                             ProgressManager.CurrentGoal.Steps++;
@@ -425,7 +425,7 @@ namespace FlashpointSecurePlayer {
                             } catch (InvalidOperationException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.RegistryStateNotInProgress);
-                                throw new ActiveXImportFailedException("The ActiveX Import failed because the Registry States is not in progress.");
+                                throw new ActiveXImportFailedException("The ActiveX Import failed because a Registry State is not in progress.");
                             }
                         } finally {
                             // we do this to ensure the user can exit in the case of an error
@@ -1020,12 +1020,12 @@ namespace FlashpointSecurePlayer {
 
             try {
                 await ActivateModificationsAsync(templateElement, delegate (string text) {
-                    if (!text.Contains("\n")) {
-                        ShowError(text);
-                    } else {
+                    if (text.Contains("\n")) {
                         ProgressManager.ShowError();
                         MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         Application.Exit();
+                    } else {
+                        ShowError(text);
                     }
                     throw new InvalidModificationException("An error occured while activating the Modification.");
                 }).ConfigureAwait(true);
@@ -1039,7 +1039,8 @@ namespace FlashpointSecurePlayer {
                 // Old CPU Simulator can't handle restarts
                 try {
                     AskLaunchWithOldCPUSimulator();
-                } catch (InvalidModificationException) {
+                } catch (InvalidModificationException ex2) {
+                    LogExceptionToLauncher(ex2);
                     return;
                 }
             }
@@ -1268,12 +1269,12 @@ namespace FlashpointSecurePlayer {
                     // ActiveX Import
                     try {
                         await ImportActiveX(delegate (string text) {
-                            if (!text.Contains("\n")) {
-                                ShowError(text);
-                            } else {
+                            if (text.Contains("\n")) {
                                 ProgressManager.ShowError();
                                 MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 Application.Exit();
+                            } else {
+                                ShowError(text);
                             }
                             throw new ActiveXImportFailedException("An error occured while activating the ActiveX Import.");
                         });
@@ -1434,7 +1435,8 @@ namespace FlashpointSecurePlayer {
 
                 try {
                     AskLaunchAsAdministratorUser();
-                } catch (InvalidModificationException) {
+                } catch (InvalidModificationException ex2) {
+                    LogExceptionToLauncher(ex2);
                     Application.Exit();
                     return;
                 }
