@@ -38,7 +38,7 @@ namespace FlashpointSecurePlayer {
         }
 
         [Flags]
-        private enum JOB_OBJECT_LIMIT : uint {
+        private enum JOB_OBJECT_LIMITFlags : uint {
             JOB_OBJECT_LIMIT_ACTIVE_PROCESS = 0x00000008,
             JOB_OBJECT_LIMIT_AFFINITY = 0x00000010,
             JOB_OBJECT_LIMIT_BREAKAWAY_OK = 0x00000800,
@@ -60,7 +60,7 @@ namespace FlashpointSecurePlayer {
         private struct JOBOBJECT_BASIC_LIMIT_INFORMATION {
             public long PerProcessUserTimeLimit;
             public long PerJobUserTimeLimit;
-            public JOB_OBJECT_LIMIT LimitFlags;
+            public JOB_OBJECT_LIMITFlags LimitFlags;
             public UIntPtr MinimumWorkingSetSize;
             public UIntPtr MaximumWorkingSetSize;
             public uint ActiveProcessLimit;
@@ -112,7 +112,7 @@ namespace FlashpointSecurePlayer {
                 }
 
                 JOBOBJECT_BASIC_LIMIT_INFORMATION jobobjectBasicLimitInformation = new JOBOBJECT_BASIC_LIMIT_INFORMATION {
-                    LimitFlags = JOB_OBJECT_LIMIT.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+                    LimitFlags = JOB_OBJECT_LIMITFlags.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
                 };
 
                 JOBOBJECT_EXTENDED_LIMIT_INFORMATION jobobjectExtendedLimitInformation = new JOBOBJECT_EXTENDED_LIMIT_INFORMATION {

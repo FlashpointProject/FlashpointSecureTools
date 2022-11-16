@@ -19,7 +19,7 @@ namespace FlashpointSecurePlayer {
 
         private bool UseFlashActiveXControl { get; set; } = false;
 
-        // https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/platform-apis/ms537182(v=vs.85)?redirectedfrom=MSDN
+        // http://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/platform-apis/ms537182(v=vs.85)?redirectedfrom=MSDN
         public CustomSecurityManager(WebBrowser webBrowser, bool useFlashActiveXControl = false) {
             InternetInterfaces.IServiceProvider webBrowserServiceProviderInterface = webBrowser.ActiveXInstance as InternetInterfaces.IServiceProvider;
             IntPtr profferServiceInterfacePointer = IntPtr.Zero;

@@ -2312,7 +2312,7 @@ namespace FlashpointSecurePlayer {
                 form.Hide();
                 form.ControlBox = true;
                 // no this is not a race condition
-                // https://stackoverflow.com/questions/33042010/in-what-cases-does-the-process-start-method-return-false
+                // http://stackoverflow.com/questions/33042010/in-what-cases-does-the-process-start-method-return-false
                 Process.Start(processStartInfo);
                 Application.Exit();
             } catch (Exception ex) {
