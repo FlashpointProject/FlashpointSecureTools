@@ -109,11 +109,6 @@ namespace FlashpointSecurePlayer {
                 fullscreen = value;
 
                 if (fullscreen) {
-                    // make strips invisible so the Closable Web Browser can be Docked
-                    fullscreenButton.Checked = true;
-                    toolBarToolStrip.Visible = false;
-                    statusBarStatusStrip.Visible = false;
-
                     // get the original properties before modifying them
                     fullscreenLocation = Location;
                     fullscreenSize = Size;
@@ -122,7 +117,6 @@ namespace FlashpointSecurePlayer {
 
                     closableWebBrowserLocation = closableWebBrowser.Location;
                     closableWebBrowserSize = closableWebBrowser.Size;
-                    closableWebBrowser.Dock = DockStyle.Fill;
 
                     // need to do this first to have an effect if starting maximized
                     WindowState = FormWindowState.Normal;
@@ -131,18 +125,25 @@ namespace FlashpointSecurePlayer {
                     // enter fullscreen
                     WindowState = FormWindowState.Maximized;
 
+                    // make strips invisible so the Closable Web Browser can be Docked
+                    // (this must happen AFTER entering fullscreen to prevent toolbar mouseover bug)
+                    fullscreenButton.Checked = true;
+                    toolBarToolStrip.Visible = false;
+                    statusBarStatusStrip.Visible = false;
+                    closableWebBrowser.Dock = DockStyle.Fill;
+
                     // set Windows Hook for toolbar
                     if (mouseHook == IntPtr.Zero && lowLevelMouseProc != null) {
                         mouseHook = SetWindowsHookEx(HookType.WH_MOUSE_LL, lowLevelMouseProc, IntPtr.Zero, 0);
                     }
 
-                    // show "Press F11 to Exit Fullscreen" label
+                    // show "Press F11 to exit fullscreen" label
                     ExitFullscreenLabelTimer = true;
 
                     // commit by bringing the window to the front
                     BringToFront();
                 } else {
-                    // hide "Press F11 to Exit Fullscreen" label
+                    // hide "Press F11 to exit fullscreen" label
                     ExitFullscreenLabelTimer = false;
 
                     // unhook Windows Hook for toolbar
@@ -152,23 +153,23 @@ namespace FlashpointSecurePlayer {
                         }
                     }
 
-                    // make strips visible so the Closable Web Browser can be Anchored
-                    fullscreenButton.Checked = false;
-                    toolBarToolStrip.Visible = true;
-                    statusBarStatusStrip.Visible = true;
-
                     // need to do this first to reset the window to its former size
                     FormBorderStyle = FormBorderStyle.Sizable;
                     // exit fullscreen
                     WindowState = FormWindowState.Normal;
+                    
+                    // make strips visible so the Closable Web Browser can be Anchored
+                    fullscreenButton.Checked = false;
+                    toolBarToolStrip.Visible = true;
+                    statusBarStatusStrip.Visible = true;
+                    closableWebBrowser.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 
                     // reset to the original properties before modifying them
                     FormBorderStyle = fullscreenFormBorderStyle;
                     WindowState = fullscreenWindowState;
                     Location = fullscreenLocation;
                     Size = fullscreenSize;
-                    
-                    closableWebBrowser.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+
                     closableWebBrowser.Location = closableWebBrowserLocation;
                     closableWebBrowser.Size = closableWebBrowserSize;
 
