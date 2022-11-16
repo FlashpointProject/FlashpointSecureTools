@@ -84,14 +84,17 @@ namespace FlashpointSecurePlayer {
         }
 
         private bool fullscreen = false;
-        private Point fullscreenLocation;
-        private Size fullscreenSize;
         private FormBorderStyle fullscreenFormBorderStyle = FormBorderStyle.Sizable;
         private FormWindowState fullscreenWindowState = FormWindowState.Maximized;
+        private Point fullscreenLocation;
+        private Size fullscreenSize;
 
         private Point closableWebBrowserLocation;
         private Size closableWebBrowserSize;
 
+        // be very careful modifying this property
+        // it is very picky about the order things happen
+        // and likes to cause bugs if you're not careful changing it
         public bool Fullscreen {
             get {
                 return fullscreen;
@@ -110,10 +113,10 @@ namespace FlashpointSecurePlayer {
 
                 if (fullscreen) {
                     // get the original properties before modifying them
-                    fullscreenLocation = Location;
-                    fullscreenSize = Size;
                     fullscreenFormBorderStyle = FormBorderStyle;
                     fullscreenWindowState = WindowState;
+                    fullscreenLocation = Location;
+                    fullscreenSize = Size;
 
                     closableWebBrowserLocation = closableWebBrowser.Location;
                     closableWebBrowserSize = closableWebBrowser.Size;
