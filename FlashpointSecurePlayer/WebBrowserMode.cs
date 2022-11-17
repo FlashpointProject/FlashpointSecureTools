@@ -671,8 +671,9 @@ namespace FlashpointSecurePlayer {
             // Width, Height, and WindowState changes all work here
             // Width/Height are less obvious and Height doesn't cause text reflow
             if (WindowState != FormWindowState.Maximized) {
-                Height--;
+                // add first in case it's zero
                 Height++;
+                Height--;
             }
         }
 
