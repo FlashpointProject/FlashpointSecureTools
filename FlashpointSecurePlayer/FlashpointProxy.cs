@@ -42,7 +42,7 @@ namespace FlashpointSecurePlayer {
         }
 
         [Flags]
-        private enum INTERNET_PER_CONN_FLAGS_VALUE : uint {
+        private enum INTERNET_PER_CONN_FLAGS_VALUEFlags : uint {
             PROXY_TYPE_DIRECT = 0x00000001,
             PROXY_TYPE_PROXY = 0x00000002,
             PROXY_TYPE_AUTO_PROXY_URL = 0x00000004,
@@ -147,7 +147,7 @@ namespace FlashpointSecurePlayer {
                 dwOption = INTERNET_PER_CONN_OPTION_OPTION.INTERNET_PER_CONN_FLAGS
             };
 
-            internetPerConnOptionListOptions[0].Value.dwValue = (uint)INTERNET_PER_CONN_FLAGS_VALUE.PROXY_TYPE_PROXY;
+            internetPerConnOptionListOptions[0].Value.dwValue = (uint)INTERNET_PER_CONN_FLAGS_VALUEFlags.PROXY_TYPE_PROXY;
 
             // set proxy name
             internetPerConnOptionListOptions[1] = new INTERNET_PER_CONN_OPTION {
