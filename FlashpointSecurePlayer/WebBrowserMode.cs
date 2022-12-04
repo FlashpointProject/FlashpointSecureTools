@@ -555,9 +555,11 @@ namespace FlashpointSecurePlayer {
             Application.RemoveMessageFilter(messageFilter);
 
             if (Fullscreen) {
+                IntPtr foregroundWindow = GetForegroundWindow();
+
                 // we are the active window, because we are only now deactivating
                 // if this process has the foreground window, it'll be the active window
-                if (Handle == GetForegroundWindow()) {
+                if (Handle == foregroundWindow) {
                     // this process opened a new window
                     if (!CanFocus) {
                         // if there is a window above us in the z-order
@@ -578,6 +580,16 @@ namespace FlashpointSecurePlayer {
                 }
 
                 // another process opened a window
+                if (!CanFocus) {
+                    if (foregroundWindow != IntPtr.Zero) {
+                        // if we own the foreground window
+                        if (Handle == GetWindow(foregroundWindow, GW.GW_OWNER)) {
+                            // the new window is a dialog that prevents focus to this window
+                            return;
+                        }
+                    }
+                }
+
                 WindowState = FormWindowState.Minimized;
             }
         }
