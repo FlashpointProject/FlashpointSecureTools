@@ -700,7 +700,12 @@ namespace FlashpointSecurePlayer {
 
         [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool QueryFullProcessImageName(IntPtr hProcess, int dwFlags, StringBuilder lpExeName, ref int lpdwSize);
+        public static extern bool QueryFullProcessImageName(IntPtr hProcess, int dwFlags,
+
+        [MarshalAs(UnmanagedType.LPTStr)]
+        StringBuilder lpExeName,
+            
+        ref int lpdwSize);
 
         [DllImport("KERNEL32.DLL", SetLastError = true)]
         public static extern IntPtr LocalFree(IntPtr hMem);
