@@ -580,13 +580,21 @@ namespace FlashpointSecurePlayer {
                 }
 
                 // another process opened a window
-                if (!CanFocus) {
-                    if (foregroundWindow != IntPtr.Zero) {
-                        // if we own the foreground window
-                        if (Handle == GetWindow(foregroundWindow, GW.GW_OWNER)) {
-                            // the new window is a dialog that prevents focus to this window
-                            return;
+                if (foregroundWindow != IntPtr.Zero) {
+                    // if we own the foreground window
+                    if (Handle == GetWindow(foregroundWindow, GW.GW_OWNER)) {
+                        // the new window is owned by this window
+                        if (CanFocus) {
+                            // the new window is not a dialog that prevents focus to this window
+                            Fullscreen = false;
                         }
+                        return;
+                    }
+
+                    if (IsChild(Handle, foregroundWindow)) {
+                        // the new window is a child of this window
+                        Fullscreen = false;
+                        return;
                     }
                 }
 
