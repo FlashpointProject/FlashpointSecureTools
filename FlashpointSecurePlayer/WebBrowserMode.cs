@@ -105,6 +105,11 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
+
+                if (GetWindow(Handle, GW.GW_CHILD) != IntPtr.Zero) {
+                    value = false;
+                }
+
                 if (fullscreen == value) {
                     return;
                 }
@@ -555,6 +560,12 @@ namespace FlashpointSecurePlayer {
             Application.RemoveMessageFilter(messageFilter);
 
             if (Fullscreen) {
+                // disallow child windows in fullscreen
+                if (GetWindow(Handle, GW.GW_CHILD) != IntPtr.Zero) {
+                    Fullscreen = false;
+                    return;
+                }
+
                 IntPtr foregroundWindow = GetForegroundWindow();
 
                 // we are the active window, because we are only now deactivating
@@ -588,12 +599,6 @@ namespace FlashpointSecurePlayer {
                             // the new window is not a dialog that prevents focus to this window
                             Fullscreen = false;
                         }
-                        return;
-                    }
-
-                    if (IsChild(Handle, foregroundWindow)) {
-                        // the new window is a child of this window
-                        Fullscreen = false;
                         return;
                     }
                 }
