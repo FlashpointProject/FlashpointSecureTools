@@ -105,11 +105,6 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-
-                if (GetWindow(Handle, GW.GW_CHILD) != IntPtr.Zero) {
-                    value = false;
-                }
-
                 if (fullscreen == value) {
                     return;
                 }
@@ -560,12 +555,6 @@ namespace FlashpointSecurePlayer {
             Application.RemoveMessageFilter(messageFilter);
 
             if (Fullscreen) {
-                // disallow child windows in fullscreen
-                if (GetWindow(Handle, GW.GW_CHILD) != IntPtr.Zero) {
-                    Fullscreen = false;
-                    return;
-                }
-
                 IntPtr foregroundWindow = GetForegroundWindow();
 
                 // we are the active window, because we are only now deactivating
