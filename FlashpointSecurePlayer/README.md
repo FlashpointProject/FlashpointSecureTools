@@ -14,7 +14,7 @@ This player has bugs. Help me find them! If you've found a bug, report anything 
 # Templates
 Templates determine what to do with a URL. Every Template has its own configuration file. The configuration files may be hosted on the Flashpoint Server, making it easy to integrate into the existing Flashpoint curation flow. A number of sample configuration files are included alongside the player in the FlashpointSecurePlayerConfigs folder.
 
-Templates consist of Modes and Modifications. Presently, there are two Modes (Web Browser Mode and Software Mode) and six Modifications (Run As Administrator, Environment Variables, Downloads Before, Registry Backups, Single Instance, and Old CPU Simulator.) Some Modifications may also be set via the command line.
+Templates consist of Modes and Modifications. Presently, there are two Modes (Web Browser Mode and Software Mode) and six Modifications (Run As Administrator, Environment Variables, Downloads Before, Registry States, Single Instance, and Old CPU Simulator.) Some Modifications may also be set via the command line.
 
 Flashpoint Secure Player will check for a configuration file in the FlashpointSecurePlayerConfigs folder with the same name as the Template (with any invalid pathname characters replaced with a period character.) If it fails to find a configuration file in this folder, it will look for the configuration file on the Flashpoint Server at http://flashpointsecureplayerconfig/ using the same pathname rules. If the configuration file is not found in either location, an error occurs.
 
@@ -277,7 +277,7 @@ There are four possible scenarios.
 
 In scenarios one and two, Flashpoint Secure Player reverts the active Registry States Modification because the software is no longer open. In scenario three, Flashpoint Secure Player reverts the active Registry States Modification and any software opened using Software Mode is killed. In scenario four, Flashpoint Secure Player will revert the active Registry States Modification whenever the application is next run, regardless of what Modes or Modifications are specified.
 
-If the Registry Backups Modification cannot be reverted, an error occurs and the application will exit, and not do anything else regardless of what Modes or Modifications are specified until the issue is resolved. If the registry has been modified by a different application outside of Flashpoint Secure Player, the player no longer assumes control of those registry keys and values, and the active Registry Backups Modification is silently discarded.
+If the Registry States Modification cannot be reverted, an error occurs and the application will exit, and not do anything else regardless of what Modes or Modifications are specified until the issue is resolved. If the registry has been modified by a different application outside of Flashpoint Secure Player, the player no longer assumes control of those registry keys and values, and the active Registry States Modification is silently discarded.
 
 **Administrator User**
 
@@ -324,15 +324,15 @@ The player will look for Old CPU Simulator in the OldCPUSimulator folder. It mus
 Let's curate the game Zenerchi. The first step is to add the ActiveX Control to the ActiveX folder in FPSoftware. Here is the location we'll use for Zenerchi:
 `ActiveX\ZenerchiWeb.1.0.0.10\zenerchi.1.0.0.10.dll`
 
-**Creating a Registry Backup from an ActiveX Control**
+**Creating a Registry State from an ActiveX Control**
 
-The first time an ActiveX Control is added to Flashpoint, a curator must create an ActiveX Import. This is accomplished with the following command line, substituting the ActiveX Control's location. If not run as administrator, the curator will be asked to launch as Administrator User. This command line is NOT to be included in the curation metadata, it is only used to create the Registry Backup.
+The first time an ActiveX Control is added to Flashpoint, a curator must create an ActiveX Import. This is accomplished with the following command line, substituting the ActiveX Control's location. If not run as administrator, the curator will be asked to launch as Administrator User. This command line is NOT to be included in the curation metadata, it is only used to create the Registry State.
 
 `FlashpointSecurePlayer "ActiveX\ZenerchiWeb.1.0.0.10\zenerchi.1.0.0.10.dll" "http://www.shockwave.com/content/zenerchi/sis/index.html" --activex`
 
 This will produce a file in the FlashpointSecurePlayerConfigs folder called `activex.zenerchiweb.1.0.0.10.zenerchi.1.0.0.10.dll.config`. This file may be included in the curation as if it existed at the URL of http://flashpointsecureplayerconfigs/activex.zenerchiweb.1.0.0.10.zenerchi.1.0.0.10.dll.config and it will be downloaded from the Flashpoint Server by Flashpoint Secure Player when required.
 
-**Using the Registry Backup**
+**Using the Registry State**
 
 To use the ActiveX Control, `--activex` is removed from the end of the command line. This is the command line the curation metadata may include.
 
