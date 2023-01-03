@@ -535,6 +535,7 @@ namespace FlashpointSecurePlayer {
                                 softwareProcessStartInfo.Arguments = GetArgumentSliceFromCommandLine(commandLineExpanded, 1);
                             }
 
+                            softwareProcessStartInfo.UseShellExecute = false;
                             softwareProcessStartInfo.ErrorDialog = false;
 
                             if (modeElement.HideWindow.GetValueOrDefault()) {
@@ -545,18 +546,15 @@ namespace FlashpointSecurePlayer {
                                 if (String.IsNullOrEmpty(modeElement.WorkingDirectory)) {
                                     softwareProcessStartInfo.WorkingDirectory = Path.GetDirectoryName(fullPath);
                                 } else {
-                                    try {
-                                        SetWorkingDirectory(ref softwareProcessStartInfo, Environment.ExpandEnvironmentVariables(modeElement.WorkingDirectory));
-                                    } catch (ArgumentNullException) {
-                                        throw new InvalidModeException("The Mode failed because the Working Directory must not be null.");
-                                    }
+                                    softwareProcessStartInfo.WorkingDirectory = Environment.ExpandEnvironmentVariables(modeElement.WorkingDirectory);
                                 }
                             }
 
-                            Process softwareProcess = Process.Start(softwareProcessStartInfo);
+                            Process softwareProcess = null;
 
                             try {
-                                ProcessSync.Start(softwareProcess);
+                                // StartProcessCreateBreakawayFromJob required for Process Sync on Windows 7
+                                softwareProcess = StartProcessCreateBreakawayFromJob(softwareProcessStartInfo);
                             } catch (JobObjectException ex) {
                                 LogExceptionToLauncher(ex);
                                 // popup message box and blow up
@@ -575,6 +573,7 @@ namespace FlashpointSecurePlayer {
                             Show();
                             Refresh();
 
+                            /*
                             string softwareProcessStandardError = null;
                             string softwareProcessStandardOutput = null;
 
@@ -585,11 +584,14 @@ namespace FlashpointSecurePlayer {
                             if (softwareProcessStartInfo.RedirectStandardOutput) {
                                 softwareProcessStandardOutput = softwareProcess.StandardOutput.ReadToEnd();
                             }
+                            */
 
                             if (softwareIsOldCPUSimulator) {
                                 switch (softwareProcess.ExitCode) {
                                     case 0:
                                     break;
+                                    // RedirectStandardError is not supported by StartProcessCreateBreakawayFromJob
+                                    /*
                                     case -1:
                                     if (!String.IsNullOrEmpty(softwareProcessStandardError)) {
                                         string[] lastSoftwareProcessStandardErrors = softwareProcessStandardError.Split('\n');
@@ -604,6 +606,7 @@ namespace FlashpointSecurePlayer {
                                         }
                                     }
                                     break;
+                                    */
                                     case -2:
                                     MessageBox.Show(Properties.Resources.OCS_NoMultipleInstances);
                                     break;

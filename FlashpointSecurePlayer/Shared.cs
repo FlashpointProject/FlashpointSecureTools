@@ -133,6 +133,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        // it'd be nice to move all these native methods to their own class one day
         public const int MAX_PATH = 260;
 
         public const int ERROR_SUCCESS = 0x00000000;
@@ -315,6 +316,126 @@ namespace FlashpointSecurePlayer {
         [DllImport("USER32.DLL", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SECURITY_ATTRIBUTES {
+            public uint nLength;
+            public IntPtr lpSecurityDescriptor;
+        }
+
+        [Flags]
+        public enum CreationFlags : uint {
+            Zero = 0,
+            CREATE_BREAKAWAY_FROM_JOB = 0x01000000,
+            CREATE_DEFAULT_ERROR_MODE = 0x04000000,
+            CREATE_NEW_CONSOLE = 0x00000010,
+            CREATE_NEW_PROCESS_GROUP = 0x00000200,
+            CREATE_NO_WINDOW = 0x08000000,
+            CREATE_PROTECTED_PROCESS = 0x00040000,
+            CREATE_PRESERVE_CODE_AUTHZ_LEVEL = 0x02000000,
+            CREATE_SECURE_PROCESS = 0x00400000,
+            CREATE_SEPARATE_WOW_VDM = 0x00000800,
+            CREATE_SHARED_WOW_VDM = 0x00001000,
+            CREATE_SUSPENDED = 0x00000004,
+            CREATE_UNICODE_ENVIRONMENT = 0x00000400,
+            DEBUG_ONLY_THIS_PROCESS = 0x00000002,
+            DEBUG_PROCESS = 0x00000001,
+            DETACHED_PROCESS = 0x00000008,
+            EXTENDED_STARTUP_INFO_PRESENT = 0x00080000,
+            INHERIT_PARENT_AFFINITY = 0x00010000
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct STARTUPINFO {
+            public uint cb;
+            public IntPtr lpReserved;
+            public IntPtr lpDesktop;
+            public IntPtr lpTitle;
+            public uint dwX;
+            public uint dwY;
+            public uint dwXSize;
+            public uint dwYSize;
+            public uint dwXCountChars;
+            public uint dwYCountChars;
+            public uint dwFillAttributes;
+            public uint dwFlags;
+            public ushort wShowWindow;
+            public ushort cbReserved;
+            public IntPtr lpReserved2;
+            public IntPtr hStdInput;
+            public IntPtr hStdOutput;
+            public IntPtr hStdErr;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct STARTUPINFOEX {
+            public STARTUPINFO StartupInfo;
+            public IntPtr lpAttributeList;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct PROCESS_INFORMATION {
+            public IntPtr hProcess;
+            public IntPtr hThread;
+            public uint dwProcessId;
+            public uint dwThreadId;
+        }
+
+        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool CreateProcess(
+            [MarshalAs(UnmanagedType.LPTStr)]
+            string lpApplicationName,
+
+            [MarshalAs(UnmanagedType.LPTStr)]
+            string lpCommandLine,
+
+            IntPtr lpProcessAttributes,
+            IntPtr lpThreadAttributes,
+
+            [MarshalAs(UnmanagedType.Bool)]
+            bool bInheritHandles,
+
+            CreationFlags dwCreationFlags,
+            IntPtr lpEnvironment,
+
+            [MarshalAs(UnmanagedType.LPTStr)]
+            string lpCurrentDirectory,
+
+            ref STARTUPINFO lpStartupInfo,
+            out PROCESS_INFORMATION lpProcessInformation
+        );
+
+        [DllImport("KERNEL32.DLL", SetLastError = true, CharSet = CharSet.Auto)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool CreateProcess(
+            [MarshalAs(UnmanagedType.LPTStr)]
+            string lpApplicationName,
+
+            [MarshalAs(UnmanagedType.LPTStr)]
+            string lpCommandLine,
+
+            IntPtr lpProcessAttributes,
+            IntPtr lpThreadAttributes,
+
+            [MarshalAs(UnmanagedType.Bool)]
+            bool bInheritHandles,
+
+            CreationFlags dwCreationFlags,
+            IntPtr lpEnvironment,
+
+            [MarshalAs(UnmanagedType.LPTStr)]
+            string lpCurrentDirectory,
+
+            ref STARTUPINFOEX lpStartupInfo,
+            out PROCESS_INFORMATION lpProcessInformation
+        );
+
+        [DllImport("KERNEL32.DLL", SetLastError = true)]
+        public static extern int SuspendThread(IntPtr hThread);
+
+        [DllImport("KERNEL32.DLL", SetLastError = true)]
+        public static extern int ResumeThread(IntPtr hThread);
 
         public enum BINARY_TYPE : uint {
             SCS_32BIT_BINARY = 0, // A 32-bit Windows-based application
@@ -761,6 +882,7 @@ namespace FlashpointSecurePlayer {
         // (preferably, no more than eight at a time)
         private static SemaphoreSlim downloadSemaphoreSlim = new SemaphoreSlim(1, 1);
 
+        // it'd be nice to move all the configuration, template, section stuff to their own class one day
         private static FlashpointSecurePlayerSection flashpointSecurePlayerSection = null;
         private static FlashpointSecurePlayerSection activeFlashpointSecurePlayerSection = null;
 
@@ -2268,14 +2390,6 @@ namespace FlashpointSecurePlayer {
             return currentPrinciple.IsInRole(WindowsBuiltInRole.Administrator);
         }
 
-        public static void SetWorkingDirectory(ref ProcessStartInfo processStartInfo, string workingDirectory) {
-            if (processStartInfo == null) {
-                processStartInfo = new ProcessStartInfo();
-            }
-
-            processStartInfo.WorkingDirectory = Environment.ExpandEnvironmentVariables(workingDirectory);
-        }
-
         public static void HideWindow(ref ProcessStartInfo processStartInfo) {
             if (processStartInfo == null) {
                 processStartInfo = new ProcessStartInfo();
@@ -2327,6 +2441,91 @@ namespace FlashpointSecurePlayer {
                 MessageBox.Show(Properties.Resources.ProcessFailedStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Application.Exit();
                 throw new Exceptions.ApplicationRestartRequiredException("The application failed to restart.");
+            }
+        }
+
+        public static StringBuilder GetCreateProcessCommandLine(ProcessStartInfo processStartInfo) {
+            if (processStartInfo == null) {
+                throw new ArgumentNullException("processStartInfo must not be null.");
+            }
+
+            string fileName = processStartInfo.FileName.Trim();
+
+            string quotes = "\"";
+
+            if (fileName.StartsWith(quotes, StringComparison.Ordinal)
+                && fileName.EndsWith(quotes, StringComparison.Ordinal)) {
+                quotes = String.Empty;
+            }
+
+            StringBuilder commandLine = new StringBuilder(quotes);
+            commandLine.Append(fileName);
+            commandLine.Append(quotes);
+
+            string arguments = processStartInfo.Arguments;
+
+            if (!String.IsNullOrEmpty(arguments)) {
+                commandLine.Append(" ");
+                commandLine.Append(arguments);
+            }
+            return commandLine;
+        }
+
+        public static Process StartProcessCreateBreakawayFromJob(ProcessStartInfo processStartInfo) {
+            if (processStartInfo == null) {
+                throw new ArgumentNullException("processStartInfo must not be null.");
+            }
+
+            if (processStartInfo.UseShellExecute) {
+                throw new ArgumentException("UseShellExecute must be false.");
+            }
+
+            if (processStartInfo.RedirectStandardError
+                || processStartInfo.RedirectStandardOutput
+                || processStartInfo.RedirectStandardInput) {
+                throw new ArgumentException("RedirectStandardError, RedirectStandardOutput, and RedirectStandardInput must be false.");
+            }
+
+            StringBuilder commandLine = GetCreateProcessCommandLine(processStartInfo);
+
+            CreationFlags creationFlags = CreationFlags.CREATE_BREAKAWAY_FROM_JOB
+                | CreationFlags.CREATE_SUSPENDED;
+
+            if (processStartInfo.CreateNoWindow) {
+                creationFlags |= CreationFlags.CREATE_NO_WINDOW;
+            }
+
+            string currentDirectory = processStartInfo.WorkingDirectory;
+
+            if (String.IsNullOrEmpty(currentDirectory)) {
+                currentDirectory = Environment.CurrentDirectory;
+            }
+
+            STARTUPINFO startupInfo = new STARTUPINFO();
+            PROCESS_INFORMATION processInformation = new PROCESS_INFORMATION();
+
+            if (!CreateProcess(null, commandLine.ToString(), IntPtr.Zero, IntPtr.Zero, false, creationFlags, IntPtr.Zero, currentDirectory, ref startupInfo, out processInformation)) {
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                return null;
+            }
+
+            try {
+                Process process = Process.GetProcessById((int)processInformation.dwProcessId);
+                ProcessSync.Start(process);
+
+                if (ResumeThread(processInformation.hThread) == -1) {
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                    return null;
+                }
+                return process;
+            } finally {
+                if (!CloseHandle(processInformation.hProcess)) {
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                }
+
+                if (!CloseHandle(processInformation.hThread)) {
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                }
             }
         }
 

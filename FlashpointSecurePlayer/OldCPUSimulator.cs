@@ -178,7 +178,8 @@ namespace FlashpointSecurePlayer {
 
                 softwareProcessStartInfo.FileName = OLD_CPU_SIMULATOR_PATH;
                 softwareProcessStartInfo.Arguments = GetOldCPUSimulatorProcessStartInfoArguments(oldCPUSimulatorElement, oldCPUSimulatorSoftware.ToString());
-                softwareProcessStartInfo.RedirectStandardError = true;
+                //softwareProcessStartInfo.RedirectStandardError = true;
+                softwareProcessStartInfo.RedirectStandardError = false;
                 softwareProcessStartInfo.RedirectStandardOutput = false;
                 softwareProcessStartInfo.RedirectStandardInput = false;
 

@@ -102,42 +102,44 @@ namespace FlashpointSecurePlayer {
         public static void Start(Process process = null) {
             // this is here to make it so if the player crashes
             // the process it started is killed along with it
-            if (!Started) {
-                if (jobHandle == IntPtr.Zero) {
-                    jobHandle = CreateJobObject(IntPtr.Zero, null);
-
-                    if (jobHandle == IntPtr.Zero) {
-                        throw new JobObjectException("Could not create the Job Object.");
-                    }
-                }
-
-                JOBOBJECT_BASIC_LIMIT_INFORMATION jobobjectBasicLimitInformation = new JOBOBJECT_BASIC_LIMIT_INFORMATION {
-                    LimitFlags = JOB_OBJECT_LIMITFlags.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
-                };
-
-                JOBOBJECT_EXTENDED_LIMIT_INFORMATION jobobjectExtendedLimitInformation = new JOBOBJECT_EXTENDED_LIMIT_INFORMATION {
-                    BasicLimitInformation = jobobjectBasicLimitInformation
-                };
-
-                int jobobjectExtendedLimitInformationSize = Marshal.SizeOf(typeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION));
-                IntPtr jobobjectExtendedLimitInformationPointer = Marshal.AllocHGlobal(jobobjectExtendedLimitInformationSize);
-
-                Marshal.StructureToPtr(jobobjectExtendedLimitInformation, jobobjectExtendedLimitInformationPointer, false);
-
-                bool result = SetInformationJobObject(jobHandle, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, jobobjectExtendedLimitInformationPointer, (uint)jobobjectExtendedLimitInformationSize);
-
-                Marshal.FreeHGlobal(jobobjectExtendedLimitInformationPointer);
-
-                if (process == null) {
-                    process = Process.GetCurrentProcess();
-                }
-
-                if (!result || !AssignProcessToJobObject(jobHandle, process.Handle)) {
-                    throw new JobObjectException("Could not set the Job Object Information or assign the Process to the Job Object.");
-                }
-
-                Started = true;
+            if (Started) {
+                return;
             }
+
+            if (jobHandle == IntPtr.Zero) {
+                jobHandle = CreateJobObject(IntPtr.Zero, null);
+
+                if (jobHandle == IntPtr.Zero) {
+                    throw new JobObjectException("Could not create the Job Object.");
+                }
+            }
+
+            JOBOBJECT_BASIC_LIMIT_INFORMATION jobobjectBasicLimitInformation = new JOBOBJECT_BASIC_LIMIT_INFORMATION {
+                LimitFlags = JOB_OBJECT_LIMITFlags.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+            };
+
+            JOBOBJECT_EXTENDED_LIMIT_INFORMATION jobobjectExtendedLimitInformation = new JOBOBJECT_EXTENDED_LIMIT_INFORMATION {
+                BasicLimitInformation = jobobjectBasicLimitInformation
+            };
+
+            int jobobjectExtendedLimitInformationSize = Marshal.SizeOf(typeof(JOBOBJECT_EXTENDED_LIMIT_INFORMATION));
+            IntPtr jobobjectExtendedLimitInformationPointer = Marshal.AllocHGlobal(jobobjectExtendedLimitInformationSize);
+
+            Marshal.StructureToPtr(jobobjectExtendedLimitInformation, jobobjectExtendedLimitInformationPointer, false);
+
+            bool result = SetInformationJobObject(jobHandle, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, jobobjectExtendedLimitInformationPointer, (uint)jobobjectExtendedLimitInformationSize);
+
+            Marshal.FreeHGlobal(jobobjectExtendedLimitInformationPointer);
+
+            if (process == null) {
+                process = Process.GetCurrentProcess();
+            }
+
+            if (!result || !AssignProcessToJobObject(jobHandle, process.Handle)) {
+                throw new JobObjectException("Could not set the Job Object Information or assign the Process to the Job Object.");
+            }
+
+            Started = true;
         }
     }
 }
