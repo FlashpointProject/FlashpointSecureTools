@@ -115,7 +115,7 @@ namespace FlashpointSecurePlayer {
             }
 
             JOBOBJECT_BASIC_LIMIT_INFORMATION jobobjectBasicLimitInformation = new JOBOBJECT_BASIC_LIMIT_INFORMATION {
-                LimitFlags = JOB_OBJECT_LIMITFlags.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+                LimitFlags = JOB_OBJECT_LIMITFlags.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE | JOB_OBJECT_LIMITFlags.JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK
             };
 
             JOBOBJECT_EXTENDED_LIMIT_INFORMATION jobobjectExtendedLimitInformation = new JOBOBJECT_EXTENDED_LIMIT_INFORMATION {
