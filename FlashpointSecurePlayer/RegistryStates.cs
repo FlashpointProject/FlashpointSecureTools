@@ -945,11 +945,7 @@ namespace FlashpointSecurePlayer {
                 // to prevent issues with HKEY_LOCAL_MACHINE and crash recovery
                 activeModificationsElement.RegistryStates._CurrentUser = WindowsIdentity.GetCurrent().User.Value;
                 activeModificationsElement.RegistryStates._Administrator = TestLaunchedAsAdministratorUser();
-                RegistryView registryView = RegistryView.Registry32;
-
-                if (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) {
-                    registryView = RegistryView.Registry64;
-                }
+                RegistryView registryView = (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) ? RegistryView.Registry64 : RegistryView.Registry32;
 
                 ProgressManager.CurrentGoal.Start(modificationsElement.RegistryStates.Count + modificationsElement.RegistryStates.Count);
 
@@ -1123,8 +1119,8 @@ namespace FlashpointSecurePlayer {
                 // don't allow infinite recursion!
                 if (String.IsNullOrEmpty(templateElementName)) {
                     activeModificationsElement.RegistryStates.Clear();
-                    activeModificationsElement.RegistryStates.BinaryType = BINARY_TYPE.SCS_64BIT_BINARY;
                     activeModificationsElement.RegistryStates._Administrator = false;
+                    activeModificationsElement.RegistryStates._CurrentUser = String.Empty;
                     SetFlashpointSecurePlayerSection(TemplateName);
                     return;
                 }
@@ -1142,8 +1138,8 @@ namespace FlashpointSecurePlayer {
 
                 if (modificationsElement == null) {
                     activeModificationsElement.RegistryStates.Clear();
-                    activeModificationsElement.RegistryStates.BinaryType = BINARY_TYPE.SCS_64BIT_BINARY;
                     activeModificationsElement.RegistryStates._Administrator = false;
+                    activeModificationsElement.RegistryStates._CurrentUser = String.Empty;
                     SetFlashpointSecurePlayerSection(TemplateName);
                     return;
                 }
@@ -1159,12 +1155,7 @@ namespace FlashpointSecurePlayer {
                     throw new TaskRequiresElevationException("Deactivating the Registry State requires elevation.");
                 }
 
-                RegistryView registryView = RegistryView.Registry32;
-
-                if (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) {
-                    // Super Registry 64 DS
-                    registryView = RegistryView.Registry64;
-                }
+                RegistryView registryView = (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) ? RegistryView.Registry64 : RegistryView.Registry32;
 
                 ProgressManager.CurrentGoal.Start(activeModificationsElement.RegistryStates.Count + activeModificationsElement.RegistryStates.Count);
 
@@ -1230,8 +1221,8 @@ namespace FlashpointSecurePlayer {
                                     
                                     if (clear) {
                                         activeModificationsElement.RegistryStates.Clear();
-                                        activeModificationsElement.RegistryStates.BinaryType = BINARY_TYPE.SCS_64BIT_BINARY;
                                         activeModificationsElement.RegistryStates._Administrator = false;
+                                        activeModificationsElement.RegistryStates._CurrentUser = String.Empty;
                                         SetFlashpointSecurePlayerSection(TemplateName);
                                         return;
                                     }
@@ -1304,9 +1295,9 @@ namespace FlashpointSecurePlayer {
 
                         ProgressManager.CurrentGoal.Steps++;
                     }
-
-                    activeModificationsElement.RegistryStates.BinaryType = BINARY_TYPE.SCS_64BIT_BINARY;
+                    
                     activeModificationsElement.RegistryStates._Administrator = false;
+                    activeModificationsElement.RegistryStates._CurrentUser = String.Empty;
                     SetFlashpointSecurePlayerSection(TemplateName);
 
                     if (exception != null) {
@@ -1379,11 +1370,7 @@ namespace FlashpointSecurePlayer {
 
             ulong safeKeyHandle = registryTraceData.KeyHandle & 0x00000000FFFFFFFF;
             object value = null;
-            RegistryView registryView = RegistryView.Registry32;
-
-            if (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) {
-                registryView = RegistryView.Registry64;
-            }
+            RegistryView registryView = (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) ? RegistryView.Registry64 : RegistryView.Registry32;
 
             if (safeKeyHandle == 0) {
                 // we don't need to queue it, we can just add the key right here
@@ -1591,11 +1578,7 @@ namespace FlashpointSecurePlayer {
             RegistryStateElement registryStateElement;
             object value = null;
 
-            RegistryView registryView = RegistryView.Registry32;
-
-            if (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) {
-                registryView = RegistryView.Registry64;
-            }
+            RegistryView registryView = (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) ? RegistryView.Registry64 : RegistryView.Registry32;
 
             // we want to take care of any queued registry timeline events
             // an event entails the date and time of the registry modification
