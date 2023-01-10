@@ -943,6 +943,7 @@ namespace FlashpointSecurePlayer {
                 */
 
                 // to prevent issues with HKEY_LOCAL_MACHINE and crash recovery
+                activeModificationsElement.RegistryStates.BinaryType = Environment.Is64BitOperatingSystem ? BINARY_TYPE.SCS_64BIT_BINARY : BINARY_TYPE.SCS_32BIT_BINARY;
                 activeModificationsElement.RegistryStates._CurrentUser = WindowsIdentity.GetCurrent().User.Value;
                 activeModificationsElement.RegistryStates._Administrator = TestLaunchedAsAdministratorUser();
                 RegistryView registryView = (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) ? RegistryView.Registry64 : RegistryView.Registry32;
@@ -1119,6 +1120,7 @@ namespace FlashpointSecurePlayer {
                 // don't allow infinite recursion!
                 if (String.IsNullOrEmpty(templateElementName)) {
                     activeModificationsElement.RegistryStates.Clear();
+                    activeModificationsElement.RegistryStates.BinaryType = BINARY_TYPE.SCS_64BIT_BINARY;
                     activeModificationsElement.RegistryStates._Administrator = false;
                     activeModificationsElement.RegistryStates._CurrentUser = String.Empty;
                     SetFlashpointSecurePlayerSection(TemplateName);
@@ -1138,6 +1140,7 @@ namespace FlashpointSecurePlayer {
 
                 if (modificationsElement == null) {
                     activeModificationsElement.RegistryStates.Clear();
+                    activeModificationsElement.RegistryStates.BinaryType = BINARY_TYPE.SCS_64BIT_BINARY;
                     activeModificationsElement.RegistryStates._Administrator = false;
                     activeModificationsElement.RegistryStates._CurrentUser = String.Empty;
                     SetFlashpointSecurePlayerSection(TemplateName);
@@ -1221,6 +1224,7 @@ namespace FlashpointSecurePlayer {
                                     
                                     if (clear) {
                                         activeModificationsElement.RegistryStates.Clear();
+                                        activeModificationsElement.RegistryStates.BinaryType = BINARY_TYPE.SCS_64BIT_BINARY;
                                         activeModificationsElement.RegistryStates._Administrator = false;
                                         activeModificationsElement.RegistryStates._CurrentUser = String.Empty;
                                         SetFlashpointSecurePlayerSection(TemplateName);
@@ -1295,7 +1299,8 @@ namespace FlashpointSecurePlayer {
 
                         ProgressManager.CurrentGoal.Steps++;
                     }
-                    
+
+                    activeModificationsElement.RegistryStates.BinaryType = BINARY_TYPE.SCS_64BIT_BINARY;
                     activeModificationsElement.RegistryStates._Administrator = false;
                     activeModificationsElement.RegistryStates._CurrentUser = String.Empty;
                     SetFlashpointSecurePlayerSection(TemplateName);
