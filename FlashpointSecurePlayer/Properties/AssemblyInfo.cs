@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("BlueMaxima's Flashpoint")]
 [assembly: AssemblyProduct("Flashpoint Secure Player")]
-[assembly: AssemblyCopyright("Copyright © Anthony Kleine 2022")]
+[assembly: AssemblyCopyright("Copyright © Anthony Kleine 2023")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
