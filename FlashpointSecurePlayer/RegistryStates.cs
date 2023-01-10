@@ -215,10 +215,10 @@ namespace FlashpointSecurePlayer {
 
             string keyValueNameCurrentUser = "HKEY_USERS\\" + (String.IsNullOrEmpty(activeCurrentUser) ? WindowsIdentity.GetCurrent().User.Value : activeCurrentUser) + "\\";
 
-            if (keyValueName.StartsWith(HKEY_CURRENT_USER, StringComparison.InvariantCultureIgnoreCase)) {
+            if (keyValueName.StartsWith(HKEY_CURRENT_USER, StringComparison.OrdinalIgnoreCase)) {
                 // make this explicit in case this is a shared computer
                 keyValueName = keyValueNameCurrentUser + keyValueName.Substring(HKEY_CURRENT_USER.Length);
-            } else if (keyValueName.StartsWith(HKEY_LOCAL_MACHINE, StringComparison.InvariantCultureIgnoreCase)) {
+            } else if (keyValueName.StartsWith(HKEY_LOCAL_MACHINE, StringComparison.OrdinalIgnoreCase)) {
                 if (!activeAdministrator || !TestLaunchedAsAdministratorUser()) {
                     // if activeAdministrator is false, we use HKEY_USERS anyway
                     // because the registry state was created as a non-admin
@@ -241,24 +241,24 @@ namespace FlashpointSecurePlayer {
             string keyValueName = String.Empty;
             kernelRegistryString = AddTrailingSlash(kernelRegistryString);
 
-            if (kernelRegistryString.StartsWith(REGISTRY_MACHINE, StringComparison.InvariantCultureIgnoreCase)) {
+            if (kernelRegistryString.StartsWith(REGISTRY_MACHINE, StringComparison.OrdinalIgnoreCase)) {
                 keyValueName = "HKEY_LOCAL_MACHINE\\" + kernelRegistryString.Substring(REGISTRY_MACHINE.Length);
             } else {
                 const string REGISTRY_USER = "\\REGISTRY\\USER\\";
 
-                if (kernelRegistryString.StartsWith(REGISTRY_USER, StringComparison.InvariantCultureIgnoreCase)) {
+                if (kernelRegistryString.StartsWith(REGISTRY_USER, StringComparison.OrdinalIgnoreCase)) {
                     const string HKEY_USERS = "HKEY_USERS\\";
 
                     keyValueName = HKEY_USERS + kernelRegistryString.Substring(REGISTRY_USER.Length);
                     string currentUser = WindowsIdentity.GetCurrent().User.Value;
                     string keyValueNameCurrentUser = HKEY_USERS + currentUser + "_CLASSES\\";
 
-                    if (keyValueName.StartsWith(keyValueNameCurrentUser, StringComparison.InvariantCultureIgnoreCase)) {
+                    if (keyValueName.StartsWith(keyValueNameCurrentUser, StringComparison.OrdinalIgnoreCase)) {
                         keyValueName = "HKEY_CURRENT_USER\\SOFTWARE\\CLASSES\\" + keyValueName.Substring(keyValueNameCurrentUser.Length);
                     } else {
                         keyValueNameCurrentUser = HKEY_USERS + currentUser + "\\";
 
-                        if (keyValueName.StartsWith(keyValueNameCurrentUser, StringComparison.InvariantCultureIgnoreCase)) {
+                        if (keyValueName.StartsWith(keyValueNameCurrentUser, StringComparison.OrdinalIgnoreCase)) {
                             keyValueName = "HKEY_CURRENT_USER\\" + keyValueName.Substring(keyValueNameCurrentUser.Length);
                         }
                     }
@@ -278,19 +278,19 @@ namespace FlashpointSecurePlayer {
 
             RegistryHive? registryHive = null;
 
-            if (keyName.StartsWith("HKEY_CURRENT_USER\\", StringComparison.InvariantCultureIgnoreCase)) {
+            if (keyName.StartsWith("HKEY_CURRENT_USER\\", StringComparison.OrdinalIgnoreCase)) {
                 registryHive = RegistryHive.CurrentUser;
-            } else if (keyName.StartsWith("HKEY_LOCAL_MACHINE\\", StringComparison.InvariantCultureIgnoreCase)) {
+            } else if (keyName.StartsWith("HKEY_LOCAL_MACHINE\\", StringComparison.OrdinalIgnoreCase)) {
                 registryHive = RegistryHive.LocalMachine;
-            } else if (keyName.StartsWith("HKEY_CLASSES_ROOT\\", StringComparison.InvariantCultureIgnoreCase)) {
+            } else if (keyName.StartsWith("HKEY_CLASSES_ROOT\\", StringComparison.OrdinalIgnoreCase)) {
                 registryHive = RegistryHive.ClassesRoot;
-            } else if (keyName.StartsWith("HKEY_USERS\\", StringComparison.InvariantCultureIgnoreCase)) {
+            } else if (keyName.StartsWith("HKEY_USERS\\", StringComparison.OrdinalIgnoreCase)) {
                 registryHive = RegistryHive.Users;
-            } else if (keyName.StartsWith("HKEY_PERFORMANCE_DATA\\", StringComparison.InvariantCultureIgnoreCase)) {
+            } else if (keyName.StartsWith("HKEY_PERFORMANCE_DATA\\", StringComparison.OrdinalIgnoreCase)) {
                 registryHive = RegistryHive.PerformanceData;
-            } else if (keyName.StartsWith("HKEY_CURRENT_CONFIG\\", StringComparison.InvariantCultureIgnoreCase)) {
+            } else if (keyName.StartsWith("HKEY_CURRENT_CONFIG\\", StringComparison.OrdinalIgnoreCase)) {
                 registryHive = RegistryHive.CurrentConfig;
-            } else if (keyName.StartsWith("HKEY_DYN_DATA\\", StringComparison.InvariantCultureIgnoreCase)) {
+            } else if (keyName.StartsWith("HKEY_DYN_DATA\\", StringComparison.OrdinalIgnoreCase)) {
                 registryHive = RegistryHive.DynData;
             }
             
@@ -601,7 +601,7 @@ namespace FlashpointSecurePlayer {
                 bool removeWOW64Subkey = false;
 
                 for (int i = 0;i < wow64KeyList.Count;i++) {
-                    if (wow64KeyName.StartsWith(wow64KeyList[i].Name + "\\", StringComparison.InvariantCultureIgnoreCase)) {
+                    if (wow64KeyName.StartsWith(wow64KeyList[i].Name + "\\", StringComparison.OrdinalIgnoreCase)) {
                         effect = wow64KeyList[i].Effect;
                         effectExceptionValueNames = wow64KeyList[i].EffectExceptionValueNames;
 
@@ -1323,7 +1323,7 @@ namespace FlashpointSecurePlayer {
                 && (registryTraceData.ProcessID == Process.GetCurrentProcess().Id
                 || registryTraceData.ProcessID == -1)) {
                 if (ImportPaused) {
-                    if (registryTraceData.ValueName.Equals(IMPORT_RESUME, StringComparison.InvariantCultureIgnoreCase)) {
+                    if (registryTraceData.ValueName.Equals(IMPORT_RESUME, StringComparison.OrdinalIgnoreCase)) {
                         ImportPaused = false;
                         // hold here until after the control has installed
                         // that way we can recieve registry messages as they come in
@@ -1332,7 +1332,7 @@ namespace FlashpointSecurePlayer {
                         resumeEventWaitHandle.WaitOne();
                     }
                 } else {
-                    if (registryTraceData.ValueName.Equals(IMPORT_PAUSE, StringComparison.InvariantCultureIgnoreCase)) {
+                    if (registryTraceData.ValueName.Equals(IMPORT_PAUSE, StringComparison.OrdinalIgnoreCase)) {
                         ImportPaused = true;
                     }
                 }

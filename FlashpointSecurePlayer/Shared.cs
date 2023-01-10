@@ -2159,7 +2159,7 @@ namespace FlashpointSecurePlayer {
 
             // caching...
             if (!String.IsNullOrEmpty(name)) {
-                if (name.Equals(EXEConfigurationName, StringComparison.InvariantCultureIgnoreCase)) {
+                if (name.Equals(EXEConfigurationName, StringComparison.OrdinalIgnoreCase)) {
                     return EXEConfiguration;
                 }
             }
@@ -2246,7 +2246,7 @@ namespace FlashpointSecurePlayer {
                 string name = GetValidEXEConfigurationName(exeConfigurationName);
 
                 if (!String.IsNullOrEmpty(name) && Shared.flashpointSecurePlayerSection != null) {
-                    if (name.Equals(EXEConfigurationName, StringComparison.InvariantCultureIgnoreCase)) {
+                    if (name.Equals(EXEConfigurationName, StringComparison.OrdinalIgnoreCase)) {
                         return Shared.flashpointSecurePlayerSection;
                     }
                 }
@@ -2664,8 +2664,10 @@ namespace FlashpointSecurePlayer {
                 return path;
             }
 
-            if (path.Length > 0 && path.Substring(0, 1) != "\\") {
-                path = "\\" + path;
+            const string SLASH = "\\";
+
+            if (!path.StartsWith(SLASH, StringComparison.Ordinal)) {
+                path = path.Insert(0, SLASH);
             }
             return path;
         }
@@ -2676,12 +2678,13 @@ namespace FlashpointSecurePlayer {
                 return path;
             }
 
-            const int INDEX = 1;
+            const string SLASH = "\\";
 
-            while (path.Length > 0 && path.Substring(0, INDEX) == "\\") {
-                path = path.Substring(INDEX);
+            while (path.StartsWith(SLASH, StringComparison.Ordinal)) {
+                path = path.Substring(SLASH.Length);
             }
             return path;
+            //return path.TrimStart('\\');
         }
         */
 
@@ -2691,8 +2694,10 @@ namespace FlashpointSecurePlayer {
                 return path;
             }
 
-            if (path.Length > 0 && path.Substring(path.Length - 1) != "\\") {
-                path = path + "\\";
+            const string SLASH = "\\";
+
+            if (!path.EndsWith(SLASH, StringComparison.Ordinal)) {
+                path = path.Insert(path.Length, SLASH);
             }
             return path;
         }
@@ -2703,12 +2708,13 @@ namespace FlashpointSecurePlayer {
                 return path;
             }
 
-            int index = path.Length - 1;
+            const string SLASH = "\\";
 
-            while (path.Length > 0 && path.Substring(index) == "\\") {
-                path = path.Substring(0, index);
+            while (path.EndsWith(SLASH, StringComparison.Ordinal)) {
+                path = path.Remove(path.Length - SLASH.Length);
             }
             return path;
+            //return path.TrimEnd('\\');
         }
 
         public static object LengthenValue(object value, string path) {
@@ -2737,7 +2743,7 @@ namespace FlashpointSecurePlayer {
             }
 
             // if the value is a short value...
-            if (!valueString.StartsWith(shortPathName, StringComparison.InvariantCultureIgnoreCase)) {
+            if (!valueString.StartsWith(shortPathName, StringComparison.OrdinalIgnoreCase)) {
                 return value;
             }
 
@@ -2775,13 +2781,13 @@ namespace FlashpointSecurePlayer {
 
             longStartupPathName = RemoveTrailingSlash(longStartupPathName);
 
-            if (lengthenedValueString.Equals(longStartupPathName, StringComparison.InvariantCultureIgnoreCase)) {
+            if (lengthenedValueString.Equals(longStartupPathName, StringComparison.OrdinalIgnoreCase)) {
                 return "%" + FP_STARTUP_PATH + "%";
             }
 
             longStartupPathName = AddTrailingSlash(longStartupPathName);
 
-            if (lengthenedValueString.StartsWith(longStartupPathName, StringComparison.InvariantCultureIgnoreCase)) {
+            if (lengthenedValueString.StartsWith(longStartupPathName, StringComparison.OrdinalIgnoreCase)) {
                 return "%" + FP_STARTUP_PATH + "%\\" + lengthenedValueString.Substring(longStartupPathName.Length);
             }
             return lengthenedValue;

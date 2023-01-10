@@ -121,7 +121,7 @@ namespace FlashpointSecurePlayer {
             }
 
             if (parentProcessFileName == null
-                || !parentProcessFileName.Equals(FLASHPOINT_LAUNCHER_PARENT_PROCESS_FILE_NAME, StringComparison.InvariantCultureIgnoreCase)) {
+                || !parentProcessFileName.Equals(FLASHPOINT_LAUNCHER_PARENT_PROCESS_FILE_NAME, StringComparison.OrdinalIgnoreCase)) {
                 text += " " + Properties.Resources.UseFlashpointLauncher;
                 Process[] processesByName;
 
@@ -247,7 +247,7 @@ namespace FlashpointSecurePlayer {
             }
 
             if (parentProcessFileName != null) {
-                if (parentProcessFileName.Equals(OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME, StringComparison.InvariantCultureIgnoreCase)) {
+                if (parentProcessFileName.Equals(OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME, StringComparison.OrdinalIgnoreCase)) {
                     return;
                 }
             }
@@ -1325,7 +1325,7 @@ namespace FlashpointSecurePlayer {
                         try {
                             // ignore host if going through localhost (no proxy)
                             if (requestUri != null) {
-                                if (!requestUri.Host.Equals("localhost", StringComparison.InvariantCultureIgnoreCase)) {
+                                if (!requestUri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase)) {
                                     htdocsFilePath.Append("\\");
                                     htdocsFilePath.Append(requestUri.Host);
                                 }

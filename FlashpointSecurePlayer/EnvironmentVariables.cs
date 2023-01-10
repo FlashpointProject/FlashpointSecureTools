@@ -43,7 +43,7 @@ namespace FlashpointSecurePlayer {
             string comparableName = GetComparableName(environmentVariablesElement.Name);
 
             if (comparableName != null) {
-                if (comparableName.Equals(__COMPAT_LAYER, StringComparison.InvariantCultureIgnoreCase)) {
+                if (comparableName.Equals(__COMPAT_LAYER, StringComparison.OrdinalIgnoreCase)) {
                     throw new InvalidEnvironmentVariablesException("Find and replace with the \"" + __COMPAT_LAYER + "\" Environment Variable is not supported.");
                 }
             }
@@ -138,7 +138,7 @@ namespace FlashpointSecurePlayer {
                         comparableName = GetComparableName(environmentVariablesElement.Name);
 
                         if (comparableName != null) {
-                            if (UnmodifiableComparableNames.Contains(comparableName, StringComparer.InvariantCultureIgnoreCase)) {
+                            if (UnmodifiableComparableNames.Contains(comparableName, StringComparer.OrdinalIgnoreCase)) {
                                 throw new InvalidEnvironmentVariablesException("The \"" + environmentVariablesElement.Name + "\" Environment Variable cannot be modified while creating the Active Environment Variables Element.");
                             }
                         }
@@ -172,7 +172,7 @@ namespace FlashpointSecurePlayer {
                         comparableName = GetComparableName(environmentVariablesElement.Name);
 
                         if (comparableName != null) {
-                            if (UnmodifiableComparableNames.Contains(comparableName, StringComparer.InvariantCultureIgnoreCase)) {
+                            if (UnmodifiableComparableNames.Contains(comparableName, StringComparer.OrdinalIgnoreCase)) {
                                 throw new InvalidEnvironmentVariablesException("The \"" + environmentVariablesElement.Name + "\" Environment Variable cannot be modified at this time.");
                             }
                         }
@@ -189,7 +189,7 @@ namespace FlashpointSecurePlayer {
 
                         // now throw up a restart in Web Browser Mode for Compatibility Settings
                         if (comparableName != null) {
-                            if (comparableName.Equals(__COMPAT_LAYER, StringComparison.InvariantCultureIgnoreCase)
+                            if (comparableName.Equals(__COMPAT_LAYER, StringComparison.OrdinalIgnoreCase)
                                 && modeElement.Name == ModeElement.NAME.WEB_BROWSER) {
                                 values = new List<string>();
 
@@ -206,7 +206,7 @@ namespace FlashpointSecurePlayer {
                                 // we have to restart in this case in server mode
                                 // because the compatibility layers only take effect
                                 // on process start
-                                if (values.Except(compatibilityLayerValues, StringComparer.InvariantCultureIgnoreCase).Any()) {
+                                if (values.Except(compatibilityLayerValues, StringComparer.OrdinalIgnoreCase).Any()) {
                                     throw new CompatibilityLayersException("The Compatibility Layers (" + value + ") require a restart to be set.");
                                 }
                             }
@@ -308,7 +308,7 @@ namespace FlashpointSecurePlayer {
                             comparableName = GetComparableName(activeEnvironmentVariablesElement.Name);
 
                             if (comparableName != null) {
-                                if (UnmodifiableComparableNames.Contains(comparableName, StringComparer.InvariantCultureIgnoreCase)) {
+                                if (UnmodifiableComparableNames.Contains(comparableName, StringComparer.OrdinalIgnoreCase)) {
                                     throw new InvalidEnvironmentVariablesException("The \"" + activeEnvironmentVariablesElement.Name + "\" Environment Variable cannot be modified at this time.");
                                 }
                             }
@@ -331,8 +331,8 @@ namespace FlashpointSecurePlayer {
                             } else {
                                 // don't reset Compatibility Settings if we're restarting for Web Browser Mode
                                 if (comparableName != null) {
-                                    if (comparableName.Equals(__COMPAT_LAYER, StringComparison.InvariantCultureIgnoreCase)
-                                        || values.Except(compatibilityLayerValues, StringComparer.InvariantCultureIgnoreCase).Any()
+                                    if (comparableName.Equals(__COMPAT_LAYER, StringComparison.OrdinalIgnoreCase)
+                                        || values.Except(compatibilityLayerValues, StringComparer.OrdinalIgnoreCase).Any()
                                         || modeElement.Name != ModeElement.NAME.WEB_BROWSER) {
                                         try {
                                             Environment.SetEnvironmentVariable(activeEnvironmentVariablesElement.Name, activeEnvironmentVariablesElement.Value, EnvironmentVariableTarget.Process);

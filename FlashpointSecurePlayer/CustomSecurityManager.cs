@@ -153,7 +153,7 @@ namespace FlashpointSecurePlayer {
                     string extension = Path.GetExtension(flashpointURI.LocalPath);
 
                     if (extension != null) {
-                        if (extension.Equals(FLASH_EXTENSION, StringComparison.InvariantCultureIgnoreCase)) {
+                        if (extension.Equals(FLASH_EXTENSION, StringComparison.OrdinalIgnoreCase)) {
                             if (dwAction == URLACTION_ACTIVEX_TREATASUNTRUSTED) {
                                 pPolicy = URLPOLICY_ALLOW;
                                 return S_OK;
