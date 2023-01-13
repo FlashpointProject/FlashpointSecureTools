@@ -101,10 +101,11 @@ namespace FlashpointSecurePlayer {
 
             // allocate a block of memory of the options
             internetPerConnOptionList.pOptions = Marshal.AllocCoTaskMem(Marshal.SizeOf(internetPerConnOptionListOptions[0]) + Marshal.SizeOf(internetPerConnOptionListOptions[1]));
+            
             IntPtr internetPerConnOptionPointer = internetPerConnOptionList.pOptions;
 
             // marshal data from a managed object to unmanaged memory
-            for (int i = 0;i < internetPerConnOptionListOptions.Length;i++) {
+            for (int i = 0; i < internetPerConnOptionListOptions.Length; i++) {
                 Marshal.StructureToPtr(internetPerConnOptionListOptions[i], internetPerConnOptionPointer, false);
                 internetPerConnOptionPointer = (IntPtr)((int)internetPerConnOptionPointer + Marshal.SizeOf(internetPerConnOptionListOptions[i]));
             }
@@ -121,7 +122,7 @@ namespace FlashpointSecurePlayer {
 
             // query internet options
             bool result = InternetQueryOption(IntPtr.Zero, INTERNET_OPTION.INTERNET_OPTION_PER_CONNECTION_OPTION, ref internetPerConnOptionList, ref internetPerConnOptionListSize);
-
+                
             if (!result) {
                 throw new FlashpointProxyException("Could not query the Internet Options.");
             }
@@ -158,44 +159,50 @@ namespace FlashpointSecurePlayer {
 
             // allocate memory for the INTERNET_PER_CONN_OPTION_LIST Options
             internetPerConnOptionList.pOptions = Marshal.AllocCoTaskMem(Marshal.SizeOf(internetPerConnOptionListOptions[0]) + Marshal.SizeOf(internetPerConnOptionListOptions[1]));
-            IntPtr internetPerConnOptionListOptionPointer = internetPerConnOptionList.pOptions;
 
-            // marshal data from a managed object to unmanaged memory
-            for (int i = 0;i < internetPerConnOptionListOptions.Length;i++) {
-                Marshal.StructureToPtr(internetPerConnOptionListOptions[i], internetPerConnOptionListOptionPointer, false);
-                internetPerConnOptionListOptionPointer = (IntPtr)((long)internetPerConnOptionListOptionPointer + Marshal.SizeOf(internetPerConnOptionListOptions[i]));
-            }
+            try {
+                IntPtr internetPerConnOptionListOptionPointer = internetPerConnOptionList.pOptions;
 
-            // fill the internetPerConnOptionList structure
-            internetPerConnOptionList.dwSize = (uint)Marshal.SizeOf(internetPerConnOptionList);
+                // marshal data from a managed object to unmanaged memory
+                for (int i = 0; i < internetPerConnOptionListOptions.Length; i++) {
+                    Marshal.StructureToPtr(internetPerConnOptionListOptions[i], internetPerConnOptionListOptionPointer, false);
+                    internetPerConnOptionListOptionPointer = (IntPtr)((long)internetPerConnOptionListOptionPointer + Marshal.SizeOf(internetPerConnOptionListOptions[i]));
+                }
 
-            // NULL == LAN, otherwise connectoid name
-            internetPerConnOptionList.pszConnection = IntPtr.Zero;
+                // fill the internetPerConnOptionList structure
+                internetPerConnOptionList.dwSize = (uint)Marshal.SizeOf(internetPerConnOptionList);
 
-            // set two options
-            internetPerConnOptionList.dwOptionCount = (uint)internetPerConnOptionListOptions.Length;
-            internetPerConnOptionList.dwOptionError = 0;
+                // NULL == LAN, otherwise connectoid name
+                internetPerConnOptionList.pszConnection = IntPtr.Zero;
 
-            // allocate memory for the INTERNET_PER_CONN_OPTION_LIST
-            IntPtr internetPerConnOptionListPointer = Marshal.AllocCoTaskMem((int)internetPerConnOptionListSize);
+                // set two options
+                internetPerConnOptionList.dwOptionCount = (uint)internetPerConnOptionListOptions.Length;
+                internetPerConnOptionList.dwOptionError = 0;
 
-            // marshal data from a managed object to unmanaged memory
-            Marshal.StructureToPtr(internetPerConnOptionList, internetPerConnOptionListPointer, true);
+                // allocate memory for the INTERNET_PER_CONN_OPTION_LIST
+                IntPtr internetPerConnOptionListPointer = Marshal.AllocCoTaskMem((int)internetPerConnOptionListSize);
 
-            // set the options on the connection
-            bool result = InternetSetOption(internetHandle, INTERNET_OPTION.INTERNET_OPTION_PER_CONNECTION_OPTION, internetPerConnOptionListPointer, internetPerConnOptionListSize);
+                try {
+                    // marshal data from a managed object to unmanaged memory
+                    Marshal.StructureToPtr(internetPerConnOptionList, internetPerConnOptionListPointer, true);
 
-            // free the allocated memory
-            Marshal.FreeCoTaskMem(internetPerConnOptionList.pOptions);
-            Marshal.FreeCoTaskMem(internetPerConnOptionListPointer);
+                    // set the options on the connection
+                    bool result = InternetSetOption(internetHandle, INTERNET_OPTION.INTERNET_OPTION_PER_CONNECTION_OPTION, internetPerConnOptionListPointer, internetPerConnOptionListSize);
+                    
+                    if (!InternetCloseHandle(internetHandle)) {
+                        throw new FlashpointProxyException("Could not close the Internet Handle.");
+                    }
 
-            if (!InternetCloseHandle(internetHandle)) {
-                throw new FlashpointProxyException("Could not close the Internet Handle.");
-            }
-
-            // throw an exception if this operation failed
-            if (!result) {
-                throw new FlashpointProxyException("Could not set the Internet Options.");
+                    // throw an exception if this operation failed
+                    if (!result) {
+                        throw new FlashpointProxyException("Could not set the Internet Options.");
+                    }
+                } finally {
+                    // free the allocated memory
+                    Marshal.FreeCoTaskMem(internetPerConnOptionListPointer);
+                }
+            } finally {
+                Marshal.FreeCoTaskMem(internetPerConnOptionList.pOptions);
             }
         }
         
@@ -216,35 +223,40 @@ namespace FlashpointSecurePlayer {
 
             GetSystemProxy(ref internetPerConnOptionList, ref internetPerConnOptionListOptions);
 
-            // allocate memory
-            IntPtr internetPerConnOptionListPointer = Marshal.AllocCoTaskMem((int)internetPerConnOptionListSize);
+            try {
+                // allocate memory
+                IntPtr internetPerConnOptionListPointer = Marshal.AllocCoTaskMem((int)internetPerConnOptionListSize);
 
-            // convert structure to IntPtr
-            Marshal.StructureToPtr(internetPerConnOptionList, internetPerConnOptionListPointer, true);
+                try {
+                    // convert structure to IntPtr
+                    Marshal.StructureToPtr(internetPerConnOptionList, internetPerConnOptionListPointer, true);
 
-            // set internet options
-            bool result = InternetSetOption(internetHandle, INTERNET_OPTION.INTERNET_OPTION_PER_CONNECTION_OPTION, internetPerConnOptionListPointer, internetPerConnOptionListSize);
+                    // set internet options
+                    bool result = InternetSetOption(internetHandle, INTERNET_OPTION.INTERNET_OPTION_PER_CONNECTION_OPTION, internetPerConnOptionListPointer, internetPerConnOptionListSize);
 
-            // free the allocated memory
-            Marshal.FreeCoTaskMem(internetPerConnOptionList.pOptions);
-            Marshal.FreeCoTaskMem(internetPerConnOptionListPointer);
+                    // notify the system that the registry settings have been changed and cause
+                    // the proxy data to be reread from the registry for a handle
+                    if (result) {
+                        result = InternetSetOption(internetHandle, INTERNET_OPTION.INTERNET_OPTION_SETTINGS_CHANGED, IntPtr.Zero, 0);
+                    }
 
-            // notify the system that the registry settings have been changed and cause
-            // the proxy data to be reread from the registry for a handle
-            if (result) {
-                result = InternetSetOption(internetHandle, INTERNET_OPTION.INTERNET_OPTION_SETTINGS_CHANGED, IntPtr.Zero, 0);
-            }
+                    if (result) {
+                        result = InternetSetOption(internetHandle, INTERNET_OPTION.INTERNET_OPTION_REFRESH, IntPtr.Zero, 0);
+                    }
 
-            if (result) {
-                result = InternetSetOption(internetHandle, INTERNET_OPTION.INTERNET_OPTION_REFRESH, IntPtr.Zero, 0);
-            }
+                    if (!InternetCloseHandle(internetHandle)) {
+                        throw new FlashpointProxyException("Could not close the Internet Handle.");
+                    }
 
-            if (!InternetCloseHandle(internetHandle)) {
-                throw new FlashpointProxyException("Could not close the Internet Handle.");
-            }
-
-            if (!result) {
-                throw new FlashpointProxyException("Could not set the Internet Options.");
+                    if (!result) {
+                        throw new FlashpointProxyException("Could not set the Internet Options.");
+                    }
+                } finally {
+                    // free the allocated memory
+                    Marshal.FreeCoTaskMem(internetPerConnOptionListPointer);
+                }
+            } finally {
+                Marshal.FreeCoTaskMem(internetPerConnOptionList.pOptions);
             }
         }
     }

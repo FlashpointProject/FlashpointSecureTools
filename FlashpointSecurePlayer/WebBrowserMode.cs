@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using System.Text;
 using System.Windows.Forms;
@@ -53,6 +54,35 @@ namespace FlashpointSecurePlayer {
                 // Fail silently.
             }
             return CallNextHookEx(mouseHook, nCode, wParam, lParam);
+        }
+
+        private bool TransitionsForceDisabled {
+            get {
+                int attributeValueSize = Marshal.SizeOf(typeof(int));
+                IntPtr attributeValuePointer = Marshal.AllocHGlobal(attributeValueSize);
+
+                try {
+                    DwmGetWindowAttribute(Handle, DWMWINDOWATTRIBUTE.DWMWA_TRANSITIONS_FORCEDISABLED, attributeValuePointer, (uint)attributeValueSize);
+                    return (Marshal.ReadInt32(attributeValuePointer, 0) != 0) ? true : false;
+                } finally {
+                    Marshal.FreeHGlobal(attributeValuePointer);
+                }
+            }
+
+            set {
+                int attributeValue = value ? 1 : 0;
+
+                int attributeValueSize = Marshal.SizeOf(attributeValue);
+                IntPtr attributeValuePointer = Marshal.AllocHGlobal(attributeValueSize);
+
+                try {
+                    Marshal.WriteInt32(attributeValuePointer, 0, attributeValue);
+
+                    DwmSetWindowAttribute(Handle, DWMWINDOWATTRIBUTE.DWMWA_TRANSITIONS_FORCEDISABLED, attributeValuePointer, (uint)attributeValueSize);
+                } finally {
+                    Marshal.FreeHGlobal(attributeValuePointer);
+                }
+            }
         }
 
         private const int FULLSCREEN_EXIT_LABEL_TIMER_TIME = 2500;
@@ -121,6 +151,12 @@ namespace FlashpointSecurePlayer {
                     closableWebBrowserLocation = closableWebBrowser.Location;
                     closableWebBrowserSize = closableWebBrowser.Size;
 
+                    try {
+                        TransitionsForceDisabled = true;
+                    } catch {
+                        // Fail silently.
+                    }
+
                     // need to do this first to have an effect if starting maximized
                     WindowState = FormWindowState.Normal;
                     // disable resizing
@@ -145,7 +181,13 @@ namespace FlashpointSecurePlayer {
 
                     // commit by bringing the window to the front
                     BringToFront();
-                } else {
+
+                    try {
+                        TransitionsForceDisabled = false;
+                    } catch {
+                        // Fail silently.
+                    }
+            } else {
                     // hide "Press F11 to exit fullscreen" label
                     ExitFullscreenLabelTimer = false;
 
@@ -154,6 +196,12 @@ namespace FlashpointSecurePlayer {
                         if (UnhookWindowsHookEx(mouseHook)) {
                             mouseHook = IntPtr.Zero;
                         }
+                    }
+
+                    try {
+                        TransitionsForceDisabled = true;
+                    } catch {
+                        // Fail silently.
                     }
 
                     // need to do this first to reset the window to its former size
@@ -178,6 +226,12 @@ namespace FlashpointSecurePlayer {
 
                     // commit by bringing the window to the front
                     BringToFront();
+
+                    try {
+                        TransitionsForceDisabled = false;
+                    } catch {
+                        // Fail silently.
+                    }
                 }
             }
         }
