@@ -756,15 +756,6 @@ namespace FlashpointSecurePlayer {
                 throw new ArgumentException("The path to \"" + TemplateName + "\" is not supported.");
             }
 
-            // fix for loading dependencies
-            try {
-                Directory.SetCurrentDirectory(fullPath);
-            } catch (SecurityException) {
-                throw new TaskRequiresElevationException("Setting the Current Directory requires elevation.");
-            } catch {
-                // Fail silently.
-            }
-
             // check permission to run
             if (!TraceEventSession.IsElevated().GetValueOrDefault()) {
                 throw new TaskRequiresElevationException("The Trace Event Session requires elevation.");

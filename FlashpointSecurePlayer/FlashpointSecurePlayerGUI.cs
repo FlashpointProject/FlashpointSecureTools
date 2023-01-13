@@ -314,6 +314,15 @@ namespace FlashpointSecurePlayer {
                     ProgressManager.CurrentGoal.Start(6);
 
                     try {
+                        // fix for loading dependencies
+                        try {
+                            Directory.SetCurrentDirectory(Path.GetFullPath(TemplateName));
+                        } catch (Exception ex) {
+                            LogExceptionToLauncher(ex);
+                            errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, TemplateName));
+                            throw new ActiveXImportFailedException("The ActiveX Import failed because setting the Current Directory failed.");
+                        }
+
                         ActiveXControl activeXControl = null;
 
                         try {
