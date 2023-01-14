@@ -318,7 +318,7 @@ namespace FlashpointSecurePlayer {
         public static extern bool UnhookWindowsHookEx(IntPtr hhk);
 
         public enum DWMWINDOWATTRIBUTE : uint {
-            DWMWA_NCRENDERING_ENABLED,
+            DWMWA_NCRENDERING_ENABLED = 1,
             DWMWA_NCRENDERING_POLICY,
             DWMWA_TRANSITIONS_FORCEDISABLED,
             DWMWA_ALLOW_NCPAINT,
@@ -346,10 +346,10 @@ namespace FlashpointSecurePlayer {
         }
 
         [DllImport("DWMAPI.DLL")]
-        public static extern int DwmGetWindowAttribute(IntPtr hwnd, DWMWINDOWATTRIBUTE dwAttribute, IntPtr pvAttribute, uint cbAttribute);
+        public static extern int DwmGetWindowAttribute(IntPtr hwnd, DWMWINDOWATTRIBUTE dwAttribute, out int pvAttribute, uint cbAttribute);
 
         [DllImport("DWMAPI.DLL")]
-        public static extern int DwmSetWindowAttribute(IntPtr hwnd, DWMWINDOWATTRIBUTE dwAttribute, IntPtr pvAttribute, uint cbAttribute);
+        public static extern int DwmSetWindowAttribute(IntPtr hwnd, DWMWINDOWATTRIBUTE dwAttribute, ref int pvAttribute, uint cbAttribute);
 
         [StructLayout(LayoutKind.Sequential)]
         public struct SECURITY_ATTRIBUTES {

@@ -58,29 +58,23 @@ namespace FlashpointSecurePlayer {
 
         private bool TransitionsForceDisabled {
             get {
-                int attributeValueSize = Marshal.SizeOf(typeof(int));
-                IntPtr attributeValuePointer = Marshal.AllocHGlobal(attributeValueSize);
+                int attributeValue = 0;
 
-                try {
-                    DwmGetWindowAttribute(Handle, DWMWINDOWATTRIBUTE.DWMWA_TRANSITIONS_FORCEDISABLED, attributeValuePointer, (uint)attributeValueSize);
-                    return (Marshal.ReadInt32(attributeValuePointer, 0) != 0) ? true : false;
-                } finally {
-                    Marshal.FreeHGlobal(attributeValuePointer);
+                int err = DwmGetWindowAttribute(Handle, DWMWINDOWATTRIBUTE.DWMWA_TRANSITIONS_FORCEDISABLED, out attributeValue, (uint)Marshal.SizeOf(typeof(int)));
+
+                if (err != S_OK) {
+                    Marshal.ThrowExceptionForHR(err);
                 }
+                return (attributeValue != 0) ? true : false;
             }
 
             set {
                 int attributeValue = value ? 1 : 0;
+                
+                int err = DwmSetWindowAttribute(Handle, DWMWINDOWATTRIBUTE.DWMWA_TRANSITIONS_FORCEDISABLED, ref attributeValue, (uint)Marshal.SizeOf(typeof(int)));
 
-                int attributeValueSize = Marshal.SizeOf(attributeValue);
-                IntPtr attributeValuePointer = Marshal.AllocHGlobal(attributeValueSize);
-
-                try {
-                    Marshal.WriteInt32(attributeValuePointer, 0, attributeValue);
-
-                    DwmSetWindowAttribute(Handle, DWMWINDOWATTRIBUTE.DWMWA_TRANSITIONS_FORCEDISABLED, attributeValuePointer, (uint)attributeValueSize);
-                } finally {
-                    Marshal.FreeHGlobal(attributeValuePointer);
+                if (err != S_OK) {
+                    Marshal.ThrowExceptionForHR(err);
                 }
             }
         }
@@ -114,6 +108,7 @@ namespace FlashpointSecurePlayer {
         }
 
         private bool fullscreen = false;
+        private bool fullscreenTransitionsForceDisabled = false;
         private FormBorderStyle fullscreenFormBorderStyle = FormBorderStyle.Sizable;
         private FormWindowState fullscreenWindowState = FormWindowState.Maximized;
         private Point fullscreenLocation;
@@ -152,9 +147,11 @@ namespace FlashpointSecurePlayer {
                     closableWebBrowserSize = closableWebBrowser.Size;
 
                     try {
+                        fullscreenTransitionsForceDisabled = TransitionsForceDisabled;
                         TransitionsForceDisabled = true;
                     } catch {
-                        // Fail silently.
+                        // no Aero!
+                        fullscreenTransitionsForceDisabled = false;
                     }
 
                     // need to do this first to have an effect if starting maximized
@@ -181,13 +178,7 @@ namespace FlashpointSecurePlayer {
 
                     // commit by bringing the window to the front
                     BringToFront();
-
-                    try {
-                        TransitionsForceDisabled = false;
-                    } catch {
-                        // Fail silently.
-                    }
-            } else {
+                } else {
                     // hide "Press F11 to exit fullscreen" label
                     ExitFullscreenLabelTimer = false;
 
@@ -196,12 +187,6 @@ namespace FlashpointSecurePlayer {
                         if (UnhookWindowsHookEx(mouseHook)) {
                             mouseHook = IntPtr.Zero;
                         }
-                    }
-
-                    try {
-                        TransitionsForceDisabled = true;
-                    } catch {
-                        // Fail silently.
                     }
 
                     // need to do this first to reset the window to its former size
@@ -226,11 +211,11 @@ namespace FlashpointSecurePlayer {
 
                     // commit by bringing the window to the front
                     BringToFront();
-
+                    
                     try {
-                        TransitionsForceDisabled = false;
+                        TransitionsForceDisabled = fullscreenTransitionsForceDisabled;
                     } catch {
-                        // Fail silently.
+                        // no Aero!
                     }
                 }
             }

@@ -101,30 +101,35 @@ namespace FlashpointSecurePlayer {
 
             // allocate a block of memory of the options
             internetPerConnOptionList.pOptions = Marshal.AllocCoTaskMem(Marshal.SizeOf(internetPerConnOptionListOptions[0]) + Marshal.SizeOf(internetPerConnOptionListOptions[1]));
-            
-            IntPtr internetPerConnOptionPointer = internetPerConnOptionList.pOptions;
 
-            // marshal data from a managed object to unmanaged memory
-            for (int i = 0; i < internetPerConnOptionListOptions.Length; i++) {
-                Marshal.StructureToPtr(internetPerConnOptionListOptions[i], internetPerConnOptionPointer, false);
-                internetPerConnOptionPointer = (IntPtr)((int)internetPerConnOptionPointer + Marshal.SizeOf(internetPerConnOptionListOptions[i]));
-            }
+            try {
+                IntPtr internetPerConnOptionPointer = internetPerConnOptionList.pOptions;
 
-            // fill the internetPerConnOptionList structure
-            internetPerConnOptionList.dwSize = internetPerConnOptionListSize;
+                // marshal data from a managed object to unmanaged memory
+                for (int i = 0; i < internetPerConnOptionListOptions.Length; i++) {
+                    Marshal.StructureToPtr(internetPerConnOptionListOptions[i], internetPerConnOptionPointer, false);
+                    internetPerConnOptionPointer = (IntPtr)((int)internetPerConnOptionPointer + Marshal.SizeOf(internetPerConnOptionListOptions[i]));
+                }
 
-            // NULL == LAN, otherwise connectoid name
-            internetPerConnOptionList.pszConnection = IntPtr.Zero;
+                // fill the internetPerConnOptionList structure
+                internetPerConnOptionList.dwSize = internetPerConnOptionListSize;
 
-            // set two options
-            internetPerConnOptionList.dwOptionCount = (uint)internetPerConnOptionListOptions.Length;
-            internetPerConnOptionList.dwOptionError = 0;
+                // NULL == LAN, otherwise connectoid name
+                internetPerConnOptionList.pszConnection = IntPtr.Zero;
 
-            // query internet options
-            bool result = InternetQueryOption(IntPtr.Zero, INTERNET_OPTION.INTERNET_OPTION_PER_CONNECTION_OPTION, ref internetPerConnOptionList, ref internetPerConnOptionListSize);
-                
-            if (!result) {
-                throw new FlashpointProxyException("Could not query the Internet Options.");
+                // set two options
+                internetPerConnOptionList.dwOptionCount = (uint)internetPerConnOptionListOptions.Length;
+                internetPerConnOptionList.dwOptionError = 0;
+
+                // query internet options
+                bool result = InternetQueryOption(IntPtr.Zero, INTERNET_OPTION.INTERNET_OPTION_PER_CONNECTION_OPTION, ref internetPerConnOptionList, ref internetPerConnOptionListSize);
+
+                if (!result) {
+                    throw new FlashpointProxyException("Could not query the Internet Options.");
+                }
+            } catch (Exception ex) {
+                Marshal.FreeCoTaskMem(internetPerConnOptionList.pOptions);
+                throw ex;
             }
         }
         
