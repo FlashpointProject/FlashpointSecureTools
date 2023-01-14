@@ -56,29 +56,6 @@ namespace FlashpointSecurePlayer {
             return CallNextHookEx(mouseHook, nCode, wParam, lParam);
         }
 
-        private bool TransitionsForceDisabled {
-            get {
-                int attributeValue = 0;
-
-                int err = DwmGetWindowAttribute(Handle, DWMWINDOWATTRIBUTE.DWMWA_TRANSITIONS_FORCEDISABLED, out attributeValue, (uint)Marshal.SizeOf(typeof(int)));
-
-                if (err != S_OK) {
-                    Marshal.ThrowExceptionForHR(err);
-                }
-                return (attributeValue != 0) ? true : false;
-            }
-
-            set {
-                int attributeValue = value ? 1 : 0;
-                
-                int err = DwmSetWindowAttribute(Handle, DWMWINDOWATTRIBUTE.DWMWA_TRANSITIONS_FORCEDISABLED, ref attributeValue, (uint)Marshal.SizeOf(typeof(int)));
-
-                if (err != S_OK) {
-                    Marshal.ThrowExceptionForHR(err);
-                }
-            }
-        }
-
         private const int FULLSCREEN_EXIT_LABEL_TIMER_TIME = 2500;
 
         private System.Windows.Forms.Timer exitFullscreenLabelTimer = null;
@@ -108,7 +85,6 @@ namespace FlashpointSecurePlayer {
         }
 
         private bool fullscreen = false;
-        private bool fullscreenTransitionsForceDisabled = false;
         private FormBorderStyle fullscreenFormBorderStyle = FormBorderStyle.Sizable;
         private FormWindowState fullscreenWindowState = FormWindowState.Maximized;
         private Point fullscreenLocation;
@@ -145,14 +121,6 @@ namespace FlashpointSecurePlayer {
 
                     closableWebBrowserLocation = closableWebBrowser.Location;
                     closableWebBrowserSize = closableWebBrowser.Size;
-
-                    try {
-                        fullscreenTransitionsForceDisabled = TransitionsForceDisabled;
-                        TransitionsForceDisabled = true;
-                    } catch {
-                        // no Aero!
-                        fullscreenTransitionsForceDisabled = false;
-                    }
 
                     // need to do this first to have an effect if starting maximized
                     WindowState = FormWindowState.Normal;
@@ -211,12 +179,6 @@ namespace FlashpointSecurePlayer {
 
                     // commit by bringing the window to the front
                     BringToFront();
-                    
-                    try {
-                        TransitionsForceDisabled = fullscreenTransitionsForceDisabled;
-                    } catch {
-                        // no Aero!
-                    }
                 }
             }
         }
