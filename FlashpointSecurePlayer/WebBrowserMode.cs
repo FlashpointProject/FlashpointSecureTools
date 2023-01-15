@@ -644,7 +644,7 @@ namespace FlashpointSecurePlayer {
             }
 
             WINDOWPLACEMENT windowPlacement = WindowPlacement;
-            windowPlacement.showCmd = SW.SW_MINIMIZE;
+            windowPlacement.showCmd = SW.SW_SHOWMINNOACTIVE;
             WindowPlacement = windowPlacement;
         }
 
