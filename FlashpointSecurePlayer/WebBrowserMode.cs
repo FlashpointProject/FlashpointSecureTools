@@ -56,6 +56,34 @@ namespace FlashpointSecurePlayer {
             return CallNextHookEx(mouseHook, nCode, wParam, lParam);
         }
 
+        public WINDOWPLACEMENT WindowPlacement {
+            get {
+                if (!IsHandleCreated || Handle == IntPtr.Zero) {
+                    throw new NullReferenceException("Handle must not be NULL.");
+                }
+
+                WINDOWPLACEMENT value = new WINDOWPLACEMENT();
+                value.length = Marshal.SizeOf(value);
+
+                if (!GetWindowPlacement(Handle, ref value)) {
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                }
+                return value;
+            }
+
+            set {
+                if (!IsHandleCreated || Handle == IntPtr.Zero) {
+                    throw new NullReferenceException("Handle must not be NULL.");
+                }
+
+                value.length = Marshal.SizeOf(value);
+
+                if (!SetWindowPlacement(Handle, ref value)) {
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                }
+            }
+        }
+
         private const int FULLSCREEN_EXIT_LABEL_TIMER_TIME = 2500;
 
         private System.Windows.Forms.Timer exitFullscreenLabelTimer = null;
@@ -86,12 +114,9 @@ namespace FlashpointSecurePlayer {
 
         private bool fullscreen = false;
         private FormBorderStyle fullscreenFormBorderStyle = FormBorderStyle.Sizable;
-        private FormWindowState fullscreenWindowState = FormWindowState.Maximized;
-        private Point fullscreenLocation;
-        private Size fullscreenSize;
+        private WINDOWPLACEMENT fullscreenWindowPlacement;
 
-        private Point closableWebBrowserLocation;
-        private Size closableWebBrowserSize;
+        private Rectangle closableWebBrowserBounds;
 
         // be very careful modifying this property
         // it is very picky about the order things happen
@@ -102,6 +127,10 @@ namespace FlashpointSecurePlayer {
             }
 
             set {
+                if (!IsHandleCreated || Handle == IntPtr.Zero) {
+                    return;
+                }
+
                 if (closableWebBrowser == null) {
                     return;
                 }
@@ -115,19 +144,22 @@ namespace FlashpointSecurePlayer {
                 if (fullscreen) {
                     // get the original properties before modifying them
                     fullscreenFormBorderStyle = FormBorderStyle;
-                    fullscreenWindowState = WindowState;
-                    fullscreenLocation = Location;
-                    fullscreenSize = Size;
+                    fullscreenWindowPlacement = WindowPlacement;
 
-                    closableWebBrowserLocation = closableWebBrowser.Location;
-                    closableWebBrowserSize = closableWebBrowser.Size;
+                    closableWebBrowserBounds = closableWebBrowser.Bounds;
+
+                    WINDOWPLACEMENT windowPlacement = fullscreenWindowPlacement;
 
                     // need to do this first to have an effect if starting maximized
-                    WindowState = FormWindowState.Normal;
+                    windowPlacement.showCmd = SW.SW_NORMAL;
+                    WindowPlacement = windowPlacement;
+
                     // disable resizing
                     FormBorderStyle = FormBorderStyle.None;
+
                     // enter fullscreen
-                    WindowState = FormWindowState.Maximized;
+                    windowPlacement.showCmd = SW.SW_MAXIMIZE;
+                    WindowPlacement = windowPlacement;
 
                     // make strips invisible so the Closable Web Browser can be Docked
                     // (this must happen AFTER entering fullscreen to prevent toolbar mouseover bug)
@@ -157,11 +189,15 @@ namespace FlashpointSecurePlayer {
                         }
                     }
 
+                    WINDOWPLACEMENT windowPlacement = fullscreenWindowPlacement;
+
                     // need to do this first to reset the window to its former size
                     FormBorderStyle = FormBorderStyle.Sizable;
+
                     // exit fullscreen
-                    WindowState = FormWindowState.Normal;
-                    
+                    windowPlacement.showCmd = SW.SW_NORMAL;
+                    WindowPlacement = windowPlacement;
+
                     // make strips visible so the Closable Web Browser can be Anchored
                     fullscreenButton.Checked = false;
                     toolBarToolStrip.Visible = true;
@@ -170,12 +206,9 @@ namespace FlashpointSecurePlayer {
 
                     // reset to the original properties before modifying them
                     FormBorderStyle = fullscreenFormBorderStyle;
-                    WindowState = fullscreenWindowState;
-                    Location = fullscreenLocation;
-                    Size = fullscreenSize;
+                    WindowPlacement = fullscreenWindowPlacement;
 
-                    closableWebBrowser.Location = closableWebBrowserLocation;
-                    closableWebBrowser.Size = closableWebBrowserSize;
+                    closableWebBrowser.Bounds = closableWebBrowserBounds;
 
                     // commit by bringing the window to the front
                     BringToFront();
@@ -545,56 +578,74 @@ namespace FlashpointSecurePlayer {
         private void WebBrowserMode_Activated(object sender, EventArgs e) {
             Application.AddMessageFilter(messageFilter);
 
-            if (Fullscreen) {
-                if (WindowState == FormWindowState.Minimized) {
-                    BringToFront();
-                }
+            if (!IsHandleCreated || Handle == IntPtr.Zero) {
+                return;
+            }
+
+            if (!Fullscreen) {
+                return;
+            }
+            
+            SW showCmd = WindowPlacement.showCmd;
+
+            if (showCmd == SW.SW_SHOWMINIMIZED
+                || showCmd == SW.SW_MINIMIZE
+                || showCmd == SW.SW_SHOWMINNOACTIVE) {
+                BringToFront();
             }
         }
 
         private void WebBrowserMode_Deactivate(object sender, EventArgs e) {
             Application.RemoveMessageFilter(messageFilter);
 
-            if (Fullscreen) {
-                IntPtr foregroundWindow = GetForegroundWindow();
+            if (!IsHandleCreated || Handle == IntPtr.Zero) {
+                return;
+            }
 
-                // we are the active window, because we are only now deactivating
-                // if this process has the foreground window, it'll be the active window
-                if (Handle == foregroundWindow) {
-                    // this process opened a new window
-                    if (!CanFocus) {
-                        // if there is a window above us in the z-order
-                        IntPtr previousWindow = GetWindow(Handle, GW.GW_HWNDPREV);
+            if (!Fullscreen) {
+                return;
+            }
 
-                        if (previousWindow != IntPtr.Zero) {
-                            // if we own the window above us in the z-order
-                            if (Handle == GetWindow(previousWindow, GW.GW_OWNER)) {
-                                // the new window is a dialog that prevents focus to this window
-                                return;
-                            }
+            IntPtr foregroundWindow = GetForegroundWindow();
+
+            // we are the active window, because we are only now deactivating
+            // if this process has the foreground window, it'll be the active window
+            if (Handle == foregroundWindow) {
+                // this process opened a new window
+                if (!CanFocus) {
+                    // if there is a window above us in the z-order
+                    IntPtr previousWindow = GetWindow(Handle, GW.GW_HWNDPREV);
+
+                    if (previousWindow != IntPtr.Zero) {
+                        // if we own the window above us in the z-order
+                        if (Handle == GetWindow(previousWindow, GW.GW_OWNER)) {
+                            // the new window is a dialog that prevents focus to this window
+                            return;
                         }
                     }
+                }
 
-                    // the new window is not a dialog that prevents focus to this window
-                    Fullscreen = false;
+                // the new window is not a dialog that prevents focus to this window
+                Fullscreen = false;
+                return;
+            }
+
+            // another process opened a window
+            if (foregroundWindow != IntPtr.Zero) {
+                // if we own the foreground window
+                if (Handle == GetWindow(foregroundWindow, GW.GW_OWNER)) {
+                    // the new window is owned by this window
+                    if (CanFocus) {
+                        // the new window is not a dialog that prevents focus to this window
+                        Fullscreen = false;
+                    }
                     return;
                 }
-
-                // another process opened a window
-                if (foregroundWindow != IntPtr.Zero) {
-                    // if we own the foreground window
-                    if (Handle == GetWindow(foregroundWindow, GW.GW_OWNER)) {
-                        // the new window is owned by this window
-                        if (CanFocus) {
-                            // the new window is not a dialog that prevents focus to this window
-                            Fullscreen = false;
-                        }
-                        return;
-                    }
-                }
-
-                WindowState = FormWindowState.Minimized;
             }
+
+            WINDOWPLACEMENT windowPlacement = WindowPlacement;
+            windowPlacement.showCmd = SW.SW_MINIMIZE;
+            WindowPlacement = windowPlacement;
         }
 
         private void closableWebBrowser_Navigated(object sender, WebBrowserNavigatedEventArgs e) {
@@ -685,7 +736,7 @@ namespace FlashpointSecurePlayer {
             // lame fix: browser hangs when window.open top attribute > control height (why?)
             // Width, Height, and WindowState changes all work here
             // Width/Height are less obvious and Height doesn't cause text reflow
-            if (WindowState != FormWindowState.Maximized) {
+            if (WindowPlacement.showCmd != SW.SW_SHOWMAXIMIZED) {
                 // add first in case it's zero
                 Height++;
                 Height--;

@@ -300,6 +300,10 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
+                if (!ProgressBar.IsHandleCreated || ProgressBar.Handle == IntPtr.Zero) {
+                    return;
+                }
+
                 SendMessage(ProgressBar.Handle, PBM_SETSTATE, ProgressManager.state, IntPtr.Zero);
             }
         }

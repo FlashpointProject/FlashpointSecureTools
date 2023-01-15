@@ -248,6 +248,20 @@ namespace FlashpointSecurePlayer {
         [DllImport("USER32.DLL", SetLastError = true)]
         public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
+        [StructLayout(LayoutKind.Sequential)]
+        public struct POINT {
+            public int x;
+            public int y;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct RECT {
+            public int left;
+            public int right;
+            public int top;
+            public int bottom;
+        }
+
         public enum HookType : int {
             WH_MSGFILTER = -1,
             WH_JOURNALRECORD = 0,
@@ -293,12 +307,6 @@ namespace FlashpointSecurePlayer {
         public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, KBDLLHOOKSTRUCT lParam);
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct POINT {
-            public int X;
-            public int Y;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
         public struct MSLLHOOKSTRUCT {
             public POINT pt;
             public int mouseData;
@@ -316,6 +324,42 @@ namespace FlashpointSecurePlayer {
         [DllImport("USER32.DLL", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+        public enum SW : uint {
+            SW_HIDE = 0,
+            SW_SHOWNORMAL = 1,
+            SW_NORMAL = 1,
+            SW_SHOWMINIMIZED = 2,
+            SW_SHOWMAXIMIZED = 3,
+            SW_MAXIMIZE = 3,
+            SW_SHOWNOACTIVATE = 4,
+            SW_SHOW = 5,
+            SW_MINIMIZE = 6,
+            SW_SHOWMINNOACTIVE = 7,
+            SW_SHOWNA = 8,
+            SW_RESTORE = 9,
+            SW_SHOWDEFAULT = 10,
+            SW_FORCEMINIMIZE = 11,
+            SW_MAX = 11
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct WINDOWPLACEMENT {
+            public int length;
+            public int flags;
+            public SW showCmd;
+            public POINT ptMinPosition;
+            public POINT ptMaxPosition;
+            public RECT rcNormalPosition;
+        }
+
+        [DllImport("USER32.DLL", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
+
+        [DllImport("USER32.DLL", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
 
         [StructLayout(LayoutKind.Sequential)]
         public struct SECURITY_ATTRIBUTES {
