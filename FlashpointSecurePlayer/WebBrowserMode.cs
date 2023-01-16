@@ -151,6 +151,8 @@ namespace FlashpointSecurePlayer {
                     WINDOWPLACEMENT windowPlacement = fullscreenWindowPlacement;
 
                     // need to do this first to have an effect if starting maximized
+                    // we use WindowPlacement instead of WindowState to maintain
+                    // the window position and skip the animation
                     windowPlacement.showCmd = SW.SW_NORMAL;
                     WindowPlacement = windowPlacement;
 
@@ -643,6 +645,7 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
+            // we use SW_SHOWMINNOACTIVE so new windows (e.g. Task Manager) don't lose focus
             WINDOWPLACEMENT windowPlacement = WindowPlacement;
             windowPlacement.showCmd = SW.SW_SHOWMINNOACTIVE;
             WindowPlacement = windowPlacement;
