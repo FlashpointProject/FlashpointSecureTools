@@ -143,6 +143,7 @@ namespace FlashpointSecurePlayer {
                 // USB the HDMI to .exe the database
                 string commandLineExpanded = Environment.ExpandEnvironmentVariables(modeElement.CommandLine);
                 StringBuilder oldCPUSimulatorSoftware = new StringBuilder();
+                string workingDirectory = null;
 
                 // the problem we're dealing with here
                 // is that we need to get the full path to
@@ -158,6 +159,7 @@ namespace FlashpointSecurePlayer {
                     }
                     
                     string fullPath = Path.GetFullPath(argv[0]);
+                    workingDirectory = Path.GetDirectoryName(fullPath);
                     GetValidArgument(ref fullPath);
                     oldCPUSimulatorSoftware.Append(fullPath);
                 } catch (Exception ex) {
@@ -189,7 +191,11 @@ namespace FlashpointSecurePlayer {
                 // default the working directory to here
                 // (otherwise it'd get set to Old CPU Simulator's directory, not desirable)
                 if (String.IsNullOrEmpty(modeElement.WorkingDirectory)) {
-                    softwareProcessStartInfo.WorkingDirectory = Environment.CurrentDirectory;
+                    if (String.IsNullOrEmpty(workingDirectory)) {
+                        softwareProcessStartInfo.WorkingDirectory = Environment.CurrentDirectory;
+                    } else {
+                        softwareProcessStartInfo.WorkingDirectory = workingDirectory;
+                    }
                 }
                 return;
             }
