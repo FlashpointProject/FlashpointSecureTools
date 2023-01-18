@@ -315,32 +315,42 @@ namespace FlashpointSecurePlayer {
 
                     try {
                         // fix for loading dependencies
+                        string fullPath = null;
+
                         try {
-                            Directory.SetCurrentDirectory(Path.GetFullPath(TemplateName));
+                            fullPath = Path.GetFullPath(TemplateName);
                         } catch (Exception ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, TemplateName));
+                            throw new ActiveXImportFailedException("The ActiveX Import failed because getting the Full Path failed.");
+                        }
+
+                        try {
+                            Directory.SetCurrentDirectory(Path.GetDirectoryName(fullPath));
+                        } catch (Exception ex) {
+                            LogExceptionToLauncher(ex);
+                            errorDelegate(Properties.Resources.FailedSetWorkingDirectory);
                             throw new ActiveXImportFailedException("The ActiveX Import failed because setting the Current Directory failed.");
                         }
 
                         ActiveXControl activeXControl = null;
 
                         try {
-                            activeXControl = new ActiveXControl(TemplateName);
+                            activeXControl = new ActiveXControl(fullPath);
                         } catch (InvalidActiveXControlException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.GameNotActiveXControl);
                             throw new ActiveXImportFailedException("The ActiveX Import failed because the DLL is not an ActiveX Control.");
                         } catch (Exception ex) {
                             LogExceptionToLauncher(ex);
-                            errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, TemplateName));
+                            errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, fullPath));
                             throw new ActiveXImportFailedException("The ActiveX Import failed because the DLL was not found.");
                         }
 
                         BINARY_TYPE binaryType;
 
                         try {
-                            binaryType = GetLibraryBinaryType(TemplateName);
+                            binaryType = GetLibraryBinaryType(fullPath);
                         } catch (Exception ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.GameNotActiveXControl);
@@ -378,6 +388,15 @@ namespace FlashpointSecurePlayer {
                         }
 
                         ProgressManager.CurrentGoal.Steps++;
+
+                        // Set Current Directory
+                        try {
+                            Directory.SetCurrentDirectory(Application.StartupPath);
+                        } catch (Exception ex) {
+                            LogExceptionToLauncher(ex);
+                            errorDelegate(Properties.Resources.FailedSetWorkingDirectory);
+                            throw new ActiveXImportFailedException("The ActiveX Import failed because setting the Current Directory failed.");
+                        }
 
                         try {
                             try {
