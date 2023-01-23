@@ -1987,6 +1987,10 @@ namespace FlashpointSecurePlayer {
         private const string URI_SCHEME_FTP = "ftp";
 
         public static string GetValidatedURL(string url) {
+            if (String.IsNullOrWhiteSpace(url)) {
+                return String.Empty;
+            }
+
             url = url.Trim();
 
             // first try a guessed scheme

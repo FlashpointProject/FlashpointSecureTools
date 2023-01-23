@@ -450,7 +450,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            if (String.IsNullOrEmpty(url)) {
+            if (String.IsNullOrWhiteSpace(url)) {
                 AddressInvalid();
                 return;
             }
