@@ -192,13 +192,14 @@ namespace FlashpointSecurePlayer {
 
         [Flags]
         public enum URL_APPLYFlags : uint {
+            Zero = 0x00000000,
             URL_APPLY_DEFAULT = 0x00000001,
             URL_APPLY_GUESSSCHEME = 0x00000002,
             URL_APPLY_GUESSFILE = 0x00000004,
             URL_APPLY_FORCEAPPLY = 0x00000008
         }
 
-        [DllImport("SHLWAPI.DLL", CharSet = CharSet.Auto, CallingConvention = CallingConvention.Winapi)]
+        [DllImport("Shlwapi.dll", CharSet = CharSet.Auto)]
         public static extern int UrlApplyScheme(
             [MarshalAs(UnmanagedType.LPTStr)]
             string pszIn,
