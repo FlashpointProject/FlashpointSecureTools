@@ -1985,7 +1985,7 @@ namespace FlashpointSecurePlayer {
         private const string URI_SCHEME_HTTPS = "https";
         private const string URI_SCHEME_FTP = "ftp";
 
-        public static string ValidateURL(string url) {
+        public static string GetValidatedURL(string url) {
             // first try a guessed scheme
             // (for example, guess HTTP for www subdomain, FTP for ftp subdomain...)
             StringBuilder validatedURL = new StringBuilder((int)INTERNET_MAX_URL_LENGTH);

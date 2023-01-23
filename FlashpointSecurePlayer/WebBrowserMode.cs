@@ -458,7 +458,7 @@ namespace FlashpointSecurePlayer {
             Uri webBrowserURL;
 
             try {
-                webBrowserURL = new Uri(ValidateURL(url), UriKind.Absolute);
+                webBrowserURL = new Uri(GetValidatedURL(url), UriKind.Absolute);
             } catch {
                 AddressInvalid();
                 return;
