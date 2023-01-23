@@ -1,10 +1,13 @@
-﻿using System;
+﻿using SHDocVw;
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Media;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using System.Text;
@@ -12,8 +15,6 @@ using System.Windows.Forms;
 
 using static FlashpointSecurePlayer.Shared;
 using static FlashpointSecurePlayer.Shared.Exceptions;
-
-using SHDocVw;
 
 namespace FlashpointSecurePlayer {
     public partial class WebBrowserMode : Form {
@@ -380,6 +381,22 @@ namespace FlashpointSecurePlayer {
             statusBarStatusStrip.Renderer = new EndEllipsisTextRenderer();
         }
 
+        private bool addressToolStripSpringTextBoxEntered = false;
+
+        public void AddressInvalid() {
+            // focus the address again, if the user clicked the go button
+            SystemSounds.Beep.Play();
+
+            addressToolStripSpringTextBox.Focus();
+            addressToolStripSpringTextBox.SelectionStart = addressToolStripSpringTextBox.TextLength;
+            addressToolStripSpringTextBoxEntered = false;
+        }
+
+        public void AddressValid() {
+            // unfocus the address before navigation
+            ActiveControl = null;
+        }
+
         public void BrowserBack() {
             if (closableWebBrowser == null) {
                 return;
@@ -434,17 +451,20 @@ namespace FlashpointSecurePlayer {
             }
 
             if (String.IsNullOrEmpty(url)) {
+                AddressInvalid();
                 return;
             }
 
             Uri webBrowserURL;
 
             try {
-                webBrowserURL = new Uri(AddURLProtocol(url));
+                webBrowserURL = new Uri(ValidateURL(url), UriKind.Absolute);
             } catch {
+                AddressInvalid();
                 return;
             }
 
+            AddressValid();
             closableWebBrowser.Navigate(webBrowserURL);
         }
 
@@ -889,15 +909,15 @@ namespace FlashpointSecurePlayer {
             BrowserPrint();
         }
 
-        private bool addressToolStripSpringTextBoxEntered = false;
-
         private void addressToolStripSpringTextBox_Click(object sender, EventArgs e) {
-            if (addressToolStripSpringTextBoxEntered) {
-                addressToolStripSpringTextBoxEntered = false;
+            if (!addressToolStripSpringTextBoxEntered) {
+                return;
+            }
 
-                if (String.IsNullOrEmpty(addressToolStripSpringTextBox.SelectedText)) {
-                    addressToolStripSpringTextBox.SelectAll();
-                }
+            addressToolStripSpringTextBoxEntered = false;
+
+            if (String.IsNullOrEmpty(addressToolStripSpringTextBox.SelectedText)) {
+                addressToolStripSpringTextBox.SelectAll();
             }
         }
 

@@ -525,7 +525,7 @@ namespace FlashpointSecurePlayer {
                         Uri webBrowserURL = null;
 
                         try {
-                            webBrowserURL = new Uri(AddURLProtocol(URL));
+                            webBrowserURL = new Uri(ValidateURL(URL), UriKind.Absolute);
                         } catch (Exception ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(String.Format(Properties.Resources.AddressNotUnderstood, URL));
@@ -1346,7 +1346,7 @@ namespace FlashpointSecurePlayer {
 
                 if (templateElement.Mode.Name == ModeElement.NAME.SOFTWARE) {
                     try {
-                        Uri requestUri = await DownloadAsync(AddURLProtocol(URL)).ConfigureAwait(true);
+                        Uri requestUri = await DownloadAsync(ValidateURL(URL)).ConfigureAwait(true);
 
                         StringBuilder htdocsFilePath = new StringBuilder(HTDOCS);
 

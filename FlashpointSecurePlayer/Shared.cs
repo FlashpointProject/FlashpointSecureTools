@@ -186,6 +186,29 @@ namespace FlashpointSecurePlayer {
             uint cchBuffer
         );
 
+        public const uint INTERNET_MAX_PATH_LENGTH = 2048;
+        public const uint INTERNET_MAX_SCHEME_LENGTH = 32;
+        static readonly uint INTERNET_MAX_URL_LENGTH = INTERNET_MAX_SCHEME_LENGTH + (uint)"://".Length + INTERNET_MAX_PATH_LENGTH;
+
+        [Flags]
+        public enum URL_APPLYFlags : uint {
+            URL_APPLY_DEFAULT = 0x00000001,
+            URL_APPLY_GUESSSCHEME = 0x00000002,
+            URL_APPLY_GUESSFILE = 0x00000004,
+            URL_APPLY_FORCEAPPLY = 0x00000008
+        }
+
+        [DllImport("SHLWAPI.DLL", CharSet = CharSet.Auto, CallingConvention = CallingConvention.Winapi)]
+        public static extern int UrlApplyScheme(
+            [MarshalAs(UnmanagedType.LPTStr)]
+            string pszIn,
+
+            [MarshalAs(UnmanagedType.LPTStr)]
+            StringBuilder pszOut,
+
+            ref uint pcchOut,
+            URL_APPLYFlags dwFlags);
+
         public enum OS : uint {
             OS_WINDOWS = 0,
             OS_NT = 1,
@@ -1958,6 +1981,55 @@ namespace FlashpointSecurePlayer {
             public static PathNamesLong Long { get; } = new PathNamesLong();
         }
 
+        private const string URI_SCHEME_HTTP = "http";
+        private const string URI_SCHEME_HTTPS = "https";
+        private const string URI_SCHEME_FTP = "ftp";
+
+        public static string ValidateURL(string url) {
+            // first try a guessed scheme
+            // (for example, guess HTTP for www subdomain, FTP for ftp subdomain...)
+            StringBuilder validatedURL = new StringBuilder((int)INTERNET_MAX_URL_LENGTH);
+            uint validatedURLCapacity = (uint)validatedURL.Capacity;
+
+            int err = UrlApplyScheme(url, validatedURL, ref validatedURLCapacity, URL_APPLYFlags.URL_APPLY_GUESSSCHEME);
+
+            if (err == S_OK
+                && validatedURLCapacity < validatedURL.Capacity) {
+                url = validatedURL.ToString();
+            } else {
+                // second try the default scheme
+                // we only do this to see if it returns S_FALSE
+                // if so, we know there is already a scheme and don't add our own
+                // we do not use the validated URL given by UrlApplyScheme here
+                validatedURL.Clear();
+                validatedURLCapacity = (uint)validatedURL.Capacity;
+
+                err = UrlApplyScheme(url, validatedURL, ref validatedURLCapacity, URL_APPLYFlags.URL_APPLY_DEFAULT);
+
+                // workaround: we always want to use HTTP, regardless of the default
+                // (in case the default is HTTPS)
+                if (err != S_FALSE) {
+                    // skip leading slashes for protocol-less URLs
+                    if (url.StartsWith("//", StringComparison.Ordinal)) {
+                        url = url.Substring(2);
+                    }
+
+                    url = URI_SCHEME_HTTP + "://" + url;
+                }
+            }
+            return url;
+        }
+
+        public static bool TestInternetURI(Uri uri) {
+            if (uri.IsFile) {
+                return false;
+            }
+
+            // the URI Scheme is always lowercase
+            string scheme = uri.Scheme;
+            return scheme == URI_SCHEME_HTTP || scheme == URI_SCHEME_HTTPS || scheme == URI_SCHEME_FTP;
+        }
+
         public static string GetWindowsVersionName(bool edition, bool servicePack, bool architecture) {
             OperatingSystem operatingSystem = Environment.OSVersion;
             string versionName = "Windows ";
@@ -2571,50 +2643,6 @@ namespace FlashpointSecurePlayer {
                     Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
                 }
             }
-        }
-
-        private static int GetURLProtocolLength(string url) {
-            Uri uri;
-
-            try {
-                uri = new Uri(url);
-            } catch {
-                return 0;
-            }
-
-            if (String.IsNullOrEmpty(uri.Scheme)) {
-                return 0;
-            }
-            return (uri.Scheme + "://").Length;
-        }
-
-        public static bool HasURLProtocol(string url) {
-            return GetURLProtocolLength(url) > 0;
-        }
-
-        public static string AddURLProtocol(string url) {
-            if (GetURLProtocolLength(url) == 0) {
-                return "http://" + url;
-            }
-            return url;
-        }
-
-        public static string RemoveURLProtocol(string url) {
-            return url.Substring(GetURLProtocolLength(url));
-        }
-
-        public static bool TestInternetURI(Uri uri) {
-            if (uri.IsFile) {
-                return false;
-            }
-
-            const string SCHEME_HTTP = "http";
-            const string SCHEME_HTTPS = "https";
-            const string SCHEME_FTP = "ftp";
-
-            // the URI Scheme is always lowercase
-            string scheme = uri.Scheme;
-            return scheme == SCHEME_HTTP || scheme == SCHEME_HTTPS || scheme == SCHEME_FTP;
         }
 
         public static BINARY_TYPE GetLibraryBinaryType(string libFileName) {
