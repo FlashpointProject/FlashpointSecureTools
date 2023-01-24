@@ -2017,16 +2017,17 @@ namespace FlashpointSecurePlayer {
 
             // workaround: we always want to use HTTP, regardless of the default
             // (in case the default is HTTPS)
-            if (err != S_FALSE) {
-                // skip leading slashes for protocol-less URLs
-                const string LEADING_SLASHES = "//";
-
-                if (url.StartsWith(LEADING_SLASHES, StringComparison.Ordinal)) {
-                    url = url.Substring(LEADING_SLASHES.Length);
-                }
-                return URI_SCHEME_HTTP + "://" + url;
+            if (err == S_FALSE) {
+                return url;
             }
-            return url;
+
+            // skip leading slashes for protocol-less URLs
+            const string LEADING_SLASHES = "//";
+
+            if (url.StartsWith(LEADING_SLASHES, StringComparison.Ordinal)) {
+                url = url.Substring(LEADING_SLASHES.Length);
+            }
+            return URI_SCHEME_HTTP + "://" + url;
         }
 
         public static bool TestInternetURI(Uri uri) {
