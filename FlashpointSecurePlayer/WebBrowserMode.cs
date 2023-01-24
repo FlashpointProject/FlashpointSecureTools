@@ -450,11 +450,6 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            if (String.IsNullOrWhiteSpace(url)) {
-                AddressInvalid();
-                return;
-            }
-
             Uri webBrowserURL;
 
             try {
