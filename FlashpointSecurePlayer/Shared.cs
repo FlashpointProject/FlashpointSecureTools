@@ -2000,31 +2000,31 @@ namespace FlashpointSecurePlayer {
 
             int err = UrlApplyScheme(url, validatedURL, ref validatedURLCapacity, URL_APPLYFlags.URL_APPLY_GUESSSCHEME);
 
-            if (err == S_OK
-                && validatedURLCapacity < validatedURL.Capacity) {
-                url = validatedURL.ToString();
-            } else {
-                // second try the default scheme
-                // we only do this to see if it returns S_FALSE, because
-                // if so, we know there is already a scheme and don't add our own
-                // we do not use the validated URL given by UrlApplyScheme here
-                validatedURL.Clear();
-                validatedURLCapacity = (uint)validatedURL.Capacity;
-
-                err = UrlApplyScheme(url, validatedURL, ref validatedURLCapacity, URL_APPLYFlags.URL_APPLY_DEFAULT);
-
-                // workaround: we always want to use HTTP, regardless of the default
-                // (in case the default is HTTPS)
-                if (err != S_FALSE) {
-                    // skip leading slashes for protocol-less URLs
-                    const string LEADING_SLASHES = "//";
-
-                    if (url.StartsWith(LEADING_SLASHES, StringComparison.Ordinal)) {
-                        url = url.Substring(LEADING_SLASHES.Length);
-                    }
-
-                    url = URI_SCHEME_HTTP + "://" + url;
+            if (err == S_OK) {
+                if (validatedURLCapacity < validatedURL.Capacity) {
+                    return validatedURL.ToString();
                 }
+            }
+
+            // second try the default scheme
+            // we only do this to see if it returns S_FALSE, because
+            // if so, we know there is already a scheme and don't add our own
+            // we do not use the validated URL given by UrlApplyScheme here
+            validatedURL.Clear();
+            validatedURLCapacity = (uint)validatedURL.Capacity;
+
+            err = UrlApplyScheme(url, validatedURL, ref validatedURLCapacity, URL_APPLYFlags.URL_APPLY_DEFAULT);
+
+            // workaround: we always want to use HTTP, regardless of the default
+            // (in case the default is HTTPS)
+            if (err != S_FALSE) {
+                // skip leading slashes for protocol-less URLs
+                const string LEADING_SLASHES = "//";
+
+                if (url.StartsWith(LEADING_SLASHES, StringComparison.Ordinal)) {
+                    url = url.Substring(LEADING_SLASHES.Length);
+                }
+                return URI_SCHEME_HTTP + "://" + url;
             }
             return url;
         }
