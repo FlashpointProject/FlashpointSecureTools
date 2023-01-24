@@ -2015,12 +2015,12 @@ namespace FlashpointSecurePlayer {
 
             err = UrlApplyScheme(url, validatedURL, ref validatedURLCapacity, URL_APPLYFlags.URL_APPLY_DEFAULT);
 
-            // workaround: we always want to use HTTP, regardless of the default
-            // (in case the default is HTTPS)
             if (err == S_FALSE) {
                 return url;
             }
 
+            // workaround: we always want to use HTTP, regardless of the default
+            // (in case the default is HTTPS)
             // skip leading slashes for protocol-less URLs
             const string LEADING_SLASHES = "//";
 
