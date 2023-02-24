@@ -429,22 +429,6 @@ namespace FlashpointSecurePlayer {
             closableWebBrowser.Refresh();
         }
 
-        public void BrowserSaveAsWebpage() {
-            if (closableWebBrowser == null) {
-                return;
-            }
-            
-            closableWebBrowser.ShowSaveAsDialog();
-        }
-
-        public void BrowserPrint() {
-            if (closableWebBrowser == null) {
-                return;
-            }
-            
-            closableWebBrowser.ShowPrintDialog();
-        }
-
         public void BrowserGo(string url) {
             if (closableWebBrowser == null) {
                 return;
@@ -461,6 +445,22 @@ namespace FlashpointSecurePlayer {
 
             AddressValid();
             closableWebBrowser.Navigate(webBrowserURL);
+        }
+
+        public void BrowserSaveAsWebpage() {
+            if (closableWebBrowser == null) {
+                return;
+            }
+
+            closableWebBrowser.ShowSaveAsDialog();
+        }
+
+        public void BrowserPrint() {
+            if (closableWebBrowser == null) {
+                return;
+            }
+
+            closableWebBrowser.ShowPrintDialog();
         }
 
         public WebBrowserMode BrowserNewWindow() {
@@ -896,14 +896,6 @@ namespace FlashpointSecurePlayer {
             BrowserRefresh();
         }
 
-        private void saveAsWebpageButton_Click(object sender, EventArgs e) {
-            BrowserSaveAsWebpage();
-        }
-
-        private void printButton_Click(object sender, EventArgs e) {
-            BrowserPrint();
-        }
-
         private void addressToolStripSpringTextBox_Click(object sender, EventArgs e) {
             if (!addressToolStripSpringTextBoxEntered) {
                 return;
@@ -936,6 +928,14 @@ namespace FlashpointSecurePlayer {
 
         private void goButton_Click(object sender, EventArgs e) {
             BrowserGo(addressToolStripSpringTextBox.Text);
+        }
+
+        private void saveAsWebpageButton_Click(object sender, EventArgs e) {
+            BrowserSaveAsWebpage();
+        }
+
+        private void printButton_Click(object sender, EventArgs e) {
+            BrowserPrint();
         }
 
         private void newWindowButton_Click(object sender, EventArgs e) {

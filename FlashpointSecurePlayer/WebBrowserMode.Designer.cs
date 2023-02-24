@@ -35,7 +35,6 @@
             this.toolBarToolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.addressToolStripSpringTextBox = new FlashpointSecurePlayer.ToolStripSpringTextBox();
             this.goButton = new System.Windows.Forms.ToolStripButton();
-            this.toolbarToolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.newWindowButton = new System.Windows.Forms.ToolStripButton();
             this.fullscreenButton = new System.Windows.Forms.ToolStripButton();
             this.statusBarStatusStrip = new System.Windows.Forms.StatusStrip();
@@ -55,12 +54,11 @@
             this.stopButton,
             this.refreshButton,
             this.toolBarToolStripSeparator1,
-            this.saveAsWebpageButton,
-            this.printButton,
-            this.toolBarToolStripSeparator2,
             this.addressToolStripSpringTextBox,
             this.goButton,
-            this.toolbarToolStripSeparator3,
+            this.toolBarToolStripSeparator2,
+            this.saveAsWebpageButton,
+            this.printButton,
             this.newWindowButton,
             this.fullscreenButton});
             this.toolBarToolStrip.Location = new System.Drawing.Point(0, 0);
@@ -171,11 +169,6 @@
             this.goButton.Size = new System.Drawing.Size(42, 22);
             this.goButton.Text = "Go";
             this.goButton.Click += new System.EventHandler(this.goButton_Click);
-            // 
-            // toolbarToolStripSeparator3
-            // 
-            this.toolbarToolStripSeparator3.Name = "toolbarToolStripSeparator3";
-            this.toolbarToolStripSeparator3.Size = new System.Drawing.Size(6, 25);
             // 
             // newWindowButton
             // 
@@ -304,7 +297,6 @@
         private System.Windows.Forms.ToolStripSeparator toolBarToolStripSeparator2;
         private ToolStripSpringTextBox addressToolStripSpringTextBox;
         private System.Windows.Forms.ToolStripButton goButton;
-        private System.Windows.Forms.ToolStripSeparator toolbarToolStripSeparator3;
         private System.Windows.Forms.ToolStripButton newWindowButton;
         private System.Windows.Forms.ToolStripButton fullscreenButton;
         private System.Windows.Forms.Label exitFullscreenLabel;
