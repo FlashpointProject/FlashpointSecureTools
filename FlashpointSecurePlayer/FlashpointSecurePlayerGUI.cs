@@ -267,7 +267,7 @@ namespace FlashpointSecurePlayer {
 
             try {
                 processStartInfo = new ProcessStartInfo {
-                    FileName = fullPath,
+                    FileName = GetValidArgument(fullPath, true),
                     Arguments = GetOldCPUSimulatorProcessStartInfoArguments(modificationsElement.OldCPUSimulator, Environment.CommandLine),
                     WorkingDirectory = Environment.CurrentDirectory
                 };
@@ -556,7 +556,7 @@ namespace FlashpointSecurePlayer {
                             }
 
                             if (String.IsNullOrEmpty(softwareProcessStartInfo.FileName)) {
-                                softwareProcessStartInfo.FileName = fullPath;
+                                softwareProcessStartInfo.FileName = GetValidArgument(fullPath, true);
                             }
 
                             if (String.IsNullOrEmpty(softwareProcessStartInfo.Arguments)) {

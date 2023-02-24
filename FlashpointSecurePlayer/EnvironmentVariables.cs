@@ -196,11 +196,11 @@ namespace FlashpointSecurePlayer {
                                 // the compatibility layers may contain more values
                                 // but we're only concerned if it contains the values we want
                                 if (compatibilityLayerValue != null) {
-                                    compatibilityLayerValues = compatibilityLayerValue.Split(WHITESPACE).ToList();
+                                    compatibilityLayerValues = compatibilityLayerValue.Split().ToList();
                                 }
 
                                 if (value != null) {
-                                    values = value.Split(WHITESPACE).ToList();
+                                    values = value.Split().ToList();
                                 }
 
                                 // we have to restart in this case in server mode
@@ -286,7 +286,7 @@ namespace FlashpointSecurePlayer {
                 // we get this right away here
                 // as opposed to after the variable has been potentially set like during activation
                 if (compatibilityLayerValue != null) {
-                    compatibilityLayerValues = compatibilityLayerValue.Split(WHITESPACE).ToList();
+                    compatibilityLayerValues = compatibilityLayerValue.Split().ToList();
                 }
 
                 ProgressManager.CurrentGoal.Start(activeModificationsElement.EnvironmentVariables.Count);
@@ -317,7 +317,7 @@ namespace FlashpointSecurePlayer {
                             values = new List<string>();
 
                             if (value != null) {
-                                values = value.Split(WHITESPACE).ToList();
+                                values = value.Split().ToList();
                             }
 
                             if (modificationsRevertMethod == MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {

@@ -924,8 +924,6 @@ namespace FlashpointSecurePlayer {
         private const string CONFIGURATION_FOLDER_NAME = "FlashpointSecurePlayerConfigs";
         private const string CONFIGURATION_DOWNLOAD_NAME = "flashpointsecureplayerconfigs";
 
-        public static readonly char[] WHITESPACE = { ' ', '\t', '\n', '\v', '\"' };
-
         public const string OLD_CPU_SIMULATOR_PATH = "OldCPUSimulator\\OldCPUSimulator.exe";
         public const string OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME = "OLDCPUSIMULATOR.EXE";
 
@@ -2530,7 +2528,7 @@ namespace FlashpointSecurePlayer {
         public static void RestartApplication(bool runAsAdministrator, Form form, ref Mutex applicationMutex, ProcessStartInfo processStartInfo = null) {
             if (processStartInfo == null) {
                 processStartInfo = new ProcessStartInfo {
-                    FileName = Application.ExecutablePath,
+                    FileName = GetValidArgument(Application.ExecutablePath, true),
                     // can't use GetCommandLineArgs() and String.Join because arguments that were in quotes will lose their quotes
                     // need to use Environment.CommandLine and find arguments
                     Arguments = GetArgumentSliceFromCommandLine(Environment.CommandLine, 1)
@@ -2972,33 +2970,36 @@ namespace FlashpointSecurePlayer {
         }
 
         // http://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
-        public static void GetValidArgument(ref string argument, bool force = false) {
-            if (force || argument == String.Empty || argument.IndexOfAny(WHITESPACE) != -1) {
-                int backslashes = 0;
-                StringBuilder validArgument = new StringBuilder();
+        public static string GetValidArgument(string argument, bool force = false) {
+            if (!force && argument != String.Empty && argument.IndexOfAny(new char[]{ ' ', '\t', '\n', '\v', '\"' }) == -1) {
+                return argument;
+            }
 
-                for (int i = 0; i < argument.Length; i++) {
-                    backslashes = 0;
+            int backslashes = 0;
+            StringBuilder validArgument = new StringBuilder("\"");
 
-                    while (i != argument.Length && argument[i] == '\\') {
-                        backslashes++;
-                        i++;
-                    }
+            for (int i = 0; i < argument.Length; i++) {
+                backslashes = 0;
 
-                    if (i != argument.Length) {
-                        if (argument[i] == '"') {
-                            validArgument.Append('\\', backslashes + backslashes + 1);
-                        } else {
-                            validArgument.Append('\\', backslashes);
-                        }
-
-                        validArgument.Append(argument[i]);
-                    }
+                while (i != argument.Length && argument[i].ToString().Equals("\\", StringComparison.Ordinal)) {
+                    backslashes++;
+                    i++;
                 }
 
-                validArgument.Append('\\', backslashes + backslashes);
-                argument = "\"" + validArgument.ToString() + "\"";
+                if (i != argument.Length) {
+                    if (argument[i].ToString().Equals("\"", StringComparison.Ordinal)) {
+                        validArgument.Append('\\', backslashes + backslashes + 1);
+                    } else {
+                        validArgument.Append('\\', backslashes);
+                    }
+
+                    validArgument.Append(argument[i]);
+                }
             }
+
+            validArgument.Append('\\', backslashes + backslashes);
+            validArgument.Append("\"");
+            return validArgument.ToString();
         }
 
         public static string GetArgumentSliceFromCommandLine(string commandLine, int begin = 0, int end = -1) {
