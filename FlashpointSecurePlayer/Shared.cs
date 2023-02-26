@@ -2971,6 +2971,10 @@ namespace FlashpointSecurePlayer {
 
         // http://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
         public static string GetValidArgument(string argument, bool force = false) {
+            if (argument == null) {
+                argument = String.Empty;
+            }
+
             if (!force && argument != String.Empty && argument.IndexOfAny(new char[]{ ' ', '\t', '\n', '\v', '\"' }) == -1) {
                 return argument;
             }
