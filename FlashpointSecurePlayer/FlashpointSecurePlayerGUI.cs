@@ -1133,6 +1133,7 @@ namespace FlashpointSecurePlayer {
             Text += " " + typeof(FlashpointSecurePlayerGUI).Assembly.GetName().Version;
 
             ProgressManager.ProgressBar = securePlaybackProgressBar;
+            ProgressManager.ProgressForm = this;
 
             string windowsVersionName = GetWindowsVersionName(false, false, false);
 
