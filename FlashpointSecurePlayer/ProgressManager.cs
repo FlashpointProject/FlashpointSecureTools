@@ -16,7 +16,7 @@ namespace FlashpointSecurePlayer {
         public static readonly IntPtr PBST_ERROR = (IntPtr)2;
         public static readonly IntPtr PBST_PAUSED = (IntPtr)3;
 
-        public enum TBPF {
+        private enum TBPF {
             TBPF_NOPROGRESS = 0x00000000,
             TBPF_INDETERMINATE = 0x00000001,
             TBPF_NORMAL = 0x00000002,
@@ -24,19 +24,19 @@ namespace FlashpointSecurePlayer {
             TBPF_PAUSED = 0x00000008
         }
 
-        public enum TBATF {
+        private enum TBATF {
             TBATF_USEMDITHUMBNAIL = 0x00000001,
             TBATF_USEMDILIVEPREVIEW = 0x00000002
         }
 
-        public enum THB : uint {
+        private enum THB : uint {
             THB_BITMAP = 0x00000001,
             THB_ICON = 0x00000002,
             THB_TOOLTIP = 0x00000004,
             THB_FLAGS = 0x00000008
         }
 
-        public enum THBF : uint {
+        private enum THBF : uint {
             THBF_ENABLED = 0x00000000,
             THBF_DISABLED = 0x00000001,
             THBF_DISMISSONCLICK = 0x00000002,
@@ -45,7 +45,7 @@ namespace FlashpointSecurePlayer {
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4, CharSet = CharSet.Auto)]
-        public struct THUMBBUTTON {
+        private struct THUMBBUTTON {
             public THB dwMask;
             public uint iId;
             public uint iBitmap;
@@ -58,7 +58,7 @@ namespace FlashpointSecurePlayer {
         }
 
         [ComImport, Guid("EA1AFB91-9E28-4B86-90E9-9E9F8A5EEFAF"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-        public interface ITaskbarList3 {
+        private interface ITaskbarList3 {
             // ITaskbarList
             void HrInit();
             void AddTab(IntPtr hwnd);
@@ -129,7 +129,7 @@ namespace FlashpointSecurePlayer {
         private static ITaskbarList3 taskbarList = null;
         private static readonly bool taskbarListVersion = Environment.OSVersion.Version >= new Version(6, 1);
 
-        const int PROGRESS_FORM_VALUE_COMPLETE = 100;
+        private const int PROGRESS_FORM_VALUE_COMPLETE = 100;
 
         private static ProgressBar progressBar = null;
         private static Form progressForm = null;
