@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -15,19 +16,49 @@ namespace FlashpointSecurePlayer {
         public static readonly IntPtr PBST_ERROR = (IntPtr)2;
         public static readonly IntPtr PBST_PAUSED = (IntPtr)3;
 
-        public enum TaskbarProgressBarState {
-            NoProgress = 0,
-            Indeterminate = 1,
-            Normal = 2,
-            Error = 4,
-            Paused = 8
+        public enum TBPF {
+            TBPF_NOPROGRESS = 0x00000000,
+            TBPF_INDETERMINATE = 0x00000001,
+            TBPF_NORMAL = 0x00000002,
+            TBPF_ERROR = 0x00000004,
+            TBPF_PAUSED = 0x00000008
         }
 
-        [ComImport, Guid("56FDF344-FD6D-11D0-958A-006097C9A090"), ClassInterface(ClassInterfaceType.None)]
-        private class ITaskbarList { }
+        public enum TBATF {
+            TBATF_USEMDITHUMBNAIL = 0x00000001,
+            TBATF_USEMDILIVEPREVIEW = 0x00000002
+        }
+
+        public enum THB : uint {
+            THB_BITMAP = 0x00000001,
+            THB_ICON = 0x00000002,
+            THB_TOOLTIP = 0x00000004,
+            THB_FLAGS = 0x00000008
+        }
+
+        public enum THBF : uint {
+            THBF_ENABLED = 0x00000000,
+            THBF_DISABLED = 0x00000001,
+            THBF_DISMISSONCLICK = 0x00000002,
+            THBF_NOBACKGROUND = 0x00000004,
+            THBF_HIDDEN = 0x00000008
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 4, CharSet = CharSet.Auto)]
+        public struct THUMBBUTTON {
+            public THB dwMask;
+            public uint iId;
+            public uint iBitmap;
+            public IntPtr hIcon;
+
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = Shared.MAX_PATH)]
+            public string szTip;
+
+            public THBF dwFlags;
+        }
 
         [ComImport, Guid("EA1AFB91-9E28-4B86-90E9-9E9F8A5EEFAF"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-        private interface ITaskbarList3 {
+        public interface ITaskbarList3 {
             // ITaskbarList
             void HrInit();
             void AddTab(IntPtr hwnd);
@@ -45,10 +76,57 @@ namespace FlashpointSecurePlayer {
 
             // ITaskbarList3
             void SetProgressValue(IntPtr hwnd, ulong ullCompleted, ulong ullTotal);
-            void SetProgressState(IntPtr hwnd, TaskbarProgressBarState tbpFlags);
+            void SetProgressState(IntPtr hwnd, TBPF tbpFlags);
+            void RegisterTab(IntPtr hwndTab, IntPtr hwndMDI);
+            void UnregisterTab(IntPtr hwndTab);
+            void SetTabOrder(IntPtr hwndTab, IntPtr hwndInsertBefore);
+            void SetTabActive(IntPtr hwndTab, IntPtr hwndMDI, TBATF tbatFlags);
+
+            void ThumbBarAddButtons(
+                IntPtr hwnd,
+                uint cButtons,
+
+                [MarshalAs(UnmanagedType.LPArray)]
+                THUMBBUTTON[] pButtons
+            );
+
+            void ThumbBarUpdateButtons(
+                IntPtr hwnd,
+                uint cButtons,
+
+                [MarshalAs(UnmanagedType.LPArray)]
+                THUMBBUTTON[] pButtons
+            );
+
+            void ThumbBarSetImageList(IntPtr hwnd, IntPtr himl);
+
+            void SetOverlayIcon(
+                IntPtr hwnd,
+                IntPtr hIcon,
+
+                [MarshalAs(UnmanagedType.LPWStr)]
+                string pszDescription
+            );
+
+            void SetThumbnailTooltip(
+                IntPtr hwnd,
+
+                [MarshalAs(UnmanagedType.LPWStr)]
+                string pszTip
+            );
+
+            void SetThumbnailClip(
+                IntPtr hwnd,
+
+                [MarshalAs(UnmanagedType.LPStruct)]
+                Rectangle prcClip
+            );
         }
 
-        private static readonly ITaskbarList3 taskbarList = (ITaskbarList3)new ITaskbarList();
+        [ComImport, Guid("56FDF344-FD6D-11D0-958A-006097C9A090"), ClassInterface(ClassInterfaceType.None)]
+        private class TaskbarList { }
+
+        private static readonly ITaskbarList3 taskbarList = (ITaskbarList3)new TaskbarList();
         private static readonly bool taskbarListSupported = Environment.OSVersion.Version >= new Version(6, 1);
         private static bool taskbarListInitialized = false;
 
@@ -57,7 +135,7 @@ namespace FlashpointSecurePlayer {
         private static ProgressBar progressBar = null;
         private static Form progressForm = null;
         private static ulong progressFormValue = 0;
-        private static TaskbarProgressBarState progressFormState = TaskbarProgressBarState.Normal;
+        private static TBPF progressFormState = TBPF.TBPF_NORMAL;
         private static ProgressBarStyle style = ProgressBarStyle.Marquee;
         private static int value = 0;
         private static IntPtr state = PBST_NORMAL;
@@ -403,11 +481,11 @@ namespace FlashpointSecurePlayer {
                 }
 
                 // normal state does not take priority over indeterminate state
-                if (ProgressManager.progressFormState != TaskbarProgressBarState.Normal) {
+                if (ProgressManager.progressFormState != TBPF.TBPF_NORMAL) {
                     return;
                 }
 
-                ProgressManager.progressFormState = TaskbarProgressBarState.Indeterminate;
+                ProgressManager.progressFormState = TBPF.TBPF_INDETERMINATE;
 
                 if (ProgressForm == null) {
                     return;
@@ -443,14 +521,14 @@ namespace FlashpointSecurePlayer {
 
                 if (completed) {
                     // if we have completed, ignore the value in the no progress state
-                    if (ProgressManager.progressFormState == TaskbarProgressBarState.NoProgress) {
+                    if (ProgressManager.progressFormState == TBPF.TBPF_NOPROGRESS) {
                         return;
                     }
 
-                    ProgressManager.progressFormState = TaskbarProgressBarState.NoProgress;
+                    ProgressManager.progressFormState = TBPF.TBPF_NOPROGRESS;
                 } else {
                     // if we haven't completed, ignore the value in the indeterminate state
-                    if (ProgressManager.progressFormState == TaskbarProgressBarState.Indeterminate) {
+                    if (ProgressManager.progressFormState == TBPF.TBPF_INDETERMINATE) {
                         return;
                     }
                 }
@@ -476,7 +554,7 @@ namespace FlashpointSecurePlayer {
                 }
 
                 // if we previously completed, update the state
-                if (ProgressManager.progressFormState == TaskbarProgressBarState.NoProgress) {
+                if (ProgressManager.progressFormState == TBPF.TBPF_NOPROGRESS) {
                     ProgressFormState = ProgressManager.state;
                 }
             }
@@ -501,28 +579,28 @@ namespace FlashpointSecurePlayer {
                 }
 
                 if (value == PBST_ERROR) {
-                    if (ProgressManager.progressFormState == TaskbarProgressBarState.Error) {
+                    if (ProgressManager.progressFormState == TBPF.TBPF_ERROR) {
                         return;
                     }
 
-                    ProgressManager.progressFormState = TaskbarProgressBarState.Error;
+                    ProgressManager.progressFormState = TBPF.TBPF_ERROR;
                 } else if (value == PBST_PAUSED) {
-                    if (ProgressManager.progressFormState == TaskbarProgressBarState.Paused) {
+                    if (ProgressManager.progressFormState == TBPF.TBPF_PAUSED) {
                         return;
                     }
 
-                    ProgressManager.progressFormState = TaskbarProgressBarState.Paused;
+                    ProgressManager.progressFormState = TBPF.TBPF_PAUSED;
                 } else {
-                    if (ProgressManager.progressFormState == TaskbarProgressBarState.Normal) {
+                    if (ProgressManager.progressFormState == TBPF.TBPF_NORMAL) {
                         return;
                     }
 
                     // normal state does not take priority over indeterminate state
-                    if (ProgressManager.progressFormState == TaskbarProgressBarState.Indeterminate) {
+                    if (ProgressManager.progressFormState == TBPF.TBPF_INDETERMINATE) {
                         return;
                     }
 
-                    ProgressManager.progressFormState = TaskbarProgressBarState.Normal;
+                    ProgressManager.progressFormState = TBPF.TBPF_NORMAL;
                 }
 
                 if (ProgressForm == null) {
