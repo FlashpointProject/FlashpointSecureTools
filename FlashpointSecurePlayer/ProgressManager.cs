@@ -126,9 +126,8 @@ namespace FlashpointSecurePlayer {
         [ComImport, Guid("56FDF344-FD6D-11D0-958A-006097C9A090"), ClassInterface(ClassInterfaceType.None)]
         private class TaskbarList { }
 
-        private static readonly ITaskbarList3 taskbarList = (ITaskbarList3)new TaskbarList();
-        private static readonly bool taskbarListSupported = Environment.OSVersion.Version >= new Version(6, 1);
-        private static bool taskbarListInitialized = false;
+        private static ITaskbarList3 taskbarList = null;
+        private static readonly bool taskbarListVersion = Environment.OSVersion.Version >= new Version(6, 1);
 
         const int PROGRESS_FORM_VALUE_COMPLETE = 100;
 
@@ -447,12 +446,15 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                if (taskbarListSupported && !taskbarListInitialized) {
-                    try {
-                        taskbarList.HrInit();
-                        taskbarListInitialized = true;
-                    } catch (Exception ex) {
-                        LogExceptionToLauncher(ex);
+                if (taskbarList == null) {
+                    if (taskbarListVersion) {
+                        try {
+                            taskbarList = (ITaskbarList3)new TaskbarList();
+                            taskbarList.HrInit();
+                        } catch (Exception ex) {
+                            LogExceptionToLauncher(ex);
+                            taskbarList = null;
+                        }
                     }
                 }
 
@@ -495,7 +497,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                if (!taskbarListInitialized) {
+                if (taskbarList == null) {
                     return;
                 }
 
@@ -541,7 +543,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                if (!taskbarListInitialized) {
+                if (taskbarList == null) {
                     return;
                 }
 
@@ -611,7 +613,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                if (!taskbarListInitialized) {
+                if (taskbarList == null) {
                     return;
                 }
 
