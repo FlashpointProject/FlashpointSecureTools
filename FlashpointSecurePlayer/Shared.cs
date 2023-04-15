@@ -1933,7 +1933,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private static class PathNames {
+        public class PathNames {
             public class PathNamesShort {
                 private readonly Dictionary<string, string> pathNamesShort = new Dictionary<string, string>();
 
@@ -1976,8 +1976,8 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
-            public static PathNamesShort Short { get; } = new PathNamesShort();
-            public static PathNamesLong Long { get; } = new PathNamesLong();
+            public PathNamesShort Short { get; } = new PathNamesShort();
+            public PathNamesLong Long { get; } = new PathNamesLong();
         }
 
         private const string URI_SCHEME_HTTP = "http";
@@ -2797,7 +2797,7 @@ namespace FlashpointSecurePlayer {
             //return path.TrimEnd('\\');
         }
 
-        public static object LengthenValue(object value, string path) {
+        public static object LengthenValue(object value, string path, PathNames pathNames) {
             // since it's a value we'll just check it exists
             if (!(value is string valueString)) {
                 return value;
@@ -2815,8 +2815,14 @@ namespace FlashpointSecurePlayer {
                 return value;
             }
 
+            if (pathNames == null
+                || pathNames.Short == null
+                || pathNames.Long == null) {
+                pathNames = new PathNames();
+            }
+
             // get the short path
-            string shortPathName = PathNames.Short[path];
+            string shortPathName = pathNames.Short[path];
 
             if (String.IsNullOrEmpty(shortPathName)) {
                 return value;
@@ -2828,7 +2834,7 @@ namespace FlashpointSecurePlayer {
             }
 
             // get the long path
-            string longPathName = PathNames.Long[path];
+            string longPathName = pathNames.Long[path];
 
             if (String.IsNullOrEmpty(longPathName)) {
                 return value;
@@ -2839,7 +2845,7 @@ namespace FlashpointSecurePlayer {
 
         // find path in registry value
         // string must begin with path
-        public static object ReplaceStartupPathEnvironmentVariable(object lengthenedValue) {
+        public static object ReplaceStartupPathEnvironmentVariable(object lengthenedValue, PathNames pathNames) {
             // since it's a value we'll just check it exists
             if (!(lengthenedValue is string lengthenedValueString)) {
                 return lengthenedValue;
@@ -2852,8 +2858,13 @@ namespace FlashpointSecurePlayer {
             if (lengthenedValueString.Length > MAX_PATH + MAX_PATH + FP_STARTUP_PATH.Length) {
                 return lengthenedValue;
             }
-            
-            string longStartupPathName = PathNames.Long[Application.StartupPath];
+
+            if (pathNames == null
+                || pathNames.Long == null) {
+                pathNames = new PathNames();
+            }
+
+            string longStartupPathName = pathNames.Long[Application.StartupPath];
 
             if (String.IsNullOrEmpty(longStartupPathName)) {
                 return lengthenedValue;

@@ -56,9 +56,12 @@ namespace FlashpointSecurePlayer {
         private const int IMPORT_TIMEOUT = 60;
         private const string IMPORT_RESUME = "FLASHPOINTSECUREPLAYERREGISTRYSTATEIMPORTRESUME";
         private const string IMPORT_PAUSE = "FLASHPOINTSECUREPLAYERREGISTRYSTATEIMPORTPAUSE";
+
         private readonly object activationLock = new object();
         private readonly object deactivationLock = new object();
+
         private string fullPath = null;
+        private PathNames pathNames = null;
         private EventWaitHandle resumeEventWaitHandle = new ManualResetEvent(false);
         private Dictionary<ulong, SortedList<DateTime, RegistryStateElement>> modificationsQueue = null;
         private Dictionary<ulong, string> kcbModificationKeyNames = null;
@@ -770,6 +773,7 @@ namespace FlashpointSecurePlayer {
 
             try {
                 modificationsElement.RegistryStates.BinaryType = binaryType;
+                pathNames = new PathNames();
                 resumeEventWaitHandle.Reset();
                 modificationsQueue = new Dictionary<ulong, SortedList<DateTime, RegistryStateElement>>();
                 kcbModificationKeyNames = new Dictionary<ulong, string>();
@@ -824,9 +828,11 @@ namespace FlashpointSecurePlayer {
                 } catch {
                     kernelSession.Dispose();
                     kernelSession = null;
+                    pathNames = null;
                     ImportStarted = false;
                 }
             } catch {
+                pathNames = null;
                 ImportStarted = false;
             }
         }
@@ -878,6 +884,7 @@ namespace FlashpointSecurePlayer {
             } finally {
                 kernelSession.Dispose();
                 kernelSession = null;
+                pathNames = null;
                 ImportStarted = false;
             }
         }
@@ -1376,7 +1383,7 @@ namespace FlashpointSecurePlayer {
                 value = null;
 
                 try {
-                    value = ReplaceStartupPathEnvironmentVariable(LengthenValue(GetValueInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView), fullPath));
+                    value = ReplaceStartupPathEnvironmentVariable(LengthenValue(GetValueInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView), fullPath, pathNames), pathNames);
                 } catch (ArgumentException) {
                     // value doesn't exist
                     value = null;
@@ -1416,7 +1423,7 @@ namespace FlashpointSecurePlayer {
                 value = null;
 
                 try {
-                    value = ReplaceStartupPathEnvironmentVariable(LengthenValue(GetValueInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView), fullPath));
+                    value = ReplaceStartupPathEnvironmentVariable(LengthenValue(GetValueInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView), fullPath, pathNames), pathNames);
                 } catch {
                     // we have permission to access the key at this point so this must not be important
                 }
@@ -1591,7 +1598,7 @@ namespace FlashpointSecurePlayer {
 
                     // value
                     try {
-                        value = ReplaceStartupPathEnvironmentVariable(LengthenValue(GetValueInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView), fullPath));
+                        value = ReplaceStartupPathEnvironmentVariable(LengthenValue(GetValueInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView), fullPath, pathNames), pathNames);
                     } catch (ArgumentException) {
                         // value doesn't exist
                         value = null;
