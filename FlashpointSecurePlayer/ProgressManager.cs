@@ -473,12 +473,16 @@ namespace FlashpointSecurePlayer {
 
             set {
                 if (value != ProgressBarStyle.Marquee) {
+                    if (ProgressManager.progressFormState != TBPF.TBPF_INDETERMINATE) {
+                        return;
+                    }
+                    
                     ProgressFormValue = ProgressManager.value;
                     ProgressFormState = ProgressManager.state;
                     return;
                 }
 
-                // normal state does not take priority over indeterminate state
+                // only enter indeterminate state from normal/no progress states
                 if (ProgressManager.progressFormState != TBPF.TBPF_NORMAL
                     && ProgressManager.progressFormState != TBPF.TBPF_NOPROGRESS) {
                     return;
@@ -530,8 +534,9 @@ namespace FlashpointSecurePlayer {
 
                     ProgressManager.progressFormState = TBPF.TBPF_NOPROGRESS;
                 } else {
-                    // if we haven't completed, ignore the value in the indeterminate state
-                    if (ProgressManager.progressFormState == TBPF.TBPF_INDETERMINATE) {
+                    // if we haven't completed, ignore the value in the marquee style
+                    // (note: we don't check indeterminate state here, in case we are trying to leave that state)
+                    if (ProgressManager.style == ProgressBarStyle.Marquee) {
                         ProgressFormStyle = ProgressManager.style;
                         return;
                     }
@@ -551,7 +556,7 @@ namespace FlashpointSecurePlayer {
 
                 taskbarList.SetProgressValue(ProgressForm.Handle, ProgressManager.progressFormValue, PROGRESS_FORM_VALUE_COMPLETE);
 
-                // it is required to set the state to No Progress when completed
+                // it is required to enter no progress state when completed
                 if (completed) {
                     taskbarList.SetProgressState(ProgressForm.Handle, ProgressManager.progressFormState);
                     return;
@@ -591,12 +596,13 @@ namespace FlashpointSecurePlayer {
 
                     ProgressManager.progressFormState = TBPF.TBPF_PAUSED;
                 } else {
-                    if (ProgressManager.progressFormState == TBPF.TBPF_NORMAL) {
+                    // normal state does not take priority over marquee style
+                    // (note: we don't check indeterminate state here, in case we are trying to leave that state)
+                    if (ProgressManager.style == ProgressBarStyle.Marquee) {
                         return;
                     }
 
-                    // normal state does not take priority over indeterminate state
-                    if (ProgressManager.progressFormState == TBPF.TBPF_INDETERMINATE) {
+                    if (ProgressManager.progressFormState == TBPF.TBPF_NORMAL) {
                         return;
                     }
 
