@@ -2815,9 +2815,7 @@ namespace FlashpointSecurePlayer {
                 return value;
             }
 
-            if (pathNames == null
-                || pathNames.Short == null
-                || pathNames.Long == null) {
+            if (pathNames == null) {
                 pathNames = new PathNames();
             }
 
@@ -2859,8 +2857,7 @@ namespace FlashpointSecurePlayer {
                 return lengthenedValue;
             }
 
-            if (pathNames == null
-                || pathNames.Long == null) {
+            if (pathNames == null) {
                 pathNames = new PathNames();
             }
 
