@@ -467,15 +467,11 @@ namespace FlashpointSecurePlayer {
         private static ProgressBarStyle ProgressFormStyle {
             /*
             get {
-                return ProgressManager.progressFormState == TaskbarProgressBarState.Indeterminate ? ProgressBarStyle.Marquee : ProgressBarStyle.Blocks;
+                return ProgressManager.progressFormState == TBPF.TBPF_INDETERMINATE ? ProgressBarStyle.Marquee : ProgressBarStyle.Blocks;
             }
             */
 
             set {
-                if (ProgressManager.progressFormValue >= PROGRESS_FORM_VALUE_COMPLETE) {
-                    return;
-                }
-
                 if (value != ProgressBarStyle.Marquee) {
                     ProgressFormValue = ProgressManager.value;
                     ProgressFormState = ProgressManager.state;
@@ -483,11 +479,16 @@ namespace FlashpointSecurePlayer {
                 }
 
                 // normal state does not take priority over indeterminate state
-                if (ProgressManager.progressFormState != TBPF.TBPF_NORMAL) {
+                if (ProgressManager.progressFormState != TBPF.TBPF_NORMAL
+                    && ProgressManager.progressFormState != TBPF.TBPF_NOPROGRESS) {
                     return;
                 }
 
                 ProgressManager.progressFormState = TBPF.TBPF_INDETERMINATE;
+
+                if (ProgressManager.progressFormValue >= PROGRESS_FORM_VALUE_COMPLETE) {
+                    return;
+                }
 
                 if (ProgressForm == null) {
                     return;
@@ -531,6 +532,7 @@ namespace FlashpointSecurePlayer {
                 } else {
                     // if we haven't completed, ignore the value in the indeterminate state
                     if (ProgressManager.progressFormState == TBPF.TBPF_INDETERMINATE) {
+                        ProgressFormStyle = ProgressManager.style;
                         return;
                     }
                 }
@@ -576,10 +578,6 @@ namespace FlashpointSecurePlayer {
             */
 
             set {
-                if (ProgressManager.progressFormValue >= PROGRESS_FORM_VALUE_COMPLETE) {
-                    return;
-                }
-
                 if (value == PBST_ERROR) {
                     if (ProgressManager.progressFormState == TBPF.TBPF_ERROR) {
                         return;
@@ -603,6 +601,10 @@ namespace FlashpointSecurePlayer {
                     }
 
                     ProgressManager.progressFormState = TBPF.TBPF_NORMAL;
+                }
+                
+                if (ProgressManager.progressFormValue >= PROGRESS_FORM_VALUE_COMPLETE) {
+                    return;
                 }
 
                 if (ProgressForm == null) {
