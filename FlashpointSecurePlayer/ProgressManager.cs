@@ -51,11 +51,13 @@ namespace FlashpointSecurePlayer {
         private static readonly ITaskbarList3 taskbarList = (ITaskbarList3)new ITaskbarList();
         private static readonly bool taskbarListSupported = Environment.OSVersion.Version >= new Version(6, 1);
         private static bool taskbarListInitialized = false;
-        
-        const int VALUE_COMPLETE = 100;
+
+        const int PROGRESS_FORM_VALUE_COMPLETE = 100;
 
         private static ProgressBar progressBar = null;
         private static Form progressForm = null;
+        private static ulong progressFormValue = 0;
+        private static TaskbarProgressBarState progressFormState = TaskbarProgressBarState.Normal;
         private static ProgressBarStyle style = ProgressBarStyle.Marquee;
         private static int value = 0;
         private static IntPtr state = PBST_NORMAL;
@@ -218,7 +220,7 @@ namespace FlashpointSecurePlayer {
                 double reciprocal = 1;
                 double multiplier = 0;
 
-                for (int i = 0;i < goalsArray.Length;i++) {
+                for (int i = 0; i < goalsArray.Length; i++) {
                     for (int j = 0; j < i; j++) {
                         size = goalsArray[j].Size;
 
@@ -291,9 +293,67 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                Style = ProgressManager.style;
-                Value = ProgressManager.value;
-                State = ProgressManager.state;
+                ProgressBarStyle = ProgressManager.style;
+                ProgressBarValue = ProgressManager.value;
+                ProgressBarState = ProgressManager.state;
+            }
+        }
+
+        private static ProgressBarStyle ProgressBarStyle {
+            /*
+            get {
+                if (ProgressBar == null) {
+                    return ProgressManager.style;
+                }
+                return ProgressBar.Style;
+            }
+            */
+
+            set {
+                if (ProgressBar == null) {
+                    return;
+                }
+
+                ProgressBar.Style = value;
+            }
+        }
+
+        private static int ProgressBarValue {
+            /*
+            get {
+                if (ProgressBar == null) {
+                    return ProgressManager.value;
+                }
+                return ProgressBar.Value;
+            }
+            */
+
+            set {
+                if (ProgressBar == null) {
+                    return;
+                }
+
+                ProgressBar.Value = value;
+            }
+        }
+
+        private static IntPtr ProgressBarState {
+            /*
+            get {
+                return ProgressManager.state;
+            }
+            */
+
+            set {
+                if (ProgressBar == null) {
+                    return;
+                }
+
+                if (!ProgressBar.IsHandleCreated || ProgressBar.Handle == IntPtr.Zero) {
+                    return;
+                }
+
+                SendMessage(ProgressBar.Handle, PBM_SETSTATE, value, IntPtr.Zero);
             }
         }
 
@@ -313,12 +373,171 @@ namespace FlashpointSecurePlayer {
                     try {
                         taskbarList.HrInit();
                         taskbarListInitialized = true;
-                    } catch { }
+                    } catch (Exception ex) {
+                        LogExceptionToLauncher(ex);
+                    }
                 }
 
-                Style = ProgressManager.style;
-                Value = ProgressManager.value;
-                State = ProgressManager.state;
+                ProgressFormStyle = ProgressManager.style;
+                ProgressFormValue = ProgressManager.value;
+                ProgressFormState = ProgressManager.state;
+            }
+        }
+
+        private static ProgressBarStyle ProgressFormStyle {
+            /*
+            get {
+                return ProgressManager.progressFormState == TaskbarProgressBarState.Indeterminate ? ProgressBarStyle.Marquee : ProgressBarStyle.Blocks;
+            }
+            */
+
+            set {
+                if (ProgressManager.progressFormValue >= PROGRESS_FORM_VALUE_COMPLETE) {
+                    return;
+                }
+
+                if (value != ProgressBarStyle.Marquee) {
+                    ProgressFormValue = ProgressManager.value;
+                    ProgressFormState = ProgressManager.state;
+                    return;
+                }
+
+                // normal state does not take priority over indeterminate state
+                if (ProgressManager.progressFormState != TaskbarProgressBarState.Normal) {
+                    return;
+                }
+
+                ProgressManager.progressFormState = TaskbarProgressBarState.Indeterminate;
+
+                if (ProgressForm == null) {
+                    return;
+                }
+
+                if (!ProgressForm.IsHandleCreated || ProgressForm.Handle == IntPtr.Zero) {
+                    return;
+                }
+
+                if (!taskbarListInitialized) {
+                    return;
+                }
+
+                taskbarList.SetProgressState(ProgressForm.Handle, ProgressManager.progressFormState);
+            }
+        }
+
+        private static int ProgressFormValue {
+            /*
+            get {
+                return (int)ProgressManager.progressFormValue;
+            }
+            */
+
+            set {
+                ProgressManager.progressFormValue = (ulong)value;
+
+                bool completed = false;
+
+                if (ProgressManager.progressFormValue >= PROGRESS_FORM_VALUE_COMPLETE) {
+                    completed = true;
+                }
+
+                if (completed) {
+                    // if we have completed, ignore the value in the no progress state
+                    if (ProgressManager.progressFormState == TaskbarProgressBarState.NoProgress) {
+                        return;
+                    }
+
+                    ProgressManager.progressFormState = TaskbarProgressBarState.NoProgress;
+                } else {
+                    // if we haven't completed, ignore the value in the indeterminate state
+                    if (ProgressManager.progressFormState == TaskbarProgressBarState.Indeterminate) {
+                        return;
+                    }
+                }
+
+                if (ProgressForm == null) {
+                    return;
+                }
+
+                if (!ProgressForm.IsHandleCreated || ProgressForm.Handle == IntPtr.Zero) {
+                    return;
+                }
+
+                if (!taskbarListInitialized) {
+                    return;
+                }
+
+                taskbarList.SetProgressValue(ProgressForm.Handle, ProgressManager.progressFormValue, PROGRESS_FORM_VALUE_COMPLETE);
+
+                // it is required to set the state to No Progress when completed
+                if (completed) {
+                    taskbarList.SetProgressState(ProgressForm.Handle, ProgressManager.progressFormState);
+                    return;
+                }
+
+                // if we previously completed, update the state
+                if (ProgressManager.progressFormState == TaskbarProgressBarState.NoProgress) {
+                    ProgressFormState = ProgressManager.state;
+                }
+            }
+        }
+
+        private static IntPtr ProgressFormState {
+            /*
+            get {
+                if (ProgressManager.progressFormState == TaskbarProgressBarState.Error) {
+                    return PBST_ERROR;
+                } else if (ProgressManager.progressFormState == TaskbarProgressBarState.Paused) {
+                    return PBST_PAUSED;
+                } else {
+                    return PBST_NORMAL;
+                }
+            }
+            */
+
+            set {
+                if (ProgressManager.progressFormValue >= PROGRESS_FORM_VALUE_COMPLETE) {
+                    return;
+                }
+
+                if (value == PBST_ERROR) {
+                    if (ProgressManager.progressFormState == TaskbarProgressBarState.Error) {
+                        return;
+                    }
+
+                    ProgressManager.progressFormState = TaskbarProgressBarState.Error;
+                } else if (value == PBST_PAUSED) {
+                    if (ProgressManager.progressFormState == TaskbarProgressBarState.Paused) {
+                        return;
+                    }
+
+                    ProgressManager.progressFormState = TaskbarProgressBarState.Paused;
+                } else {
+                    if (ProgressManager.progressFormState == TaskbarProgressBarState.Normal) {
+                        return;
+                    }
+
+                    // normal state does not take priority over indeterminate state
+                    if (ProgressManager.progressFormState == TaskbarProgressBarState.Indeterminate) {
+                        return;
+                    }
+
+                    ProgressManager.progressFormState = TaskbarProgressBarState.Normal;
+                }
+
+                if (ProgressForm == null) {
+                    return;
+                }
+
+                if (!ProgressForm.IsHandleCreated || ProgressForm.Handle == IntPtr.Zero) {
+                    return;
+                }
+
+                if (!taskbarListInitialized) {
+                    return;
+                }
+
+                taskbarList.SetProgressState(ProgressForm.Handle, ProgressManager.progressFormState);
             }
         }
 
@@ -330,25 +549,8 @@ namespace FlashpointSecurePlayer {
             set {
                 ProgressManager.style = value;
 
-                if (ProgressBar != null) {
-                    ProgressBar.Style = ProgressManager.style;
-                }
-
-                if (ProgressForm != null) {
-                    if (ProgressForm.IsHandleCreated && ProgressForm.Handle != IntPtr.Zero) {
-                        if (taskbarListInitialized) {
-                            if (ProgressManager.style == ProgressBarStyle.Marquee) {
-                                // error/paused states take priority over marquee style
-                                if (ProgressManager.value < VALUE_COMPLETE && ProgressManager.state == PBST_NORMAL) {
-                                    taskbarList.SetProgressState(ProgressForm.Handle, TaskbarProgressBarState.Indeterminate);
-                                }
-                            } else {
-                                Value = ProgressManager.value;
-                                State = ProgressManager.state;
-                            }
-                        }
-                    }
-                }
+                ProgressBarStyle = ProgressManager.style;
+                ProgressFormStyle = ProgressManager.style;
             }
         }
 
@@ -360,30 +562,8 @@ namespace FlashpointSecurePlayer {
             set {
                 ProgressManager.value = Math.Min(100, Math.Max(0, value));
 
-                if (ProgressBar != null) {
-                    ProgressBar.Value = ProgressManager.value;
-                }
-
-                if (ProgressForm != null) {
-                    if (ProgressForm.IsHandleCreated && ProgressForm.Handle != IntPtr.Zero) {
-                        if (taskbarListInitialized) {
-                            // marquee style takes priority over value (setting the value disables marquee style)
-                            if (ProgressManager.style != ProgressBarStyle.Marquee || ProgressManager.state != PBST_NORMAL) {
-                                // when reset to zero, update the state so the value can be set
-                                if (ProgressManager.value == 0) {
-                                    State = ProgressManager.state;
-                                }
-
-                                taskbarList.SetProgressValue(ProgressForm.Handle, (ulong)ProgressManager.value, VALUE_COMPLETE);
-                            }
-
-                            // it is required to set the state to No Progress when completed
-                            if (ProgressManager.value >= VALUE_COMPLETE) {
-                                taskbarList.SetProgressState(ProgressForm.Handle, TaskbarProgressBarState.NoProgress);
-                            }
-                        }
-                    }
-                }
+                ProgressBarValue = ProgressManager.value;
+                ProgressFormValue = ProgressManager.value;
             }
         }
 
@@ -395,30 +575,8 @@ namespace FlashpointSecurePlayer {
             set {
                 ProgressManager.state = value;
 
-                if (ProgressBar != null) {
-                    if (ProgressBar.IsHandleCreated && ProgressBar.Handle != IntPtr.Zero) {
-                        SendMessage(ProgressBar.Handle, PBM_SETSTATE, ProgressManager.state, IntPtr.Zero);
-                    }
-                }
-
-                if (ProgressForm != null) {
-                    if (ProgressForm.IsHandleCreated && ProgressForm.Handle != IntPtr.Zero) {
-                        if (taskbarListInitialized) {
-                            if (ProgressManager.value < VALUE_COMPLETE) {
-                                if (ProgressManager.state == PBST_NORMAL) {
-                                    // normal state does not take priority over marquee style
-                                    if (ProgressManager.style != ProgressBarStyle.Marquee) {
-                                        taskbarList.SetProgressState(ProgressForm.Handle, TaskbarProgressBarState.Normal);
-                                    }
-                                } else if (ProgressManager.state == PBST_ERROR) {
-                                    taskbarList.SetProgressState(ProgressForm.Handle, TaskbarProgressBarState.Error);
-                                } else if (ProgressManager.state == PBST_PAUSED) {
-                                    taskbarList.SetProgressState(ProgressForm.Handle, TaskbarProgressBarState.Paused);
-                                }
-                            }
-                        }
-                    }
-                }
+                ProgressBarState = ProgressManager.state;
+                ProgressFormState = ProgressManager.state;
             }
         }
 
