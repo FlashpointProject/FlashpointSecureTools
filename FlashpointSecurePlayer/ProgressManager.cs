@@ -531,7 +531,11 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                taskbarList.SetProgressState(ProgressForm.Handle, ProgressManager.progressFormState);
+                try {
+                    taskbarList.SetProgressState(ProgressForm.Handle, ProgressManager.progressFormState);
+                } catch (Exception ex) {
+                    LogExceptionToLauncher(ex);
+                }
             }
         }
 
@@ -583,11 +587,19 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                taskbarList.SetProgressValue(ProgressForm.Handle, ProgressManager.progressFormValue, PROGRESS_FORM_VALUE_COMPLETE);
+                try {
+                    taskbarList.SetProgressValue(ProgressForm.Handle, ProgressManager.progressFormValue, PROGRESS_FORM_VALUE_COMPLETE);
+                } catch (Exception ex) {
+                    LogExceptionToLauncher(ex);
+                }
 
                 // it is required to enter no progress state when completed
                 if (completed) {
-                    taskbarList.SetProgressState(ProgressForm.Handle, ProgressManager.progressFormState);
+                    try {
+                        taskbarList.SetProgressState(ProgressForm.Handle, ProgressManager.progressFormState);
+                    } catch (Exception ex) {
+                        LogExceptionToLauncher(ex);
+                    }
                     return;
                 }
 
@@ -660,7 +672,11 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                taskbarList.SetProgressState(ProgressForm.Handle, ProgressManager.progressFormState);
+                try {
+                    taskbarList.SetProgressState(ProgressForm.Handle, ProgressManager.progressFormState);
+                } catch (Exception ex) {
+                    LogExceptionToLauncher(ex);
+                }
             }
         }
 
