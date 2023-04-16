@@ -487,6 +487,15 @@ namespace FlashpointSecurePlayer {
             */
 
             set {
+                // this happens first so we don't enter indeterminate state
+                // if we're completed
+                // otherwise when the value is reset and updates the style
+                // it'll be ignored because we aren't in normal/no progress states
+                // if we're in indeterminate state, it must be shown
+                if (ProgressManager.progressFormValue >= PROGRESS_FORM_VALUE_COMPLETE) {
+                    return;
+                }
+
                 // if the style is not marquee
                 if (value != ProgressBarStyle.Marquee) {
                     // do nothing if we have already left indeterminate state
@@ -496,15 +505,6 @@ namespace FlashpointSecurePlayer {
 
                     // leave indeterminate state
                     ProgressFormValue = ProgressManager.value;
-                    return;
-                }
-
-                // this happens here so we don't enter indeterminate state
-                // if we're completed
-                // otherwise when the value is reset and updates the style
-                // it'll be ignored because we aren't in normal/no progress states
-                // if we're in indeterminate state, it must be shown
-                if (ProgressManager.progressFormValue >= PROGRESS_FORM_VALUE_COMPLETE) {
                     return;
                 }
 
@@ -611,7 +611,7 @@ namespace FlashpointSecurePlayer {
             */
 
             set {
-                // this happens here so we don't enter error/paused state
+                // this happens first so we don't enter error/paused state
                 // if we're completed
                 // otherwise when the value is reset and updates the state
                 // it'll be ignored because we are in error/paused state
