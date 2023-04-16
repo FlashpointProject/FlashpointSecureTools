@@ -129,7 +129,7 @@ namespace FlashpointSecurePlayer {
         private static ITaskbarList3 taskbarList = null;
         private static readonly bool taskbarListVersion = Environment.OSVersion.Version >= new Version(6, 1);
 
-        private const int PROGRESS_FORM_VALUE_COMPLETE = 100;
+        private const ulong PROGRESS_FORM_VALUE_COMPLETE = 100;
 
         private static ProgressBar progressBar = null;
         private static Form progressForm = null;
