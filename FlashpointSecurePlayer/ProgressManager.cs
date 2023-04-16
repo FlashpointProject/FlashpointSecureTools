@@ -464,6 +464,21 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        // with form progress, style and state are both stored in one field
+        // setting marquee style enters indeterminate state
+        // you can't display marquee style and normal/error/paused state at the same time
+        // so error/paused states take priority over the marquee style
+        // and marquee style takes priority over normal state
+        // furthermore, when the value is completed we enter the no progress state, which
+        // takes priority over all other states
+        // when the value is completed, setting the state to error/paused should do nothing
+        // until the value is reset, in which case it should show the error/paused state
+        // when the value is completed, setting the style to marquee should do nothing
+        // until the value is reset, in which case it should show marquee style
+        // (but only if not in the error/paused states)
+        // when the value is completed, setting the state to normal should do nothing
+        // until the value is reset, in which case it should show normal state
+        // (but only if not in the error/paused states or marquee style)
         private static ProgressBarStyle ProgressFormStyle {
             /*
             get {
@@ -472,27 +487,36 @@ namespace FlashpointSecurePlayer {
             */
 
             set {
+                // if the style is not marquee
                 if (value != ProgressBarStyle.Marquee) {
+                    // do nothing if we have already left indeterminate state
                     if (ProgressManager.progressFormState != TBPF.TBPF_INDETERMINATE) {
                         return;
                     }
-                    
+
+                    // leave indeterminate state
                     ProgressFormValue = ProgressManager.value;
-                    ProgressFormState = ProgressManager.state;
+                    return;
+                }
+
+                // this happens here so we don't enter indeterminate state
+                // if we're completed
+                // otherwise when the value is reset and updates the style
+                // it'll be ignored because we aren't in normal/no progress states
+                // if we're in indeterminate state, it must be shown
+                if (ProgressManager.progressFormValue >= PROGRESS_FORM_VALUE_COMPLETE) {
                     return;
                 }
 
                 // only enter indeterminate state from normal/no progress states
+                // we enter from no progress in case the value was reset
+                // error/paused states take priority over indeterminate state
                 if (ProgressManager.progressFormState != TBPF.TBPF_NORMAL
                     && ProgressManager.progressFormState != TBPF.TBPF_NOPROGRESS) {
                     return;
                 }
 
                 ProgressManager.progressFormState = TBPF.TBPF_INDETERMINATE;
-
-                if (ProgressManager.progressFormValue >= PROGRESS_FORM_VALUE_COMPLETE) {
-                    return;
-                }
 
                 if (ProgressForm == null) {
                     return;
@@ -564,8 +588,10 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                // if we previously completed, update the state
-                if (ProgressManager.progressFormState == TBPF.TBPF_NOPROGRESS) {
+                // if we are here, we are not completed, and, we are not marquee style
+                // so if we were previously no progress or indeterminate state, update the state
+                if (ProgressManager.progressFormState == TBPF.TBPF_NOPROGRESS
+                    || ProgressManager.progressFormState == TBPF.TBPF_INDETERMINATE) {
                     ProgressFormState = ProgressManager.state;
                 }
             }
@@ -585,6 +611,15 @@ namespace FlashpointSecurePlayer {
             */
 
             set {
+                // this happens here so we don't enter error/paused state
+                // if we're completed
+                // otherwise when the value is reset and updates the state
+                // it'll be ignored because we are in error/paused state
+                // if we're in error/paused state, it must be shown
+                if (ProgressManager.progressFormValue >= PROGRESS_FORM_VALUE_COMPLETE) {
+                    return;
+                }
+
                 if (value == PBST_ERROR) {
                     if (ProgressManager.progressFormState == TBPF.TBPF_ERROR) {
                         return;
@@ -609,10 +644,6 @@ namespace FlashpointSecurePlayer {
                     }
 
                     ProgressManager.progressFormState = TBPF.TBPF_NORMAL;
-                }
-                
-                if (ProgressManager.progressFormValue >= PROGRESS_FORM_VALUE_COMPLETE) {
-                    return;
                 }
 
                 if (ProgressForm == null) {
