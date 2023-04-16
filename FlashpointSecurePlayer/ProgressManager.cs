@@ -507,12 +507,13 @@ namespace FlashpointSecurePlayer {
                     ProgressFormValue = ProgressManager.value;
                     return;
                 }
+                
+                // error/paused states take priority over marquee style
+                if (ProgressManager.state != PBST_NORMAL) {
+                    return;
+                }
 
-                // only enter indeterminate state from normal/no progress states
-                // we enter from no progress in case the value was reset
-                // error/paused states take priority over indeterminate state
-                if (ProgressManager.progressFormState != TBPF.TBPF_NORMAL
-                    && ProgressManager.progressFormState != TBPF.TBPF_NOPROGRESS) {
+                if (ProgressManager.progressFormState == TBPF.TBPF_INDETERMINATE) {
                     return;
                 }
 
@@ -559,7 +560,6 @@ namespace FlashpointSecurePlayer {
                     ProgressManager.progressFormState = TBPF.TBPF_NOPROGRESS;
                 } else {
                     // if we haven't completed, ignore the value in the marquee style
-                    // (note: we don't check indeterminate state here, in case we are trying to leave that state)
                     if (ProgressManager.style == ProgressBarStyle.Marquee
                         && ProgressManager.state == PBST_NORMAL) {
                         // it's really important that there's no race condition here, so
