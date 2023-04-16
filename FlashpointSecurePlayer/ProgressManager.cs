@@ -560,7 +560,8 @@ namespace FlashpointSecurePlayer {
                 } else {
                     // if we haven't completed, ignore the value in the marquee style
                     // (note: we don't check indeterminate state here, in case we are trying to leave that state)
-                    if (ProgressManager.style == ProgressBarStyle.Marquee) {
+                    if (ProgressManager.style == ProgressBarStyle.Marquee
+                        && ProgressManager.state == PBST_NORMAL) {
                         // it's really important that there's no race condition here, so
                         // we set ProgressFormStyle to Marquee specifically, not the style field
                         ProgressFormStyle = ProgressBarStyle.Marquee;
