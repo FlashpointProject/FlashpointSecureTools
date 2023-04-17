@@ -615,9 +615,9 @@ namespace FlashpointSecurePlayer {
         private static IntPtr ProgressFormState {
             /*
             get {
-                if (ProgressManager.progressFormState == TaskbarProgressBarState.Error) {
+                if (ProgressManager.progressFormState == TBPF.TBPF_ERROR) {
                     return PBST_ERROR;
-                } else if (ProgressManager.progressFormState == TaskbarProgressBarState.Paused) {
+                } else if (ProgressManager.progressFormState == TBPF.TBPF_PAUSED) {
                     return PBST_PAUSED;
                 } else {
                     return PBST_NORMAL;
