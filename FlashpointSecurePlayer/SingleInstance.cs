@@ -16,7 +16,7 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Templat
 using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement.SingleInstanceElement;
 
 namespace FlashpointSecurePlayer {
-    class SingleInstance : Modifications {
+    public class SingleInstance : Modifications {
         public SingleInstance(EventHandler importStart, EventHandler importStop) : base(importStart, importStop) { }
 
         // function to create a real MessageBox which

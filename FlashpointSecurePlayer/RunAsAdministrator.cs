@@ -9,7 +9,7 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection;
 
 namespace FlashpointSecurePlayer {
-    class RunAsAdministrator : Modifications {
+    public class RunAsAdministrator : Modifications {
         public RunAsAdministrator(EventHandler importStart, EventHandler importStop) : base(importStart, importStop) { }
 
         public void Activate(string templateName, bool runAsAdministrator) {

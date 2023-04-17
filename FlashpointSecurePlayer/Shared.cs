@@ -2797,6 +2797,11 @@ namespace FlashpointSecurePlayer {
             //return path.TrimEnd('\\');
         }
 
+        // pathNames is intentionally not ref
+        // it's a class, so it's already a reference type
+        // it can be null, which is supported,
+        // but it is intentionally not an optional argument, because
+        // you should pass it in if you have one
         public static object LengthenValue(object value, string path, PathNames pathNames) {
             // since it's a value we'll just check it exists
             if (!(value is string valueString)) {

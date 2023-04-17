@@ -15,7 +15,7 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Templat
 using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement.EnvironmentVariablesElementCollection;
 
 namespace FlashpointSecurePlayer {
-    class EnvironmentVariables : Modifications {
+    public class EnvironmentVariables : Modifications {
         private const string __COMPAT_LAYER = nameof(__COMPAT_LAYER);
         private IList<string> UnmodifiableComparableNames { get; } = new List<string> { FP_STARTUP_PATH, FP_HTDOCS_FILE }.AsReadOnly();
         private readonly object activationLock = new object();

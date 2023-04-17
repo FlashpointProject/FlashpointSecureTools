@@ -9,8 +9,6 @@ Flashpoint Secure Player requires a Template and a URL. The Template determines 
 
 `FlashpointSecurePlayer TemplateName URL`
 
-This player has bugs. Help me find them! If you've found a bug, report anything unusual as an issue.
-
 # Templates
 Templates determine what to do with a URL. Every Template has its own configuration file. The configuration files may be hosted on the Flashpoint Server, making it easy to integrate into the existing Flashpoint curation flow. A number of sample configuration files are included alongside the player in the FlashpointSecurePlayerConfigs folder.
 

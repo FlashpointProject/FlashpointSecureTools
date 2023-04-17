@@ -14,7 +14,7 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Templat
 using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement.OldCPUSimulatorElement;
 
 namespace FlashpointSecurePlayer {
-    class OldCPUSimulator : Modifications {
+    public class OldCPUSimulator : Modifications {
         public OldCPUSimulator(EventHandler importStart, EventHandler importStop) : base(importStart, importStop) { }
 
         public bool TestRunningWithOldCPUSimulator() {

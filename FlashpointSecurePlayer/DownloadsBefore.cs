@@ -13,7 +13,7 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Templat
 using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement.DownloadBeforeElementCollection;
 
 namespace FlashpointSecurePlayer {
-    class DownloadsBefore : Modifications {
+    public class DownloadsBefore : Modifications {
         public DownloadsBefore(EventHandler importStart, EventHandler importStop) : base(importStart, importStop) { }
 
         private void Activate() { }
