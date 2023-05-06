@@ -2215,8 +2215,8 @@ namespace FlashpointSecurePlayer {
                     }
                     return httpResponseMessage.RequestMessage.RequestUri;
                 }
-            } catch (Exceptions.DownloadFailedException ex) {
-                throw ex;
+            } catch (Exceptions.DownloadFailedException) {
+                throw;
             } catch (ArgumentException) {
                 throw new Exceptions.DownloadFailedException("The download failed because the download name (" + name + ") is invalid.");
             } catch (HttpRequestException) {

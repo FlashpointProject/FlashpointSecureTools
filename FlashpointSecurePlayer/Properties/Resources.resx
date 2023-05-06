@@ -207,6 +207,9 @@ If you choose No, the application will exit.</value>
   <data name="OCS_OldCPUNotSimulated" xml:space="preserve">
     <value>The old CPU could not be simulated.</value>
   </data>
+  <data name="OldCPUSimulator" xml:space="preserve">
+    <value>Old CPU Simulator</value>
+  </data>
   <data name="OldCPUSimulatorFailed" xml:space="preserve">
     <value>The Old CPU Simulator failed. The Target Rate may be invalid.</value>
   </data>

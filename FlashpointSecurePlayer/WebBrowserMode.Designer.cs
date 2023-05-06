@@ -29,12 +29,11 @@
             this.forwardButton = new System.Windows.Forms.ToolStripButton();
             this.stopButton = new System.Windows.Forms.ToolStripButton();
             this.refreshButton = new System.Windows.Forms.ToolStripButton();
-            this.toolBarToolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.saveAsWebpageButton = new System.Windows.Forms.ToolStripButton();
-            this.printButton = new System.Windows.Forms.ToolStripButton();
-            this.toolBarToolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.addressToolStripSpringTextBox = new FlashpointSecurePlayer.ToolStripSpringTextBox();
             this.goButton = new System.Windows.Forms.ToolStripButton();
+            this.toolBarToolStripSeparator = new System.Windows.Forms.ToolStripSeparator();
+            this.saveAsWebpageButton = new System.Windows.Forms.ToolStripButton();
+            this.printButton = new System.Windows.Forms.ToolStripButton();
             this.newWindowButton = new System.Windows.Forms.ToolStripButton();
             this.fullscreenButton = new System.Windows.Forms.ToolStripButton();
             this.statusBarStatusStrip = new System.Windows.Forms.StatusStrip();
@@ -53,10 +52,9 @@
             this.forwardButton,
             this.stopButton,
             this.refreshButton,
-            this.toolBarToolStripSeparator1,
             this.addressToolStripSpringTextBox,
             this.goButton,
-            this.toolBarToolStripSeparator2,
+            this.toolBarToolStripSeparator,
             this.saveAsWebpageButton,
             this.printButton,
             this.newWindowButton,
@@ -115,10 +113,32 @@
             this.refreshButton.ToolTipText = "Refresh";
             this.refreshButton.Click += new System.EventHandler(this.refreshButton_Click);
             // 
-            // toolBarToolStripSeparator1
+            // addressToolStripSpringTextBox
             // 
-            this.toolBarToolStripSeparator1.Name = "toolBarToolStripSeparator1";
-            this.toolBarToolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            this.addressToolStripSpringTextBox.AutoToolTip = true;
+            this.addressToolStripSpringTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.addressToolStripSpringTextBox.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.addressToolStripSpringTextBox.Name = "addressToolStripSpringTextBox";
+            this.addressToolStripSpringTextBox.Padding = new System.Windows.Forms.Padding(3, 0, 3, 0);
+            this.addressToolStripSpringTextBox.Size = new System.Drawing.Size(336, 25);
+            this.addressToolStripSpringTextBox.Enter += new System.EventHandler(this.addressToolStripSpringTextBox_Enter);
+            this.addressToolStripSpringTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.addressToolStripTextBox_KeyDown);
+            this.addressToolStripSpringTextBox.Click += new System.EventHandler(this.addressToolStripSpringTextBox_Click);
+            this.addressToolStripSpringTextBox.Paint += new System.Windows.Forms.PaintEventHandler(this.addressToolStripTextBox_Paint);
+            // 
+            // goButton
+            // 
+            this.goButton.Image = ((System.Drawing.Image)(resources.GetObject("goButton.Image")));
+            this.goButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.goButton.Name = "goButton";
+            this.goButton.Size = new System.Drawing.Size(42, 22);
+            this.goButton.Text = "Go";
+            this.goButton.Click += new System.EventHandler(this.goButton_Click);
+            // 
+            // toolBarToolStripSeparator
+            // 
+            this.toolBarToolStripSeparator.Name = "toolBarToolStripSeparator";
+            this.toolBarToolStripSeparator.Size = new System.Drawing.Size(6, 25);
             // 
             // saveAsWebpageButton
             // 
@@ -142,33 +162,6 @@
             this.printButton.Text = "toolStripButton6";
             this.printButton.ToolTipText = "Print...";
             this.printButton.Click += new System.EventHandler(this.printButton_Click);
-            // 
-            // toolBarToolStripSeparator2
-            // 
-            this.toolBarToolStripSeparator2.Name = "toolBarToolStripSeparator2";
-            this.toolBarToolStripSeparator2.Size = new System.Drawing.Size(6, 25);
-            // 
-            // addressToolStripSpringTextBox
-            // 
-            this.addressToolStripSpringTextBox.AutoToolTip = true;
-            this.addressToolStripSpringTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.addressToolStripSpringTextBox.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.addressToolStripSpringTextBox.Name = "addressToolStripSpringTextBox";
-            this.addressToolStripSpringTextBox.Padding = new System.Windows.Forms.Padding(3, 0, 3, 0);
-            this.addressToolStripSpringTextBox.Size = new System.Drawing.Size(324, 25);
-            this.addressToolStripSpringTextBox.Enter += new System.EventHandler(this.addressToolStripSpringTextBox_Enter);
-            this.addressToolStripSpringTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.addressToolStripTextBox_KeyDown);
-            this.addressToolStripSpringTextBox.Click += new System.EventHandler(this.addressToolStripSpringTextBox_Click);
-            this.addressToolStripSpringTextBox.Paint += new System.Windows.Forms.PaintEventHandler(this.addressToolStripTextBox_Paint);
-            // 
-            // goButton
-            // 
-            this.goButton.Image = ((System.Drawing.Image)(resources.GetObject("goButton.Image")));
-            this.goButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.goButton.Name = "goButton";
-            this.goButton.Size = new System.Drawing.Size(42, 22);
-            this.goButton.Text = "Go";
-            this.goButton.Click += new System.EventHandler(this.goButton_Click);
             // 
             // newWindowButton
             // 
@@ -291,10 +284,9 @@
         private System.Windows.Forms.ToolStripButton forwardButton;
         private System.Windows.Forms.ToolStripButton stopButton;
         private System.Windows.Forms.ToolStripButton refreshButton;
-        private System.Windows.Forms.ToolStripSeparator toolBarToolStripSeparator1;
         private System.Windows.Forms.ToolStripButton saveAsWebpageButton;
         private System.Windows.Forms.ToolStripButton printButton;
-        private System.Windows.Forms.ToolStripSeparator toolBarToolStripSeparator2;
+        private System.Windows.Forms.ToolStripSeparator toolBarToolStripSeparator;
         private ToolStripSpringTextBox addressToolStripSpringTextBox;
         private System.Windows.Forms.ToolStripButton goButton;
         private System.Windows.Forms.ToolStripButton newWindowButton;

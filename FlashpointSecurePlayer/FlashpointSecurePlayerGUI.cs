@@ -630,19 +630,19 @@ namespace FlashpointSecurePlayer {
                                         }
 
                                         if (!String.IsNullOrEmpty(lastSoftwareProcessStandardError)) {
-                                            MessageBox.Show(lastSoftwareProcessStandardError);
+                                            MessageBox.Show(lastSoftwareProcessStandardError, Properties.Resources.OldCPUSimulator, MessageBoxButtons.OK, MessageBoxIcon.Error);
                                         }
                                     }
                                     break;
                                     */
                                     case -2:
-                                    MessageBox.Show(Properties.Resources.OCS_NoMultipleInstances);
+                                    MessageBox.Show(Properties.Resources.OCS_NoMultipleInstances, Properties.Resources.OldCPUSimulator, MessageBoxButtons.OK, MessageBoxIcon.Error);
                                     break;
                                     case -3:
-                                    MessageBox.Show(Properties.Resources.OCS_CPUSpeedNotDetermined);
+                                    MessageBox.Show(Properties.Resources.OCS_CPUSpeedNotDetermined, Properties.Resources.OldCPUSimulator, MessageBoxButtons.OK, MessageBoxIcon.Error);
                                     break;
                                     default:
-                                    MessageBox.Show(Properties.Resources.OCS_OldCPUNotSimulated);
+                                    MessageBox.Show(Properties.Resources.OCS_OldCPUNotSimulated, Properties.Resources.OldCPUSimulator, MessageBoxButtons.OK, MessageBoxIcon.Error);
                                     break;
                                 }
                             }
@@ -895,7 +895,7 @@ namespace FlashpointSecurePlayer {
                                     singleInstance.Activate(TemplateName);
                                 } catch (InvalidModificationException ex) {
                                     LogExceptionToLauncher(ex);
-                                    throw ex;
+                                    throw;
                                 } catch (TaskRequiresElevationException ex) {
                                     LogExceptionToLauncher(ex);
                                     AskLaunchAsAdministratorUser();

@@ -127,9 +127,9 @@ namespace FlashpointSecurePlayer {
                 if (!result) {
                     throw new FlashpointProxyException("Could not query the Internet Options.");
                 }
-            } catch (Exception ex) {
+            } catch {
                 Marshal.FreeCoTaskMem(internetPerConnOptionList.pOptions);
-                throw ex;
+                throw;
             }
         }
         
