@@ -360,7 +360,7 @@ namespace FlashpointSecurePlayer {
                             fullPath = Path.GetFullPath(TemplateName);
                         } catch (Exception ex) {
                             LogExceptionToLauncher(ex);
-                            errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, TemplateName));
+                            errorDelegate(String.Format(Properties.Resources.GameIsMissingFile, TemplateName));
                             throw new ActiveXImportFailedException("The ActiveX Import failed because getting the Full Path failed.");
                         }
 
@@ -382,7 +382,7 @@ namespace FlashpointSecurePlayer {
                             throw new ActiveXImportFailedException("The ActiveX Import failed because the DLL is not an ActiveX Control.");
                         } catch (Exception ex) {
                             LogExceptionToLauncher(ex);
-                            errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, fullPath));
+                            errorDelegate(String.Format(Properties.Resources.GameIsMissingFile, fullPath));
                             throw new ActiveXImportFailedException("The ActiveX Import failed because the DLL was not found.");
                         }
 
@@ -894,7 +894,7 @@ namespace FlashpointSecurePlayer {
                                 await downloadsBefore.ActivateAsync(TemplateName, DownloadsBeforeModificationNames).ConfigureAwait(true);
                             } catch (DownloadFailedException ex) {
                                 LogExceptionToLauncher(ex);
-                                errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, String.Join(", ", DownloadsBeforeModificationNames)));
+                                errorDelegate(String.Format(Properties.Resources.GameIsMissingFile, String.Join(", ", DownloadsBeforeModificationNames)));
                             } catch (ConfigurationErrorsException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.ConfigurationUnableToLoad);
@@ -918,7 +918,7 @@ namespace FlashpointSecurePlayer {
                                     AskLaunchAsAdministratorUser();
                                 } catch (ArgumentException ex) {
                                     LogExceptionToLauncher(ex);
-                                    errorDelegate(Properties.Resources.GameIsMissingFiles);
+                                    errorDelegate(Properties.Resources.GameIsMissingFile);
                                 } catch (InvalidOperationException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.ModificationsUnableToLoadImport);
@@ -1028,7 +1028,7 @@ namespace FlashpointSecurePlayer {
                             AskLaunchAsAdministratorUser();
                         } catch (ArgumentException ex) {
                             LogExceptionToLauncher(ex);
-                            errorDelegate(Properties.Resources.GameIsMissingFiles);
+                            errorDelegate(Properties.Resources.GameIsMissingFile);
                         } catch (InvalidOperationException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.ModificationsUnableToLoadImport);

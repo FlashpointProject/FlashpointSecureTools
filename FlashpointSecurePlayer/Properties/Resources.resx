@@ -124,7 +124,7 @@
     <value>The ActiveX Control is unable to be uninstalled.</value>
   </data>
   <data name="AddressNotUnderstood" xml:space="preserve">
-    <value>The address ({0}) wasn't understood. Please report this bug.</value>
+    <value>The address "{0}" wasn't understood. Please report this bug.</value>
   </data>
   <data name="AnotherInstancePreventingTemplate" xml:space="preserve">
     <value>The Template could not be activated.
@@ -158,8 +158,8 @@ Please ensure Flashpoint is not corrupted, was extracted correctly, and is not r
   <data name="GameDownloading" xml:space="preserve">
     <value>The game is downloading.</value>
   </data>
-  <data name="GameIsMissingFiles" xml:space="preserve">
-    <value>The game files ({0}) are missing.
+  <data name="GameIsMissingFile" xml:space="preserve">
+    <value>The game file "{0}" is missing.
 Please ensure Flashpoint is not corrupted, was extracted correctly, and is not running from OneDrive or a network drive.</value>
   </data>
   <data name="GameNotActiveXControl" xml:space="preserve">
@@ -212,7 +212,7 @@ If you choose No, the application will exit.</value>
     <value>Open the Flashpoint Launcher by opening the Start Flashpoint shortcut in the Flashpoint folder.</value>
   </data>
   <data name="ProcessCompatibilityConflict" xml:space="preserve">
-    <value>The process {0} causes a compatibility conflict with this game. Please close it to continue.</value>
+    <value>The process "{0}" causes a compatibility conflict with this game. Please close it to continue.</value>
   </data>
   <data name="ProcessUnableToStart" xml:space="preserve">
     <value>The process is unable to start.</value>
@@ -244,8 +244,8 @@ If you choose No, the application will exit.</value>
   <data name="UnableToCreateCustomSecurityManager" xml:space="preserve">
     <value>Unable to create a Custom Security Manager.</value>
   </data>
-  <data name="UnableToGetParentProcessEXEFileName" xml:space="preserve">
-    <value>Unable to get the Parent Process EXE File Name.</value>
+  <data name="UnableToGetParentProcessExecutableFileName" xml:space="preserve">
+    <value>Unable to get the Parent Process Executable File Name.</value>
   </data>
   <data name="UnableToSetWorkingDirectory" xml:space="preserve">
     <value>Unable to set the Working Directory.</value>

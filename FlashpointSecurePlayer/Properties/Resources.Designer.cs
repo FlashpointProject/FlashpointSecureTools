@@ -79,7 +79,7 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The address ({0}) wasn&apos;t understood. Please report this bug..
+        ///   Looks up a localized string similar to The address &quot;{0}&quot; wasn&apos;t understood. Please report this bug..
         /// </summary>
         internal static string AddressNotUnderstood {
             get {
@@ -180,12 +180,12 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The game files ({0}) are missing.
+        ///   Looks up a localized string similar to The game file &quot;{0}&quot; is missing.
         ///Please ensure Flashpoint is not corrupted, was extracted correctly, and is not running from OneDrive or a network drive..
         /// </summary>
-        internal static string GameIsMissingFiles {
+        internal static string GameIsMissingFile {
             get {
-                return ResourceManager.GetString("GameIsMissingFiles", resourceCulture);
+                return ResourceManager.GetString("GameIsMissingFile", resourceCulture);
             }
         }
         
@@ -335,7 +335,7 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The process {0} causes a compatibility conflict with this game. Please close it to continue..
+        ///   Looks up a localized string similar to The process &quot;{0}&quot; causes a compatibility conflict with this game. Please close it to continue..
         /// </summary>
         internal static string ProcessCompatibilityConflict {
             get {
@@ -434,11 +434,11 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to get the Parent Process EXE File Name..
+        ///   Looks up a localized string similar to Unable to get the Parent Process Executable File Name..
         /// </summary>
-        internal static string UnableToGetParentProcessEXEFileName {
+        internal static string UnableToGetParentProcessExecutableFileName {
             get {
-                return ResourceManager.GetString("UnableToGetParentProcessEXEFileName", resourceCulture);
+                return ResourceManager.GetString("UnableToGetParentProcessExecutableFileName", resourceCulture);
             }
         }
         
