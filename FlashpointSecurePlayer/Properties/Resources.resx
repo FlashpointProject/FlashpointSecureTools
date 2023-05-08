@@ -209,7 +209,7 @@ If you choose No, the application will exit.</value>
     <value>With Old CPU Simulator, the game may load slowly. Please wait for the game to load.</value>
   </data>
   <data name="OpenFlashpointLauncher" xml:space="preserve">
-    <value>Open the Flashpoint Launcher by opening the Start Flashpoint shortcut in the Flashpoint folder.</value>
+    <value>Open the Flashpoint Launcher via the Start Flashpoint shortcut in the Flashpoint folder.</value>
   </data>
   <data name="ProcessCompatibilityConflict" xml:space="preserve">
     <value>The process "{0}" causes a compatibility conflict with this game. Please close it to continue.</value>

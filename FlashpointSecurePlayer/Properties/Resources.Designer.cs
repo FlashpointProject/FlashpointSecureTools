@@ -326,7 +326,7 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open the Flashpoint Launcher by opening the Start Flashpoint shortcut in the Flashpoint folder..
+        ///   Looks up a localized string similar to Open the Flashpoint Launcher via the Start Flashpoint shortcut in the Flashpoint folder..
         /// </summary>
         internal static string OpenFlashpointLauncher {
             get {
