@@ -85,14 +85,53 @@ namespace FlashpointSecurePlayer {
             oldCPUSimulator = new OldCPUSimulator(ImportStart, ImportStop);
         }
 
-        private void ShowOutput(string errorLabelText) {
-            ProgressManager.ShowOutput();
-            errorLabel.Text = errorLabelText;
+        private bool CanShowMessageLabel(string text) {
+            if (text == null) {
+                return false;
+            }
+
+            if (text.Contains("\n")) {
+                return false;
+            }
+
+            canShowMessageLabel.Text = text;
+
+            if (canShowMessageLabel.Width > securePlaybackProgressBar.Width) {
+                return false;
+            }
+            return true;
         }
 
-        private void ShowError(string errorLabelText) {
+        private bool ShowOutput(string text) {
+            ProgressManager.ShowOutput();
+
+            if (text == null) {
+                return false;
+            }
+
+            if (CanShowMessageLabel(text)) {
+                messageLabel.Text = text;
+                return true;
+            }
+
+            MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.None);
+            return false;
+        }
+
+        private bool ShowError(string text) {
             ProgressManager.ShowError();
-            errorLabel.Text = errorLabelText;
+
+            if (text == null) {
+                return false;
+            }
+
+            if (CanShowMessageLabel(text)) {
+                messageLabel.Text = text;
+                return true;
+            }
+
+            MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return false;
         }
 
         private void ShowNoGameSelected() {
@@ -1051,13 +1090,10 @@ namespace FlashpointSecurePlayer {
 
             try {
                 await ActivateModificationsAsync(templateElement, delegate (string text) {
-                    if (text.Contains("\n")) {
-                        ProgressManager.ShowError();
-                        MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    if (!ShowError(text)) {
                         Application.Exit();
-                    } else {
-                        ShowError(text);
                     }
+
                     throw new InvalidModificationException("An error occured while activating the Modification.");
                 }).ConfigureAwait(true);
             } catch (InvalidModificationException ex) {
@@ -1301,13 +1337,10 @@ namespace FlashpointSecurePlayer {
                     // ActiveX Import
                     try {
                         await ImportActiveX(delegate (string text) {
-                            if (text.Contains("\n")) {
-                                ProgressManager.ShowError();
-                                MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            if (!ShowError(text)) {
                                 Application.Exit();
-                            } else {
-                                ShowError(text);
                             }
+
                             throw new ActiveXImportFailedException("An error occured while activating the ActiveX Import.");
                         });
                     } catch (InvalidModificationException ex) {

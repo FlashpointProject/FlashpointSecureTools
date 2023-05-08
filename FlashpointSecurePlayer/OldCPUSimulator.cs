@@ -198,6 +198,7 @@ namespace FlashpointSecurePlayer {
                 }
                 return;
             }
+
             throw new InvalidOldCPUSimulatorException("The Old CPU Simulator in this Mode is not supported.");
         }
     }
