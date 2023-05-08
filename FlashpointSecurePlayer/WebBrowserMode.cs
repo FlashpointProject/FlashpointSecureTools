@@ -85,7 +85,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private const int FULLSCREEN_EXIT_LABEL_TIMER_TIME = 2500;
+        private const int FULLSCREEN_EXIT_LABEL_TIMER_TIME = 3000;
 
         private System.Windows.Forms.Timer exitFullscreenLabelTimer = null;
 
