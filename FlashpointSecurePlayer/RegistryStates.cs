@@ -1040,7 +1040,7 @@ namespace FlashpointSecurePlayer {
 
                         if (activeRegistryStateElement == null) {
                             Deactivate();
-                            throw new ConfigurationErrorsException("The Active Registry State Element (" + registryStateElement.Name + ") is null.");
+                            throw new ConfigurationErrorsException("The Active Registry State Element \"" + registryStateElement.Name + "\" is null.");
                         }
 
                         keyName = GetUserKeyValueName(registryStateElement.KeyName);

@@ -568,7 +568,7 @@ namespace FlashpointSecurePlayer {
                         } catch (Exception ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(String.Format(Properties.Resources.AddressNotUnderstood, URL));
-                            throw new InvalidModeException("The address (" + URL + ") was not understood by the Mode.");
+                            throw new InvalidModeException("The address \"" + URL + "\" was not understood by the Mode.");
                         }
 
                         webBrowserMode = new WebBrowserMode(webBrowserURL, UseFlashActiveXControl) {
@@ -762,7 +762,7 @@ namespace FlashpointSecurePlayer {
 
                         if (activeTemplateElement != null) {
                             if (!String.IsNullOrEmpty(activeTemplateElement.Active)) {
-                                throw new InvalidModificationException("The Template Element (" + activeTemplateElement.Active + ") is active.");
+                                throw new InvalidModificationException("The Template Element \"" + activeTemplateElement.Active + "\" is active.");
                             }
                         }
 

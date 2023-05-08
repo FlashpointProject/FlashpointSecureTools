@@ -2218,11 +2218,11 @@ namespace FlashpointSecurePlayer {
             } catch (Exceptions.DownloadFailedException) {
                 throw;
             } catch (ArgumentException) {
-                throw new Exceptions.DownloadFailedException("The download failed because the download name (" + name + ") is invalid.");
+                throw new Exceptions.DownloadFailedException("The download failed because the download name \"" + name + "\" is invalid.");
             } catch (HttpRequestException) {
                 throw new Exceptions.DownloadFailedException("The download failed because the HTTP Request is invalid.");
             } catch (InvalidOperationException) {
-                throw new Exceptions.DownloadFailedException("The download failed because the address (" + name + ") was not understood.");
+                throw new Exceptions.DownloadFailedException("The download failed because the address \"" + name + "\" was not understood.");
             } finally {
                 downloadSemaphoreSlim.Release();
             }
