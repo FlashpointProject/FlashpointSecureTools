@@ -109,13 +109,13 @@ namespace FlashpointSecurePlayer {
                 return false;
             }
 
-            if (CanShowMessageLabel(text)) {
-                messageLabel.Text = text;
-                return true;
+            if (!CanShowMessageLabel(text)) {
+                MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.None);
+                return false;
             }
 
-            MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.None);
-            return false;
+            messageLabel.Text = text;
+            return true;
         }
 
         private bool ShowError(string text) {
@@ -125,13 +125,13 @@ namespace FlashpointSecurePlayer {
                 return false;
             }
 
-            if (CanShowMessageLabel(text)) {
-                messageLabel.Text = text;
-                return true;
+            if (!CanShowMessageLabel(text)) {
+                MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
             }
 
-            MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            return false;
+            messageLabel.Text = text;
+            return true;
         }
 
         private void ShowNoGameSelected() {
