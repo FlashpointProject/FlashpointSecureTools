@@ -117,42 +117,34 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ActiveXControlInstallFailed" xml:space="preserve">
-    <value>The ActiveX Control failed to install.</value>
+  <data name="ActiveXControlUnableToInstall" xml:space="preserve">
+    <value>The ActiveX Control is unable to be installed.</value>
   </data>
-  <data name="ActiveXControlUninstallFailed" xml:space="preserve">
-    <value>The ActiveX Control failed to uninstall.</value>
+  <data name="ActiveXControlUnableToUninstall" xml:space="preserve">
+    <value>The ActiveX Control is unable to be uninstalled.</value>
   </data>
   <data name="AddressNotUnderstood" xml:space="preserve">
     <value>The address ({0}) wasn't understood. Please report this bug.</value>
   </data>
-  <data name="AnotherInstanceCausingInterference" xml:space="preserve">
-    <value>Another instance of Flashpoint Secure Player is preventing the Template from being activated.</value>
+  <data name="AnotherInstancePreventingTemplate" xml:space="preserve">
+    <value>The Template could not be activated.
+Another instance of Flashpoint Secure Player is preventing the Template from being activated.</value>
   </data>
   <data name="AsAdministratorUser" xml:space="preserve">
     <value>as an Administrator User</value>
   </data>
-  <data name="ConfigurationFailedLoad" xml:space="preserve">
-    <value>The configuration failed to load.
+  <data name="ConfigurationUnableToLoad" xml:space="preserve">
+    <value>The configuration is unable to be loaded.
 Please ensure Flashpoint is not corrupted, was extracted correctly, and is not running from OneDrive or a network drive.</value>
   </data>
   <data name="CurationMissingTemplateName" xml:space="preserve">
     <value>This curation is missing a template name.</value>
   </data>
-  <data name="EnvironmentVariablesFailed" xml:space="preserve">
-    <value>The Environment Variables failed.</value>
+  <data name="EnvironmentVariablesProblem" xml:space="preserve">
+    <value>The Environment Variables encountered a problem.</value>
   </data>
   <data name="EnvironmentVariablesTimeout" xml:space="preserve">
     <value>The Environment Variables timed out.</value>
-  </data>
-  <data name="FailedCreateCustomSecurityManager" xml:space="preserve">
-    <value>Failed to create a Custom Security Manager.</value>
-  </data>
-  <data name="FailedGetParentProcessEXEFileName" xml:space="preserve">
-    <value>Failed to get the Parent Process EXE File Name.</value>
-  </data>
-  <data name="FailedSetWorkingDirectory" xml:space="preserve">
-    <value>Failed to set the Working Directory.</value>
   </data>
   <data name="FlashpointProxyNotEnabled" xml:space="preserve">
     <value>The Flashpoint Proxy could not be enabled.</value>
@@ -166,9 +158,6 @@ Please ensure Flashpoint is not corrupted, was extracted correctly, and is not r
   <data name="GameDownloading" xml:space="preserve">
     <value>The game is downloading.</value>
   </data>
-  <data name="GameFailedLaunch" xml:space="preserve">
-    <value>This game failed to launch {0}.</value>
-  </data>
   <data name="GameIsMissingFiles" xml:space="preserve">
     <value>The game files ({0}) are missing.
 Please ensure Flashpoint is not corrupted, was extracted correctly, and is not running from OneDrive or a network drive.</value>
@@ -178,6 +167,9 @@ Please ensure Flashpoint is not corrupted, was extracted correctly, and is not r
   </data>
   <data name="GameNotCuratedCorrectly" xml:space="preserve">
     <value>This game was not curated correctly. Please report this bug.</value>
+  </data>
+  <data name="GameUnableToLaunch" xml:space="preserve">
+    <value>This game is unable to launch {0}.</value>
   </data>
   <data name="IgnoreActiveXControlInstallFailureWarning" xml:space="preserve">
     <value>The ActiveX Control Install Status will be ignored. The ActiveX Import may not work as intended.</value>
@@ -189,8 +181,8 @@ Please ensure Flashpoint is not corrupted, was extracted correctly, and is not r
     <value>This game will not work unless it is run {0}. Do you want to launch it {0}?
 If you choose No, the application will exit.</value>
   </data>
-  <data name="ModificationsFailedImport" xml:space="preserve">
-    <value>The Modifications failed to load because an Import was in progress.</value>
+  <data name="ModificationsUnableToLoadImport" xml:space="preserve">
+    <value>The Modifications were unable to load because an Import was in progress.</value>
   </data>
   <data name="NoGameSelected" xml:space="preserve">
     <value>No game was selected to start, so the application is exiting.</value>
@@ -210,8 +202,8 @@ If you choose No, the application will exit.</value>
   <data name="OldCPUSimulator" xml:space="preserve">
     <value>Old CPU Simulator</value>
   </data>
-  <data name="OldCPUSimulatorFailed" xml:space="preserve">
-    <value>The Old CPU Simulator failed. The Target Rate may be invalid.</value>
+  <data name="OldCPUSimulatorProblem" xml:space="preserve">
+    <value>The Old CPU Simulator encountered a problem. The Target Rate may be invalid.</value>
   </data>
   <data name="OldCPUSimulatorSlow" xml:space="preserve">
     <value>With Old CPU Simulator, the game may load slowly. Please wait for the game to load.</value>
@@ -222,14 +214,11 @@ If you choose No, the application will exit.</value>
   <data name="ProcessCompatibilityConflict" xml:space="preserve">
     <value>The process {0} causes a compatibility conflict with this game. Please close it to continue.</value>
   </data>
-  <data name="ProcessFailedStart" xml:space="preserve">
-    <value>The process failed to start.</value>
+  <data name="ProcessUnableToStart" xml:space="preserve">
+    <value>The process is unable to start.</value>
   </data>
   <data name="RegistryStateAlreadyInProgress" xml:space="preserve">
     <value>The Registry State cannot be started because another one has already been started.</value>
-  </data>
-  <data name="RegistryStateFailed" xml:space="preserve">
-    <value>The Registry State failed to be created.</value>
   </data>
   <data name="RegistryStateInProgress" xml:space="preserve">
     <value>The Registry State is being created. Please do not turn off your computer.</value>
@@ -240,6 +229,9 @@ If you choose No, the application will exit.</value>
   <data name="RegistryStateTimeout" xml:space="preserve">
     <value>The Registry State timed out.</value>
   </data>
+  <data name="RegistryStateUnableToCreate" xml:space="preserve">
+    <value>The Registry State is unable to be created.</value>
+  </data>
   <data name="RegistryStateWasSuccessful" xml:space="preserve">
     <value>The Registry State was successfully created.</value>
   </data>
@@ -249,8 +241,18 @@ If you choose No, the application will exit.</value>
   <data name="RequiredComponentsAreUnloading" xml:space="preserve">
     <value>The required components are unloading. Please do not turn off your computer.</value>
   </data>
+  <data name="UnableToCreateCustomSecurityManager" xml:space="preserve">
+    <value>Unable to create a Custom Security Manager.</value>
+  </data>
+  <data name="UnableToGetParentProcessEXEFileName" xml:space="preserve">
+    <value>Unable to get the Parent Process EXE File Name.</value>
+  </data>
+  <data name="UnableToSetWorkingDirectory" xml:space="preserve">
+    <value>Unable to set the Working Directory.</value>
+  </data>
   <data name="UnknownProcessCompatibilityConflict" xml:space="preserve">
-    <value>An unknown process is causing a compatibility conflict with this game, and the application cannot continue.</value>
+    <value>An unknown process is causing a compatibility conflict with this game.
+The application cannot continue.</value>
   </data>
   <data name="UseFlashActiveXControlWarning" xml:space="preserve">
     <value>This curation uses the Flash ActiveX Control. It may not work as intended in future Windows updates.</value>

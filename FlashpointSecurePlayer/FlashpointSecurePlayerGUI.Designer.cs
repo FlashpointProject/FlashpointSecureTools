@@ -40,9 +40,9 @@
             // 
             // securePlaybackProgressBar
             // 
-            this.securePlaybackProgressBar.Location = new System.Drawing.Point(13, 13);
+            this.securePlaybackProgressBar.Location = new System.Drawing.Point(12, 12);
             this.securePlaybackProgressBar.Name = "securePlaybackProgressBar";
-            this.securePlaybackProgressBar.Size = new System.Drawing.Size(389, 23);
+            this.securePlaybackProgressBar.Size = new System.Drawing.Size(405, 23);
             this.securePlaybackProgressBar.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
             this.securePlaybackProgressBar.TabIndex = 0;
             // 
@@ -50,7 +50,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(414, 71);
+            this.ClientSize = new System.Drawing.Size(429, 71);
             this.Controls.Add(this.securePlaybackProgressBar);
             this.Controls.Add(this.errorLabel);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;

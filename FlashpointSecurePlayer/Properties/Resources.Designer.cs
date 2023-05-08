@@ -61,20 +61,20 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The ActiveX Control failed to install..
+        ///   Looks up a localized string similar to The ActiveX Control is unable to be installed..
         /// </summary>
-        internal static string ActiveXControlInstallFailed {
+        internal static string ActiveXControlUnableToInstall {
             get {
-                return ResourceManager.GetString("ActiveXControlInstallFailed", resourceCulture);
+                return ResourceManager.GetString("ActiveXControlUnableToInstall", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The ActiveX Control failed to uninstall..
+        ///   Looks up a localized string similar to The ActiveX Control is unable to be uninstalled..
         /// </summary>
-        internal static string ActiveXControlUninstallFailed {
+        internal static string ActiveXControlUnableToUninstall {
             get {
-                return ResourceManager.GetString("ActiveXControlUninstallFailed", resourceCulture);
+                return ResourceManager.GetString("ActiveXControlUnableToUninstall", resourceCulture);
             }
         }
         
@@ -88,11 +88,12 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Another instance of Flashpoint Secure Player is preventing the Template from being activated..
+        ///   Looks up a localized string similar to The Template could not be activated.
+        ///Another instance of Flashpoint Secure Player is preventing the Template from being activated..
         /// </summary>
-        internal static string AnotherInstanceCausingInterference {
+        internal static string AnotherInstancePreventingTemplate {
             get {
-                return ResourceManager.GetString("AnotherInstanceCausingInterference", resourceCulture);
+                return ResourceManager.GetString("AnotherInstancePreventingTemplate", resourceCulture);
             }
         }
         
@@ -106,12 +107,12 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The configuration failed to load.
+        ///   Looks up a localized string similar to The configuration is unable to be loaded.
         ///Please ensure Flashpoint is not corrupted, was extracted correctly, and is not running from OneDrive or a network drive..
         /// </summary>
-        internal static string ConfigurationFailedLoad {
+        internal static string ConfigurationUnableToLoad {
             get {
-                return ResourceManager.GetString("ConfigurationFailedLoad", resourceCulture);
+                return ResourceManager.GetString("ConfigurationUnableToLoad", resourceCulture);
             }
         }
         
@@ -125,11 +126,11 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Environment Variables failed..
+        ///   Looks up a localized string similar to The Environment Variables encountered a problem..
         /// </summary>
-        internal static string EnvironmentVariablesFailed {
+        internal static string EnvironmentVariablesProblem {
             get {
-                return ResourceManager.GetString("EnvironmentVariablesFailed", resourceCulture);
+                return ResourceManager.GetString("EnvironmentVariablesProblem", resourceCulture);
             }
         }
         
@@ -139,33 +140,6 @@ namespace FlashpointSecurePlayer.Properties {
         internal static string EnvironmentVariablesTimeout {
             get {
                 return ResourceManager.GetString("EnvironmentVariablesTimeout", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Failed to create a Custom Security Manager..
-        /// </summary>
-        internal static string FailedCreateCustomSecurityManager {
-            get {
-                return ResourceManager.GetString("FailedCreateCustomSecurityManager", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Failed to get the Parent Process EXE File Name..
-        /// </summary>
-        internal static string FailedGetParentProcessEXEFileName {
-            get {
-                return ResourceManager.GetString("FailedGetParentProcessEXEFileName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Failed to set the Working Directory..
-        /// </summary>
-        internal static string FailedSetWorkingDirectory {
-            get {
-                return ResourceManager.GetString("FailedSetWorkingDirectory", resourceCulture);
             }
         }
         
@@ -206,15 +180,6 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This game failed to launch {0}..
-        /// </summary>
-        internal static string GameFailedLaunch {
-            get {
-                return ResourceManager.GetString("GameFailedLaunch", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The game files ({0}) are missing.
         ///Please ensure Flashpoint is not corrupted, was extracted correctly, and is not running from OneDrive or a network drive..
         /// </summary>
@@ -239,6 +204,15 @@ namespace FlashpointSecurePlayer.Properties {
         internal static string GameNotCuratedCorrectly {
             get {
                 return ResourceManager.GetString("GameNotCuratedCorrectly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This game is unable to launch {0}..
+        /// </summary>
+        internal static string GameUnableToLaunch {
+            get {
+                return ResourceManager.GetString("GameUnableToLaunch", resourceCulture);
             }
         }
         
@@ -271,11 +245,11 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Modifications failed to load because an Import was in progress..
+        ///   Looks up a localized string similar to The Modifications were unable to load because an Import was in progress..
         /// </summary>
-        internal static string ModificationsFailedImport {
+        internal static string ModificationsUnableToLoadImport {
             get {
-                return ResourceManager.GetString("ModificationsFailedImport", resourceCulture);
+                return ResourceManager.GetString("ModificationsUnableToLoadImport", resourceCulture);
             }
         }
         
@@ -334,11 +308,11 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Old CPU Simulator failed. The Target Rate may be invalid..
+        ///   Looks up a localized string similar to The Old CPU Simulator encountered a problem. The Target Rate may be invalid..
         /// </summary>
-        internal static string OldCPUSimulatorFailed {
+        internal static string OldCPUSimulatorProblem {
             get {
-                return ResourceManager.GetString("OldCPUSimulatorFailed", resourceCulture);
+                return ResourceManager.GetString("OldCPUSimulatorProblem", resourceCulture);
             }
         }
         
@@ -370,11 +344,11 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The process failed to start..
+        ///   Looks up a localized string similar to The process is unable to start..
         /// </summary>
-        internal static string ProcessFailedStart {
+        internal static string ProcessUnableToStart {
             get {
-                return ResourceManager.GetString("ProcessFailedStart", resourceCulture);
+                return ResourceManager.GetString("ProcessUnableToStart", resourceCulture);
             }
         }
         
@@ -384,15 +358,6 @@ namespace FlashpointSecurePlayer.Properties {
         internal static string RegistryStateAlreadyInProgress {
             get {
                 return ResourceManager.GetString("RegistryStateAlreadyInProgress", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The Registry State failed to be created..
-        /// </summary>
-        internal static string RegistryStateFailed {
-            get {
-                return ResourceManager.GetString("RegistryStateFailed", resourceCulture);
             }
         }
         
@@ -424,6 +389,15 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The Registry State is unable to be created..
+        /// </summary>
+        internal static string RegistryStateUnableToCreate {
+            get {
+                return ResourceManager.GetString("RegistryStateUnableToCreate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The Registry State was successfully created..
         /// </summary>
         internal static string RegistryStateWasSuccessful {
@@ -451,7 +425,35 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An unknown process is causing a compatibility conflict with this game, and the application cannot continue..
+        ///   Looks up a localized string similar to Unable to create a Custom Security Manager..
+        /// </summary>
+        internal static string UnableToCreateCustomSecurityManager {
+            get {
+                return ResourceManager.GetString("UnableToCreateCustomSecurityManager", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to get the Parent Process EXE File Name..
+        /// </summary>
+        internal static string UnableToGetParentProcessEXEFileName {
+            get {
+                return ResourceManager.GetString("UnableToGetParentProcessEXEFileName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to set the Working Directory..
+        /// </summary>
+        internal static string UnableToSetWorkingDirectory {
+            get {
+                return ResourceManager.GetString("UnableToSetWorkingDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An unknown process is causing a compatibility conflict with this game.
+        ///The application cannot continue..
         /// </summary>
         internal static string UnknownProcessCompatibilityConflict {
             get {

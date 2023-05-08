@@ -506,7 +506,7 @@ namespace FlashpointSecurePlayer {
             } catch (Exception ex) {
                 LogExceptionToLauncher(ex);
                 ProgressManager.ShowError();
-                MessageBox.Show(Properties.Resources.FailedCreateCustomSecurityManager, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Properties.Resources.UnableToCreateCustomSecurityManager, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Application.Exit();
                 return;
             }

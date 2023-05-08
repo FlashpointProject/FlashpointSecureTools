@@ -2562,7 +2562,7 @@ namespace FlashpointSecurePlayer {
                 Exceptions.LogExceptionToLauncher(ex);
                 form.Show();
                 ProgressManager.ShowError();
-                MessageBox.Show(Properties.Resources.ProcessFailedStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(Properties.Resources.ProcessUnableToStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Application.Exit();
                 throw new Exceptions.ApplicationRestartRequiredException("The application failed to restart.");
             }
