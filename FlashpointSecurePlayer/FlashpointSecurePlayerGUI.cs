@@ -348,7 +348,7 @@ namespace FlashpointSecurePlayer {
             return htdocsFilePath;
         }
 
-        private async Task ImportActiveX(ErrorDelegate errorDelegate) {
+        private async Task ImportActiveXAsync(ErrorDelegate errorDelegate) {
             bool createdNew = false;
 
             using (Mutex modificationsMutex = new Mutex(true, MODIFICATIONS_MUTEX_NAME, out createdNew)) {
@@ -1358,7 +1358,7 @@ namespace FlashpointSecurePlayer {
                 if (activeX) {
                     // ActiveX Import
                     try {
-                        await ImportActiveX(delegate (string text) {
+                        await ImportActiveXAsync(delegate (string text) {
                             if (!ShowError(text)) {
                                 Application.Exit();
                             }
