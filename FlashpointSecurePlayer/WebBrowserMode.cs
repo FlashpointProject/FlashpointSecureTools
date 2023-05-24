@@ -354,8 +354,6 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        //private const int EXIT_FULLSCREEN_LABEL_ALPHA = 204;
-
         private Uri WebBrowserURL { get; set; } = null;
         private bool UseFlashActiveXControl { get; set; } = false;
 
@@ -367,16 +365,6 @@ namespace FlashpointSecurePlayer {
             lowLevelMouseProc = new HookProc(LowLevelMouseProc);
             messageFilter = new MessageFilter(Back, Forward);
             webBrowserModeTitle = new WebBrowserModeTitle(TitleChanged);
-
-            // would be nice, but the web browser doesn't show through
-            /*
-            try {
-                exitFullscreenLabel.BackColor = Color.FromArgb(EXIT_FULLSCREEN_LABEL_ALPHA, Color.DimGray);
-                exitFullscreenLabel.Enabled = false;
-            } catch {
-                // Windows 7 doesn't support alpha transparency on controls
-            }
-            */
 
             statusBarStatusStrip.Renderer = new EndEllipsisTextRenderer();
         }
