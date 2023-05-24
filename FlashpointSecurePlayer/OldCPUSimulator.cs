@@ -26,7 +26,7 @@ namespace FlashpointSecurePlayer {
             try {
                 parentProcess = GetParentProcess();
             } catch {
-                // Fail silently.
+                // fail silently
             }
 
             string parentProcessFileName = null;

@@ -70,7 +70,7 @@ namespace FlashpointSecurePlayer {
                 value = regex.Replace(value, environmentVariablesElement.Replace);
             } catch (ArgumentNullException) {
                 // value was not defined
-                // Fail silently.
+                // fail silently
             } catch (RegexMatchTimeoutException) {
                 throw new InvalidEnvironmentVariablesException("The Regex Match timed out.");
             }

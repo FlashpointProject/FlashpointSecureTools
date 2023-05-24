@@ -197,14 +197,14 @@ namespace FlashpointSecurePlayer {
                 try {
                     StopImport();
                 } catch {
-                    // Fail silently.
+                    // fail silently
                 }
             }
 
             try {
                 Deactivate();
             } catch {
-                // Fail silently.
+                // fail silently
             }
         }
 
@@ -709,7 +709,7 @@ namespace FlashpointSecurePlayer {
                         return true;
                     }
                 } catch {
-                    // Fail silently.
+                    // fail silently
                 }
             }
 
@@ -732,7 +732,7 @@ namespace FlashpointSecurePlayer {
                                 return true;
                             }
                         } catch {
-                            // Fail silently.
+                            // fail silently
                         }
                     }
                 }
@@ -991,7 +991,7 @@ namespace FlashpointSecurePlayer {
                                     activeRegistryStateElement._ValueExpanded = valueExpanded;
                                 }
                             } catch {
-                                // Fail silently.
+                                // fail silently
                             }
 
                             try {

@@ -52,7 +52,7 @@ namespace FlashpointSecurePlayer {
                     }
                 }
             } catch {
-                // Fail silently.
+                // fail silently
             }
             return CallNextHookEx(mouseHook, nCode, wParam, lParam);
         }

@@ -118,7 +118,7 @@ namespace FlashpointSecurePlayer {
                                 processesByNameStrict.Add(processesByName[i]);
                             }
                         } catch {
-                            // Fail silently.
+                            // fail silently
                         }
                     }
                 } else {

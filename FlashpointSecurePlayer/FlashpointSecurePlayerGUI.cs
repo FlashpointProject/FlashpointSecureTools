@@ -146,7 +146,7 @@ namespace FlashpointSecurePlayer {
             try {
                 parentProcess = GetParentProcess();
             } catch {
-                // Fail silently.
+                // fail silently
             }
 
             string parentProcessFileName = null;
@@ -155,7 +155,7 @@ namespace FlashpointSecurePlayer {
                 try {
                     parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess));
                 } catch {
-                    // Fail silently.
+                    // fail silently
                 }
             }
 
@@ -268,7 +268,7 @@ namespace FlashpointSecurePlayer {
             try {
                 parentProcess = GetParentProcess();
             } catch {
-                // Fail silently.
+                // fail silently
             }
 
             string parentProcessFileName = null;
@@ -757,7 +757,7 @@ namespace FlashpointSecurePlayer {
                             activeTemplateElement = GetActiveTemplateElement(false);
                         } catch (ConfigurationErrorsException ex) {
                             LogExceptionToLauncher(ex);
-                            // Fail silently.
+                            // fail silently
                         }
 
                         if (activeTemplateElement != null) {
@@ -1203,7 +1203,7 @@ namespace FlashpointSecurePlayer {
                     LogExceptionToLauncher(ex);
                     throw new TaskRequiresElevationException("Setting the Current Directory requires elevation.");
                 } catch {
-                    // Fail silently.
+                    // fail silently
                 }
 
                 // Get Arguments
@@ -1404,7 +1404,7 @@ namespace FlashpointSecurePlayer {
                             htdocsFile = Path.GetFileName(htdocsFilePath.ToString());
                         } catch (ArgumentException ex) {
                             LogExceptionToLauncher(ex);
-                            // Fail silently?
+                            // fail silently?
                         }
 
                         // empty ONLY, not null
@@ -1435,7 +1435,7 @@ namespace FlashpointSecurePlayer {
                             htdocsFileDirectory = Path.GetDirectoryName(fullHTDOCSFilePath);
                         } catch (ArgumentException ex) {
                             LogExceptionToLauncher(ex);
-                            // Fail silently?
+                            // fail silently?
                         }
 
                         if (!String.IsNullOrEmpty(htdocsFile) && !String.IsNullOrEmpty(htdocsFileDirectory)) {
@@ -1443,7 +1443,7 @@ namespace FlashpointSecurePlayer {
                         }
                     } catch (DownloadFailedException ex) {
                         LogExceptionToLauncher(ex);
-                        // Fail silently.
+                        // fail silently
                     }
                 }
 
@@ -1542,16 +1542,16 @@ namespace FlashpointSecurePlayer {
                         await StopSecurePlayback(e, templateElement).ConfigureAwait(false);
                     } catch (ActiveXImportFailedException ex) {
                         LogExceptionToLauncher(ex);
-                        // Fail silently.
+                        // fail silently
                     } catch (InvalidModeException ex) {
                         LogExceptionToLauncher(ex);
-                        // Fail silently.
+                        // fail silently
                     } catch (InvalidModificationException ex) {
                         LogExceptionToLauncher(ex);
-                        // Fail silently.
+                        // fail silently
                     } catch (InvalidTemplateException ex) {
                         LogExceptionToLauncher(ex);
-                        // Fail silently.
+                        // fail silently
                     }
                 } finally {
                     applicationMutex.ReleaseMutex();
@@ -1575,7 +1575,7 @@ namespace FlashpointSecurePlayer {
                 LogExceptionToLauncher(ex);
                 throw new TaskRequiresElevationException("Setting the Current Directory requires elevation.");
             } catch {
-                // Fail silently.
+                // fail silently
             }
 
             // this should not cause an exception

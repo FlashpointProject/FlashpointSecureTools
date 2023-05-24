@@ -128,7 +128,7 @@ namespace FlashpointSecurePlayer {
                 try {
                     Console.Error.WriteLine(ex.Message);
                 } catch {
-                    // Fail silently.
+                    // fail silently
                 }
             }
         }
@@ -2258,7 +2258,7 @@ namespace FlashpointSecurePlayer {
                 // success!
                 return ActiveEXEConfiguration;
             } catch (ConfigurationErrorsException) {
-                // Fail silently.
+                // fail silently
             }
 
             if (ActiveEXEConfiguration == null) {
@@ -2328,10 +2328,10 @@ namespace FlashpointSecurePlayer {
                     EXEConfigurationName = name;
                     return EXEConfiguration;
                 } catch (Exceptions.DownloadFailedException) {
-                    // Fail silently.
+                    // fail silently
                     //throw new ConfigurationErrorsException("The EXE Configuration failed to download.");
                 } catch (ConfigurationErrorsException) {
-                    // Fail silently.
+                    // fail silently
                 } catch (IOException) {
                     throw new ConfigurationErrorsException("The EXE Configuration is in use.");
                 }
@@ -2439,7 +2439,7 @@ namespace FlashpointSecurePlayer {
                     name = GetValidEXEConfigurationName(name);
                     await DownloadAsync("http://" + CONFIGURATION_DOWNLOAD_NAME + "/" + name + ".config").ConfigureAwait(false);
                 } catch {
-                    // Fail silently.
+                    // fail silently
                 }
             }
         }
