@@ -2038,6 +2038,7 @@ namespace FlashpointSecurePlayer {
             return scheme == URI_SCHEME_HTTP || scheme == URI_SCHEME_HTTPS || scheme == URI_SCHEME_FTP;
         }
 
+        /*
         public static StringBuilder GetWindowsVersionName(bool edition = false, bool servicePack = false, bool architecture = false) {
             OperatingSystem operatingSystem = Environment.OSVersion;
             StringBuilder versionName = new StringBuilder("Windows ");
@@ -2154,6 +2155,7 @@ namespace FlashpointSecurePlayer {
             }
             return versionName;
         }
+        */
 
         public static void HandleAntecedentTask(Task antecedentTask) {
             if (antecedentTask.IsFaulted) {

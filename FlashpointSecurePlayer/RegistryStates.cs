@@ -66,17 +66,17 @@ namespace FlashpointSecurePlayer {
         private Dictionary<ulong, SortedList<DateTime, RegistryStateElement>> modificationsQueue = null;
         private Dictionary<ulong, string> kcbModificationKeyNames = null;
         private TraceEventSession kernelSession;
+
+        // Windows XP, Windows Server 2003, Windows Vista and Windows Server 2008
+        private readonly bool reflectionVersion = Environment.OSVersion.Version >= new Version(5, 1)
+            && Environment.OSVersion.Version <= new Version(6, 0);
+
         private Dictionary<string, List<WOW64Key>> wow64KeyLists = null;
 
         private Dictionary<string, List<WOW64Key>> WOW64KeyLists {
             get {
                 if (wow64KeyLists == null) {
-                    string windowsVersionName = GetWindowsVersionName().ToString();
-
-                    if (windowsVersionName == "Windows Server 2008"
-                        || windowsVersionName == "Windows Vista"
-                        || windowsVersionName == "Windows Server 2003"
-                        || windowsVersionName == "Windows XP") {
+                    if (reflectionVersion) {
                         wow64KeyLists = new Dictionary<string, List<WOW64Key>>() {
                             {"HKEY_LOCAL_MACHINE", new List<WOW64Key>() {
                                 { new WOW64Key("SOFTWARE", WOW64Key.EFFECT.REDIRECTED) }
@@ -552,31 +552,23 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        // blah
+        // older than Windows XP 64-bit
+        private readonly bool notWOW64Version = !Environment.Is64BitOperatingSystem
+            || Environment.OSVersion.Version < new Version(5, 1);
+
+        // Windows XP and Windows Server 2003
+        private readonly bool notSharedVistaVersion = Environment.OSVersion.Version >= new Version(5, 1)
+            && Environment.OSVersion.Version < new Version(6, 0);
+        
         // http://docs.microsoft.com/en-us/windows/win32/winprog64/shared-registry-keys#redirected-shared-and-reflected-keys-under-wow64
         private string GetRedirectedKeyValueName(string keyValueName, BINARY_TYPE binaryType) {
-            // does our OS use WOW64?
-            string windowsVersionName = GetWindowsVersionName(false, false, true).ToString();
-
-            if (windowsVersionName != "Windows Vista 64-bit"
-                && windowsVersionName != "Windows Server 2008 64-bit"
-                && windowsVersionName != "Windows 7 64-bit"
-                && windowsVersionName != "Windows Server 2008 R2 64-bit"
-                && windowsVersionName != "Windows 8 64-bit"
-                && windowsVersionName != "Windows Server 2012 64-bit"
-                && windowsVersionName != "Windows 8.1 64-bit"
-                && windowsVersionName != "Windows Server 2012 R2 64-bit"
-                && windowsVersionName != "Windows 10 64-bit"
-                && windowsVersionName != "Windows Server 2016 64-bit"
-                && windowsVersionName != "Windows Server 2019 64-bit"
-                && windowsVersionName != "Windows Server 2022 64-bit") {
-                // no
+            if (notWOW64Version) {
+                // the version isn't WOW64
                 return keyValueName;
             }
-
-            // is the binary 32-bit?
+            
             if (binaryType == BINARY_TYPE.SCS_64BIT_BINARY) {
-                // no
+                // the binary isn't 32-bit
                 return keyValueName;
             }
 
@@ -603,7 +595,6 @@ namespace FlashpointSecurePlayer {
                 List<WOW64Key> wow64KeyList = WOW64KeyLists[wow64KeyUpper];
                 WOW64Key.EFFECT effect = WOW64Key.EFFECT.SHARED;
                 List<string> effectExceptionValueNames = new List<string>();
-                windowsVersionName = GetWindowsVersionName().ToString();
                 bool removeWOW64Subkey = false;
 
                 for (int i = 0; i < wow64KeyList.Count; i++) {
@@ -612,8 +603,7 @@ namespace FlashpointSecurePlayer {
                         effectExceptionValueNames = wow64KeyList[i].EffectExceptionValueNames;
 
                         if (effect == WOW64Key.EFFECT.SHARED_VISTA) {
-                            if (windowsVersionName == "Windows Server 2003"
-                                || windowsVersionName == "Windows XP") {
+                            if (notSharedVistaVersion) {
                                 effect = WOW64Key.EFFECT.REDIRECTED;
                             } else {
                                 effect = WOW64Key.EFFECT.SHARED;
@@ -648,10 +638,10 @@ namespace FlashpointSecurePlayer {
                         }
 
                         if (removeWOW64Subkey) {
-                            // key after wow64xxnode will shift into current position
+                            // key after WOW64XXNODE will shift into current position
                             // therefore, after the next loop...
                             // one is added to i so we effectively move two keys
-                            // so we will be looking at the next potential wow64xxnode candidate
+                            // so we will be looking at the next potential WOW64XXNODE candidate
                             keyValueName = String.Join("\\", keyValueNameSplit);
                         }
                         break;

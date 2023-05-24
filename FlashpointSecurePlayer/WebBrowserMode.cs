@@ -36,7 +36,7 @@ namespace FlashpointSecurePlayer {
                             // our window may not even get these messages
                             // all that matters is the mouse position, regardless
                             // of if our window is active
-                            Point toolBarToolStripMousePosition = toolBarToolStrip.PointToClient(Control.MousePosition);
+                            Point toolBarToolStripMousePosition = toolBarToolStrip.PointToClient(MousePosition);
 
                             if (toolBarToolStrip.Visible) {
                                 if (!toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {

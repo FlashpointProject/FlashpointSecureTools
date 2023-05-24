@@ -35,7 +35,10 @@ namespace FlashpointSecurePlayer {
         private readonly RegistryStates registryState;
         private readonly SingleInstance singleInstance;
         private readonly OldCPUSimulator oldCPUSimulator;
-        
+
+        // older than Windows 7
+        private readonly bool oldWindowsVersion = Environment.OSVersion.Version < new Version(6, 1);
+
         private bool activeX = false;
         WebBrowserMode webBrowserMode = null;
         private ProcessStartInfo softwareProcessStartInfo = null;
@@ -1193,18 +1196,7 @@ namespace FlashpointSecurePlayer {
             ProgressManager.ProgressBar = securePlaybackProgressBar;
             ProgressManager.ProgressForm = this;
 
-            string windowsVersionName = GetWindowsVersionName().ToString();
-
-            if (windowsVersionName != "Windows 7"
-                && windowsVersionName != "Windows Server 2008 R2"
-                && windowsVersionName != "Windows 8"
-                && windowsVersionName != "Windows Server 2012"
-                && windowsVersionName != "Windows 8.1"
-                && windowsVersionName != "Windows Server 2012 R2"
-                && windowsVersionName != "Windows 10"
-                && windowsVersionName != "Windows Server 2016"
-                && windowsVersionName != "Windows Server 2019"
-                && windowsVersionName != "Windows Server 2022") {
+            if (oldWindowsVersion) {
                 ProgressManager.ShowError();
                 MessageBox.Show(Properties.Resources.WindowsVersionTooOld, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Application.Exit();
