@@ -895,7 +895,9 @@ namespace FlashpointSecurePlayer {
 
         new public void StopImport() {
             // do not await this, bool hack
+#pragma warning disable CS4014
             StopImportAsync(true);
+#pragma warning restore CS4014
         }
 
         public async Task StopImportAsync() {
