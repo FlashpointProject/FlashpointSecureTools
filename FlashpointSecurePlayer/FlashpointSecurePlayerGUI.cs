@@ -90,6 +90,7 @@ namespace FlashpointSecurePlayer {
                 return false;
             }
 
+            // the Contains function uses ordinal string comparison by default
             if (text.Contains("\n")) {
                 return false;
             }
@@ -211,7 +212,7 @@ namespace FlashpointSecurePlayer {
                 /*
                  this dialog is not purely here for aesthetic/politeness reasons
                  it's a stopgap to prevent the program from reloading infinitely
-                 in case the TestProcessRunningAsAdministrator function somehow fails
+                 in case the TestLaunchedAsAdministratorUser function somehow fails
                  you might say "but the UAC dialog would prevent it reloading unstoppably"
                  to which I say "yes, but some very stupid people turn UAC off"
                  then there'd be no dialog except this one - and I don't want
