@@ -85,7 +85,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private const int FULLSCREEN_EXIT_LABEL_TIMER_TIME = 3000;
+        private const int EXIT_FULLSCREEN_LABEL_TIMER_TIME = 3000;
 
         private System.Windows.Forms.Timer exitFullscreenLabelTimer = null;
 
@@ -105,8 +105,10 @@ namespace FlashpointSecurePlayer {
                 exitFullscreenLabel.Visible = value;
 
                 if (exitFullscreenLabel.Visible) {
-                    exitFullscreenLabelTimer = new System.Windows.Forms.Timer();
-                    exitFullscreenLabelTimer.Interval = FULLSCREEN_EXIT_LABEL_TIMER_TIME;
+                    exitFullscreenLabelTimer = new System.Windows.Forms.Timer {
+                        Interval = EXIT_FULLSCREEN_LABEL_TIMER_TIME
+                    };
+
                     exitFullscreenLabelTimer.Tick += exitFullscreenLabelTimer_Tick;
                     exitFullscreenLabelTimer.Start();
                 }
@@ -285,13 +287,12 @@ namespace FlashpointSecurePlayer {
         private class WebBrowserModeTitle {
             private readonly EventHandler<TitleChangedEventArgs> titleChanged;
 
-            private readonly string applicationTitle = "Flashpoint Secure Player";
+            private readonly string applicationTitle = Properties.Resources.FlashpointSecurePlayer + " " + typeof(WebBrowserModeTitle).Assembly.GetName().Version;
             private string documentTitle = null;
             private int progress = -1;
 
             public WebBrowserModeTitle(EventHandler<TitleChangedEventArgs> titleChanged) {
                 this.titleChanged = titleChanged;
-                applicationTitle += " " + typeof(WebBrowserModeTitle).Assembly.GetName().Version;
 
                 Show();
             }
@@ -353,6 +354,8 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        //private const int EXIT_FULLSCREEN_LABEL_ALPHA = 204;
+
         private Uri WebBrowserURL { get; set; } = null;
         private bool UseFlashActiveXControl { get; set; } = false;
 
@@ -364,6 +367,16 @@ namespace FlashpointSecurePlayer {
             lowLevelMouseProc = new HookProc(LowLevelMouseProc);
             messageFilter = new MessageFilter(Back, Forward);
             webBrowserModeTitle = new WebBrowserModeTitle(TitleChanged);
+
+            // would be nice, but the web browser doesn't show through
+            /*
+            try {
+                exitFullscreenLabel.BackColor = Color.FromArgb(EXIT_FULLSCREEN_LABEL_ALPHA, Color.DimGray);
+                exitFullscreenLabel.Enabled = false;
+            } catch {
+                // Windows 7 doesn't support alpha transparency on controls
+            }
+            */
 
             statusBarStatusStrip.Renderer = new EndEllipsisTextRenderer();
         }
@@ -703,13 +716,8 @@ namespace FlashpointSecurePlayer {
 
             int progress = e.MaximumProgress > 0 ? (int)Math.Min((double)e.CurrentProgress / e.MaximumProgress * 100, 100) : 0;
             webBrowserModeTitle.Progress = progress;
-
-            if (progress == 0) {
-                progressToolStripProgressBar.Style = ProgressBarStyle.Marquee;
-            } else {
-                progressToolStripProgressBar.Style = ProgressBarStyle.Continuous;
-            }
-
+            
+            progressToolStripProgressBar.Style = (progress == 0) ? ProgressBarStyle.Marquee : ProgressBarStyle.Continuous;
             progressToolStripProgressBar.Value = progress;
             progressToolStripProgressBar.ToolTipText = progress + "%";
         }

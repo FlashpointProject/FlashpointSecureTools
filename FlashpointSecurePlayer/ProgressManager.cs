@@ -224,8 +224,10 @@ namespace FlashpointSecurePlayer {
                     Time = time;
 
                     if (Time > 0) {
-                        timer = new System.Timers.Timer(Time);
-                        timer.AutoReset = false;
+                        timer = new System.Timers.Timer(Time) {
+                            AutoReset = false
+                        };
+
                         timer.Elapsed += timer_Elapsed;
                         timer.Start();
                     }

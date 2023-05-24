@@ -2038,43 +2038,43 @@ namespace FlashpointSecurePlayer {
             return scheme == URI_SCHEME_HTTP || scheme == URI_SCHEME_HTTPS || scheme == URI_SCHEME_FTP;
         }
 
-        public static string GetWindowsVersionName(bool edition, bool servicePack, bool architecture) {
+        public static StringBuilder GetWindowsVersionName(bool edition = false, bool servicePack = false, bool architecture = false) {
             OperatingSystem operatingSystem = Environment.OSVersion;
-            string versionName = "Windows ";
+            StringBuilder versionName = new StringBuilder("Windows ");
 
             if (operatingSystem.Platform == PlatformID.Win32Windows) {
                 switch (operatingSystem.Version.Minor) {
                     case 0:
-                    versionName += "95";
+                    versionName.Append("95");
                     break;
                     case 10:
                     if (operatingSystem.Version.Revision.ToString() == "2222A") {
-                        versionName += "98 SE";
+                        versionName.Append("98 SE");
                     } else {
-                        versionName += "98";
+                        versionName.Append("98");
                     }
                     break;
                     default:
                     // Windows ME is the last version of Windows before Windows NT
-                    versionName += "ME";
+                    versionName.Append("ME");
                     break;
                 }
             } else {
                 switch (operatingSystem.Version.Major) {
                     case 3:
-                    versionName += "NT 3.51";
+                    versionName.Append("NT 3.51");
                     break;
                     case 4:
-                    versionName += "NT 4.0";
+                    versionName.Append("NT 4.0");
                     break;
                     case 5:
                     if (operatingSystem.Version.Minor == 0) {
-                        versionName += "2000";
+                        versionName.Append("2000");
                     } else {
                         if (IsOS(OS.OS_ANYSERVER)) {
-                            versionName += "Server 2003";
+                            versionName.Append("Server 2003");
                         } else {
-                            versionName += "XP";
+                            versionName.Append("XP");
                         }
                     }
                     break;
@@ -2082,30 +2082,30 @@ namespace FlashpointSecurePlayer {
                     switch (operatingSystem.Version.Minor) {
                         case 0:
                         if (IsOS(OS.OS_ANYSERVER)) {
-                            versionName += "Server 2008";
+                            versionName.Append("Server 2008");
                         } else {
-                            versionName += "Vista";
+                            versionName.Append("Vista");
                         }
                         break;
                         case 1:
                         if (IsOS(OS.OS_ANYSERVER)) {
-                            versionName += "Server 2008 R2";
+                            versionName.Append("Server 2008 R2");
                         } else {
-                            versionName += "7";
+                            versionName.Append("7");
                         }
                         break;
                         case 2:
                         if (IsOS(OS.OS_ANYSERVER)) {
-                            versionName += "Server 2012";
+                            versionName.Append("Server 2012");
                         } else {
-                            versionName += "8";
+                            versionName.Append("8");
                         }
                         break;
                         default:
                         if (IsOS(OS.OS_ANYSERVER)) {
-                            versionName += "Server 2012 R2";
+                            versionName.Append("Server 2012 R2");
                         } else {
-                            versionName += "8.1";
+                            versionName.Append("8.1");
                         }
                         break;
                     }
@@ -2114,14 +2114,14 @@ namespace FlashpointSecurePlayer {
                     // Windows 10 will be the last version of Windows
                     if (IsOS(OS.OS_ANYSERVER)) {
                         if (operatingSystem.Version.Build < 17763) {
-                            versionName += "Server 2016";
+                            versionName.Append("Server 2016");
                         } else if (operatingSystem.Version.Build < 20348) {
-                            versionName += "Server 2019";
+                            versionName.Append("Server 2019");
                         } else {
-                            versionName += "Server 2022";
+                            versionName.Append("Server 2022");
                         }
                     } else {
-                        versionName += "10";
+                        versionName.Append("10");
                     }
                     break;
                 }
@@ -2137,20 +2137,20 @@ namespace FlashpointSecurePlayer {
                 }
 
                 // no way to get the edition before Windows 7
-                if (!String.IsNullOrEmpty(editionID)) {
-                    versionName += " " + editionID;
+                if (!String.IsNullOrWhiteSpace(editionID)) {
+                    versionName.Append(" " + editionID);
                 }
             }
 
             if (servicePack) {
                 // can be empty if no service pack is installed
-                if (!String.IsNullOrEmpty(operatingSystem.ServicePack)) {
-                    versionName += " " + operatingSystem.ServicePack;
+                if (!String.IsNullOrWhiteSpace(operatingSystem.ServicePack)) {
+                    versionName.Append(" " + operatingSystem.ServicePack);
                 }
             }
 
             if (architecture) {
-                versionName += " " + (Environment.Is64BitOperatingSystem ? "64" : "32") + "-bit";
+                versionName.Append(" " + (Environment.Is64BitOperatingSystem ? "64" : "32") + "-bit");
             }
             return versionName;
         }
@@ -2729,12 +2729,11 @@ namespace FlashpointSecurePlayer {
                         return false;
                     }
 
-                    if (byHandleFileInformation.VolumeSerialNumber == byHandleFileInformation2.VolumeSerialNumber && byHandleFileInformation.FileIndexHigh == byHandleFileInformation2.FileIndexHigh && byHandleFileInformation.FileIndexLow == byHandleFileInformation2.FileIndexLow) {
-                        return true;
-                    }
+                    return byHandleFileInformation.VolumeSerialNumber == byHandleFileInformation2.VolumeSerialNumber
+                        && byHandleFileInformation.FileIndexHigh == byHandleFileInformation2.FileIndexHigh
+                        && byHandleFileInformation.FileIndexLow == byHandleFileInformation2.FileIndexLow;
                 }
             }
-            return false;
         }
 
         /*

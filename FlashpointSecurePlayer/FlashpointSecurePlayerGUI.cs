@@ -1166,23 +1166,23 @@ namespace FlashpointSecurePlayer {
         private bool loaded = false;
 
         private async void FlashpointSecurePlayer_Load(object sender, EventArgs e) {
-            Text += " " + typeof(FlashpointSecurePlayerGUI).Assembly.GetName().Version;
+            Text = Properties.Resources.FlashpointSecurePlayer + " " + typeof(FlashpointSecurePlayerGUI).Assembly.GetName().Version;
 
             ProgressManager.ProgressBar = securePlaybackProgressBar;
             ProgressManager.ProgressForm = this;
 
-            string windowsVersionName = GetWindowsVersionName(false, false, false);
+            string windowsVersionName = GetWindowsVersionName().ToString();
 
-            if (windowsVersionName != "Windows 7" &&
-                windowsVersionName != "Windows Server 2008 R2" &&
-                windowsVersionName != "Windows 8" &&
-                windowsVersionName != "Windows Server 2012" &&
-                windowsVersionName != "Windows 8.1" &&
-                windowsVersionName != "Windows Server 2012 R2" &&
-                windowsVersionName != "Windows 10" &&
-                windowsVersionName != "Windows Server 2016" &&
-                windowsVersionName != "Windows Server 2019" &&
-                windowsVersionName != "Windows Server 2022") {
+            if (windowsVersionName != "Windows 7"
+                && windowsVersionName != "Windows Server 2008 R2"
+                && windowsVersionName != "Windows 8"
+                && windowsVersionName != "Windows Server 2012"
+                && windowsVersionName != "Windows 8.1"
+                && windowsVersionName != "Windows Server 2012 R2"
+                && windowsVersionName != "Windows 10"
+                && windowsVersionName != "Windows Server 2016"
+                && windowsVersionName != "Windows Server 2019"
+                && windowsVersionName != "Windows Server 2022") {
                 ProgressManager.ShowError();
                 MessageBox.Show(Properties.Resources.WindowsVersionTooOld, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Application.Exit();

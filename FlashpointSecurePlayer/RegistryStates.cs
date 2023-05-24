@@ -71,9 +71,12 @@ namespace FlashpointSecurePlayer {
         private Dictionary<string, List<WOW64Key>> WOW64KeyLists {
             get {
                 if (wow64KeyLists == null) {
-                    string windowsVersionName = GetWindowsVersionName(false, false, false);
+                    string windowsVersionName = GetWindowsVersionName().ToString();
 
-                    if (windowsVersionName == "Windows Server 2008" || windowsVersionName == "Windows Vista" || windowsVersionName == "Windows Server 2003" || windowsVersionName == "Windows XP") {
+                    if (windowsVersionName == "Windows Server 2008"
+                        || windowsVersionName == "Windows Vista"
+                        || windowsVersionName == "Windows Server 2003"
+                        || windowsVersionName == "Windows XP") {
                         wow64KeyLists = new Dictionary<string, List<WOW64Key>>() {
                             {"HKEY_LOCAL_MACHINE", new List<WOW64Key>() {
                                 { new WOW64Key("SOFTWARE", WOW64Key.EFFECT.REDIRECTED) }
@@ -553,20 +556,20 @@ namespace FlashpointSecurePlayer {
         // http://docs.microsoft.com/en-us/windows/win32/winprog64/shared-registry-keys#redirected-shared-and-reflected-keys-under-wow64
         private string GetRedirectedKeyValueName(string keyValueName, BINARY_TYPE binaryType) {
             // does our OS use WOW64?
-            string windowsVersionName = GetWindowsVersionName(false, false, true);
+            string windowsVersionName = GetWindowsVersionName(false, false, true).ToString();
 
-            if (windowsVersionName != "Windows Vista 64-bit" &&
-                windowsVersionName != "Windows Server 2008 64-bit" &&
-                windowsVersionName != "Windows 7 64-bit" &&
-                windowsVersionName != "Windows Server 2008 R2 64-bit" &&
-                windowsVersionName != "Windows 8 64-bit" &&
-                windowsVersionName != "Windows Server 2012 64-bit" &&
-                windowsVersionName != "Windows 8.1 64-bit" &&
-                windowsVersionName != "Windows Server 2012 R2 64-bit" &&
-                windowsVersionName != "Windows 10 64-bit" &&
-                windowsVersionName != "Windows Server 2016 64-bit" &&
-                windowsVersionName != "Windows Server 2019 64-bit" &&
-                windowsVersionName != "Windows Server 2022 64-bit") {
+            if (windowsVersionName != "Windows Vista 64-bit"
+                && windowsVersionName != "Windows Server 2008 64-bit"
+                && windowsVersionName != "Windows 7 64-bit"
+                && windowsVersionName != "Windows Server 2008 R2 64-bit"
+                && windowsVersionName != "Windows 8 64-bit"
+                && windowsVersionName != "Windows Server 2012 64-bit"
+                && windowsVersionName != "Windows 8.1 64-bit"
+                && windowsVersionName != "Windows Server 2012 R2 64-bit"
+                && windowsVersionName != "Windows 10 64-bit"
+                && windowsVersionName != "Windows Server 2016 64-bit"
+                && windowsVersionName != "Windows Server 2019 64-bit"
+                && windowsVersionName != "Windows Server 2022 64-bit") {
                 // no
                 return keyValueName;
             }
@@ -600,7 +603,7 @@ namespace FlashpointSecurePlayer {
                 List<WOW64Key> wow64KeyList = WOW64KeyLists[wow64KeyUpper];
                 WOW64Key.EFFECT effect = WOW64Key.EFFECT.SHARED;
                 List<string> effectExceptionValueNames = new List<string>();
-                windowsVersionName = GetWindowsVersionName(false, false, false);
+                windowsVersionName = GetWindowsVersionName().ToString();
                 bool removeWOW64Subkey = false;
 
                 for (int i = 0;i < wow64KeyList.Count;i++) {
@@ -609,7 +612,8 @@ namespace FlashpointSecurePlayer {
                         effectExceptionValueNames = wow64KeyList[i].EffectExceptionValueNames;
 
                         if (effect == WOW64Key.EFFECT.SHARED_VISTA) {
-                            if (windowsVersionName == "Windows Server 2003" || windowsVersionName == "Windows XP") {
+                            if (windowsVersionName == "Windows Server 2003"
+                                || windowsVersionName == "Windows XP") {
                                 effect = WOW64Key.EFFECT.REDIRECTED;
                             } else {
                                 effect = WOW64Key.EFFECT.SHARED;
