@@ -100,6 +100,7 @@ namespace FlashpointSecurePlayer {
 
             List<Process> processesByName;
             List<Process> processesByNameStrict;
+            Process processByNameStrict;
             string processName = null;
             // GetProcessesByName can't have extension (stupidly)
             string activeProcessName = Path.GetFileNameWithoutExtension(executable);
@@ -110,7 +111,7 @@ namespace FlashpointSecurePlayer {
                 processesByNameStrict = new List<Process>();
 
                 if (singleInstanceElement.Strict) {
-                    for (int i = 0;i < processesByName.Count;i++) {
+                    for (int i = 0; i < processesByName.Count; i++) {
                         processName = GetProcessName(processesByName[i]);
 
                         try {
@@ -130,11 +131,13 @@ namespace FlashpointSecurePlayer {
                 if (processesByNameStrict.Any()) {
                     DialogResult? dialogResult = ShowClosableMessageBox(Task.Run(delegate () {
                         while (processesByNameStrict.Any()) {
-                            if (!processesByNameStrict[0].HasExited) {
-                                processesByNameStrict[0].WaitForExit();
+                            processByNameStrict = processesByNameStrict.First();
+
+                            if (!processByNameStrict.HasExited) {
+                                processByNameStrict.WaitForExit();
                             }
 
-                            processesByNameStrict.RemoveAt(0);
+                            processesByNameStrict.Remove(processByNameStrict);
                         }
                     }), String.Format(Properties.Resources.ProcessCompatibilityConflict, activeProcessName), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
 

@@ -139,7 +139,7 @@ namespace FlashpointSecurePlayer {
             // none of this is strictly necessary, I'm just trying
             // to reduce the amount of stupid in the #help-me-please channel
             //ShowError(Properties.Resources.GameNotCuratedCorrectly);
-            string text = Properties.Resources.NoGameSelected;
+            StringBuilder text = new StringBuilder(Properties.Resources.NoGameSelected);
 
             Process parentProcess = null;
 
@@ -161,7 +161,7 @@ namespace FlashpointSecurePlayer {
 
             if (parentProcessFileName == null
                 || !parentProcessFileName.Equals(FLASHPOINT_LAUNCHER_PARENT_PROCESS_FILE_NAME, StringComparison.OrdinalIgnoreCase)) {
-                text += " " + Properties.Resources.UseFlashpointLauncher;
+                text.Append(" " + Properties.Resources.UseFlashpointLauncher);
                 Process[] processesByName;
 
                 // detect if Flashpoint Launcher is open
@@ -179,25 +179,25 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                if (processesByName.Length <= 0) {
-                    text += " " + Properties.Resources.OpenFlashpointLauncher;
+                if (!processesByName.Any()) {
+                    text.Append(" " + Properties.Resources.OpenFlashpointLauncher);
                 }
             }
 
             ProgressManager.ShowError();
-            MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(text.ToString(), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
             Application.Exit();
         }
 
         private void AskLaunch(string applicationRestartMessage, string descriptionMessage = null) {
             ProgressManager.ShowOutput();
-            string message = String.Format(Properties.Resources.LaunchGame, applicationRestartMessage);
+            StringBuilder message = new StringBuilder(String.Format(Properties.Resources.LaunchGame, applicationRestartMessage));
 
             if (!String.IsNullOrEmpty(descriptionMessage)) {
-                message += "\n\n" + descriptionMessage;
+                message.Append("\n\n" + descriptionMessage);
             }
 
-            DialogResult dialogResult = MessageBox.Show(message, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.YesNo, MessageBoxIcon.None);
+            DialogResult dialogResult = MessageBox.Show(message.ToString(), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.YesNo, MessageBoxIcon.None);
 
             if (dialogResult == DialogResult.No) {
                 Application.Exit();
@@ -790,7 +790,7 @@ namespace FlashpointSecurePlayer {
                                 if (modificationsElement.DownloadsBefore.Count > 0) {
                                     ModificationsElement.DownloadBeforeElementCollection.DownloadBeforeElement downloadsBeforeElement = null;
 
-                                    for (int i = 0;i < modificationsElement.DownloadsBefore.Count;i++) {
+                                    for (int i = 0; i < modificationsElement.DownloadsBefore.Count; i++) {
                                         downloadsBeforeElement = modificationsElement.DownloadsBefore.Get(i) as ModificationsElement.DownloadBeforeElementCollection.DownloadBeforeElement;
 
                                         if (downloadsBeforeElement == null) {
@@ -1410,8 +1410,8 @@ namespace FlashpointSecurePlayer {
                         // empty ONLY, not null
                         if (htdocsFile == String.Empty) {
                             // path is to directory
-                            if (INDEX_EXTENSIONS.Length > 0) {
-                                htdocsFile = "index." + INDEX_EXTENSIONS[0];
+                            if (INDEX_EXTENSIONS.Any()) {
+                                htdocsFile = "index." + INDEX_EXTENSIONS.First();
                             }
                         }
 

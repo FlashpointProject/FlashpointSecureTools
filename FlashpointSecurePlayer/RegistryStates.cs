@@ -335,7 +335,7 @@ namespace FlashpointSecurePlayer {
         private string TestKeyDeletedInRegistryView(string keyName, RegistryView registryView) {
             List<string> keyNames = keyName.Split('\\').ToList();
 
-            if (keyNames.Count <= 0) {
+            if (!keyNames.Any()) {
                 return keyName;
             }
 
@@ -343,11 +343,11 @@ namespace FlashpointSecurePlayer {
 
             // base key is deleted
             if (registryKey == null) {
-                return keyNames[0];
+                return keyNames.First();
             }
 
             try {
-                for (int i = 0;i < keyNames.Count - 1;i++) {
+                for (int i = 0; i < keyNames.Count - 1; i++) {
                     try {
                         registryKey = registryKey.OpenSubKey(keyNames[i + 1]);
                     } catch {
@@ -606,7 +606,7 @@ namespace FlashpointSecurePlayer {
                 windowsVersionName = GetWindowsVersionName().ToString();
                 bool removeWOW64Subkey = false;
 
-                for (int i = 0;i < wow64KeyList.Count;i++) {
+                for (int i = 0; i < wow64KeyList.Count; i++) {
                     if (wow64KeyName.StartsWith(wow64KeyList[i].Name + "\\", StringComparison.OrdinalIgnoreCase)) {
                         effect = wow64KeyList[i].Effect;
                         effectExceptionValueNames = wow64KeyList[i].EffectExceptionValueNames;
@@ -628,7 +628,7 @@ namespace FlashpointSecurePlayer {
                             // check exceptions for value defined in registry
                             object effectExceptionValue = null;
 
-                            for (int j = 0;j < effectExceptionValueNames.Count;j++) {
+                            for (int j = 0; j < effectExceptionValueNames.Count; j++) {
                                 try {
                                     effectExceptionValue = GetValueInRegistryView(GetKeyValueNameFromKernelRegistryString(String.Join("\\", keyValueNameSplit.GetRange(0, i))), effectExceptionValueNames[j], RegistryView.Registry64);
                                 } catch (ArgumentException) {
@@ -811,7 +811,7 @@ namespace FlashpointSecurePlayer {
 
                 try {
                     // ensure the kernel session is actually processing
-                    for (int i = 0;i < IMPORT_TIMEOUT;i++) {
+                    for (int i = 0; i < IMPORT_TIMEOUT; i++) {
                         // we just ping this value so it gets detected we tried to read it
                         Registry.GetValue("HKEY_LOCAL_MACHINE", IMPORT_RESUME, null);
 
@@ -849,7 +849,7 @@ namespace FlashpointSecurePlayer {
                 // stop kernelSession
                 // we give the registry state a ten second
                 // timeout, which should be enough
-                for (int i = 0;i < IMPORT_TIMEOUT;i++) {
+                for (int i = 0; i < IMPORT_TIMEOUT; i++) {
                     Registry.GetValue("HKEY_LOCAL_MACHINE", IMPORT_PAUSE, null);
 
                     if (ImportPaused) {

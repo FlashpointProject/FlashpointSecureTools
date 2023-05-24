@@ -35,7 +35,7 @@ namespace FlashpointSecurePlayer {
             try {
                 Task[] downloadTasks = new Task[downloadsBeforeNames.Count];
 
-                for (int i = 0;i < downloadsBeforeNames.Count;i++) {
+                for (int i = 0; i < downloadsBeforeNames.Count; i++) {
                     downloadTasks[i] = DownloadAsync(downloadsBeforeNames[i]).ContinueWith(delegate (Task antecedentTask) {
                         HandleAntecedentTask(antecedentTask);
 
