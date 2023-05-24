@@ -310,7 +310,7 @@ namespace FlashpointSecurePlayer {
             private void Show() {
                 StringBuilder text = new StringBuilder();
 
-                if (!String.IsNullOrEmpty(documentTitle)) {
+                if (!String.IsNullOrWhiteSpace(documentTitle)) {
                     text.Append(documentTitle);
                     text.Append(" - ");
                 }

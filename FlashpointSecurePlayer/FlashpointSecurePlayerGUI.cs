@@ -194,7 +194,7 @@ namespace FlashpointSecurePlayer {
             ProgressManager.ShowOutput();
             StringBuilder message = new StringBuilder(String.Format(Properties.Resources.LaunchGame, applicationRestartMessage));
 
-            if (!String.IsNullOrEmpty(descriptionMessage)) {
+            if (!String.IsNullOrWhiteSpace(descriptionMessage)) {
                 message.Append("\n\n" + descriptionMessage);
             }
 
@@ -325,6 +325,27 @@ namespace FlashpointSecurePlayer {
                 LogExceptionToLauncher(ex);
                 throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator and the application failed to restart.");
             }
+        }
+
+        private StringBuilder GetHTDOCSFilePath(Uri requestUri) {
+            StringBuilder htdocsFilePath = new StringBuilder(HTDOCS);
+
+            try {
+                // ignore host if going through localhost (no proxy)
+                if (requestUri != null) {
+                    if (!requestUri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase)) {
+                        htdocsFilePath.Append("\\");
+                        htdocsFilePath.Append(requestUri.Host);
+                    }
+
+                    htdocsFilePath.Append(requestUri.LocalPath);
+                }
+            } catch (UriFormatException) {
+                throw new ArgumentException("The URL \"" + URL + "\" is malformed.");
+            } catch (InvalidOperationException) {
+                throw new ArgumentException("The URL \"" + URL + "\" is invalid.");
+            }
+            return htdocsFilePath;
         }
 
         private async Task ImportActiveX(ErrorDelegate errorDelegate) {
@@ -1383,26 +1404,10 @@ namespace FlashpointSecurePlayer {
                     try {
                         Uri requestUri = await DownloadAsync(GetValidatedURL(URL)).ConfigureAwait(true);
 
-                        StringBuilder htdocsFilePath = new StringBuilder(HTDOCS);
+                        string htdocsFilePath = GetHTDOCSFilePath(requestUri).ToString();
 
                         try {
-                            // ignore host if going through localhost (no proxy)
-                            if (requestUri != null) {
-                                if (!requestUri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase)) {
-                                    htdocsFilePath.Append("\\");
-                                    htdocsFilePath.Append(requestUri.Host);
-                                }
-
-                                htdocsFilePath.Append(requestUri.LocalPath);
-                            }
-                        } catch (UriFormatException) {
-                            throw new ArgumentException("The URL \"" + URL + "\" is malformed.");
-                        } catch (InvalidOperationException) {
-                            throw new ArgumentException("The URL \"" + URL + "\" is invalid.");
-                        }
-
-                        try {
-                            htdocsFile = Path.GetFileName(htdocsFilePath.ToString());
+                            htdocsFile = Path.GetFileName(htdocsFilePath);
                         } catch (ArgumentException ex) {
                             LogExceptionToLauncher(ex);
                             // fail silently?
@@ -1419,13 +1424,13 @@ namespace FlashpointSecurePlayer {
                         string fullHTDOCSFilePath = null;
 
                         try {
-                            fullHTDOCSFilePath = Path.GetFullPath(htdocsFilePath.ToString());
+                            fullHTDOCSFilePath = Path.GetFullPath(htdocsFilePath);
                         } catch (PathTooLongException) {
-                            throw new ArgumentException("The path is too long to \"" + htdocsFilePath.ToString() + "\".");
+                            throw new ArgumentException("The path is too long to \"" + htdocsFilePath + "\".");
                         } catch (SecurityException) {
-                            throw new TaskRequiresElevationException("Getting the Full Path to \"" + htdocsFilePath.ToString() + "\" requires elevation.");
+                            throw new TaskRequiresElevationException("Getting the Full Path to \"" + htdocsFilePath + "\" requires elevation.");
                         } catch (NotSupportedException) {
-                            throw new ArgumentException("The path \"" + htdocsFilePath.ToString() + "\" is not supported.");
+                            throw new ArgumentException("The path \"" + htdocsFilePath + "\" is not supported.");
                         }
 
                         if (fullHTDOCSFilePath == null) {

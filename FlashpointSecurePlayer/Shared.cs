@@ -2610,7 +2610,7 @@ namespace FlashpointSecurePlayer {
                 throw new ArgumentException("RedirectStandardError, RedirectStandardOutput, and RedirectStandardInput must be false.");
             }
 
-            StringBuilder commandLine = GetCreateProcessCommandLine(processStartInfo);
+            string commandLine = GetCreateProcessCommandLine(processStartInfo).ToString();
 
             CreationFlags creationFlags = CreationFlags.CREATE_BREAKAWAY_FROM_JOB
                 | CreationFlags.CREATE_SUSPENDED;
@@ -2628,7 +2628,7 @@ namespace FlashpointSecurePlayer {
             STARTUPINFO startupInfo = new STARTUPINFO();
             PROCESS_INFORMATION processInformation = new PROCESS_INFORMATION();
 
-            if (!CreateProcess(null, commandLine.ToString(), IntPtr.Zero, IntPtr.Zero, false, creationFlags, IntPtr.Zero, currentDirectory, ref startupInfo, out processInformation)) {
+            if (!CreateProcess(null, commandLine, IntPtr.Zero, IntPtr.Zero, false, creationFlags, IntPtr.Zero, currentDirectory, ref startupInfo, out processInformation)) {
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
                 return null;
             }
