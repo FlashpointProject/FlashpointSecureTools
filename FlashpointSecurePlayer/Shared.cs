@@ -2834,17 +2834,12 @@ namespace FlashpointSecurePlayer {
         // it can be null, which is supported,
         // but it is intentionally not an optional argument, because
         // you should pass it in if you have one
-        public static object LengthenValue(object value, string path, PathNames pathNames) {
-            // since it's a value we'll just check it exists
-            if (!(value is string valueString)) {
+        public static string LengthenValue(string value, string path, PathNames pathNames) {
+            if (value == null) {
                 return value;
             }
 
-            if (valueString == null) {
-                return value;
-            }
-
-            if (valueString.Length > MAX_PATH + MAX_PATH + FP_STARTUP_PATH.Length) {
+            if (value.Length > MAX_PATH + MAX_PATH + FP_STARTUP_PATH.Length) {
                 return value;
             }
 
@@ -2864,7 +2859,7 @@ namespace FlashpointSecurePlayer {
             }
 
             // if the value is a short value...
-            if (!valueString.StartsWith(shortPathName, StringComparison.OrdinalIgnoreCase)) {
+            if (!value.StartsWith(shortPathName, StringComparison.OrdinalIgnoreCase)) {
                 return value;
             }
 
@@ -2875,22 +2870,17 @@ namespace FlashpointSecurePlayer {
                 return value;
             }
             // replace the short path with the long path
-            return longPathName + valueString.Substring(shortPathName.Length);
+            return longPathName + value.Substring(shortPathName.Length);
         }
 
         // find path in registry value
         // string must begin with path
-        public static object ReplaceStartupPathEnvironmentVariable(object lengthenedValue, PathNames pathNames) {
-            // since it's a value we'll just check it exists
-            if (!(lengthenedValue is string lengthenedValueString)) {
+        public static string ReplaceStartupPathEnvironmentVariable(string lengthenedValue, PathNames pathNames) {
+            if (lengthenedValue == null) {
                 return lengthenedValue;
             }
 
-            if (lengthenedValueString == null) {
-                return lengthenedValue;
-            }
-
-            if (lengthenedValueString.Length > MAX_PATH + MAX_PATH + FP_STARTUP_PATH.Length) {
+            if (lengthenedValue.Length > MAX_PATH + MAX_PATH + FP_STARTUP_PATH.Length) {
                 return lengthenedValue;
             }
 
@@ -2906,14 +2896,14 @@ namespace FlashpointSecurePlayer {
 
             longStartupPathName = RemoveTrailingSlash(longStartupPathName);
 
-            if (lengthenedValueString.Equals(longStartupPathName, StringComparison.OrdinalIgnoreCase)) {
+            if (lengthenedValue.Equals(longStartupPathName, StringComparison.OrdinalIgnoreCase)) {
                 return "%" + FP_STARTUP_PATH + "%";
             }
 
             longStartupPathName = AddTrailingSlash(longStartupPathName);
 
-            if (lengthenedValueString.StartsWith(longStartupPathName, StringComparison.OrdinalIgnoreCase)) {
-                return "%" + FP_STARTUP_PATH + "%\\" + lengthenedValueString.Substring(longStartupPathName.Length);
+            if (lengthenedValue.StartsWith(longStartupPathName, StringComparison.OrdinalIgnoreCase)) {
+                return "%" + FP_STARTUP_PATH + "%\\" + lengthenedValue.Substring(longStartupPathName.Length);
             }
             return lengthenedValue;
         }

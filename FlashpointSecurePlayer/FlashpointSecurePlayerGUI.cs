@@ -655,7 +655,9 @@ namespace FlashpointSecurePlayer {
                             }
 
                             if (String.IsNullOrEmpty(softwareProcessStartInfo.WorkingDirectory)) {
-                                softwareProcessStartInfo.WorkingDirectory = String.IsNullOrEmpty(modeElement.WorkingDirectory) ? Path.GetDirectoryName(fullPath) : Environment.ExpandEnvironmentVariables(modeElement.WorkingDirectory);
+                                softwareProcessStartInfo.WorkingDirectory = String.IsNullOrEmpty(modeElement.WorkingDirectory)
+                                    ? Path.GetDirectoryName(fullPath)
+                                    : Environment.ExpandEnvironmentVariables(modeElement.WorkingDirectory);
                             }
 
                             Process softwareProcess = null;

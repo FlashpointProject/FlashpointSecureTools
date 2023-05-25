@@ -191,7 +191,9 @@ namespace FlashpointSecurePlayer {
                 // default the working directory to here
                 // (otherwise it'd get set to Old CPU Simulator's directory, not desirable)
                 if (String.IsNullOrEmpty(modeElement.WorkingDirectory)) {
-                    softwareProcessStartInfo.WorkingDirectory = String.IsNullOrEmpty(workingDirectory) ? Environment.CurrentDirectory : workingDirectory;
+                    softwareProcessStartInfo.WorkingDirectory = String.IsNullOrEmpty(workingDirectory)
+                        ? Environment.CurrentDirectory
+                        : workingDirectory;
                 }
                 return;
             }
