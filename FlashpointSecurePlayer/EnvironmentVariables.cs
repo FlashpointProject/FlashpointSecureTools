@@ -24,15 +24,12 @@ namespace FlashpointSecurePlayer {
         public EnvironmentVariables(EventHandler importStart, EventHandler importStop) : base(importStart, importStop) { }
 
         private string GetComparableName(string name) {
-            int comparableNameLength = name.IndexOf('\0');
-            string comparableName = null;
-
-            if (comparableNameLength == -1) {
-                comparableName = name;
-            } else {
-                comparableName = name.Substring(comparableNameLength);
+            if (name == null) {
+                return name;
             }
-            return comparableName;
+
+            int comparableNameLength = name.IndexOf('\0');
+            return comparableNameLength == -1 ? name : name.Substring(0, comparableNameLength);
         }
 
         private string GetValue(EnvironmentVariablesElement environmentVariablesElement) {
@@ -109,7 +106,7 @@ namespace FlashpointSecurePlayer {
                 string value = null;
                 List<string> values = null;
                 string compatibilityLayerValue = null;
-                List<string> compatibilityLayerValues = new List<string>();
+                List<string> compatibilityLayerValues = null;
 
                 // compatibility settings
                 try {
@@ -191,17 +188,10 @@ namespace FlashpointSecurePlayer {
                         if (comparableName != null) {
                             if (comparableName.Equals(__COMPAT_LAYER, StringComparison.OrdinalIgnoreCase)
                                 && modeElement.Name == ModeElement.NAME.WEB_BROWSER) {
-                                values = new List<string>();
-
                                 // the compatibility layers may contain more values
                                 // but we're only concerned if it contains the values we want
-                                if (compatibilityLayerValue != null) {
-                                    compatibilityLayerValues = compatibilityLayerValue.Split().ToList();
-                                }
-
-                                if (value != null) {
-                                    values = value.Split().ToList();
-                                }
+                                compatibilityLayerValues = compatibilityLayerValue == null ? new List<string>() : compatibilityLayerValue.Split().ToList();
+                                values = value == null ? new List<string>() : value.Split().ToList();
 
                                 // we have to restart in this case in server mode
                                 // because the compatibility layers only take effect
@@ -272,7 +262,7 @@ namespace FlashpointSecurePlayer {
                 string value = null;
                 List<string> values = null;
                 string compatibilityLayerValue = null;
-                List<string> compatibilityLayerValues = new List<string>();
+                List<string> compatibilityLayerValues = null;
 
                 // compatibility settings
                 try {
@@ -285,9 +275,7 @@ namespace FlashpointSecurePlayer {
 
                 // we get this right away here
                 // as opposed to after the variable has been potentially set like during activation
-                if (compatibilityLayerValue != null) {
-                    compatibilityLayerValues = compatibilityLayerValue.Split().ToList();
-                }
+                compatibilityLayerValues = compatibilityLayerValue == null ? new List<string>() : compatibilityLayerValue.Split().ToList();
 
                 ProgressManager.CurrentGoal.Start(activeModificationsElement.EnvironmentVariables.Count);
 
@@ -314,11 +302,7 @@ namespace FlashpointSecurePlayer {
                             }
 
                             value = environmentVariablesElement.Value;
-                            values = new List<string>();
-
-                            if (value != null) {
-                                values = value.Split().ToList();
-                            }
+                            values = value == null ? new List<string>() : value.Split().ToList();
 
                             if (modificationsRevertMethod == MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
                                 try {

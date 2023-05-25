@@ -237,7 +237,7 @@ namespace FlashpointSecurePlayer {
                 private void timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e) {
                     timer.Stop();
                     timer.Elapsed -= timer_Elapsed;
-                    timer.Close();
+                    timer.Dispose();
                     timer = null;
 
                     Timeout = true;

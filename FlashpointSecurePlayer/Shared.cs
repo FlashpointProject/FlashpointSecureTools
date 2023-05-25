@@ -2583,11 +2583,11 @@ namespace FlashpointSecurePlayer {
             }
 
             // hide the current form so two windows are not open at once
+            // no this is not a race condition
+            // http://stackoverflow.com/questions/33042010/in-what-cases-does-the-process-start-method-return-false
             try {
                 form.Hide();
                 form.ControlBox = true;
-                // no this is not a race condition
-                // http://stackoverflow.com/questions/33042010/in-what-cases-does-the-process-start-method-return-false
                 Process.Start(processStartInfo).Dispose();
                 Application.Exit();
             } catch (Exception ex) {

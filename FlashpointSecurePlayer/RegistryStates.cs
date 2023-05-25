@@ -368,7 +368,8 @@ namespace FlashpointSecurePlayer {
                 return String.Empty;
             } finally {
                 if (registryKey != null) {
-                    registryKey.Close();
+                    registryKey.Dispose();
+                    registryKey = null;
                 }
             }
         }
@@ -416,7 +417,8 @@ namespace FlashpointSecurePlayer {
                 }
             } finally {
                 if (registryKey != null) {
-                    registryKey.Close();
+                    registryKey.Dispose();
+                    registryKey = null;
                 }
             }
         }
@@ -431,7 +433,8 @@ namespace FlashpointSecurePlayer {
                 }
             } finally {
                 if (registryKey != null) {
-                    registryKey.Close();
+                    registryKey.Dispose();
+                    registryKey = null;
                 }
             }
         }
@@ -467,11 +470,11 @@ namespace FlashpointSecurePlayer {
                     }
                     break;
                 }
-
                 return value;
             } finally {
                 if (registryKey != null) {
-                    registryKey.Close();
+                    registryKey.Dispose();
+                    registryKey = null;
                 }
             }
         }
@@ -509,7 +512,8 @@ namespace FlashpointSecurePlayer {
                 }
             } finally {
                 if (registryKey != null) {
-                    registryKey.Close();
+                    registryKey.Dispose();
+                    registryKey = null;
                 }
             }
         }
@@ -530,7 +534,8 @@ namespace FlashpointSecurePlayer {
                 }
             } finally {
                 if (registryKey != null) {
-                    registryKey.Close();
+                    registryKey.Dispose();
+                    registryKey = null;
                 }
             }
         }
@@ -550,7 +555,8 @@ namespace FlashpointSecurePlayer {
                 }
             } finally {
                 if (registryKey != null) {
-                    registryKey.Close();
+                    registryKey.Dispose();
+                    registryKey = null;
                 }
             }
         }
@@ -606,11 +612,7 @@ namespace FlashpointSecurePlayer {
                         effectExceptionValueNames = wow64KeyList[i].EffectExceptionValueNames;
 
                         if (effect == WOW64Key.EFFECT.SHARED_VISTA) {
-                            if (notSharedVistaVersion) {
-                                effect = WOW64Key.EFFECT.REDIRECTED;
-                            } else {
-                                effect = WOW64Key.EFFECT.SHARED;
-                            }
+                            effect = notSharedVistaVersion ? WOW64Key.EFFECT.REDIRECTED : WOW64Key.EFFECT.SHARED;
                         }
 
                         switch (effect) {
@@ -953,7 +955,7 @@ namespace FlashpointSecurePlayer {
                 activeModificationsElement.RegistryStates.BinaryType = Environment.Is64BitOperatingSystem ? BINARY_TYPE.SCS_64BIT_BINARY : BINARY_TYPE.SCS_32BIT_BINARY;
                 activeModificationsElement.RegistryStates._CurrentUser = WindowsIdentity.GetCurrent().User.Value;
                 activeModificationsElement.RegistryStates._Administrator = TestLaunchedAsAdministratorUser();
-                RegistryView registryView = (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) ? RegistryView.Registry64 : RegistryView.Registry32;
+                RegistryView registryView = modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY ? RegistryView.Registry64 : RegistryView.Registry32;
 
                 ProgressManager.CurrentGoal.Start(modificationsElement.RegistryStates.Count + modificationsElement.RegistryStates.Count);
 
@@ -1165,7 +1167,7 @@ namespace FlashpointSecurePlayer {
                     throw new TaskRequiresElevationException("Deactivating the Registry State requires elevation.");
                 }
 
-                RegistryView registryView = (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) ? RegistryView.Registry64 : RegistryView.Registry32;
+                RegistryView registryView = modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY ? RegistryView.Registry64 : RegistryView.Registry32;
 
                 ProgressManager.CurrentGoal.Start(activeModificationsElement.RegistryStates.Count + activeModificationsElement.RegistryStates.Count);
 
@@ -1420,7 +1422,7 @@ namespace FlashpointSecurePlayer {
             // http://learn.microsoft.com/en-us/windows/win32/etw/registry-typegroup1
             ulong safeKeyHandle = registryTraceData.KeyHandle & 0x00000000FFFFFFFF;
             string value = null;
-            RegistryView registryView = (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) ? RegistryView.Registry64 : RegistryView.Registry32;
+            RegistryView registryView = modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY ? RegistryView.Registry64 : RegistryView.Registry32;
 
             if (safeKeyHandle == 0) {
                 // we don't need to queue it, we can just add the key right here
@@ -1633,7 +1635,7 @@ namespace FlashpointSecurePlayer {
             RegistryStateElement registryStateElement;
             string value = null;
 
-            RegistryView registryView = (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) ? RegistryView.Registry64 : RegistryView.Registry32;
+            RegistryView registryView = modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY ? RegistryView.Registry64 : RegistryView.Registry32;
             
             // we want to take care of any queued registry timeline events
             // an event entails the date and time of the registry modification

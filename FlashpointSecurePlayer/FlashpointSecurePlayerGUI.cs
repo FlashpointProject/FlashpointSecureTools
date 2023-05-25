@@ -655,11 +655,7 @@ namespace FlashpointSecurePlayer {
                             }
 
                             if (String.IsNullOrEmpty(softwareProcessStartInfo.WorkingDirectory)) {
-                                if (String.IsNullOrEmpty(modeElement.WorkingDirectory)) {
-                                    softwareProcessStartInfo.WorkingDirectory = Path.GetDirectoryName(fullPath);
-                                } else {
-                                    softwareProcessStartInfo.WorkingDirectory = Environment.ExpandEnvironmentVariables(modeElement.WorkingDirectory);
-                                }
+                                softwareProcessStartInfo.WorkingDirectory = String.IsNullOrEmpty(modeElement.WorkingDirectory) ? Path.GetDirectoryName(fullPath) : Environment.ExpandEnvironmentVariables(modeElement.WorkingDirectory);
                             }
 
                             Process softwareProcess = null;
@@ -1473,16 +1469,6 @@ namespace FlashpointSecurePlayer {
                         LogExceptionToLauncher(ex);
                         // fail silently
                     }
-                }
-
-                if (htdocsFile == null) {
-                    // still create environment variable
-                    htdocsFile = String.Empty;
-                }
-
-                if (htdocsFileDirectory == null) {
-                    // still create environment variable
-                    htdocsFileDirectory = String.Empty;
                 }
 
                 // set Environment Variables

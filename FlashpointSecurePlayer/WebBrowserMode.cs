@@ -705,7 +705,7 @@ namespace FlashpointSecurePlayer {
             int progress = e.MaximumProgress > 0 ? (int)Math.Min((double)e.CurrentProgress / e.MaximumProgress * 100, 100) : 0;
             webBrowserModeTitle.Progress = progress;
             
-            progressToolStripProgressBar.Style = (progress == 0) ? ProgressBarStyle.Marquee : ProgressBarStyle.Continuous;
+            progressToolStripProgressBar.Style = progress == 0 ? ProgressBarStyle.Marquee : ProgressBarStyle.Continuous;
             progressToolStripProgressBar.Value = progress;
             progressToolStripProgressBar.ToolTipText = progress + "%";
         }
