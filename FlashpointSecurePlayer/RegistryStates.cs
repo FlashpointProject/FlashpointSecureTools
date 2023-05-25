@@ -1697,17 +1697,6 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            // add the key to KeyNames, and clear any queued registry modifications with the same KeyHandle
-            // are KCBs system-wide?
-            //if (registryTraceData.ProcessID != CurrentProcessId && registryTraceData.ProcessID != -1) {
-            //return;
-            //}
-
-            // could be empty, if immediate subkey of hive
-            //if (String.IsNullOrEmpty(registryTraceData.KeyName)) {
-            //return;
-            //}
-
             // clear out the queue, since we started now, so this handle refers to something else
             ulong safeKeyHandle = registryTraceData.KeyHandle & 0x00000000FFFFFFFF;
 
