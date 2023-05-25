@@ -157,7 +157,7 @@ namespace FlashpointSecurePlayer {
 
             if (parentProcess != null) {
                 try {
-                    parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess));
+                    parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess).ToString());
                 } catch {
                     // fail silently
                 } finally {
@@ -296,7 +296,7 @@ namespace FlashpointSecurePlayer {
 
             if (parentProcess != null) {
                 try {
-                    parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess));
+                    parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess).ToString());
                 } catch (Exception ex) {
                     LogExceptionToLauncher(ex);
                     ProgressManager.ShowError();
@@ -331,7 +331,7 @@ namespace FlashpointSecurePlayer {
             try {
                 processStartInfo = new ProcessStartInfo {
                     FileName = GetValidArgument(fullPath, true),
-                    Arguments = GetOldCPUSimulatorProcessStartInfoArguments(modificationsElement.OldCPUSimulator, Environment.CommandLine),
+                    Arguments = GetOldCPUSimulatorProcessStartInfoArguments(modificationsElement.OldCPUSimulator, new StringBuilder(Environment.CommandLine)).ToString(),
                     WorkingDirectory = Environment.CurrentDirectory
                 };
             } catch (ArgumentException ex) {

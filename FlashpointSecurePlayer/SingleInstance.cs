@@ -118,7 +118,7 @@ namespace FlashpointSecurePlayer {
                 if (singleInstanceElement.Strict) {
                     for (int i = 0; i < processesByName.Length; i++) {
                         if (processesByName[i] != null) {
-                            processName = GetProcessName(processesByName[i]);
+                            processName = GetProcessName(processesByName[i]).ToString();
 
                             try {
                                 if (ComparePaths(executable, processName)) {

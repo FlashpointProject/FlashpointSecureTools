@@ -2953,7 +2953,7 @@ namespace FlashpointSecurePlayer {
             return null;
         }
 
-        public static string GetProcessName(Process process) {
+        public static StringBuilder GetProcessName(Process process) {
             bool queryResult = false;
             int size = MAX_PATH;
             StringBuilder processName = new StringBuilder(size);
@@ -2969,9 +2969,9 @@ namespace FlashpointSecurePlayer {
 
             if (!queryResult) {
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                return null;
+                return processName;
             }
-            return processName.ToString();
+            return processName;
         }
 
         public static string[] GetCommandLineToArgv(string commandLine, out int argc) {
@@ -3070,7 +3070,7 @@ namespace FlashpointSecurePlayer {
             return argumentSlice;
         }
 
-        public static string GetOldCPUSimulatorProcessStartInfoArguments(FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement.OldCPUSimulatorElement oldCPUSimulatorElement, string software) {
+        public static StringBuilder GetOldCPUSimulatorProcessStartInfoArguments(FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement.OldCPUSimulatorElement oldCPUSimulatorElement, StringBuilder software) {
             StringBuilder oldCPUSimulatorProcessStartInfoArguments = new StringBuilder("-t ");
 
             if (!int.TryParse(Environment.ExpandEnvironmentVariables(oldCPUSimulatorElement.TargetRate), out int targetRate)) {
@@ -3106,7 +3106,7 @@ namespace FlashpointSecurePlayer {
 
             oldCPUSimulatorProcessStartInfoArguments.Append(" -sw ");
             oldCPUSimulatorProcessStartInfoArguments.Append(software);
-            return oldCPUSimulatorProcessStartInfoArguments.ToString();
+            return oldCPUSimulatorProcessStartInfoArguments;
         }
     }
 }
