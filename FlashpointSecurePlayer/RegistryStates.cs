@@ -63,7 +63,7 @@ namespace FlashpointSecurePlayer {
         private string fullPath = null;
         private PathNames pathNames = null;
         private EventWaitHandle resumeEventWaitHandle = new ManualResetEvent(false);
-        private Dictionary<ulong, SortedList<DateTime, List<RegistryStateElement>>> modificationsQueue = null;
+        private Dictionary<ulong, SortedList<DateTime, List<RegistryStateElement>>> queuedModifications = null;
         private Dictionary<ulong, string> kcbModificationKeyNames = null;
         private TraceEventSession kernelSession;
 
@@ -777,7 +777,7 @@ namespace FlashpointSecurePlayer {
                     resumeEventWaitHandle.Reset();
                 }
 
-                modificationsQueue = new Dictionary<ulong, SortedList<DateTime, List<RegistryStateElement>>>();
+                queuedModifications = new Dictionary<ulong, SortedList<DateTime, List<RegistryStateElement>>>();
                 kcbModificationKeyNames = new Dictionary<ulong, string>();
 
                 kernelSession = new TraceEventSession(KernelTraceEventParser.KernelSessionName);
@@ -1329,7 +1329,11 @@ namespace FlashpointSecurePlayer {
         }
 
         private void QueueModification(ulong safeKeyHandle, DateTime timeStamp, RegistryStateElement registryStateElement) {
-            modificationsQueue.TryGetValue(safeKeyHandle, out SortedList<DateTime, List<RegistryStateElement>> timeStamps);
+            if (queuedModifications == null) {
+                queuedModifications = new Dictionary<ulong, SortedList<DateTime, List<RegistryStateElement>>>();
+            }
+
+            queuedModifications.TryGetValue(safeKeyHandle, out SortedList<DateTime, List<RegistryStateElement>> timeStamps);
 
             // worst case scenario: now we need to watch for when we get info on that handle
             if (timeStamps == null) {
@@ -1346,7 +1350,7 @@ namespace FlashpointSecurePlayer {
             registryStateElements.Add(registryStateElement);
             
             timeStamps[timeStamp] = registryStateElements;
-            modificationsQueue[safeKeyHandle] = timeStamps;
+            queuedModifications[safeKeyHandle] = timeStamps;
         }
 
         private void GotValue(RegistryTraceData registryTraceData) {
@@ -1460,7 +1464,8 @@ namespace FlashpointSecurePlayer {
 
             // need to deal with KCB
             // well, we already know the base key name from before, so we can wrap this up now
-            if (kcbModificationKeyNames.ContainsKey(safeKeyHandle)) {
+            if (kcbModificationKeyNames != null
+                && kcbModificationKeyNames.ContainsKey(safeKeyHandle)) {
                 registryStateElement.KeyName = GetRedirectedKeyValueName(GetKeyValueNameFromKernelRegistryString(kcbModificationKeyNames[safeKeyHandle] + "\\" + registryStateElement.KeyName), modificationsElement.RegistryStates.BinaryType);
 
                 registryStateElement.ValueKind = GetValueKindInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView);
@@ -1548,7 +1553,8 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            if (kcbModificationKeyNames.ContainsKey(safeKeyHandle)) {
+            if (kcbModificationKeyNames != null
+                && kcbModificationKeyNames.ContainsKey(safeKeyHandle)) {
                 // we have info from the handle already to get the name
                 registryStateElement.KeyName = GetRedirectedKeyValueName(GetKeyValueNameFromKernelRegistryString(kcbModificationKeyNames[safeKeyHandle] + "\\" + registryStateElement.KeyName), modificationsElement.RegistryStates.BinaryType);
 
@@ -1580,7 +1586,15 @@ namespace FlashpointSecurePlayer {
 
             // clear out the queue, since we started now, so this handle refers to something else
             ulong safeKeyHandle = registryTraceData.KeyHandle & 0x00000000FFFFFFFF;
-            modificationsQueue.Remove(safeKeyHandle);
+
+            if (queuedModifications != null) {
+                queuedModifications.Remove(safeKeyHandle);
+            }
+
+            if (kcbModificationKeyNames == null) {
+                kcbModificationKeyNames = new Dictionary<ulong, string>();
+            }
+
             kcbModificationKeyNames[safeKeyHandle] = registryTraceData.KeyName;
         }
 
@@ -1609,7 +1623,10 @@ namespace FlashpointSecurePlayer {
 
             // it's stopped, remove it from the list of active key names
             ulong safeKeyHandle = registryTraceData.KeyHandle & 0x0000000FFFFFFFF;
-            kcbModificationKeyNames.Remove(safeKeyHandle);
+
+            if (kcbModificationKeyNames != null) {
+                kcbModificationKeyNames.Remove(safeKeyHandle);
+            }
 
             // we'll be finding these in a second
             SortedList<DateTime, List<RegistryStateElement>> timeStamps;
@@ -1620,8 +1637,9 @@ namespace FlashpointSecurePlayer {
             
             // we want to take care of any queued registry timeline events
             // an event entails the date and time of the registry modification
-            if (modificationsQueue.ContainsKey(safeKeyHandle)) {
-                timeStamps = modificationsQueue[safeKeyHandle];
+            if (queuedModifications != null
+                && queuedModifications.ContainsKey(safeKeyHandle)) {
+                timeStamps = queuedModifications[safeKeyHandle];
 
                 foreach (List<RegistryStateElement> registryStateElements in timeStamps.Values) {
                     // add its BaseKeyName
@@ -1663,7 +1681,7 @@ namespace FlashpointSecurePlayer {
                 // and out of the queue
                 // (the Key is the TimeStamp)
                 //SetFlashpointSecurePlayerSection(TemplateName);
-                modificationsQueue[safeKeyHandle].Clear();
+                queuedModifications[safeKeyHandle].Clear();
             }
         }
     }
