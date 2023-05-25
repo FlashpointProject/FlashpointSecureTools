@@ -98,7 +98,7 @@ namespace FlashpointSecurePlayer {
             
             //string[] argv = CommandLineToArgv(executablePath, out int argc);
 
-            List<Process> processesByName;
+            Process[] processesByName;
             List<Process> processesByNameStrict;
             Process processByNameStrict;
             string processName = null;
@@ -107,24 +107,33 @@ namespace FlashpointSecurePlayer {
 
             do {
                 // the strict list is the one which will be checked against for real
-                processesByName = Process.GetProcessesByName(activeProcessName).ToList();
+                processesByName = Process.GetProcessesByName(activeProcessName);
+
+                if (processesByName == null) {
+                    return;
+                }
+
                 processesByNameStrict = new List<Process>();
 
                 if (singleInstanceElement.Strict) {
-                    for (int i = 0; i < processesByName.Count; i++) {
-                        processName = GetProcessName(processesByName[i]);
+                    for (int i = 0; i < processesByName.Length; i++) {
+                        if (processesByName[i] != null) {
+                            processName = GetProcessName(processesByName[i]);
 
-                        try {
-                            if (ComparePaths(executable, processName)) {
-                                processesByNameStrict.Add(processesByName[i]);
+                            try {
+                                if (ComparePaths(executable, processName)) {
+                                    processesByNameStrict.Add(processesByName[i]);
+                                }
+                            } catch {
+                                // fail silently
                             }
-                        } catch {
-                            // fail silently
                         }
                     }
                 } else {
-                    processesByNameStrict = processesByName;
+                    processesByNameStrict = processesByName.ToList();
                 }
+
+                processesByName = null;
 
                 // don't allow preceding further until
                 // all processes with the same name have been killed
@@ -132,12 +141,13 @@ namespace FlashpointSecurePlayer {
                     DialogResult? dialogResult = ShowClosableMessageBox(Task.Run(delegate () {
                         while (processesByNameStrict.Any()) {
                             processByNameStrict = processesByNameStrict.First();
-
-                            if (!processByNameStrict.HasExited) {
-                                processByNameStrict.WaitForExit();
-                            }
+                            
+                            processByNameStrict.WaitForExit();
 
                             processesByNameStrict.Remove(processByNameStrict);
+
+                            processByNameStrict.Dispose();
+                            processByNameStrict = null;
                         }
                     }), String.Format(Properties.Resources.ProcessCompatibilityConflict, activeProcessName), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
 

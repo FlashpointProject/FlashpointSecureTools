@@ -37,6 +37,9 @@ namespace FlashpointSecurePlayer {
                 } catch (Exception ex) {
                     LogExceptionToLauncher(ex);
                     throw new InvalidOldCPUSimulatorException("Failed to get the parent process EXE name.");
+                } finally {
+                    parentProcess.Dispose();
+                    parentProcess = null;
                 }
             }
 
@@ -104,25 +107,23 @@ namespace FlashpointSecurePlayer {
             };
 
             try {
-                Process oldCPUSimulatorProcess = Process.Start(oldCPUSimulatorProcessStartInfo);
-
-                if (!oldCPUSimulatorProcess.HasExited) {
+                using (Process oldCPUSimulatorProcess = Process.Start(oldCPUSimulatorProcessStartInfo)) {
                     oldCPUSimulatorProcess.WaitForExit();
-                }
 
-                string oldCPUSimulatorProcessStandardError = null;
-                string oldCPUSimulatorProcessStandardOutput = null;
+                    string oldCPUSimulatorProcessStandardError = null;
+                    string oldCPUSimulatorProcessStandardOutput = null;
 
-                if (oldCPUSimulatorProcessStartInfo.RedirectStandardError) {
-                    oldCPUSimulatorProcessStandardError = oldCPUSimulatorProcess.StandardError.ReadToEnd();
-                }
+                    if (oldCPUSimulatorProcessStartInfo.RedirectStandardError) {
+                        oldCPUSimulatorProcessStandardError = oldCPUSimulatorProcess.StandardError.ReadToEnd();
+                    }
 
-                if (oldCPUSimulatorProcessStartInfo.RedirectStandardOutput) {
-                    oldCPUSimulatorProcessStandardOutput = oldCPUSimulatorProcess.StandardOutput.ReadToEnd();
-                }
+                    if (oldCPUSimulatorProcessStartInfo.RedirectStandardOutput) {
+                        oldCPUSimulatorProcessStandardOutput = oldCPUSimulatorProcess.StandardOutput.ReadToEnd();
+                    }
 
-                if (oldCPUSimulatorProcess.ExitCode != 0 || !long.TryParse(oldCPUSimulatorProcessStandardOutput.Split('\n').Last(), out maxRate)) {
-                    throw new InvalidOldCPUSimulatorException("Failed to get Max Rate.");
+                    if (oldCPUSimulatorProcess.ExitCode != 0 || !long.TryParse(oldCPUSimulatorProcessStandardOutput.Split('\n').Last(), out maxRate)) {
+                        throw new InvalidOldCPUSimulatorException("Failed to get Max Rate.");
+                    }
                 }
             } catch (Exception ex) {
                 LogExceptionToLauncher(ex);

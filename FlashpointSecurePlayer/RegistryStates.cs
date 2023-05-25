@@ -63,7 +63,7 @@ namespace FlashpointSecurePlayer {
         private string fullPath = null;
         private PathNames pathNames = null;
         private EventWaitHandle resumeEventWaitHandle = new ManualResetEvent(false);
-        private Dictionary<ulong, SortedList<DateTime, RegistryStateElement>> modificationsQueue = null;
+        private Dictionary<ulong, SortedList<DateTime, List<RegistryStateElement>>> modificationsQueue = null;
         private Dictionary<ulong, string> kcbModificationKeyNames = null;
         private TraceEventSession kernelSession;
 
@@ -669,8 +669,8 @@ namespace FlashpointSecurePlayer {
 
         private bool CompareValues(object value, RegistryView registryView, RegistryStateElement registryStateElement, RegistryStateElement activeRegistryStateElement, string activeCurrentUser = null, bool activeAdministrator = true) {
             // caller needs to decide what to do if value is null
-            if (value == null) {
-                throw new ArgumentNullException("The value is null.");
+            if (!(value is string comparableValue)) {
+                throw new ArgumentNullException("The comparableValueString is null.");
             }
 
             if (registryStateElement == null) {
@@ -678,24 +678,23 @@ namespace FlashpointSecurePlayer {
             }
 
             RegistryValueKind? registryValueKind = GetValueKindInRegistryView(GetUserKeyValueName(registryStateElement.KeyName, activeCurrentUser, activeAdministrator), registryStateElement.ValueName, registryView);
-            string comparableValueString = value.ToString();
-            string comparableRegistryStateElementValueString = registryStateElement.Value;
+            string comparableRegistryStateElementValue = registryStateElement.Value;
 
             // if value kind is the same as current value kind
             if (registryValueKind == registryStateElement.ValueKind) {
                 if (activeRegistryStateElement != null) {
                     // account for expanded values
-                    comparableRegistryStateElementValueString = String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded) ? comparableRegistryStateElementValueString : activeRegistryStateElement._ValueExpanded;
+                    comparableRegistryStateElementValue = String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded) ? comparableRegistryStateElementValue : activeRegistryStateElement._ValueExpanded;
                 }
 
                 // check value matches current value/current expanded value
-                if (comparableValueString == comparableRegistryStateElementValueString) {
+                if (comparableValue.Equals(comparableRegistryStateElementValue, StringComparison.Ordinal)) {
                     return true;
                 }
 
                 // for ActiveX: check if it matches as a path
                 try {
-                    if (ComparePaths(comparableValueString, comparableRegistryStateElementValueString)) {
+                    if (ComparePaths(comparableValue, comparableRegistryStateElementValue)) {
                         return true;
                     }
                 } catch {
@@ -709,16 +708,16 @@ namespace FlashpointSecurePlayer {
                     // value kind before also matters
                     if (registryValueKind == activeRegistryStateElement.ValueKind) {
                         // get value before
-                        comparableRegistryStateElementValueString = activeRegistryStateElement.Value;
+                        comparableRegistryStateElementValue = activeRegistryStateElement.Value;
 
                         // check value matches
-                        if (comparableValueString == comparableRegistryStateElementValueString) {
+                        if (comparableValue.Equals(comparableRegistryStateElementValue, StringComparison.Ordinal)) {
                             return true;
                         }
 
                         // check if it matches as a path
                         try {
-                            if (ComparePaths(comparableValueString, comparableRegistryStateElementValueString)) {
+                            if (ComparePaths(comparableValue, comparableRegistryStateElementValue)) {
                                 return true;
                             }
                         } catch {
@@ -769,7 +768,7 @@ namespace FlashpointSecurePlayer {
                 modificationsElement.RegistryStates.BinaryType = binaryType;
                 pathNames = new PathNames();
                 resumeEventWaitHandle.Reset();
-                modificationsQueue = new Dictionary<ulong, SortedList<DateTime, RegistryStateElement>>();
+                modificationsQueue = new Dictionary<ulong, SortedList<DateTime, List<RegistryStateElement>>>();
                 kcbModificationKeyNames = new Dictionary<ulong, string>();
 
                 kernelSession = new TraceEventSession(KernelTraceEventParser.KernelSessionName);
@@ -920,7 +919,7 @@ namespace FlashpointSecurePlayer {
                 RegistryStateElement registryStateElement = null;
                 RegistryStateElement activeRegistryStateElement = null;
                 string keyName = null;
-                object value = null;
+                string value = null;
                 string keyDeleted = null;
                 string valueExpanded = null;
 
@@ -987,7 +986,7 @@ namespace FlashpointSecurePlayer {
                             }
 
                             try {
-                                value = /*ReplaceStartupPathEnvironmentVariable(LengthenValue(*/GetValueInRegistryView(keyName, registryStateElement.ValueName, registryView)/*, fullPath))*/;
+                                value = /*ReplaceStartupPathEnvironmentVariable(LengthenValue(*/GetValueInRegistryView(keyName, registryStateElement.ValueName, registryView)/*, fullPath))*/ as string;
                             } catch (ArgumentException) {
                                 // value doesn't exist
                                 value = null;
@@ -1013,7 +1012,7 @@ namespace FlashpointSecurePlayer {
                             } else {
                                 // we edit a value that exists
                                 activeRegistryStateElement.Type = TYPE.VALUE;
-                                activeRegistryStateElement.Value = value.ToString();
+                                activeRegistryStateElement.Value = value;
                             }
                         }
 
@@ -1192,7 +1191,8 @@ namespace FlashpointSecurePlayer {
                                             throw new TaskRequiresElevationException("Getting the value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" requires elevation.");
                                         }
 
-                                        if ((activeRegistryStateElement.Type == TYPE.KEY && registryStateElement.Type == TYPE.VALUE) || (activeRegistryStateElement.Type == TYPE.VALUE && !String.IsNullOrEmpty(activeRegistryStateElement._Deleted))) {
+                                        if ((activeRegistryStateElement.Type == TYPE.KEY && registryStateElement.Type == TYPE.VALUE)
+                                            || (activeRegistryStateElement.Type == TYPE.VALUE && !String.IsNullOrEmpty(activeRegistryStateElement._Deleted))) {
                                             // we previously created a value
                                             // the value, (and potentially the key it belonged to) did not exist before
                                             // the value may or may not exist now
@@ -1244,7 +1244,8 @@ namespace FlashpointSecurePlayer {
                                 if (registryStateElement != null) {
                                     switch (activeRegistryStateElement.Type) {
                                         case TYPE.KEY:
-                                        if (!String.IsNullOrEmpty(activeRegistryStateElement._Deleted) || modificationsRevertMethod == MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
+                                        if (!String.IsNullOrEmpty(activeRegistryStateElement._Deleted)
+                                            || modificationsRevertMethod == MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
                                             try {
                                                 // key didn't exist before
                                                 DeleteKeyInRegistryView(GetUserKeyValueName(activeRegistryStateElement._Deleted, activeCurrentUser, activeAdministrator), registryView);
@@ -1255,7 +1256,8 @@ namespace FlashpointSecurePlayer {
                                         }
                                         break;
                                         case TYPE.VALUE:
-                                        if (String.IsNullOrEmpty(activeRegistryStateElement._Deleted) && modificationsRevertMethod != MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
+                                        if (String.IsNullOrEmpty(activeRegistryStateElement._Deleted)
+                                            && modificationsRevertMethod != MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
                                             string keyName = GetUserKeyValueName(activeRegistryStateElement.KeyName, activeCurrentUser, activeAdministrator);
 
                                             try {
@@ -1308,9 +1310,31 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        private void AddRegistryStateElementToModificationsQueue(ulong safeKeyHandle, DateTime timeStamp, RegistryStateElement registryStateElement) {
+            modificationsQueue.TryGetValue(safeKeyHandle, out SortedList<DateTime, List<RegistryStateElement>> timeStamps);
+
+            // worst case scenario: now we need to watch for when we get info on that handle
+            if (timeStamps == null) {
+                // create queue if does not exist (might be multiple keys waiting on it)
+                timeStamps = new SortedList<DateTime, List<RegistryStateElement>>();
+            }
+
+            timeStamps.TryGetValue(timeStamp, out List<RegistryStateElement> registryStateElements);
+
+            if (registryStateElements == null) {
+                registryStateElements = new List<RegistryStateElement>();
+            }
+
+            registryStateElements.Add(registryStateElement);
+
+            // necessary?
+            timeStamps[timeStamp] = registryStateElements;
+            modificationsQueue[safeKeyHandle] = timeStamps;
+        }
+
         private void GotValue(RegistryTraceData registryTraceData) {
             if (registryTraceData.ValueName != null
-                && (registryTraceData.ProcessID == Process.GetCurrentProcess().Id
+                && (registryTraceData.ProcessID == CurrentProcessId
                 || registryTraceData.ProcessID == -1)) {
                 if (ImportPaused) {
                     if (registryTraceData.ValueName.Equals(IMPORT_RESUME, StringComparison.OrdinalIgnoreCase)) {
@@ -1338,7 +1362,7 @@ namespace FlashpointSecurePlayer {
             // if KCBModificationKeyNames has KeyHandle, add to RegistryTimeline
             // else add to RegistryTimelineQueue
             // check the registry change was made by this process (or an unknown process - might be ours)
-            if (registryTraceData.ProcessID != Process.GetCurrentProcess().Id && registryTraceData.ProcessID != -1) {
+            if (registryTraceData.ProcessID != CurrentProcessId && registryTraceData.ProcessID != -1) {
                 return;
             }
 
@@ -1367,8 +1391,10 @@ namespace FlashpointSecurePlayer {
                 ValueName = registryTraceData.ValueName
             };
 
+            // KeyHandle is meant to be a uint32, so we discard the rest
+            // http://learn.microsoft.com/en-us/windows/win32/etw/registry-typegroup1
             ulong safeKeyHandle = registryTraceData.KeyHandle & 0x00000000FFFFFFFF;
-            object value = null;
+            string value = null;
             RegistryView registryView = (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) ? RegistryView.Registry64 : RegistryView.Registry32;
 
             if (safeKeyHandle == 0) {
@@ -1379,7 +1405,7 @@ namespace FlashpointSecurePlayer {
                 value = null;
 
                 try {
-                    value = ReplaceStartupPathEnvironmentVariable(LengthenValue(GetValueInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView), fullPath, pathNames), pathNames);
+                    value = ReplaceStartupPathEnvironmentVariable(LengthenValue(GetValueInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView), fullPath, pathNames), pathNames) as string;
                 } catch (ArgumentException) {
                     // value doesn't exist
                     value = null;
@@ -1390,7 +1416,8 @@ namespace FlashpointSecurePlayer {
                 }
                 
                 if (value == null) {
-                    if (String.IsNullOrEmpty(registryStateElement.ValueName) && String.IsNullOrEmpty(TestKeyDeletedInRegistryView(registryStateElement.KeyName, registryView))) {
+                    if (String.IsNullOrEmpty(registryStateElement.ValueName)
+                        && String.IsNullOrEmpty(TestKeyDeletedInRegistryView(registryStateElement.KeyName, registryView))) {
                         registryStateElement.Type = TYPE.KEY;
                     } else {
                         registryStateElement.Type = TYPE.VALUE;
@@ -1402,7 +1429,7 @@ namespace FlashpointSecurePlayer {
                     }
                 } else {
                     registryStateElement.Type = TYPE.VALUE;
-                    registryStateElement.Value = value.ToString();
+                    registryStateElement.Value = value;
                 }
 
                 modificationsElement.RegistryStates.Set(registryStateElement);
@@ -1419,14 +1446,15 @@ namespace FlashpointSecurePlayer {
                 value = null;
 
                 try {
-                    value = ReplaceStartupPathEnvironmentVariable(LengthenValue(GetValueInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView), fullPath, pathNames), pathNames);
+                    value = ReplaceStartupPathEnvironmentVariable(LengthenValue(GetValueInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView), fullPath, pathNames), pathNames) as string;
                 } catch {
                     // we have permission to access the key at this point so this must not be important
                 }
 
                 if (value == null) {
                     // if not just the value, but the entire key, is deleted, treat this as a key type
-                    if (String.IsNullOrEmpty(registryStateElement.ValueName) && String.IsNullOrEmpty(TestKeyDeletedInRegistryView(registryStateElement.KeyName, registryView))) {
+                    if (String.IsNullOrEmpty(registryStateElement.ValueName)
+                        && String.IsNullOrEmpty(TestKeyDeletedInRegistryView(registryStateElement.KeyName, registryView))) {
                         registryStateElement.Type = TYPE.KEY;
                     } else {
                         registryStateElement.Type = TYPE.VALUE;
@@ -1438,7 +1466,7 @@ namespace FlashpointSecurePlayer {
                     }
                 } else {
                     registryStateElement.Type = TYPE.VALUE;
-                    registryStateElement.Value = value.ToString();
+                    registryStateElement.Value = value;
                 }
 
                 modificationsElement.RegistryStates.Set(registryStateElement);
@@ -1446,14 +1474,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            // worst case scenario: now we need to watch for when we get info on that handle
-            if (!modificationsQueue.ContainsKey(safeKeyHandle)) {
-                // create queue if does not exist (might be multiple keys waiting on it)
-                modificationsQueue[safeKeyHandle] = new SortedList<DateTime, RegistryStateElement>();
-            }
-
-            // add key to the queue for that handle
-            modificationsQueue[safeKeyHandle][registryTraceData.TimeStamp] = registryStateElement;
+            AddRegistryStateElementToModificationsQueue(safeKeyHandle, registryTraceData.TimeStamp, registryStateElement);
         }
 
         private void ModificationRemoved(RegistryTraceData registryTraceData) {
@@ -1464,7 +1485,7 @@ namespace FlashpointSecurePlayer {
             // if KCBModificationKeyNames has KeyHandle, add to RegistryTimeline
             // else add to RegistryTimelineQueue
             // check the registry change was made by this process (or an unknown process - might be ours)
-            if (registryTraceData.ProcessID != Process.GetCurrentProcess().Id && registryTraceData.ProcessID != -1) {
+            if (registryTraceData.ProcessID != CurrentProcessId && registryTraceData.ProcessID != -1) {
                 return;
             }
 
@@ -1513,14 +1534,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            // worst case scenario: now we need to watch for when we get info on that handle
-            if (!modificationsQueue.ContainsKey(safeKeyHandle)) {
-                // create queue if does not exist (might be multiple keys waiting on it)
-                modificationsQueue[safeKeyHandle] = new SortedList<DateTime, RegistryStateElement>();
-            }
-
-            // TODO: how do we handle this for deletion? (see also KCBStopped)
-            modificationsQueue[safeKeyHandle][registryTraceData.TimeStamp] = registryStateElement;
+            AddRegistryStateElementToModificationsQueue(safeKeyHandle, registryTraceData.TimeStamp, registryStateElement);
         }
 
         private void KCBStarted(RegistryTraceData registryTraceData) {
@@ -1530,7 +1544,7 @@ namespace FlashpointSecurePlayer {
 
             // add the key to KeyNames, and clear any queued registry modifications with the same KeyHandle
             // are KCBs system-wide?
-            //if (registryTraceData.ProcessID != Process.GetCurrentProcess().Id && registryTraceData.ProcessID != -1) {
+            //if (registryTraceData.ProcessID != CurrentProcessId && registryTraceData.ProcessID != -1) {
             //return;
             //}
 
@@ -1573,9 +1587,10 @@ namespace FlashpointSecurePlayer {
             kcbModificationKeyNames.Remove(safeKeyHandle);
 
             // we'll be finding these in a second
-            KeyValuePair<DateTime, RegistryStateElement> queuedModification;
+            KeyValuePair<DateTime, List<RegistryStateElement>> queuedModifications;
+            List<RegistryStateElement> registryStateElements;
             RegistryStateElement registryStateElement;
-            object value = null;
+            string value = null;
 
             RegistryView registryView = (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) ? RegistryView.Registry64 : RegistryView.Registry32;
 
@@ -1584,46 +1599,52 @@ namespace FlashpointSecurePlayer {
             if (modificationsQueue.ContainsKey(safeKeyHandle)) {
                 while (modificationsQueue[safeKeyHandle].Any()) {
                     // get the first event
-                    queuedModification = modificationsQueue[safeKeyHandle].First();
+                    queuedModifications = modificationsQueue[safeKeyHandle].First();
 
                     // add its BaseKeyName
-                    registryStateElement = queuedModification.Value;
-                    registryStateElement.KeyName = GetRedirectedKeyValueName(GetKeyValueNameFromKernelRegistryString(registryTraceData.KeyName + "\\" + registryStateElement.KeyName), modificationsElement.RegistryStates.BinaryType);
-                    registryStateElement.ValueKind = GetValueKindInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView);
-                    value = null;
+                    registryStateElements = queuedModifications.Value;
 
-                    // value
-                    try {
-                        value = ReplaceStartupPathEnvironmentVariable(LengthenValue(GetValueInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView), fullPath, pathNames), pathNames);
-                    } catch (ArgumentException) {
-                        // value doesn't exist
+                    for (int i = 0; i < registryStateElements.Count; i++) {
+                        registryStateElement = registryStateElements[i];
+
+                        registryStateElement.KeyName = GetRedirectedKeyValueName(GetKeyValueNameFromKernelRegistryString(registryTraceData.KeyName + "\\" + registryStateElement.KeyName), modificationsElement.RegistryStates.BinaryType);
+                        registryStateElement.ValueKind = GetValueKindInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView);
                         value = null;
-                    } catch (UnauthorizedAccessException) {
-                        // value exists but we can't get it
-                        value = String.Empty;
-                    }
 
-                    // TODO: is this the best way to handle deletion?
-                    // move it into the normal registry modifications
-                    if (value == null) {
-                        if (String.IsNullOrEmpty(registryStateElement.ValueName) && String.IsNullOrEmpty(TestKeyDeletedInRegistryView(registryStateElement.KeyName, registryView))) {
-                            registryStateElement.Type = TYPE.KEY;
-                            modificationsElement.RegistryStates.Set(registryStateElement);
+                        // value
+                        try {
+                            value = ReplaceStartupPathEnvironmentVariable(LengthenValue(GetValueInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView), fullPath, pathNames), pathNames) as string;
+                        } catch (ArgumentException) {
+                            // value doesn't exist
+                            value = null;
+                        } catch (UnauthorizedAccessException) {
+                            // value exists but we can't get it
+                            value = String.Empty;
+                        }
+                        
+                        if (value == null) {
+                            if (String.IsNullOrEmpty(registryStateElement.ValueName)
+                                && String.IsNullOrEmpty(TestKeyDeletedInRegistryView(registryStateElement.KeyName, registryView))) {
+                                registryStateElement.Type = TYPE.KEY;
+                                modificationsElement.RegistryStates.Set(registryStateElement);
+                            } else {
+                                registryStateElement.Type = TYPE.VALUE;
+                                modificationsElement.RegistryStates.Remove(registryStateElement.Name);
+                            }
                         } else {
                             registryStateElement.Type = TYPE.VALUE;
-                            modificationsElement.RegistryStates.Remove(registryStateElement.Name);
+                            registryStateElement.Value = value;
+                            modificationsElement.RegistryStates.Set(registryStateElement);
                         }
-                    } else {
-                        registryStateElement.Type = TYPE.VALUE;
-                        registryStateElement.Value = value.ToString();
-                        modificationsElement.RegistryStates.Set(registryStateElement);
                     }
 
                     // and out of the queue
                     // (the Key is the TimeStamp)
                     //SetFlashpointSecurePlayerSection(TemplateName);
-                    modificationsQueue[safeKeyHandle].Remove(queuedModification.Key);
+                    modificationsQueue[safeKeyHandle].Remove(queuedModifications.Key);
                 }
+
+                modificationsQueue.Remove(safeKeyHandle);
             }
         }
     }

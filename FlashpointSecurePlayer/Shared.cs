@@ -1933,6 +1933,19 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        private static int currentProcessId = 0;
+
+        public static int CurrentProcessId {
+            get {
+                if (currentProcessId == 0) {
+                    using (Process currentProcess = Process.GetCurrentProcess()) {
+                        currentProcessId = currentProcess.Id;
+                    }
+                }
+                return currentProcessId;
+            }
+        }
+
         public class PathNames {
             public class PathNamesShort {
                 private readonly Dictionary<string, string> pathNamesShort = new Dictionary<string, string>();
@@ -2558,7 +2571,7 @@ namespace FlashpointSecurePlayer {
                 form.ControlBox = true;
                 // no this is not a race condition
                 // http://stackoverflow.com/questions/33042010/in-what-cases-does-the-process-start-method-return-false
-                Process.Start(processStartInfo);
+                Process.Start(processStartInfo).Dispose();
                 Application.Exit();
             } catch (Exception ex) {
                 Exceptions.LogExceptionToLauncher(ex);
@@ -2597,7 +2610,9 @@ namespace FlashpointSecurePlayer {
             return commandLine;
         }
 
-        public static Process StartProcessCreateBreakawayFromJob(ProcessStartInfo processStartInfo) {
+        public static void StartProcessCreateBreakawayFromJob(ProcessStartInfo processStartInfo, out Process process) {
+            process = null;
+
             if (processStartInfo == null) {
                 throw new ArgumentNullException("processStartInfo must not be null.");
             }
@@ -2632,18 +2647,17 @@ namespace FlashpointSecurePlayer {
 
             if (!CreateProcess(null, commandLine, IntPtr.Zero, IntPtr.Zero, false, creationFlags, IntPtr.Zero, currentDirectory, ref startupInfo, out processInformation)) {
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                return null;
+                return;
             }
 
             try {
-                Process process = Process.GetProcessById((int)processInformation.dwProcessId);
+                process = Process.GetProcessById((int)processInformation.dwProcessId);
                 ProcessSync.Start(process);
 
                 if (ResumeThread(processInformation.hThread) == -1) {
                     Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                    return null;
+                    return;
                 }
-                return process;
             } finally {
                 if (!CloseHandle(processInformation.hProcess)) {
                     Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
@@ -2911,7 +2925,7 @@ namespace FlashpointSecurePlayer {
                     }
                 }
 
-                int currentProcessID = Process.GetCurrentProcess().Id;
+                int currentProcessID = CurrentProcessId;
                 int parentProcessID = 0;
 
                 do {

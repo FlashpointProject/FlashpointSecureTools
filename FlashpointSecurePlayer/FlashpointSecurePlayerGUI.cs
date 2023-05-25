@@ -152,7 +152,7 @@ namespace FlashpointSecurePlayer {
             } catch {
                 // fail silently
             }
-
+            
             string parentProcessFileName = null;
 
             if (parentProcess != null) {
@@ -160,12 +160,16 @@ namespace FlashpointSecurePlayer {
                     parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess));
                 } catch {
                     // fail silently
+                } finally {
+                    parentProcess.Dispose();
+                    parentProcess = null;
                 }
             }
 
             if (parentProcessFileName == null
                 || !parentProcessFileName.Equals(FLASHPOINT_LAUNCHER_PARENT_PROCESS_FILE_NAME, StringComparison.OrdinalIgnoreCase)) {
                 text.Append(" " + Properties.Resources.UseFlashpointLauncher);
+
                 Process[] processesByName;
 
                 // detect if Flashpoint Launcher is open
@@ -183,8 +187,21 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                if (!processesByName.Any()) {
-                    text.Append(" " + Properties.Resources.OpenFlashpointLauncher);
+                if (processesByName != null) {
+                    try {
+                        if (!processesByName.Any()) {
+                            text.Append(" " + Properties.Resources.OpenFlashpointLauncher);
+                        }
+                    } finally {
+                        for (int i = 0; i < processesByName.Length; i++) {
+                            if (processesByName[i] != null) {
+                                processesByName[i].Dispose();
+                                processesByName[i] = null;
+                            }
+                        }
+
+                        processesByName = null;
+                    }
                 }
             }
 
@@ -274,7 +291,7 @@ namespace FlashpointSecurePlayer {
             } catch {
                 // fail silently
             }
-
+            
             string parentProcessFileName = null;
 
             if (parentProcess != null) {
@@ -286,6 +303,9 @@ namespace FlashpointSecurePlayer {
                     MessageBox.Show(Properties.Resources.ProcessUnableToStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Application.Exit();
                     throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator which failed to get the parent process EXE name.");
+                } finally {
+                    parentProcess.Dispose();
+                    parentProcess = null;
                 }
             }
 
@@ -646,68 +666,78 @@ namespace FlashpointSecurePlayer {
 
                             try {
                                 // StartProcessCreateBreakawayFromJob required for Process Sync on Windows 7
-                                softwareProcess = StartProcessCreateBreakawayFromJob(softwareProcessStartInfo);
+                                StartProcessCreateBreakawayFromJob(softwareProcessStartInfo, out softwareProcess);
                             } catch (JobObjectException ex) {
                                 LogExceptionToLauncher(ex);
                                 // popup message box and blow up
                                 errorDelegate(Properties.Resources.JobObjectNotCreated);
-                                softwareProcess.Kill();
+
+                                if (softwareProcess != null) {
+                                    softwareProcess.Kill();
+                                    softwareProcess.Dispose();
+                                    softwareProcess = null;
+                                }
+
                                 Environment.Exit(-1);
                                 throw new InvalidModeException("The Mode failed to create a Job Object.");
                             }
 
-                            Hide();
+                            if (softwareProcess == null) {
+                                throw new InvalidModeException("The Mode failed to create the Process.");
+                            }
 
-                            if (!softwareProcess.HasExited) {
+                            using (softwareProcess) {
+                                Hide();
+
                                 softwareProcess.WaitForExit();
-                            }
 
-                            Show();
-                            Refresh();
+                                Show();
+                                Refresh();
 
-                            /*
-                            string softwareProcessStandardError = null;
-                            string softwareProcessStandardOutput = null;
+                                /*
+                                string softwareProcessStandardError = null;
+                                string softwareProcessStandardOutput = null;
 
-                            if (softwareProcessStartInfo.RedirectStandardError) {
-                                softwareProcessStandardError = softwareProcess.StandardError.ReadToEnd();
-                            }
+                                if (softwareProcessStartInfo.RedirectStandardError) {
+                                    softwareProcessStandardError = softwareProcess.StandardError.ReadToEnd();
+                                }
 
-                            if (softwareProcessStartInfo.RedirectStandardOutput) {
-                                softwareProcessStandardOutput = softwareProcess.StandardOutput.ReadToEnd();
-                            }
-                            */
+                                if (softwareProcessStartInfo.RedirectStandardOutput) {
+                                    softwareProcessStandardOutput = softwareProcess.StandardOutput.ReadToEnd();
+                                }
+                                */
 
-                            if (softwareIsOldCPUSimulator) {
-                                switch (softwareProcess.ExitCode) {
-                                    case 0:
-                                    break;
-                                    // RedirectStandardError is not supported by StartProcessCreateBreakawayFromJob
-                                    /*
-                                    case -1:
-                                    if (!String.IsNullOrEmpty(softwareProcessStandardError)) {
-                                        string[] lastSoftwareProcessStandardErrors = softwareProcessStandardError.Split('\n');
-                                        string lastSoftwareProcessStandardError = null;
+                                if (softwareIsOldCPUSimulator) {
+                                    switch (softwareProcess.ExitCode) {
+                                        case 0:
+                                        break;
+                                        // RedirectStandardError is not supported by StartProcessCreateBreakawayFromJob
+                                        /*
+                                        case -1:
+                                        if (!String.IsNullOrEmpty(softwareProcessStandardError)) {
+                                            string[] lastSoftwareProcessStandardErrors = softwareProcessStandardError.Split('\n');
+                                            string lastSoftwareProcessStandardError = null;
 
-                                        if (lastSoftwareProcessStandardErrors.Length > 1) {
-                                            lastSoftwareProcessStandardError = lastSoftwareProcessStandardErrors[lastSoftwareProcessStandardErrors.Length - 2];
+                                            if (lastSoftwareProcessStandardErrors.Length > 1) {
+                                                lastSoftwareProcessStandardError = lastSoftwareProcessStandardErrors[lastSoftwareProcessStandardErrors.Length - 2];
+                                            }
+
+                                            if (!String.IsNullOrEmpty(lastSoftwareProcessStandardError)) {
+                                                MessageBox.Show(lastSoftwareProcessStandardError, Properties.Resources.OldCPUSimulator, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                            }
                                         }
-
-                                        if (!String.IsNullOrEmpty(lastSoftwareProcessStandardError)) {
-                                            MessageBox.Show(lastSoftwareProcessStandardError, Properties.Resources.OldCPUSimulator, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                        }
+                                        break;
+                                        */
+                                        case -2:
+                                        MessageBox.Show(Properties.Resources.OCS_NoMultipleInstances, Properties.Resources.OldCPUSimulator, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        break;
+                                        case -3:
+                                        MessageBox.Show(Properties.Resources.OCS_CPUSpeedNotDetermined, Properties.Resources.OldCPUSimulator, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        break;
+                                        default:
+                                        MessageBox.Show(Properties.Resources.OCS_OldCPUNotSimulated, Properties.Resources.OldCPUSimulator, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                        break;
                                     }
-                                    break;
-                                    */
-                                    case -2:
-                                    MessageBox.Show(Properties.Resources.OCS_NoMultipleInstances, Properties.Resources.OldCPUSimulator, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                    break;
-                                    case -3:
-                                    MessageBox.Show(Properties.Resources.OCS_CPUSpeedNotDetermined, Properties.Resources.OldCPUSimulator, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                    break;
-                                    default:
-                                    MessageBox.Show(Properties.Resources.OCS_OldCPUNotSimulated, Properties.Resources.OldCPUSimulator, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                    break;
                                 }
                             }
                         } catch (Exception ex) {
