@@ -99,7 +99,7 @@ namespace FlashpointSecurePlayer {
             //string[] argv = CommandLineToArgv(executablePath, out int argc);
 
             Process[] processesByName;
-            List<Process> processesByNameStrict;
+            Stack<Process> processesByNameStrict;
             Process processByNameStrict;
             string processName = null;
             // GetProcessesByName can't have extension (stupidly)
@@ -113,16 +113,16 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                processesByNameStrict = new List<Process>();
-
                 if (singleInstanceElement.Strict) {
+                    processesByNameStrict = new Stack<Process>();
+
                     for (int i = 0; i < processesByName.Length; i++) {
                         if (processesByName[i] != null) {
                             processName = GetProcessName(processesByName[i]).ToString();
 
                             try {
                                 if (ComparePaths(executable, processName)) {
-                                    processesByNameStrict.Add(processesByName[i]);
+                                    processesByNameStrict.Push(processesByName[i]);
                                 }
                             } catch {
                                 // fail silently
@@ -130,7 +130,7 @@ namespace FlashpointSecurePlayer {
                         }
                     }
                 } else {
-                    processesByNameStrict = processesByName.ToList();
+                    processesByNameStrict = new Stack<Process>(processesByName);
                 }
 
                 processesByName = null;
@@ -140,14 +140,14 @@ namespace FlashpointSecurePlayer {
                 if (processesByNameStrict.Any()) {
                     DialogResult? dialogResult = ShowClosableMessageBox(Task.Run(delegate () {
                         while (processesByNameStrict.Any()) {
-                            processByNameStrict = processesByNameStrict.First();
-                            
-                            processByNameStrict.WaitForExit();
+                            processByNameStrict = processesByNameStrict.Pop();
 
-                            processesByNameStrict.Remove(processByNameStrict);
+                            if (processByNameStrict != null) {
+                                processByNameStrict.WaitForExit();
 
-                            processByNameStrict.Dispose();
-                            processByNameStrict = null;
+                                processByNameStrict.Dispose();
+                                processByNameStrict = null;
+                            }
                         }
                     }), String.Format(Properties.Resources.ProcessCompatibilityConflict, activeProcessName), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
 

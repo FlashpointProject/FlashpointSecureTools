@@ -1594,8 +1594,7 @@ namespace FlashpointSecurePlayer {
             kcbModificationKeyNames.Remove(safeKeyHandle);
 
             // we'll be finding these in a second
-            KeyValuePair<DateTime, List<RegistryStateElement>> queuedModifications;
-            List<RegistryStateElement> registryStateElements;
+            SortedList<DateTime, List<RegistryStateElement>> timeStamps;
             RegistryStateElement registryStateElement;
             string value = null;
 
@@ -1604,15 +1603,12 @@ namespace FlashpointSecurePlayer {
             // we want to take care of any queued registry timeline events
             // an event entails the date and time of the registry modification
             if (modificationsQueue.ContainsKey(safeKeyHandle)) {
-                while (modificationsQueue[safeKeyHandle].Any()) {
-                    // get the first event
-                    queuedModifications = modificationsQueue[safeKeyHandle].First();
+                timeStamps = modificationsQueue[safeKeyHandle];
 
+                foreach (List<RegistryStateElement> registryStateElements in timeStamps.Values) {
                     // add its BaseKeyName
-                    registryStateElements = queuedModifications.Value;
-
-                    for (int i = 0; i < registryStateElements.Count; i++) {
-                        registryStateElement = registryStateElements[i];
+                    for (int j = 0; j < registryStateElements.Count; j++) {
+                        registryStateElement = registryStateElements[j];
 
                         registryStateElement.KeyName = GetRedirectedKeyValueName(GetKeyValueNameFromKernelRegistryString(registryTraceData.KeyName + "\\" + registryStateElement.KeyName), modificationsElement.RegistryStates.BinaryType);
                         registryStateElement.ValueKind = GetValueKindInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView);
@@ -1644,12 +1640,12 @@ namespace FlashpointSecurePlayer {
                             modificationsElement.RegistryStates.Set(registryStateElement);
                         }
                     }
-
-                    // and out of the queue
-                    // (the Key is the TimeStamp)
-                    //SetFlashpointSecurePlayerSection(TemplateName);
-                    modificationsQueue[safeKeyHandle].Remove(queuedModifications.Key);
                 }
+
+                // and out of the queue
+                // (the Key is the TimeStamp)
+                //SetFlashpointSecurePlayerSection(TemplateName);
+                modificationsQueue[safeKeyHandle].Clear();
             }
         }
     }
