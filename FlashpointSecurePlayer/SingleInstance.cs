@@ -145,7 +145,6 @@ namespace FlashpointSecurePlayer {
                             try {
                                 if (processByNameStrict != null) {
                                     processByNameStrict.WaitForExit();
-
                                     processByNameStrict.Dispose();
                                     processByNameStrict = null;
                                 }
