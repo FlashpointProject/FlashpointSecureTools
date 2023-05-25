@@ -130,22 +130,18 @@ namespace FlashpointSecurePlayer {
 
                 bool result = SetInformationJobObject(jobHandle, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, jobobjectExtendedLimitInformationPointer, (uint)jobobjectExtendedLimitInformationSize);
 
+                IntPtr processHandle = IntPtr.Zero;
+
                 if (process == null) {
-                    try {
-                        process = Process.GetCurrentProcess();
-                    } catch {
-                        // fail silently
+                    using (process = Process.GetCurrentProcess()) {
+                        processHandle = process.Handle;
                     }
-
-                    if (process == null) {
-                        throw new JobObjectException("Could not get the Current Process.");
-                    }
+                } else {
+                    processHandle = process.Handle;
                 }
-
-                using (process) {
-                    if (!result || !AssignProcessToJobObject(jobHandle, process.Handle)) {
-                        throw new JobObjectException("Could not set the Job Object Information or assign the Process to the Job Object.");
-                    }
+                
+                if (!result || !AssignProcessToJobObject(jobHandle, processHandle)) {
+                    throw new JobObjectException("Could not set the Job Object Information or assign the Process to the Job Object.");
                 }
 
                 Started = true;
