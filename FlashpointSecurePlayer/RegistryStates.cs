@@ -1171,7 +1171,8 @@ namespace FlashpointSecurePlayer {
                                     value = null;
                                     clear = false;
 
-                                    if (activeRegistryStateElement.Type == TYPE.KEY && registryStateElement.Type == TYPE.KEY) {
+                                    if (activeRegistryStateElement.Type == TYPE.KEY
+                                        && registryStateElement.Type == TYPE.KEY) {
                                         // we previously created a key
                                         // it may or may not have existed before
                                         // so it may or may not need to exist
@@ -1191,8 +1192,10 @@ namespace FlashpointSecurePlayer {
                                             throw new TaskRequiresElevationException("Getting the value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" requires elevation.");
                                         }
 
-                                        if ((activeRegistryStateElement.Type == TYPE.KEY && registryStateElement.Type == TYPE.VALUE)
-                                            || (activeRegistryStateElement.Type == TYPE.VALUE && !String.IsNullOrEmpty(activeRegistryStateElement._Deleted))) {
+                                        if ((activeRegistryStateElement.Type == TYPE.KEY
+                                            && registryStateElement.Type == TYPE.VALUE)
+                                            || (activeRegistryStateElement.Type == TYPE.VALUE
+                                            && !String.IsNullOrEmpty(activeRegistryStateElement._Deleted))) {
                                             // we previously created a value
                                             // the value, (and potentially the key it belonged to) did not exist before
                                             // the value may or may not exist now
@@ -1203,7 +1206,8 @@ namespace FlashpointSecurePlayer {
                                                     clear = true;
                                                 }
                                             }
-                                        } else if (activeRegistryStateElement.Type == TYPE.VALUE && String.IsNullOrEmpty(activeRegistryStateElement._Deleted)) {
+                                        } else if (activeRegistryStateElement.Type == TYPE.VALUE
+                                            && String.IsNullOrEmpty(activeRegistryStateElement._Deleted)) {
                                             // we previously edited a value that existed before
                                             // we need to check it still exists in one of the two valid states
                                             if (value == null) {
