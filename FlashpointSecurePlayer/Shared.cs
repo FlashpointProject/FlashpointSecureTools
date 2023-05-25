@@ -22,102 +22,119 @@ using Microsoft.Win32.SafeHandles;
 namespace FlashpointSecurePlayer {
     public static class Shared {
         public static class Exceptions {
+            [Serializable]
             public class ApplicationRestartRequiredException : Exception {
                 public ApplicationRestartRequiredException() : base() { }
                 public ApplicationRestartRequiredException(string message) : base(message) { }
                 public ApplicationRestartRequiredException(string message, Exception inner) : base(message, inner) { }
             }
 
+            [Serializable]
             public class TaskRequiresElevationException : ApplicationRestartRequiredException {
                 public TaskRequiresElevationException() : base() { }
                 public TaskRequiresElevationException(string message) : base(message) { }
                 public TaskRequiresElevationException(string message, Exception inner) : base(message, inner) { }
             }
 
+            [Serializable]
             public class CompatibilityLayersException : ApplicationRestartRequiredException {
                 public CompatibilityLayersException() : base() { }
                 public CompatibilityLayersException(string message) : base(message) { }
                 public CompatibilityLayersException(string message, Exception inner) : base(message, inner) { }
             }
 
+            [Serializable]
             public class OldCPUSimulatorRequiresApplicationRestartException : ApplicationRestartRequiredException {
                 public OldCPUSimulatorRequiresApplicationRestartException() { }
                 public OldCPUSimulatorRequiresApplicationRestartException(string message) : base(message) { }
                 public OldCPUSimulatorRequiresApplicationRestartException(string message, Exception inner) : base(message, inner) { }
             }
 
+            [Serializable]
             public class DownloadFailedException : Exception {
                 public DownloadFailedException() : base() { }
                 public DownloadFailedException(string message) : base(message) { }
                 public DownloadFailedException(string message, Exception inner) : base(message, inner) { }
             }
 
+            [Serializable]
             public class ImportFailedException : Exception {
                 public ImportFailedException() { }
                 public ImportFailedException(string message) : base(message) { }
                 public ImportFailedException(string message, Exception inner) : base(message, inner) { }
             }
 
+            [Serializable]
             public class ActiveXImportFailedException : ImportFailedException {
                 public ActiveXImportFailedException() { }
                 public ActiveXImportFailedException(string message) : base(message) { }
                 public ActiveXImportFailedException(string message, Exception inner) : base(message, inner) { }
             }
 
+            [Serializable]
             public class JobObjectException : Exception {
                 public JobObjectException() { }
                 public JobObjectException(string message) : base(message) { }
                 public JobObjectException(string message, Exception inner) : base(message, inner) { }
             }
 
+            [Serializable]
             public class FlashpointProxyException : Exception {
                 public FlashpointProxyException() { }
                 public FlashpointProxyException(string message) : base(message) { }
                 public FlashpointProxyException(string message, Exception inner) : base(message, inner) { }
             }
 
+            [Serializable]
             public class LibraryBinaryFormatException : FormatException {
                 public LibraryBinaryFormatException() { }
                 public LibraryBinaryFormatException(string message) : base(message) { }
                 public LibraryBinaryFormatException(string message, Exception inner) : base(message, inner) { }
             }
 
+            [Serializable]
             public class InvalidActiveXControlException : InvalidOperationException {
                 public InvalidActiveXControlException() { }
                 public InvalidActiveXControlException(string message) : base(message) { }
                 public InvalidActiveXControlException(string message, Exception inner) : base(message, inner) { }
             }
 
+            [Serializable]
             public class InvalidTemplateException : InvalidOperationException {
                 public InvalidTemplateException() { }
                 public InvalidTemplateException(string message) : base(message) { }
                 public InvalidTemplateException(string message, Exception inner) : base(message, inner) { }
             }
 
+            [Serializable]
             public class InvalidModeException : InvalidTemplateException {
                 public InvalidModeException() { }
                 public InvalidModeException(string message) : base(message) { }
                 public InvalidModeException(string message, Exception inner) : base(message, inner) { }
             }
 
+            [Serializable]
             public class InvalidModificationException : InvalidTemplateException {
                 public InvalidModificationException() { }
                 public InvalidModificationException(string message) : base(message) { }
                 public InvalidModificationException(string message, Exception inner) : base(message, inner) { }
             }
 
+            [Serializable]
             public class InvalidOldCPUSimulatorException : InvalidModificationException {
                 public InvalidOldCPUSimulatorException() { }
                 public InvalidOldCPUSimulatorException(string message) : base(message) { }
                 public InvalidOldCPUSimulatorException(string message, Exception inner) : base(message, inner) { }
             }
 
+            [Serializable]
             public class InvalidEnvironmentVariablesException : InvalidModificationException {
                 public InvalidEnvironmentVariablesException() { }
                 public InvalidEnvironmentVariablesException(string message) : base(message) { }
                 public InvalidEnvironmentVariablesException(string message, Exception inner) : base(message, inner) { }
             }
 
+            [Serializable]
             public class InvalidRegistryStateException : InvalidModificationException {
                 public InvalidRegistryStateException() { }
                 public InvalidRegistryStateException(string message) : base(message) { }

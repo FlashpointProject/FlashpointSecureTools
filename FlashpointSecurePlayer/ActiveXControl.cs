@@ -13,7 +13,7 @@ namespace FlashpointSecurePlayer {
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private delegate int DllRegisterServerDelegate();
 
-        private IntPtr moduleHandle = IntPtr.Zero;
+        private readonly IntPtr moduleHandle = IntPtr.Zero;
 
         private readonly DllRegisterServerDelegate DllRegisterServer;
         private readonly DllRegisterServerDelegate DllUnregisterServer;

@@ -206,6 +206,9 @@ namespace FlashpointSecurePlayer {
             } catch {
                 // fail silently
             }
+
+            resumeEventWaitHandle.Dispose();
+            resumeEventWaitHandle = null;
         }
 
         private string GetUserKeyValueName(string keyValueName, string activeCurrentUser = null, bool activeAdministrator = true) {
@@ -767,7 +770,13 @@ namespace FlashpointSecurePlayer {
             try {
                 modificationsElement.RegistryStates.BinaryType = binaryType;
                 pathNames = new PathNames();
-                resumeEventWaitHandle.Reset();
+
+                if (resumeEventWaitHandle == null) {
+                    resumeEventWaitHandle = new ManualResetEvent(false);
+                } else {
+                    resumeEventWaitHandle.Reset();
+                }
+
                 modificationsQueue = new Dictionary<ulong, SortedList<DateTime, List<RegistryStateElement>>>();
                 kcbModificationKeyNames = new Dictionary<ulong, string>();
 
@@ -833,7 +842,12 @@ namespace FlashpointSecurePlayer {
         private async Task StopImportAsync(bool sync) {
             try {
                 base.StopImport();
-                resumeEventWaitHandle.Set();
+
+                if (resumeEventWaitHandle == null) {
+                    resumeEventWaitHandle = new ManualResetEvent(true);
+                } else {
+                    resumeEventWaitHandle.Set();
+                }
 
                 // stop kernelSession
                 // we give the registry state a ten second
@@ -1346,6 +1360,10 @@ namespace FlashpointSecurePlayer {
                         // that way we can recieve registry messages as they come in
                         // with reassurance the control has installed already
                         // therefore, key names will be redirected properly
+                        if (resumeEventWaitHandle == null) {
+                            resumeEventWaitHandle = new ManualResetEvent(false);
+                        }
+
                         resumeEventWaitHandle.WaitOne();
                     }
                 } else {

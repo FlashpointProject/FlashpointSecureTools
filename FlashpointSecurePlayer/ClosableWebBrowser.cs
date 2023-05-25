@@ -21,7 +21,7 @@ namespace FlashpointSecurePlayer {
             InitializeComponent();
         }
 
-        protected virtual void OnWebBrowserClose(EventArgs e) {
+        protected void OnWebBrowserClose(EventArgs e) {
             EventHandler eventHandler = WebBrowserClose;
 
             if (eventHandler == null) {
@@ -31,7 +31,7 @@ namespace FlashpointSecurePlayer {
             eventHandler(this, e);
         }
 
-        protected virtual void OnWebBrowserPaint(EventArgs e) {
+        protected void OnWebBrowserPaint(EventArgs e) {
             EventHandler eventHandler = WebBrowserPaint;
 
             if (eventHandler == null) {
