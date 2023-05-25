@@ -140,13 +140,17 @@ namespace FlashpointSecurePlayer {
                 if (processesByNameStrict.Any()) {
                     DialogResult? dialogResult = ShowClosableMessageBox(Task.Run(delegate () {
                         while (processesByNameStrict.Any()) {
-                            processByNameStrict = processesByNameStrict.Pop();
+                            processByNameStrict = processesByNameStrict.Peek();
 
-                            if (processByNameStrict != null) {
-                                processByNameStrict.WaitForExit();
+                            try {
+                                if (processByNameStrict != null) {
+                                    processByNameStrict.WaitForExit();
 
-                                processByNameStrict.Dispose();
-                                processByNameStrict = null;
+                                    processByNameStrict.Dispose();
+                                    processByNameStrict = null;
+                                }
+                            } finally {
+                                processesByNameStrict.Pop();
                             }
                         }
                     }), String.Format(Properties.Resources.ProcessCompatibilityConflict, activeProcessName), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
