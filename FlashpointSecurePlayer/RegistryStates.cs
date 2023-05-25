@@ -1310,7 +1310,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private void AddRegistryStateElementToModificationsQueue(ulong safeKeyHandle, DateTime timeStamp, RegistryStateElement registryStateElement) {
+        private void QueueModification(ulong safeKeyHandle, DateTime timeStamp, RegistryStateElement registryStateElement) {
             modificationsQueue.TryGetValue(safeKeyHandle, out SortedList<DateTime, List<RegistryStateElement>> timeStamps);
 
             // worst case scenario: now we need to watch for when we get info on that handle
@@ -1326,8 +1326,7 @@ namespace FlashpointSecurePlayer {
             }
 
             registryStateElements.Add(registryStateElement);
-
-            // necessary?
+            
             timeStamps[timeStamp] = registryStateElements;
             modificationsQueue[safeKeyHandle] = timeStamps;
         }
@@ -1359,8 +1358,8 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            // if KCBModificationKeyNames has KeyHandle, add to RegistryTimeline
-            // else add to RegistryTimelineQueue
+            // if KCBModificationKeyNames has KeyHandle, add it to RegistryStates
+            // otherwise queue the modification
             // check the registry change was made by this process (or an unknown process - might be ours)
             if (registryTraceData.ProcessID != CurrentProcessId && registryTraceData.ProcessID != -1) {
                 return;
@@ -1474,7 +1473,9 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            AddRegistryStateElementToModificationsQueue(safeKeyHandle, registryTraceData.TimeStamp, registryStateElement);
+            // add this to the modifications queue
+            // (we'll test if it was deleted on KCBStopped)
+            QueueModification(safeKeyHandle, registryTraceData.TimeStamp, registryStateElement);
         }
 
         private void ModificationRemoved(RegistryTraceData registryTraceData) {
@@ -1482,8 +1483,8 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            // if KCBModificationKeyNames has KeyHandle, add to RegistryTimeline
-            // else add to RegistryTimelineQueue
+            // if KCBModificationKeyNames has KeyHandle, remove it from RegistryStates
+            // otherwise queue the modification
             // check the registry change was made by this process (or an unknown process - might be ours)
             if (registryTraceData.ProcessID != CurrentProcessId && registryTraceData.ProcessID != -1) {
                 return;
@@ -1534,7 +1535,9 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            AddRegistryStateElementToModificationsQueue(safeKeyHandle, registryTraceData.TimeStamp, registryStateElement);
+            // add this to the modifications queue
+            // (we'll test if it was deleted on KCBStopped)
+            QueueModification(safeKeyHandle, registryTraceData.TimeStamp, registryStateElement);
         }
 
         private void KCBStarted(RegistryTraceData registryTraceData) {
@@ -1593,7 +1596,7 @@ namespace FlashpointSecurePlayer {
             string value = null;
 
             RegistryView registryView = (modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY) ? RegistryView.Registry64 : RegistryView.Registry32;
-
+            
             // we want to take care of any queued registry timeline events
             // an event entails the date and time of the registry modification
             if (modificationsQueue.ContainsKey(safeKeyHandle)) {
@@ -1643,8 +1646,6 @@ namespace FlashpointSecurePlayer {
                     //SetFlashpointSecurePlayerSection(TemplateName);
                     modificationsQueue[safeKeyHandle].Remove(queuedModifications.Key);
                 }
-
-                modificationsQueue.Remove(safeKeyHandle);
             }
         }
     }
