@@ -353,31 +353,29 @@ namespace FlashpointSecurePlayer {
                 return keyNames.First();
             }
 
-            RegistryKey registryKeyTemp = null;
+            RegistryKey registrySubKey = null;
 
             try {
                 for (int i = 0; i < keyNames.Count - 1; i++) {
                     try {
-                        registryKeyTemp = registryKey.OpenSubKey(keyNames[i + 1]);
-
-                        registryKey.Dispose();
-                        registryKey = registryKeyTemp;
+                        registrySubKey = registryKey.OpenSubKey(keyNames[i + 1]);
                     } catch {
-                        registryKey = null;
+                        registrySubKey = null;
                     }
+
+                    registryKey.Dispose();
+                    registryKey = registrySubKey;
 
                     if (registryKey == null) {
                         return String.Join("\\", keyNames.Take(i + 2).ToArray());
                     }
                 }
-
-                if (registryKey == null) {
-                    return keyName;
-                }
                 return String.Empty;
             } finally {
-                registryKey.Dispose();
-                registryKey = null;
+                if (registryKey != null) {
+                    registryKey.Dispose();
+                    registryKey = null;
+                }
             }
         }
 
