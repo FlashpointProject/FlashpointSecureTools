@@ -330,11 +330,7 @@ namespace FlashpointSecurePlayer {
             int subKeyNameIndex = keyName.IndexOf("\\") + 1;
 
             if (subKeyNameIndex > 0) {
-                try {
-                    registryKey = registryKey.OpenSubKey(keyName.Substring(subKeyNameIndex), writable);
-                } catch {
-                    return null;
-                }
+                registryKey = registryKey.OpenSubKey(keyName.Substring(subKeyNameIndex), writable);
             }
             return registryKey;
         }
@@ -435,13 +431,21 @@ namespace FlashpointSecurePlayer {
             object value = null;
 
             using (registryKey) {
-                try {
-                    value = registryKey.GetValue(valueName, null, RegistryValueOptions.DoNotExpandEnvironmentNames);
-                } catch {
-                    return null;
-                }
+                value = registryKey.GetValue(valueName, null, RegistryValueOptions.DoNotExpandEnvironmentNames);
+                RegistryValueKind? valueKind = null;
 
-                RegistryValueKind? valueKind = GetValueKindInRegistryView(keyName, valueName, registryView);
+                try {
+                    valueKind = GetValueKindInRegistryView(keyName, valueName, registryView);
+                } catch (UnauthorizedAccessException) {
+                    // value exists but we can't get it
+                    throw new TaskRequiresElevationException("The value \"" + valueName + "\" in key \"" + keyName + "\" cannot be accessed by the user.");
+                } catch (SecurityException) {
+                    // value exists but we can't get it
+                    throw new TaskRequiresElevationException("The value \"" + valueName + "\" in key \"" + keyName + "\" cannot be accessed by the user.");
+                } catch {
+                    // value doesn't exist
+                    valueKind = null;
+                }
 
                 switch (valueKind) {
                     case RegistryValueKind.Binary:
@@ -506,11 +510,7 @@ namespace FlashpointSecurePlayer {
             }
 
             using (registryKey) {
-                try {
-                    return registryKey.GetValueKind(valueName);
-                } catch {
-                    return null;
-                }
+                return registryKey.GetValueKind(valueName);
             }
         }
 
@@ -577,20 +577,31 @@ namespace FlashpointSecurePlayer {
                             object effectExceptionValue = null;
 
                             for (int j = 0; j < effectExceptionValueNames.Count; j++) {
-                                effectExceptionValue = GetValueInRegistryView(
-                                    GetKeyValueNameFromKernelRegistryString(
-                                        String.Join(
-                                            "\\",
-                                            keyValueNameSplit.GetRange(0, i)
-                                        )
-                                    ),
+                                try {
+                                    effectExceptionValue = GetValueInRegistryView(
+                                        GetKeyValueNameFromKernelRegistryString(
+                                            String.Join(
+                                                "\\",
+                                                keyValueNameSplit.GetRange(0, i)
+                                            )
+                                        ),
                                     
-                                    effectExceptionValueNames[j],
-                                    RegistryView.Registry64
-                                );
+                                        effectExceptionValueNames[j],
+                                        RegistryView.Registry64
+                                    );
+                                } catch (UnauthorizedAccessException) {
+                                    // value exists but we can't get it
+                                    removeWOW64Subkey = true;
+                                } catch (SecurityException) {
+                                    // value exists but we can't get it
+                                    removeWOW64Subkey = true;
+                                } catch {
+                                    // value doesn't exist
+                                    effectExceptionValue = null;
+                                }
 
-                                // just checking it exists
-                                if (effectExceptionValue != null) {
+                            // just checking it exists
+                            if (effectExceptionValue != null) {
                                     removeWOW64Subkey = true;
                                 }
                             }
@@ -647,21 +658,34 @@ namespace FlashpointSecurePlayer {
                 throw new ArgumentNullException("The registryStateElement is null.");
             }
 
-            RegistryValueKind? registryValueKind = GetValueKindInRegistryView(
-                GetUserKeyValueName(
-                    registryStateElement.KeyName,
-                    activeCurrentUser,
-                    activeAdministrator
-                ),
+            RegistryValueKind? valueKind = null;
 
-                registryStateElement.ValueName,
-                registryView
-            );
+            try {
+                valueKind = GetValueKindInRegistryView(
+                    GetUserKeyValueName(
+                        registryStateElement.KeyName,
+                        activeCurrentUser,
+                        activeAdministrator
+                    ),
+
+                    registryStateElement.ValueName,
+                    registryView
+                );
+            } catch (UnauthorizedAccessException) {
+                // value exists but we can't get it
+                throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + registryStateElement.KeyName + "\" cannot be accessed by the user.");
+            } catch (SecurityException) {
+                // value exists but we can't get it
+                throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + registryStateElement.KeyName + "\" cannot be accessed by the user.");
+            } catch {
+                // value doesn't exist
+                valueKind = null;
+            }
 
             string comparableRegistryStateElementValue = registryStateElement.Value;
 
             // if value kind is the same as current value kind
-            if (registryValueKind == registryStateElement.ValueKind) {
+            if (valueKind == registryStateElement.ValueKind) {
                 if (activeRegistryStateElement != null) {
                     // account for expanded values
                     comparableRegistryStateElementValue = String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded)
@@ -688,7 +712,7 @@ namespace FlashpointSecurePlayer {
                 // if value existed before
                 if (!String.IsNullOrEmpty(activeRegistryStateElement._Deleted)) {
                     // value kind before also matters
-                    if (registryValueKind == activeRegistryStateElement.ValueKind) {
+                    if (valueKind == activeRegistryStateElement.ValueKind) {
                         // get value before
                         comparableRegistryStateElementValue = activeRegistryStateElement.Value;
 
@@ -913,6 +937,7 @@ namespace FlashpointSecurePlayer {
                 RegistryStateElement activeRegistryStateElement = null;
                 string keyName = null;
                 string value = null;
+                RegistryValueKind? valueKind = null;
                 string keyDeleted = null;
                 string valueExpanded = null;
 
@@ -955,11 +980,24 @@ namespace FlashpointSecurePlayer {
                         keyName = GetUserKeyValueName(registryStateElement.KeyName);
                         value = null;
 
+                        try {
+                            valueKind = GetValueKindInRegistryView(keyName, registryStateElement.ValueName, registryView);
+                        } catch (UnauthorizedAccessException) {
+                            // value exists but we can't get it
+                            throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" cannot be accessed by the user.");
+                        } catch (SecurityException) {
+                            // value exists but we can't get it
+                            throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" cannot be accessed by the user.");
+                        } catch {
+                            // value doesn't exist
+                            valueKind = null;
+                        }
+
                         activeRegistryStateElement = new RegistryStateElement {
                             Type = registryStateElement.Type,
                             KeyName = registryStateElement.KeyName,
                             ValueName = registryStateElement.ValueName,
-                            ValueKind = GetValueKindInRegistryView(keyName, registryStateElement.ValueName, registryView),
+                            ValueKind = valueKind,
                             _Deleted = String.Empty
                         };
 
@@ -978,7 +1016,18 @@ namespace FlashpointSecurePlayer {
                                 // fail silently
                             }
                             
-                            value = GetValueInRegistryView(keyName, registryStateElement.ValueName, registryView) as string;
+                            try {
+                                value = GetValueInRegistryView(keyName, registryStateElement.ValueName, registryView) as string;
+                            } catch (UnauthorizedAccessException) {
+                                // value exists but we can't get it
+                                throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" cannot be accessed by the user.");
+                            } catch (SecurityException) {
+                                // value exists but we can't get it
+                                throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" cannot be accessed by the user.");
+                            } catch {
+                                // value doesn't exist
+                                value = null;
+                            }
 
                             if (value == null) {
                                 keyDeleted = TestKeyDeletedInRegistryView(keyName, registryView);
@@ -1186,7 +1235,19 @@ namespace FlashpointSecurePlayer {
                                         }
                                     } else {
                                         string keyName = GetUserKeyValueName(registryStateElement.KeyName, activeCurrentUser, activeAdministrator);
-                                        value = GetValueInRegistryView(keyName, registryStateElement.ValueName, registryView) as string;
+
+                                        try {
+                                            value = GetValueInRegistryView(keyName, registryStateElement.ValueName, registryView) as string;
+                                        } catch (UnauthorizedAccessException) {
+                                            // value exists but we can't get it
+                                            throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" cannot be accessed by the user.");
+                                        } catch (SecurityException) {
+                                            // value exists but we can't get it
+                                            throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" cannot be accessed by the user.");
+                                        } catch {
+                                            // value doesn't exist
+                                            value = null;
+                                        }
 
                                         if ((activeRegistryStateElement.Type == TYPE.KEY
                                             && registryStateElement.Type == TYPE.VALUE)
@@ -1461,25 +1522,49 @@ namespace FlashpointSecurePlayer {
                     GetKeyValueNameFromKernelRegistryString(registryStateElement.KeyName),
                     modificationsElement.RegistryStates.BinaryType
                 );
-                
-                registryStateElement.ValueKind = GetValueKindInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView);
-                
-                value = ReplaceStartupPathEnvironmentVariable(
-                    LengthenValue(
-                        GetValueInRegistryView(
-                            registryStateElement.KeyName,
-                            registryStateElement.ValueName,
-                            registryView
-                        ) as string,
 
-                        fullPath,
+                try {
+                    registryStateElement.ValueKind = GetValueKindInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView);
+                } catch (UnauthorizedAccessException) {
+                    // value exists but we can't get it
+                    throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + registryStateElement.KeyName + "\" cannot be accessed by the user.");
+                } catch (SecurityException) {
+                    // value exists but we can't get it
+                    throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + registryStateElement.KeyName + "\" cannot be accessed by the user.");
+                } catch {
+                    // value doesn't exist
+                    registryStateElement.ValueKind = null;
+                }
+                
+                try {
+                    value = ReplaceStartupPathEnvironmentVariable(
+                        LengthenValue(
+                            GetValueInRegistryView(
+                                registryStateElement.KeyName,
+                                registryStateElement.ValueName,
+                                registryView
+                            ) as string,
+
+                            fullPath,
+                            pathNames
+                        ),
+
                         pathNames
-                    ),
+                    );
+                } catch (UnauthorizedAccessException) {
+                    // value exists but we can't get it
+                    // this shouldn't happen because this task requires elevation
+                    value = String.Empty;
+                } catch (SecurityException) {
+                    // value exists but we can't get it
+                    // this shouldn't happen because this task requires elevation
+                    value = String.Empty;
+                } catch {
+                    // value doesn't exist
+                    value = null;
+                }
 
-                    pathNames
-                );
-                
-                if (value == null) {
+            if (value == null) {
                     if (String.IsNullOrEmpty(registryStateElement.ValueName)
                         && String.IsNullOrEmpty(TestKeyDeletedInRegistryView(registryStateElement.KeyName, registryView))) {
                         registryStateElement.Type = TYPE.KEY;
@@ -1509,22 +1594,37 @@ namespace FlashpointSecurePlayer {
                     GetKeyValueNameFromKernelRegistryString(kcbModificationKeyNames[safeKeyHandle] + "\\" + registryStateElement.KeyName),
                     modificationsElement.RegistryStates.BinaryType
                 );
+                
+                try {
+                    registryStateElement.ValueKind = GetValueKindInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView);
+                } catch (UnauthorizedAccessException) {
+                    // value exists but we can't get it
+                    throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + registryStateElement.KeyName + "\" cannot be accessed by the user.");
+                } catch (SecurityException) {
+                    // value exists but we can't get it
+                    throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + registryStateElement.KeyName + "\" cannot be accessed by the user.");
+                } catch {
+                    // value doesn't exist
+                    registryStateElement.ValueKind = null;
+                }
 
-                registryStateElement.ValueKind = GetValueKindInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView);
+                try {
+                    value = ReplaceStartupPathEnvironmentVariable(
+                        LengthenValue(
+                            GetValueInRegistryView(
+                                registryStateElement.KeyName,
+                                registryStateElement.ValueName,
+                                registryView
+                            ) as string,
 
-                value = ReplaceStartupPathEnvironmentVariable(
-                    LengthenValue(
-                        GetValueInRegistryView(
-                            registryStateElement.KeyName,
-                            registryStateElement.ValueName,
-                            registryView
-                        ) as string,
+                            fullPath,
+                            pathNames),
 
-                        fullPath,
-                        pathNames),
-
-                    pathNames
-                );
+                        pathNames
+                    );
+                } catch {
+                    // we have permission to access the key at this point so this must not be important
+                }
 
                 if (value == null) {
                     // if not just the value, but the entire key, is deleted, treat this as a key type
@@ -1694,24 +1794,48 @@ namespace FlashpointSecurePlayer {
                             GetKeyValueNameFromKernelRegistryString(registryTraceData.KeyName + "\\" + registryStateElement.KeyName),
                             modificationsElement.RegistryStates.BinaryType
                         );
-
-                        registryStateElement.ValueKind = GetValueKindInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView);
-
-                        value = ReplaceStartupPathEnvironmentVariable(
-                            LengthenValue(
-                                GetValueInRegistryView(
-                                    registryStateElement.KeyName,
-                                    registryStateElement.ValueName,
-                                    registryView
-                                ) as string,
-
-                                fullPath,
-                                pathNames
-                            ),
-                                
-                            pathNames
-                        );
                         
+                        try {
+                            registryStateElement.ValueKind = GetValueKindInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView);
+                        } catch (UnauthorizedAccessException) {
+                            // value exists but we can't get it
+                            throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + registryStateElement.KeyName + "\" cannot be accessed by the user.");
+                        } catch (SecurityException) {
+                            // value exists but we can't get it
+                            throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + registryStateElement.KeyName + "\" cannot be accessed by the user.");
+                        } catch {
+                            // value doesn't exist
+                            registryStateElement.ValueKind = null;
+                        }
+
+                        try {
+                            value = ReplaceStartupPathEnvironmentVariable(
+                                LengthenValue(
+                                    GetValueInRegistryView(
+                                        registryStateElement.KeyName,
+                                        registryStateElement.ValueName,
+                                        registryView
+                                    ) as string,
+
+                                    fullPath,
+                                    pathNames
+                                ),
+                                
+                                pathNames
+                            );
+                        } catch (UnauthorizedAccessException) {
+                            // value exists but we can't get it
+                            // this shouldn't happen because this task requires elevation
+                            value = String.Empty;
+                        } catch (SecurityException) {
+                            // value exists but we can't get it
+                            // this shouldn't happen because this task requires elevation
+                            value = String.Empty;
+                        } catch {
+                            // value doesn't exist
+                            value = null;
+                        }
+
                         if (value == null) {
                             if (String.IsNullOrEmpty(registryStateElement.ValueName)
                                 && String.IsNullOrEmpty(TestKeyDeletedInRegistryView(registryStateElement.KeyName, registryView))) {
