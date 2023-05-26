@@ -302,7 +302,7 @@ namespace FlashpointSecurePlayer {
                     ProgressManager.ShowError();
                     MessageBox.Show(Properties.Resources.ProcessUnableToStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Application.Exit();
-                    throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator which failed to get the parent process EXE name.");
+                    throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator which failed to get the Parent Process File Name.");
                 } finally {
                     parentProcess.Dispose();
                     parentProcess = null;
