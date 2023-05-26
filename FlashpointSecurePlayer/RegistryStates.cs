@@ -207,8 +207,10 @@ namespace FlashpointSecurePlayer {
                 // fail silently
             }
 
-            resumeEventWaitHandle.Dispose();
-            resumeEventWaitHandle = null;
+            if (resumeEventWaitHandle != null) {
+                resumeEventWaitHandle.Dispose();
+                resumeEventWaitHandle = null;
+            }
         }
 
         private string GetUserKeyValueName(string keyValueName, string activeCurrentUser = null, bool activeAdministrator = true) {
@@ -781,6 +783,10 @@ namespace FlashpointSecurePlayer {
                 throw new InvalidTemplateException("A Template with the name \"" + TemplateName + "\" exists.");
             }
 
+            if (resumeEventWaitHandle == null) {
+                throw new InvalidOperationException("resumeEventWaitHandle must not be NULL.");
+            }
+
             try {
                 fullPath = Path.GetFullPath(TemplateName);
             } catch (PathTooLongException) {
@@ -807,11 +813,7 @@ namespace FlashpointSecurePlayer {
                 modificationsElement.RegistryStates.BinaryType = binaryType;
                 pathNames = new PathNames();
 
-                if (resumeEventWaitHandle == null) {
-                    resumeEventWaitHandle = new ManualResetEvent(false);
-                } else {
-                    resumeEventWaitHandle.Reset();
-                }
+                resumeEventWaitHandle.Reset();
 
                 queuedModifications = new Dictionary<ulong, SortedList<DateTime, List<RegistryStateElement>>>();
                 kcbModificationKeyNames = new Dictionary<ulong, string>();
@@ -878,12 +880,12 @@ namespace FlashpointSecurePlayer {
         private async Task StopImportAsync(bool sync) {
             try {
                 base.StopImport();
-
+                
                 if (resumeEventWaitHandle == null) {
-                    resumeEventWaitHandle = new ManualResetEvent(true);
-                } else {
-                    resumeEventWaitHandle.Set();
+                    throw new InvalidOperationException("resumeEventWaitHandle must not be NULL.");
                 }
+
+                resumeEventWaitHandle.Set();
 
                 // stop kernelSession
                 // we give the registry state a ten second
@@ -1447,12 +1449,13 @@ namespace FlashpointSecurePlayer {
                 if (ImportPaused) {
                     if (registryTraceData.ValueName.Equals(IMPORT_RESUME, StringComparison.OrdinalIgnoreCase)) {
                         ImportPaused = false;
+
                         // hold here until after the control has installed
                         // that way we can recieve registry messages as they come in
                         // with reassurance the control has installed already
                         // therefore, key names will be redirected properly
                         if (resumeEventWaitHandle == null) {
-                            resumeEventWaitHandle = new ManualResetEvent(false);
+                            throw new InvalidOperationException("resumeEventWaitHandle must not be NULL.");
                         }
 
                         resumeEventWaitHandle.WaitOne();

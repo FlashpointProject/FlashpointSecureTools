@@ -60,7 +60,7 @@ namespace FlashpointSecurePlayer {
         public WINDOWPLACEMENT WindowPlacement {
             get {
                 if (!IsHandleCreated || Handle == IntPtr.Zero) {
-                    throw new NullReferenceException("Handle must not be NULL.");
+                    throw new InvalidOperationException("Handle must not be NULL.");
                 }
 
                 WINDOWPLACEMENT value = new WINDOWPLACEMENT();
@@ -74,7 +74,7 @@ namespace FlashpointSecurePlayer {
 
             set {
                 if (!IsHandleCreated || Handle == IntPtr.Zero) {
-                    throw new NullReferenceException("Handle must not be NULL.");
+                    throw new InvalidOperationException("Handle must not be NULL.");
                 }
 
                 value.length = Marshal.SizeOf(value);
