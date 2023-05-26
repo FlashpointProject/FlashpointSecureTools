@@ -98,9 +98,9 @@ namespace FlashpointSecurePlayer {
             
             //string[] argv = CommandLineToArgv(executablePath, out int argc);
 
-            Process[] processesByName;
-            Stack<Process> processesByNameStrict;
-            Process processByNameStrict;
+            Process[] processesByName = null;
+            Stack<Process> processesByNameStrict = null;
+            Process processByNameStrict = null;
             string processName = null;
             // GetProcessesByName can't have extension (stupidly)
             string activeProcessName = Path.GetFileNameWithoutExtension(executable);
