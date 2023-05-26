@@ -1445,11 +1445,14 @@ namespace FlashpointSecurePlayer {
 
                         try {
                             fullHTDOCSFilePath = Path.GetFullPath(htdocsFilePath);
-                        } catch (PathTooLongException) {
-                            throw new ArgumentException("The path is too long to \"" + htdocsFilePath + "\".");
-                        } catch (SecurityException) {
+                        } catch (SecurityException ex) {
+                            LogExceptionToLauncher(ex);
                             throw new TaskRequiresElevationException("Getting the Full Path to \"" + htdocsFilePath + "\" requires elevation.");
-                        } catch (NotSupportedException) {
+                        } catch (PathTooLongException ex) {
+                            LogExceptionToLauncher(ex);
+                            throw new ArgumentException("The path is too long to \"" + htdocsFilePath + "\".");
+                        } catch (NotSupportedException ex) {
+                            LogExceptionToLauncher(ex);
                             throw new ArgumentException("The path \"" + htdocsFilePath + "\" is not supported.");
                         }
 
@@ -1482,13 +1485,13 @@ namespace FlashpointSecurePlayer {
                     Environment.SetEnvironmentVariable(FP_ARGUMENTS, String.IsNullOrEmpty(Arguments) ? " " : Arguments, EnvironmentVariableTarget.Process);
                     Environment.SetEnvironmentVariable(FP_HTDOCS_FILE, String.IsNullOrEmpty(htdocsFile) ? " " : htdocsFile, EnvironmentVariableTarget.Process);
                     Environment.SetEnvironmentVariable(FP_HTDOCS_FILE_DIR, String.IsNullOrEmpty(htdocsFileDirectory) ? " " : htdocsFileDirectory, EnvironmentVariableTarget.Process);
-                } catch (ArgumentException ex) {
-                    LogExceptionToLauncher(ex);
-                    Application.Exit();
-                    return;
                 } catch (SecurityException ex) {
                     LogExceptionToLauncher(ex);
                     throw new TaskRequiresElevationException("Setting the Environment Variables requires elevation.");
+                } catch (Exception ex) {
+                    LogExceptionToLauncher(ex);
+                    Application.Exit();
+                    return;
                 }
 
                 ProgressManager.ShowOutput();
@@ -1521,6 +1524,9 @@ namespace FlashpointSecurePlayer {
                     Application.Exit();
                     return;
                 }
+            } catch (ArgumentException ex) {
+                LogExceptionToLauncher(ex);
+                Application.Exit();
             }
         }
 

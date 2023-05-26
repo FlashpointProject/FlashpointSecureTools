@@ -49,10 +49,12 @@ namespace FlashpointSecurePlayer {
 
             try {
                 value = Environment.GetEnvironmentVariable(environmentVariablesElement.Name, EnvironmentVariableTarget.Process);
-            } catch (ArgumentException) {
-                throw new InvalidEnvironmentVariablesException("Failed to get the \"" + environmentVariablesElement.Name + "\" Environment Variable.");
-            } catch (SecurityException) {
+            } catch (SecurityException ex) {
+                LogExceptionToLauncher(ex);
                 throw new TaskRequiresElevationException("Getting the \"" + environmentVariablesElement.Name + "\" Environment Variable requires elevation.");
+            } catch (Exception ex) {
+                LogExceptionToLauncher(ex);
+                throw new InvalidEnvironmentVariablesException("Failed to get the \"" + environmentVariablesElement.Name + "\" Environment Variable.");
             }
 
             Regex regex = null;
@@ -112,10 +114,12 @@ namespace FlashpointSecurePlayer {
                 try {
                     // we need to find the compatibility layers so we can check later if the ones we want are already set
                     compatibilityLayerValue = Environment.GetEnvironmentVariable(__COMPAT_LAYER, EnvironmentVariableTarget.Process);
-                } catch (ArgumentException) {
-                    throw new InvalidEnvironmentVariablesException("Failed to get the \"" + __COMPAT_LAYER + "\" Environment Variable.");
-                } catch (SecurityException) {
+                } catch (SecurityException ex) {
+                    LogExceptionToLauncher(ex);
                     throw new TaskRequiresElevationException("Getting the \"" + __COMPAT_LAYER + "\" Environment Variable requires elevation.");
+                } catch (Exception ex) {
+                    LogExceptionToLauncher(ex);
+                    throw new InvalidEnvironmentVariablesException("Failed to get the \"" + __COMPAT_LAYER + "\" Environment Variable.");
                 }
 
                 ProgressManager.CurrentGoal.Start(modificationsElement.EnvironmentVariables.Count + modificationsElement.EnvironmentVariables.Count);
@@ -146,10 +150,12 @@ namespace FlashpointSecurePlayer {
                                 Find = environmentVariablesElement.Find,
                                 Value = Environment.GetEnvironmentVariable(environmentVariablesElement.Name, EnvironmentVariableTarget.Process)
                             };
-                        } catch (ArgumentException) {
-                            throw new InvalidEnvironmentVariablesException("Failed to get the \"" + environmentVariablesElement.Name + "\" Environment Variable.");
-                        } catch (SecurityException) {
+                        } catch (SecurityException ex) {
+                            LogExceptionToLauncher(ex);
                             throw new TaskRequiresElevationException("Getting the \"" + environmentVariablesElement.Name + "\" Environment Variable requires elevation.");
+                        } catch (Exception ex) {
+                            LogExceptionToLauncher(ex);
+                            throw new InvalidEnvironmentVariablesException("Failed to get the \"" + environmentVariablesElement.Name + "\" Environment Variable.");
                         }
 
                         activeModificationsElement.EnvironmentVariables.Set(activeEnvironmentVariablesElement);
@@ -178,10 +184,12 @@ namespace FlashpointSecurePlayer {
 
                         try {
                             Environment.SetEnvironmentVariable(environmentVariablesElement.Name, Environment.ExpandEnvironmentVariables(value), EnvironmentVariableTarget.Process);
-                        } catch (ArgumentException) {
-                            throw new InvalidEnvironmentVariablesException("Failed to set the \"" + environmentVariablesElement.Name + "\" Environment Variable.");
-                        } catch (SecurityException) {
+                        } catch (SecurityException ex) {
+                            LogExceptionToLauncher(ex);
                             throw new TaskRequiresElevationException("Setting the \"" + environmentVariablesElement.Name + "\" Environment Variable requires elevation.");
+                        } catch (Exception ex) {
+                            LogExceptionToLauncher(ex);
+                            throw new InvalidEnvironmentVariablesException("Failed to set the \"" + environmentVariablesElement.Name + "\" Environment Variable.");
                         }
 
                         // now throw up a restart in Web Browser Mode for Compatibility Settings
@@ -267,10 +275,12 @@ namespace FlashpointSecurePlayer {
                 // compatibility settings
                 try {
                     compatibilityLayerValue = Environment.GetEnvironmentVariable(__COMPAT_LAYER, EnvironmentVariableTarget.Process);
-                } catch (ArgumentException) {
-                    throw new InvalidEnvironmentVariablesException("Failed to get the \"" + __COMPAT_LAYER + "\" Environment Variable.");
-                } catch (SecurityException) {
+                } catch (SecurityException ex) {
+                    LogExceptionToLauncher(ex);
                     throw new TaskRequiresElevationException("Getting the \"" + __COMPAT_LAYER + "\" Environment Variable requires elevation.");
+                } catch (Exception ex) {
+                    LogExceptionToLauncher(ex);
+                    throw new InvalidEnvironmentVariablesException("Failed to get the \"" + __COMPAT_LAYER + "\" Environment Variable.");
                 }
 
                 // we get this right away here
@@ -307,10 +317,12 @@ namespace FlashpointSecurePlayer {
                             if (modificationsRevertMethod == MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
                                 try {
                                     Environment.SetEnvironmentVariable(activeEnvironmentVariablesElement.Name, null, EnvironmentVariableTarget.Process);
-                                } catch (ArgumentException) {
-                                    throw new InvalidEnvironmentVariablesException("Failed to delete the \"" + environmentVariablesElement.Name + "\" Environment Variable.");
-                                } catch (SecurityException) {
+                                } catch (SecurityException ex) {
+                                    LogExceptionToLauncher(ex);
                                     throw new TaskRequiresElevationException("Deleting the \"" + environmentVariablesElement.Name + "\" Environment Variable requires elevation.");
+                                } catch (Exception ex) {
+                                    LogExceptionToLauncher(ex);
+                                    throw new InvalidEnvironmentVariablesException("Failed to delete the \"" + environmentVariablesElement.Name + "\" Environment Variable.");
                                 }
                             } else {
                                 // don't reset Compatibility Settings if we're restarting for Web Browser Mode
@@ -320,10 +332,12 @@ namespace FlashpointSecurePlayer {
                                         || modeElement.Name != ModeElement.NAME.WEB_BROWSER) {
                                         try {
                                             Environment.SetEnvironmentVariable(activeEnvironmentVariablesElement.Name, activeEnvironmentVariablesElement.Value, EnvironmentVariableTarget.Process);
-                                        } catch (ArgumentException) {
-                                            throw new InvalidEnvironmentVariablesException("Failed to set the \"" + environmentVariablesElement.Name + "\" Environment Variable.");
-                                        } catch (SecurityException) {
+                                        } catch (SecurityException ex) {
+                                            LogExceptionToLauncher(ex);
                                             throw new TaskRequiresElevationException("Setting the \"" + environmentVariablesElement.Name + "\" Environment Variable requires elevation.");
+                                        } catch (Exception ex) {
+                                            LogExceptionToLauncher(ex);
+                                            throw new InvalidEnvironmentVariablesException("Failed to set the \"" + environmentVariablesElement.Name + "\" Environment Variable.");
                                         }
                                     }
                                 }
