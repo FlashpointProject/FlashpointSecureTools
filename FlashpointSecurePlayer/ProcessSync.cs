@@ -106,6 +106,20 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
+            IntPtr processHandle = IntPtr.Zero;
+
+            if (process == null) {
+                using (process = Process.GetCurrentProcess()) {
+                    processHandle = process.Handle;
+                }
+            } else {
+                processHandle = process.Handle;
+            }
+
+            if (processHandle == IntPtr.Zero) {
+                throw new JobObjectException("Could not get the Process.");
+            }
+
             if (jobHandle == IntPtr.Zero) {
                 jobHandle = CreateJobObject(IntPtr.Zero, null);
 
@@ -128,20 +142,12 @@ namespace FlashpointSecurePlayer {
             try {
                 Marshal.StructureToPtr(jobobjectExtendedLimitInformation, jobobjectExtendedLimitInformationPointer, false);
 
-                bool result = SetInformationJobObject(jobHandle, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, jobobjectExtendedLimitInformationPointer, (uint)jobobjectExtendedLimitInformationSize);
-
-                IntPtr processHandle = IntPtr.Zero;
-
-                if (process == null) {
-                    using (process = Process.GetCurrentProcess()) {
-                        processHandle = process.Handle;
-                    }
-                } else {
-                    processHandle = process.Handle;
+                if (!SetInformationJobObject(jobHandle, JOBOBJECTINFOCLASS.JobObjectExtendedLimitInformation, jobobjectExtendedLimitInformationPointer, (uint)jobobjectExtendedLimitInformationSize)) {
+                    throw new JobObjectException("Could not set the Job Object Information.");
                 }
                 
-                if (!result || !AssignProcessToJobObject(jobHandle, processHandle)) {
-                    throw new JobObjectException("Could not set the Job Object Information or assign the Process to the Job Object.");
+                if (!AssignProcessToJobObject(jobHandle, processHandle)) {
+                    throw new JobObjectException("Could assign the Process to the Job Object.");
                 }
 
                 Started = true;
