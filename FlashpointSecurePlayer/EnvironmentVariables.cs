@@ -61,17 +61,20 @@ namespace FlashpointSecurePlayer {
 
             try {
                 regex = new Regex(environmentVariablesElement.Find);
-            } catch (ArgumentException) {
+            } catch (Exception ex) {
+                LogExceptionToLauncher(ex);
                 throw new InvalidEnvironmentVariablesException("The Regex Pattern \"" + environmentVariablesElement.Find + "\" is invalid.");
             }
 
             try {
                 value = regex.Replace(value, environmentVariablesElement.Replace);
-            } catch (ArgumentNullException) {
+            } catch (RegexMatchTimeoutException ex) {
+                LogExceptionToLauncher(ex);
+                throw new InvalidEnvironmentVariablesException("The Regex Match timed out.");
+            } catch (Exception ex) {
                 // value was not defined
                 // fail silently
-            } catch (RegexMatchTimeoutException) {
-                throw new InvalidEnvironmentVariablesException("The Regex Match timed out.");
+                LogExceptionToLauncher(ex);
             }
             return value;
         }

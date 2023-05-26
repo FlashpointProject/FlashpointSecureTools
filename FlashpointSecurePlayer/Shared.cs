@@ -2249,12 +2249,15 @@ namespace FlashpointSecurePlayer {
                 }
             } catch (Exceptions.DownloadFailedException) {
                 throw;
-            } catch (ArgumentException) {
-                throw new Exceptions.DownloadFailedException("The download failed because the download name \"" + name + "\" is invalid.");
-            } catch (HttpRequestException) {
+            } catch (HttpRequestException ex) {
+                Exceptions.LogExceptionToLauncher(ex);
                 throw new Exceptions.DownloadFailedException("The download failed because the HTTP Request is invalid.");
-            } catch (InvalidOperationException) {
+            } catch (InvalidOperationException ex) {
+                Exceptions.LogExceptionToLauncher(ex);
                 throw new Exceptions.DownloadFailedException("The download failed because the address \"" + name + "\" was not understood.");
+            } catch (Exception ex) {
+                Exceptions.LogExceptionToLauncher(ex);
+                throw new Exceptions.DownloadFailedException("The download failed because the download name \"" + name + "\" is invalid.");
             } finally {
                 downloadSemaphoreSlim.Release();
             }
@@ -2364,10 +2367,12 @@ namespace FlashpointSecurePlayer {
                     //throw new ConfigurationErrorsException("The EXE Configuration failed to download.");
                 } catch (ConfigurationErrorsException) {
                     // fail silently
-                } catch (IOException) {
+                } catch (IOException ex2) {
+                    Exceptions.LogExceptionToLauncher(ex2);
                     throw new ConfigurationErrorsException("The EXE Configuration is in use.");
                 }
-            } catch (IOException) {
+            } catch (IOException ex2) {
+                Exceptions.LogExceptionToLauncher(ex2);
                 throw new ConfigurationErrorsException("The EXE Configuration is in use.");
             }
 
