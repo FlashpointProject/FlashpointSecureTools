@@ -205,7 +205,7 @@ namespace FlashpointSecurePlayer {
 
         public const uint INTERNET_MAX_PATH_LENGTH = 2048;
         public const uint INTERNET_MAX_SCHEME_LENGTH = 32;
-        static readonly uint INTERNET_MAX_URL_LENGTH = INTERNET_MAX_SCHEME_LENGTH + (uint)"://".Length + INTERNET_MAX_PATH_LENGTH;
+        public static readonly uint INTERNET_MAX_URL_LENGTH = INTERNET_MAX_SCHEME_LENGTH + (uint)"://".Length + INTERNET_MAX_PATH_LENGTH;
 
         [Flags]
         public enum URL_APPLYFlags : uint {
