@@ -496,37 +496,34 @@ namespace FlashpointSecurePlayer {
                 return keyNames.First();
             }
 
-            try {
-                RegistryKey registrySubKey = null;
-                int subKeyNamesCount = keyNames.Count - 1;
+            List<RegistryKey> registryKeys = new List<RegistryKey>() { registryKey };
 
-                for (int i = 0; i < subKeyNamesCount; i++) {
-                    keyName = keyNames[i + 1];
-                    
+            try {
+                for (int i = 1; i < keyNames.Count; i++) {
                     try {
-                        registrySubKey = registryKey.OpenSubKey(keyName);
+                        registryKey = registryKey.OpenSubKey(keyNames[i]);
                     } catch (SecurityException) {
                         throw;
                     } catch (UnauthorizedAccessException) {
                         throw;
                     } catch {
                         // sub key doesn't exist
-                        registrySubKey = null;
+                        registryKey = null;
                     }
-
-                    registryKey.Dispose();
-                    registryKey = registrySubKey;
 
                     if (registryKey == null) {
-                        return String.Join("\\", keyNames.Take(i + 2).ToArray());
+                        return String.Join("\\", keyNames.Take(i + 1).ToArray());
                     }
+
+                    registryKeys[i] = registryKey;
                 }
                 return String.Empty;
             } finally {
-                if (registryKey != null) {
-                    registryKey.Dispose();
-                    registryKey = null;
+                for (int i = 0; i < registryKeys.Count; i++) {
+                    registryKeys[i].Dispose();
                 }
+
+                registryKeys = null;
             }
         }
 
