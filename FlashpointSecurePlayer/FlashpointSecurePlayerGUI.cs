@@ -485,6 +485,11 @@ namespace FlashpointSecurePlayer {
                         try {
                             try {
                                 await registryState.StartImportAsync(TemplateName, binaryType).ConfigureAwait(true);
+                            } catch (TaskRequiresElevationException ex) {
+                                LogExceptionToLauncher(ex);
+                                // we're already running as admin?
+                                errorDelegate(String.Format(Properties.Resources.GameUnableToLaunch, Properties.Resources.AsAdministratorUser));
+                                throw new ActiveXImportFailedException("The ActiveX Import failed running as Administrator User.");
                             } catch (InvalidRegistryStateException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.RegistryStateUnableToCreate);
@@ -497,11 +502,6 @@ namespace FlashpointSecurePlayer {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.GameNotCuratedCorrectly);
                                 throw new ActiveXImportFailedException("The ActiveX Import failed because the Modification is invalid.");
-                            } catch (TaskRequiresElevationException ex) {
-                                LogExceptionToLauncher(ex);
-                                // we're already running as admin?
-                                errorDelegate(String.Format(Properties.Resources.GameUnableToLaunch, Properties.Resources.AsAdministratorUser));
-                                throw new ActiveXImportFailedException("The ActiveX Import failed running as Administrator User.");
                             } catch (InvalidOperationException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.RegistryStateAlreadyInProgress);
@@ -869,12 +869,12 @@ namespace FlashpointSecurePlayer {
 
                         try {
                             runAsAdministrator.Activate(TemplateName, RunAsAdministratorModification);
-                        } catch (ConfigurationErrorsException ex) {
-                            LogExceptionToLauncher(ex);
-                            errorDelegate(Properties.Resources.ConfigurationUnableToLoad);
                         } catch (TaskRequiresElevationException ex) {
                             LogExceptionToLauncher(ex);
                             AskLaunchAsAdministratorUser();
+                        } catch (ConfigurationErrorsException ex) {
+                            LogExceptionToLauncher(ex);
+                            errorDelegate(Properties.Resources.ConfigurationUnableToLoad);
                         }
 
                         ProgressManager.CurrentGoal.Steps++;
@@ -883,18 +883,18 @@ namespace FlashpointSecurePlayer {
                             if (modificationsElement.EnvironmentVariables.Count > 0) {
                                 try {
                                     environmentVariables.Activate(TemplateName);
-                                } catch (InvalidEnvironmentVariablesException ex) {
-                                    LogExceptionToLauncher(ex);
-                                    errorDelegate(Properties.Resources.EnvironmentVariablesProblem);
-                                } catch (ConfigurationErrorsException ex) {
-                                    LogExceptionToLauncher(ex);
-                                    errorDelegate(Properties.Resources.ConfigurationUnableToLoad);
                                 } catch (TaskRequiresElevationException ex) {
                                     LogExceptionToLauncher(ex);
                                     AskLaunchAsAdministratorUser();
                                 } catch (CompatibilityLayersException ex) {
                                     LogExceptionToLauncher(ex);
                                     AskLaunchWithCompatibilitySettings();
+                                } catch (InvalidEnvironmentVariablesException ex) {
+                                    LogExceptionToLauncher(ex);
+                                    errorDelegate(Properties.Resources.EnvironmentVariablesProblem);
+                                } catch (ConfigurationErrorsException ex) {
+                                    LogExceptionToLauncher(ex);
+                                    errorDelegate(Properties.Resources.ConfigurationUnableToLoad);
                                 }
                             }
                         }
@@ -960,18 +960,15 @@ namespace FlashpointSecurePlayer {
                             if (modificationsElement.RegistryStates.Count > 0) {
                                 try {
                                     registryState.Activate(TemplateName);
+                                } catch (TaskRequiresElevationException ex) {
+                                    LogExceptionToLauncher(ex);
+                                    AskLaunchAsAdministratorUser();
                                 } catch (InvalidRegistryStateException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.RegistryStateUnableToCreate);
                                 } catch (ConfigurationErrorsException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.ConfigurationUnableToLoad);
-                                } catch (TaskRequiresElevationException ex) {
-                                    LogExceptionToLauncher(ex);
-                                    AskLaunchAsAdministratorUser();
-                                } catch (ArgumentException ex) {
-                                    LogExceptionToLauncher(ex);
-                                    errorDelegate(Properties.Resources.GameIsMissingFile);
                                 } catch (InvalidOperationException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.ModificationsUnableToLoadImport);
@@ -1004,15 +1001,15 @@ namespace FlashpointSecurePlayer {
                             if (modificationsElement.OldCPUSimulator.ElementInformation.IsPresent) {
                                 try {
                                     oldCPUSimulator.Activate(TemplateName, ref softwareProcessStartInfo, out softwareIsOldCPUSimulator);
+                                } catch (TaskRequiresElevationException ex) {
+                                    LogExceptionToLauncher(ex);
+                                    AskLaunchAsAdministratorUser();
                                 } catch (InvalidOldCPUSimulatorException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.OldCPUSimulatorProblem);
                                 } catch (ConfigurationErrorsException ex) {
                                     LogExceptionToLauncher(ex);
                                     errorDelegate(Properties.Resources.ConfigurationUnableToLoad);
-                                } catch (TaskRequiresElevationException ex) {
-                                    LogExceptionToLauncher(ex);
-                                    AskLaunchAsAdministratorUser();
                                 }
                             }
                         }
@@ -1070,18 +1067,15 @@ namespace FlashpointSecurePlayer {
                             // this one really needs to work
                             // we can't continue if it does not
                             registryState.Deactivate(ModificationsRevertMethod);
+                        } catch (TaskRequiresElevationException ex) {
+                            LogExceptionToLauncher(ex);
+                            AskLaunchAsAdministratorUser();
                         } catch (InvalidRegistryStateException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.RegistryStateUnableToCreate);
                         } catch (ConfigurationErrorsException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.ConfigurationUnableToLoad);
-                        } catch (TaskRequiresElevationException ex) {
-                            LogExceptionToLauncher(ex);
-                            AskLaunchAsAdministratorUser();
-                        } catch (ArgumentException ex) {
-                            LogExceptionToLauncher(ex);
-                            errorDelegate(Properties.Resources.GameIsMissingFile);
                         } catch (InvalidOperationException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.ModificationsUnableToLoadImport);
@@ -1094,18 +1088,18 @@ namespace FlashpointSecurePlayer {
                         
                         try {
                             environmentVariables.Deactivate(ModificationsRevertMethod);
-                        } catch (InvalidEnvironmentVariablesException ex) {
-                            LogExceptionToLauncher(ex);
-                            errorDelegate(Properties.Resources.EnvironmentVariablesProblem);
-                        } catch (ConfigurationErrorsException ex) {
-                            LogExceptionToLauncher(ex);
-                            errorDelegate(Properties.Resources.ConfigurationUnableToLoad);
                         } catch (TaskRequiresElevationException ex) {
                             LogExceptionToLauncher(ex);
                             AskLaunchAsAdministratorUser();
                         } catch (CompatibilityLayersException ex) {
                             LogExceptionToLauncher(ex);
                             AskLaunchWithCompatibilitySettings();
+                        } catch (InvalidEnvironmentVariablesException ex) {
+                            LogExceptionToLauncher(ex);
+                            errorDelegate(Properties.Resources.EnvironmentVariablesProblem);
+                        } catch (ConfigurationErrorsException ex) {
+                            LogExceptionToLauncher(ex);
+                            errorDelegate(Properties.Resources.ConfigurationUnableToLoad);
                         } catch (TimeoutException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.EnvironmentVariablesTimeout);
