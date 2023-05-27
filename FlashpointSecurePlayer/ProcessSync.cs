@@ -109,8 +109,12 @@ namespace FlashpointSecurePlayer {
             IntPtr processHandle = IntPtr.Zero;
 
             if (process == null) {
-                using (process = Process.GetCurrentProcess()) {
-                    processHandle = process.Handle;
+                try {
+                    using (process = Process.GetCurrentProcess()) {
+                        processHandle = process.Handle;
+                    }
+                } catch {
+                    // fail silently
                 }
             } else {
                 processHandle = process.Handle;

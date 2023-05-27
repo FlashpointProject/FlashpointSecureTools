@@ -1955,8 +1955,13 @@ namespace FlashpointSecurePlayer {
         public static int CurrentProcessId {
             get {
                 if (currentProcessId == 0) {
-                    using (Process currentProcess = Process.GetCurrentProcess()) {
-                        currentProcessId = currentProcess.Id;
+                    try {
+                        using (Process currentProcess = Process.GetCurrentProcess()) {
+                            currentProcessId = currentProcess.Id;
+                        }
+                    } catch (Exception ex) {
+                        Exceptions.LogExceptionToLauncher(ex);
+                        throw new InvalidOperationException("Failed to Get Current Process.");
                     }
                 }
                 return currentProcessId;

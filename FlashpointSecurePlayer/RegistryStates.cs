@@ -496,10 +496,11 @@ namespace FlashpointSecurePlayer {
                 return keyNames.First();
             }
 
-            RegistryKey registrySubKey = null;
-
             try {
-                for (int i = 0; i < keyNames.Count - 1; i++) {
+                RegistryKey registrySubKey = null;
+                int subKeyNamesCount = keyNames.Count - 1;
+
+                for (int i = 0; i < subKeyNamesCount; i++) {
                     keyName = keyNames[i + 1];
                     
                     try {
@@ -1368,7 +1369,7 @@ namespace FlashpointSecurePlayer {
                     }
 
                     TaskRequiresElevationException taskRequiresElevationException = null;
-                    InvalidRegistryStateException invalidRegistryStateException = null;
+                    Exception exception = null;
 
                     while (activeModificationsElement.RegistryStates.Count > 0) {
                         try {
@@ -1475,8 +1476,8 @@ namespace FlashpointSecurePlayer {
                             }
                         } catch (TaskRequiresElevationException ex) {
                             taskRequiresElevationException = ex;
-                        } catch (InvalidRegistryStateException ex) {
-                            invalidRegistryStateException = ex;
+                        } catch (Exception ex) {
+                            exception = ex;
                         }
 
                         ProgressManager.CurrentGoal.Steps++;
@@ -1491,8 +1492,8 @@ namespace FlashpointSecurePlayer {
                         throw taskRequiresElevationException;
                     }
 
-                    if (invalidRegistryStateException != null) {
-                        throw invalidRegistryStateException;
+                    if (exception != null) {
+                        throw exception;
                     }
                 } finally {
                     ProgressManager.CurrentGoal.Stop();
@@ -1526,27 +1527,35 @@ namespace FlashpointSecurePlayer {
         }
 
         private void GotValue(RegistryTraceData registryTraceData) {
-            if (registryTraceData.ValueName != null
-                && (registryTraceData.ProcessID == CurrentProcessId
-                || registryTraceData.ProcessID == -1)) {
-                if (ImportPaused) {
-                    if (registryTraceData.ValueName.Equals(IMPORT_RESUME, StringComparison.OrdinalIgnoreCase)) {
-                        ImportPaused = false;
+            try {
+                if (registryTraceData.ProcessID != CurrentProcessId && registryTraceData.ProcessID != -1) {
+                    return;
+                }
+            } catch {
+                return;
+            }
 
-                        // hold here until after the control has installed
-                        // that way we can recieve registry messages as they come in
-                        // with reassurance the control has installed already
-                        // therefore, key names will be redirected properly
-                        if (resumeEventWaitHandle == null) {
-                            throw new InvalidOperationException("resumeEventWaitHandle must not be NULL.");
-                        }
+            if (registryTraceData.ValueName == null) {
+                return;
+            }
 
-                        resumeEventWaitHandle.WaitOne();
+            if (ImportPaused) {
+                if (registryTraceData.ValueName.Equals(IMPORT_RESUME, StringComparison.OrdinalIgnoreCase)) {
+                    ImportPaused = false;
+
+                    // hold here until after the control has installed
+                    // that way we can recieve registry messages as they come in
+                    // with reassurance the control has installed already
+                    // therefore, key names will be redirected properly
+                    if (resumeEventWaitHandle == null) {
+                        throw new InvalidOperationException("resumeEventWaitHandle must not be NULL.");
                     }
-                } else {
-                    if (registryTraceData.ValueName.Equals(IMPORT_PAUSE, StringComparison.OrdinalIgnoreCase)) {
-                        ImportPaused = true;
-                    }
+
+                    resumeEventWaitHandle.WaitOne();
+                }
+            } else {
+                if (registryTraceData.ValueName.Equals(IMPORT_PAUSE, StringComparison.OrdinalIgnoreCase)) {
+                    ImportPaused = true;
                 }
             }
         }
@@ -1560,7 +1569,11 @@ namespace FlashpointSecurePlayer {
             // if KCBModificationKeyNames has KeyHandle, add it to RegistryStates
             // otherwise queue the modification
             // check the registry change was made by this process (or an unknown process - might be ours)
-            if (registryTraceData.ProcessID != CurrentProcessId && registryTraceData.ProcessID != -1) {
+            try {
+                if (registryTraceData.ProcessID != CurrentProcessId && registryTraceData.ProcessID != -1) {
+                    return;
+                }
+            } catch {
                 return;
             }
 
@@ -1740,7 +1753,11 @@ namespace FlashpointSecurePlayer {
             // if KCBModificationKeyNames has KeyHandle, remove it from RegistryStates
             // otherwise queue the modification
             // check the registry change was made by this process (or an unknown process - might be ours)
-            if (registryTraceData.ProcessID != CurrentProcessId && registryTraceData.ProcessID != -1) {
+            try {
+                if (registryTraceData.ProcessID != CurrentProcessId && registryTraceData.ProcessID != -1) {
+                    return;
+                }
+            } catch {
                 return;
             }
 
@@ -1861,86 +1878,90 @@ namespace FlashpointSecurePlayer {
 
             // we want to take care of any queued registry timeline events
             // an event entails the date and time of the registry modification
-            if (queuedModifications != null) {
-                queuedModifications.TryGetValue(safeKeyHandle, out SortedList<DateTime, List<RegistryStateElement>> timeStamps);
+            if (queuedModifications == null) {
+                return;
+            }
 
-                if (timeStamps != null) {
-                    foreach (List<RegistryStateElement> registryStateElements in timeStamps.Values) {
-                        // add its BaseKeyName
-                        for (int j = 0; j < registryStateElements.Count; j++) {
-                            registryStateElement = registryStateElements[j];
+            queuedModifications.TryGetValue(safeKeyHandle, out SortedList<DateTime, List<RegistryStateElement>> timeStamps);
 
-                            registryStateElement.KeyName = GetRedirectedKeyValueName(
-                                GetKeyValueNameFromKernelRegistryString(registryTraceData.KeyName + "\\" + registryStateElement.KeyName),
-                                modificationsElement.RegistryStates.BinaryType
-                            );
+            if (timeStamps == null) {
+                return;
+            }
 
-                            try {
-                                registryStateElement.ValueKind = GetValueKindInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView);
-                            } catch {
-                                // value doesn't exist
-                                registryStateElement.ValueKind = null;
-                            }
+            foreach (List<RegistryStateElement> registryStateElements in timeStamps.Values) {
+                // add its BaseKeyName
+                for (int j = 0; j < registryStateElements.Count; j++) {
+                    registryStateElement = registryStateElements[j];
 
-                            try {
-                                value = ReplaceStartupPathEnvironmentVariable(
-                                    LengthenValue(
-                                        GetValueInRegistryView(
-                                            registryStateElement.KeyName,
-                                            registryStateElement.ValueName,
-                                            registryView
-                                        ) as string,
+                    registryStateElement.KeyName = GetRedirectedKeyValueName(
+                        GetKeyValueNameFromKernelRegistryString(registryTraceData.KeyName + "\\" + registryStateElement.KeyName),
+                        modificationsElement.RegistryStates.BinaryType
+                    );
 
-                                        fullPath,
-                                        pathNames
-                                    ),
-
-                                    pathNames
-                                );
-                            } catch (SecurityException ex) {
-                                // value exists but we can't get it
-                                // this shouldn't happen because this task requires elevation
-                                LogExceptionToLauncher(ex);
-                                value = String.Empty;
-                            } catch (UnauthorizedAccessException ex) {
-                                // value exists but we can't get it
-                                // this shouldn't happen because this task requires elevation
-                                LogExceptionToLauncher(ex);
-                                value = String.Empty;
-                            } catch {
-                                // value doesn't exist
-                                value = null;
-                            }
-
-                            registryStateElement.Type = TYPE.VALUE;
-
-                            if (value == null) {
-                                try {
-                                    if (String.IsNullOrEmpty(registryStateElement.ValueName)
-                                        && String.IsNullOrEmpty(TestKeyDeletedInRegistryView(registryStateElement.KeyName, registryView))) {
-                                        registryStateElement.Type = TYPE.KEY;
-                                        modificationsElement.RegistryStates.Set(registryStateElement);
-                                    }
-                                } catch {
-                                    // fail silently
-                                }
-
-                                if (registryStateElement.Type == TYPE.VALUE) {
-                                    modificationsElement.RegistryStates.Remove(registryStateElement.Name);
-                                }
-                            } else {
-                                registryStateElement.Value = value;
-                                modificationsElement.RegistryStates.Set(registryStateElement);
-                            }
-                        }
+                    try {
+                        registryStateElement.ValueKind = GetValueKindInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView);
+                    } catch {
+                        // value doesn't exist
+                        registryStateElement.ValueKind = null;
                     }
 
-                    // and out of the queue
-                    // (the Key is the TimeStamp)
-                    //SetFlashpointSecurePlayerSection(TemplateName);
-                    queuedModifications[safeKeyHandle].Clear();
+                    try {
+                        value = ReplaceStartupPathEnvironmentVariable(
+                            LengthenValue(
+                                GetValueInRegistryView(
+                                    registryStateElement.KeyName,
+                                    registryStateElement.ValueName,
+                                    registryView
+                                ) as string,
+
+                                fullPath,
+                                pathNames
+                            ),
+
+                            pathNames
+                        );
+                    } catch (SecurityException ex) {
+                        // value exists but we can't get it
+                        // this shouldn't happen because this task requires elevation
+                        LogExceptionToLauncher(ex);
+                        value = String.Empty;
+                    } catch (UnauthorizedAccessException ex) {
+                        // value exists but we can't get it
+                        // this shouldn't happen because this task requires elevation
+                        LogExceptionToLauncher(ex);
+                        value = String.Empty;
+                    } catch {
+                        // value doesn't exist
+                        value = null;
+                    }
+
+                    registryStateElement.Type = TYPE.VALUE;
+
+                    if (value == null) {
+                        try {
+                            if (String.IsNullOrEmpty(registryStateElement.ValueName)
+                                && String.IsNullOrEmpty(TestKeyDeletedInRegistryView(registryStateElement.KeyName, registryView))) {
+                                registryStateElement.Type = TYPE.KEY;
+                                modificationsElement.RegistryStates.Set(registryStateElement);
+                            }
+                        } catch {
+                            // fail silently
+                        }
+
+                        if (registryStateElement.Type == TYPE.VALUE) {
+                            modificationsElement.RegistryStates.Remove(registryStateElement.Name);
+                        }
+                    } else {
+                        registryStateElement.Value = value;
+                        modificationsElement.RegistryStates.Set(registryStateElement);
+                    }
                 }
             }
+
+            // and out of the queue
+            // (the Key is the TimeStamp)
+            //SetFlashpointSecurePlayerSection(TemplateName);
+            queuedModifications[safeKeyHandle].Clear();
         }
     }
 }
