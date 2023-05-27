@@ -97,15 +97,9 @@ namespace FlashpointSecurePlayer {
 
         private static IntPtr jobHandle = IntPtr.Zero;
 
-        private static bool Started { get; set; } = false;
-
         public static void Start(Process process = null) {
             // this is here to make it so if the player crashes
             // the process it started is killed along with it
-            if (Started) {
-                return;
-            }
-
             IntPtr processHandle = IntPtr.Zero;
 
             if (process == null) {
@@ -153,8 +147,6 @@ namespace FlashpointSecurePlayer {
                 if (!AssignProcessToJobObject(jobHandle, processHandle)) {
                     throw new JobObjectException("Could assign the Process to the Job Object.");
                 }
-
-                Started = true;
             } finally {
                 Marshal.FreeHGlobal(jobobjectExtendedLimitInformationPointer);
             }
