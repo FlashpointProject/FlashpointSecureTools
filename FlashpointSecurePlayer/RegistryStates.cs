@@ -521,6 +521,7 @@ namespace FlashpointSecurePlayer {
             } finally {
                 for (int i = 0; i < registryKeys.Count; i++) {
                     registryKeys[i].Dispose();
+                    registryKeys[i] = null;
                 }
 
                 registryKeys = null;
