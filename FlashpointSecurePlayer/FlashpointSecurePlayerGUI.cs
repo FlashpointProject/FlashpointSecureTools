@@ -926,7 +926,7 @@ namespace FlashpointSecurePlayer {
                                 await downloadSource.Activate(TemplateName, DownloadSourceModificationName, ref software).ConfigureAwait(true);
                             } catch (DownloadFailedException ex) {
                                 LogExceptionToLauncher(ex);
-                                errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, DownloadSourceModificationName));
+                                errorDelegate(String.Format(Properties.Resources.GameIsMissingFile, DownloadSourceModificationName));
                             } catch (ConfigurationErrorsException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.ConfigurationFailedLoad);
