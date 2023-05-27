@@ -395,11 +395,11 @@ namespace FlashpointSecurePlayer {
                 } catch (SecurityException ex) {
                     // value exists but we can't get it
                     LogExceptionToLauncher(ex);
-                    throw new TaskRequiresElevationException("The value \"" + valueName + "\" in key \"" + keyName + "\" cannot be accessed by the user.");
+                    throw new TaskRequiresElevationException("The value \"" + valueName + "\" in key \"" + keyName + "\" could not be accessed by the user.");
                 } catch (UnauthorizedAccessException ex) {
                     // value exists but we can't get it
                     LogExceptionToLauncher(ex);
-                    throw new TaskRequiresElevationException("The value \"" + valueName + "\" in key \"" + keyName + "\" cannot be accessed by the user.");
+                    throw new TaskRequiresElevationException("The value \"" + valueName + "\" in key \"" + keyName + "\" could not be accessed by the user.");
                 } catch {
                     // value doesn't exist
                     valueKind = null;
@@ -666,11 +666,11 @@ namespace FlashpointSecurePlayer {
                 } catch (SecurityException ex) {
                     // key exists but we can't get it
                     LogExceptionToLauncher(ex);
-                    throw new TaskRequiresElevationException("The key \"" + registryStateElement.KeyName + "\" cannot be accessed by the user.");
+                    throw new TaskRequiresElevationException("The key \"" + registryStateElement.KeyName + "\" could not be accessed by the user.");
                 } catch (UnauthorizedAccessException ex) {
                     // key exists but we can't get it
                     LogExceptionToLauncher(ex);
-                    throw new TaskRequiresElevationException("The key \"" + registryStateElement.KeyName + "\" cannot be accessed by the user.");
+                    throw new TaskRequiresElevationException("The key \"" + registryStateElement.KeyName + "\" could not be accessed by the user.");
                 }
         }
             return true;
@@ -702,11 +702,11 @@ namespace FlashpointSecurePlayer {
             } catch (SecurityException ex) {
                 // value exists but we can't get it
                 LogExceptionToLauncher(ex);
-                throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + registryStateElement.KeyName + "\" cannot be accessed by the user.");
+                throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + registryStateElement.KeyName + "\" could not be accessed by the user.");
             } catch (UnauthorizedAccessException ex) {
                 // value exists but we can't get it
                 LogExceptionToLauncher(ex);
-                throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + registryStateElement.KeyName + "\" cannot be accessed by the user.");
+                throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + registryStateElement.KeyName + "\" could not be accessed by the user.");
             } catch {
                 // value doesn't exist
                 valueKind = null;
@@ -1017,11 +1017,11 @@ namespace FlashpointSecurePlayer {
                         } catch (SecurityException ex) {
                             // value exists but we can't get it
                             LogExceptionToLauncher(ex);
-                            throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" cannot be accessed by the user.");
+                            throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" could not be accessed by the user.");
                         } catch (UnauthorizedAccessException ex) {
                             // value exists but we can't get it
                             LogExceptionToLauncher(ex);
-                            throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" cannot be accessed by the user.");
+                            throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" could not be accessed by the user.");
                         } catch {
                             // value doesn't exist
                             valueKind = null;
@@ -1044,11 +1044,11 @@ namespace FlashpointSecurePlayer {
                             } catch (SecurityException ex) {
                                 // key exists but we can't get it
                                 LogExceptionToLauncher(ex);
-                                throw new TaskRequiresElevationException("The key \"" + keyName + "\" cannot be accessed by the user.");
+                                throw new TaskRequiresElevationException("The key \"" + keyName + "\" could not be accessed by the user.");
                             } catch (UnauthorizedAccessException ex) {
                                 // key exists but we can't get it
                                 LogExceptionToLauncher(ex);
-                                throw new TaskRequiresElevationException("The key \"" + keyName + "\" cannot be accessed by the user.");
+                                throw new TaskRequiresElevationException("The key \"" + keyName + "\" could not be accessed by the user.");
                             }
                         } else {
                             try {
@@ -1066,11 +1066,11 @@ namespace FlashpointSecurePlayer {
                             } catch (SecurityException ex) {
                                 // value exists but we can't get it
                                 LogExceptionToLauncher(ex);
-                                throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" cannot be accessed by the user.");
+                                throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" could not be accessed by the user.");
                             } catch (UnauthorizedAccessException ex) {
                                 // value exists but we can't get it
                                 LogExceptionToLauncher(ex);
-                                throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" cannot be accessed by the user.");
+                                throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" could not be accessed by the user.");
                             } catch {
                                 // value doesn't exist
                                 value = null;
@@ -1082,11 +1082,11 @@ namespace FlashpointSecurePlayer {
                                 } catch (SecurityException ex) {
                                     // key exists but we can't get it
                                     LogExceptionToLauncher(ex);
-                                    throw new TaskRequiresElevationException("The key \"" + keyName + "\" cannot be accessed by the user.");
+                                    throw new TaskRequiresElevationException("The key \"" + keyName + "\" could not be accessed by the user.");
                                 } catch (UnauthorizedAccessException ex) {
                                     // key exists but we can't get it
                                     LogExceptionToLauncher(ex);
-                                    throw new TaskRequiresElevationException("The key \"" + keyName + "\" cannot be accessed by the user.");
+                                    throw new TaskRequiresElevationException("The key \"" + keyName + "\" could not be accessed by the user.");
                                 }
 
                                 if (String.IsNullOrEmpty(keyDeleted)) {
@@ -1136,10 +1136,11 @@ namespace FlashpointSecurePlayer {
                             try {
                                 SetKeyInRegistryView(keyName, registryView);
                             } catch (SecurityException ex) {
-                                // key exists and we can't modify it
+                                // key doesn't exist and we can't set it
                                 LogExceptionToLauncher(ex);
+                                throw new TaskRequiresElevationException("Setting the key \"" + keyName + "\" requires elevation.");
                             } catch (UnauthorizedAccessException ex) {
-                                // key exists and we can't modify it
+                                // key exists and we can't set it
                                 LogExceptionToLauncher(ex);
                             } catch (InvalidOperationException ex) {
                                 // key marked for deletion
@@ -1148,7 +1149,7 @@ namespace FlashpointSecurePlayer {
                             } catch (Exception ex) {
                                 // key doesn't exist and can't be created
                                 LogExceptionToLauncher(ex);
-                                throw new TaskRequiresElevationException("Creating the key \"" + keyName + "\" requires elevation.");
+                                throw new InvalidRegistryStateException("The key \"" + keyName + "\" could not be set.");
                             }
                             break;
                             case TYPE.VALUE:
@@ -1163,13 +1164,13 @@ namespace FlashpointSecurePlayer {
                                     registryView
                                 );
                             } catch (SecurityException ex) {
-                                // value exists and we can't modify it
+                                // value exists and we can't set it
                                 LogExceptionToLauncher(ex);
-                                throw new TaskRequiresElevationException("Modifying the value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" requires elevation.");
+                                throw new TaskRequiresElevationException("Setting the value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" requires elevation.");
                             } catch (UnauthorizedAccessException ex) {
-                                // value exists and we can't modify it
+                                // value exists and we can't set it
                                 LogExceptionToLauncher(ex);
-                                throw new TaskRequiresElevationException("Modifying the value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" requires elevation.");
+                                throw new TaskRequiresElevationException("Setting the value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" requires elevation.");
                             } catch (FormatException ex) {
                                 // value must be Base64
                                 LogExceptionToLauncher(ex);
@@ -1181,7 +1182,7 @@ namespace FlashpointSecurePlayer {
                             } catch (Exception ex) {
                                 // value doesn't exist and can't be created
                                 LogExceptionToLauncher(ex);
-                                throw new InvalidRegistryStateException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" cannot be created.");
+                                throw new InvalidRegistryStateException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" could not be set.");
                             }
                             break;
                         }
@@ -1301,11 +1302,11 @@ namespace FlashpointSecurePlayer {
                                         } catch (SecurityException ex) {
                                             // value exists but we can't get it
                                             LogExceptionToLauncher(ex);
-                                            throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" cannot be accessed by the user.");
+                                            throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" could not be accessed by the user.");
                                         } catch (UnauthorizedAccessException ex) {
                                             // value exists but we can't get it
                                             LogExceptionToLauncher(ex);
-                                            throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" cannot be accessed by the user.");
+                                            throw new TaskRequiresElevationException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" could not be accessed by the user.");
                                         } catch {
                                             // value doesn't exist
                                             value = null;
@@ -1441,7 +1442,7 @@ namespace FlashpointSecurePlayer {
                                             } catch (Exception ex) {
                                                 // value doesn't exist and can't be created
                                                 LogExceptionToLauncher(ex);
-                                                throw new InvalidRegistryStateException("The value \"" + activeRegistryStateElement.ValueName + "\" in key \"" + keyName + "\" cannot be created.");
+                                                throw new InvalidRegistryStateException("The value \"" + activeRegistryStateElement.ValueName + "\" in key \"" + keyName + "\" could not be set.");
                                             }
                                         } else {
                                             try {

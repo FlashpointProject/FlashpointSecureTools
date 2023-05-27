@@ -143,7 +143,7 @@ namespace FlashpointSecurePlayer {
 
                         if (comparableName != null) {
                             if (UnmodifiableComparableNames.Contains(comparableName, StringComparer.OrdinalIgnoreCase)) {
-                                throw new InvalidEnvironmentVariablesException("The \"" + environmentVariablesElement.Name + "\" Environment Variable cannot be modified while creating the Active Environment Variables Element.");
+                                throw new InvalidEnvironmentVariablesException("The \"" + environmentVariablesElement.Name + "\" Environment Variable could not be modified while creating the Active Environment Variables Element.");
                             }
                         }
 
@@ -179,7 +179,7 @@ namespace FlashpointSecurePlayer {
 
                         if (comparableName != null) {
                             if (UnmodifiableComparableNames.Contains(comparableName, StringComparer.OrdinalIgnoreCase)) {
-                                throw new InvalidEnvironmentVariablesException("The \"" + environmentVariablesElement.Name + "\" Environment Variable cannot be modified at this time.");
+                                throw new InvalidEnvironmentVariablesException("The \"" + environmentVariablesElement.Name + "\" Environment Variable could not be modified at this time.");
                             }
                         }
 
@@ -310,7 +310,7 @@ namespace FlashpointSecurePlayer {
 
                             if (comparableName != null) {
                                 if (UnmodifiableComparableNames.Contains(comparableName, StringComparer.OrdinalIgnoreCase)) {
-                                    throw new InvalidEnvironmentVariablesException("The \"" + activeEnvironmentVariablesElement.Name + "\" Environment Variable cannot be modified at this time.");
+                                    throw new InvalidEnvironmentVariablesException("The \"" + activeEnvironmentVariablesElement.Name + "\" Environment Variable could not be modified at this time.");
                                 }
                             }
 

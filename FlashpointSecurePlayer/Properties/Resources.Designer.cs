@@ -353,7 +353,7 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Registry State cannot be started because another one has already been started..
+        ///   Looks up a localized string similar to The Registry State could not be started because another one has already been started..
         /// </summary>
         internal static string RegistryStateAlreadyInProgress {
             get {
@@ -371,7 +371,7 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Registry State cannot be stopped because no Registry State has been started..
+        ///   Looks up a localized string similar to The Registry State could not be stopped because no Registry State has been started..
         /// </summary>
         internal static string RegistryStateNotInProgress {
             get {

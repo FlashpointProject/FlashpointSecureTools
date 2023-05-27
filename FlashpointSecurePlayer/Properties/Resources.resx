@@ -218,13 +218,13 @@ If you choose No, the application will exit.</value>
     <value>The process is unable to start.</value>
   </data>
   <data name="RegistryStateAlreadyInProgress" xml:space="preserve">
-    <value>The Registry State cannot be started because another one has already been started.</value>
+    <value>The Registry State could not be started because another one has already been started.</value>
   </data>
   <data name="RegistryStateInProgress" xml:space="preserve">
     <value>The Registry State is being created. Please do not turn off your computer.</value>
   </data>
   <data name="RegistryStateNotInProgress" xml:space="preserve">
-    <value>The Registry State cannot be stopped because no Registry State has been started.</value>
+    <value>The Registry State could not be stopped because no Registry State has been started.</value>
   </data>
   <data name="RegistryStateTimeout" xml:space="preserve">
     <value>The Registry State timed out.</value>

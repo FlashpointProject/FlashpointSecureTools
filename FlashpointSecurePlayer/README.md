@@ -275,7 +275,7 @@ There are four possible scenarios.
 
 In scenarios one and two, Flashpoint Secure Player reverts the active Registry States Modification because the software is no longer open. In scenario three, Flashpoint Secure Player reverts the active Registry States Modification and any software opened using Software Mode is killed. In scenario four, Flashpoint Secure Player will revert the active Registry States Modification whenever the application is next run, regardless of what Modes or Modifications are specified.
 
-If the Registry States Modification cannot be reverted, an error occurs and the application will exit, and not do anything else regardless of what Modes or Modifications are specified until the issue is resolved. If the registry has been modified by a different application outside of Flashpoint Secure Player, the player no longer assumes control of those registry keys and values, and the active Registry States Modification is silently discarded.
+If the Registry States Modification could not be reverted, an error occurs and the application will exit, and not do anything else regardless of what Modes or Modifications are specified until the issue is resolved. If the registry has been modified by a different application outside of Flashpoint Secure Player, the player no longer assumes control of those registry keys and values, and the active Registry States Modification is silently discarded.
 
 **Administrator User**
 
