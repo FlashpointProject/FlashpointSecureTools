@@ -281,7 +281,7 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You must not run multiple instances of Old CPU Simulator..
+        ///   Looks up a localized string similar to You cannot run multiple instances of Old CPU Simulator..
         /// </summary>
         internal static string OCS_NoMultipleInstances {
             get {

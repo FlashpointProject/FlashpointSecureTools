@@ -348,26 +348,21 @@ namespace FlashpointSecurePlayer {
         }
 
         private void SetKeyInRegistryView(string keyName, RegistryView registryView) {
-            RegistryKey registryKey = CreateKeyInRegistryView(keyName, RegistryKeyPermissionCheck.Default, registryView);
-
-            if (registryKey == null) {
-                // key is invalid
-                throw new ArgumentException("The key \"" + keyName + "\" is invalid.");
+            using (RegistryKey registryKey = CreateKeyInRegistryView(keyName, RegistryKeyPermissionCheck.Default, registryView)) {
+                if (registryKey == null) {
+                    // key is invalid
+                    throw new ArgumentException("The key \"" + keyName + "\" is invalid.");
+                }
             }
-
-            registryKey.Dispose();
-            registryKey = null;
         }
 
         private void DeleteKeyInRegistryView(string keyName, RegistryView registryView) {
-            RegistryKey registryKey = OpenBaseKeyInRegistryView(keyName, registryView);
+            using (RegistryKey registryKey = OpenBaseKeyInRegistryView(keyName, registryView)) {
+                if (registryKey == null) {
+                    // base key does not exist (good!)
+                    return;
+                }
 
-            if (registryKey == null) {
-                // base key does not exist (good!)
-                return;
-            }
-
-            using (registryKey) {
                 int subKeyNameIndex = keyName.IndexOf("\\") + 1;
 
                 if (subKeyNameIndex > 0) {
@@ -377,17 +372,13 @@ namespace FlashpointSecurePlayer {
         }
 
         private object GetValueInRegistryView(string keyName, string valueName, RegistryView registryView) {
-            RegistryKey registryKey = OpenKeyInRegistryView(keyName, false, registryView);
+            using (RegistryKey registryKey = OpenKeyInRegistryView(keyName, false, registryView)) {
+                if (registryKey == null) {
+                    // key does not exist
+                    return null;
+                }
 
-            if (registryKey == null) {
-                // key does not exist
-                return null;
-            }
-
-            object value = null;
-
-            using (registryKey) {
-                value = registryKey.GetValue(valueName, null, RegistryValueOptions.DoNotExpandEnvironmentNames);
+                object value = registryKey.GetValue(valueName, null, RegistryValueOptions.DoNotExpandEnvironmentNames);
                 RegistryValueKind? valueKind = null;
 
                 try {
@@ -422,14 +413,12 @@ namespace FlashpointSecurePlayer {
         }
 
         private void SetValueInRegistryView(string keyName, string valueName, object value, RegistryValueKind valueKind, RegistryView registryView) {
-            RegistryKey registryKey = CreateKeyInRegistryView(keyName, RegistryKeyPermissionCheck.ReadWriteSubTree, registryView);
+            using (RegistryKey registryKey = CreateKeyInRegistryView(keyName, RegistryKeyPermissionCheck.ReadWriteSubTree, registryView)) {
+                if (registryKey == null) {
+                    // key is invalid
+                    throw new ArgumentException("The key \"" + keyName + "\" is invalid.");
+                }
 
-            if (registryKey == null) {
-                // key is invalid
-                throw new ArgumentException("The key \"" + keyName + "\" is invalid.");
-            }
-
-            using (registryKey) {
                 switch (valueKind) {
                     case RegistryValueKind.Binary:
                     if (value is string binaryValue) {
@@ -448,27 +437,23 @@ namespace FlashpointSecurePlayer {
         }
 
         private void DeleteValueInRegistryView(string keyName, string valueName, RegistryView registryView) {
-            RegistryKey registryKey = OpenKeyInRegistryView(keyName, true, registryView);
+            using (RegistryKey registryKey = OpenKeyInRegistryView(keyName, true, registryView)) {
+                if (registryKey == null) {
+                    // key does not exist (good!)
+                    return;
+                }
 
-            if (registryKey == null) {
-                // key does not exist (good!)
-                return;
-            }
-
-            using (registryKey) {
                 registryKey.DeleteValue(valueName);
             }
         }
 
         private RegistryValueKind? GetValueKindInRegistryView(string keyName, string valueName, RegistryView registryView) {
-            RegistryKey registryKey = OpenKeyInRegistryView(keyName, false, registryView);
+            using (RegistryKey registryKey = OpenKeyInRegistryView(keyName, false, registryView)) {
+                if (registryKey == null) {
+                    // key does not exist
+                    return null;
+                }
 
-            if (registryKey == null) {
-                // key does not exist
-                return null;
-            }
-
-            using (registryKey) {
                 return registryKey.GetValueKind(valueName);
             }
         }

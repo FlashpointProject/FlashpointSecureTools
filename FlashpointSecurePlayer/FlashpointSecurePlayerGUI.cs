@@ -70,7 +70,7 @@ namespace FlashpointSecurePlayer {
                     // multiple instances open, blow up immediately
                     applicationMutex.Close();
                     applicationMutex = null;
-                    throw new InvalidOperationException("You must not run multiple instances of Flashpoint Secure Player.");
+                    throw new InvalidOperationException("You cannot run multiple instances of Flashpoint Secure Player.");
                 }
             } catch (InvalidOperationException ex) {
                 LogExceptionToLauncher(ex);
@@ -144,26 +144,15 @@ namespace FlashpointSecurePlayer {
             // to reduce the amount of stupid in the #help-me-please channel
             //ShowError(Properties.Resources.GameNotCuratedCorrectly);
             StringBuilder text = new StringBuilder(Properties.Resources.NoGameSelected);
-
-            Process parentProcess = null;
-
-            try {
-                parentProcess = GetParentProcess();
-            } catch {
-                // fail silently
-            }
             
             string parentProcessFileName = null;
 
-            if (parentProcess != null) {
-                try {
+            try {
+                using (Process parentProcess = GetParentProcess()) {
                     parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess).ToString());
-                } catch {
-                    // fail silently
-                } finally {
-                    parentProcess.Dispose();
-                    parentProcess = null;
                 }
+            } catch {
+                // fail silently
             }
 
             if (parentProcessFileName == null
@@ -283,30 +272,21 @@ namespace FlashpointSecurePlayer {
             if (!modificationsElement.ElementInformation.IsPresent) {
                 return;
             }
-
-            Process parentProcess = null;
-
-            try {
-                parentProcess = GetParentProcess();
-            } catch {
-                // fail silently
-            }
             
             string parentProcessFileName = null;
 
-            if (parentProcess != null) {
-                try {
-                    parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess).ToString());
-                } catch (Exception ex) {
-                    LogExceptionToLauncher(ex);
-                    ProgressManager.ShowError();
-                    MessageBox.Show(Properties.Resources.ProcessUnableToStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    Application.Exit();
-                    throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator which failed to get the Parent Process File Name.");
-                } finally {
-                    parentProcess.Dispose();
-                    parentProcess = null;
+            try {
+                using (Process parentProcess = GetParentProcess()) {
+                    if (parentProcess != null) {
+                        parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess).ToString());
+                    }
                 }
+            } catch (Exception ex) {
+                LogExceptionToLauncher(ex);
+                ProgressManager.ShowError();
+                MessageBox.Show(Properties.Resources.ProcessUnableToStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Application.Exit();
+                throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator which failed to get the Parent Process File Name.");
             }
 
             if (parentProcessFileName != null) {
@@ -680,11 +660,11 @@ namespace FlashpointSecurePlayer {
                                 throw new InvalidModeException("The Mode failed to create a Job Object.");
                             }
 
-                            if (softwareProcess == null) {
-                                throw new InvalidModeException("The Mode failed to create the Process.");
-                            }
-
                             using (softwareProcess) {
+                                if (softwareProcess == null) {
+                                    throw new InvalidModeException("The Mode failed to create the Process.");
+                                }
+
                                 Hide();
 
                                 softwareProcess.WaitForExit();
