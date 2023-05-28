@@ -276,7 +276,15 @@ namespace FlashpointSecurePlayer {
             string parentProcessFileName = null;
 
             try {
-                using (Process parentProcess = GetParentProcess()) {
+                Process parentProcess = null;
+
+                try {
+                    parentProcess = GetParentProcess();
+                } catch {
+                    // fail silently
+                }
+
+                using (parentProcess) {
                     if (parentProcess != null) {
                         parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess).ToString());
                     }
