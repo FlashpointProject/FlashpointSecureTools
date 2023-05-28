@@ -762,7 +762,7 @@ namespace FlashpointSecurePlayer {
             }
 
             if (resumeEventWaitHandle == null) {
-                throw new InvalidOperationException("resumeEventWaitHandle must not be NULL.");
+                throw new InvalidOperationException("resumeEventWaitHandle is null.");
             }
 
             try {
@@ -863,7 +863,7 @@ namespace FlashpointSecurePlayer {
                 base.StopImport();
                 
                 if (resumeEventWaitHandle == null) {
-                    throw new InvalidOperationException("resumeEventWaitHandle must not be NULL.");
+                    throw new InvalidOperationException("resumeEventWaitHandle is null.");
                 }
 
                 resumeEventWaitHandle.Set();
@@ -1532,7 +1532,7 @@ namespace FlashpointSecurePlayer {
                     // with reassurance the control has installed already
                     // therefore, key names will be redirected properly
                     if (resumeEventWaitHandle == null) {
-                        throw new InvalidOperationException("resumeEventWaitHandle must not be NULL.");
+                        throw new InvalidOperationException("resumeEventWaitHandle is null.");
                     }
 
                     resumeEventWaitHandle.WaitOne();

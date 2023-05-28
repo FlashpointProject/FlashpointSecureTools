@@ -657,13 +657,6 @@ namespace FlashpointSecurePlayer {
                                 LogExceptionToLauncher(ex);
                                 // popup message box and blow up
                                 errorDelegate(Properties.Resources.JobObjectNotCreated);
-
-                                if (softwareProcess != null) {
-                                    softwareProcess.Kill();
-                                    softwareProcess.Dispose();
-                                    softwareProcess = null;
-                                }
-
                                 Environment.Exit(-1);
                                 throw new InvalidModeException("The Mode failed to create a Job Object.");
                             }

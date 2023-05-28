@@ -2679,11 +2679,23 @@ namespace FlashpointSecurePlayer {
 
             try {
                 process = Process.GetProcessById((int)processInformation.dwProcessId);
-                ProcessSync.Start(process);
 
-                if (ResumeThread(processInformation.hThread) == -1) {
-                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                    return;
+                if (process == null) {
+                    throw new InvalidOperationException("process is null.");
+                }
+
+                try {
+                    ProcessSync.Start(process);
+
+                    if (ResumeThread(processInformation.hThread) == -1) {
+                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                        return;
+                    }
+                } catch {
+                    process.Kill();
+                    process.Dispose();
+                    process = null;
+                    throw;
                 }
             } finally {
                 if (!CloseHandle(processInformation.hProcess)) {
