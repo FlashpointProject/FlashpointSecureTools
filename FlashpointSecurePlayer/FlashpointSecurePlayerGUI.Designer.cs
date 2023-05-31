@@ -50,7 +50,7 @@
             // canShowMessageLabel
             // 
             this.canShowMessageLabel.AutoSize = true;
-            this.canShowMessageLabel.Location = new System.Drawing.Point(1012, 1038);
+            this.canShowMessageLabel.Location = new System.Drawing.Point(1000, 1000);
             this.canShowMessageLabel.Name = "canShowMessageLabel";
             this.canShowMessageLabel.Size = new System.Drawing.Size(54, 13);
             this.canShowMessageLabel.TabIndex = 2;
