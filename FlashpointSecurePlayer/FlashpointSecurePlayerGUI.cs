@@ -1425,7 +1425,7 @@ namespace FlashpointSecurePlayer {
 
                 if (templateElement.Mode.Name == ModeElement.NAME.SOFTWARE) {
                     try {
-                        string htdocsFilePath = (await GetHTDOCSFilePath(URL)).ToString();
+                        string htdocsFilePath = (await GetHTDOCSFilePath(URL).ConfigureAwait(true)).ToString();
 
                         try {
                             htdocsFile = Path.GetFileName(htdocsFilePath);
