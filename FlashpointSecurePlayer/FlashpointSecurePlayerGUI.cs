@@ -179,7 +179,7 @@ namespace FlashpointSecurePlayer {
                 try {
                     processesByName = Process.GetProcessesByName(FLASHPOINT_LAUNCHER_PROCESS_NAME);
                 } catch (InvalidOperationException ex) {
-                    // only occurs Windows XP which is unsupported
+                    // only occurs on Windows XP which is unsupported
                     LogExceptionToLauncher(ex);
                     ShowErrorFatal(Properties.Resources.WindowsVersionTooOld);
                     return;
@@ -368,7 +368,9 @@ namespace FlashpointSecurePlayer {
             throw new InvalidModificationException("The Modification failed to run with Old CPU Simulator.");
         }
 
-        private StringBuilder GetHTDOCSFilePath(Uri requestUri) {
+        private async Task<StringBuilder> GetHTDOCSFilePath(string url) {
+            Uri requestUri = await DownloadAsync(GetValidatedURL(url)).ConfigureAwait(true);
+
             StringBuilder htdocsFilePath = new StringBuilder(HTDOCS);
 
             try {
@@ -382,9 +384,9 @@ namespace FlashpointSecurePlayer {
                     htdocsFilePath.Append(requestUri.LocalPath);
                 }
             } catch (UriFormatException) {
-                throw new ArgumentException("The URL \"" + URL + "\" is malformed.");
+                throw new ArgumentException("The URL \"" + url + "\" is malformed.");
             } catch (InvalidOperationException) {
-                throw new ArgumentException("The URL \"" + URL + "\" is invalid.");
+                throw new ArgumentException("The URL \"" + url + "\" is invalid.");
             }
             return htdocsFilePath;
         }
@@ -692,8 +694,8 @@ namespace FlashpointSecurePlayer {
                                 // StartProcessCreateBreakawayFromJob required for Process Sync on Windows 7
                                 StartProcessCreateBreakawayFromJob(softwareProcessStartInfo, out softwareProcess);
                             } catch (JobObjectException ex) {
-                                LogExceptionToLauncher(ex);
                                 // popup message box and blow up
+                                LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.JobObjectNotCreated);
                                 Environment.Exit(-1);
                                 throw new InvalidModeException("The Mode failed to create a Job Object.");
@@ -1166,9 +1168,10 @@ namespace FlashpointSecurePlayer {
                 LogExceptionToLauncher(ex);
                 return;
             } catch (OldCPUSimulatorRequiresApplicationRestartException ex) {
-                LogExceptionToLauncher(ex);
                 // do this after all other modifications
                 // Old CPU Simulator can't handle restarts
+                LogExceptionToLauncher(ex);
+
                 try {
                     AskLaunchWithOldCPUSimulator();
                 } catch (InvalidModificationException ex2) {
@@ -1339,8 +1342,8 @@ namespace FlashpointSecurePlayer {
 
                 ModificationsRevertMethod = modificationsRevertMethod;
             } catch (InvalidTemplateException ex) {
-                LogExceptionToLauncher(ex);
                 // catch on load
+                LogExceptionToLauncher(ex);
                 ShowNoGameSelected();
                 return;
             } catch (TaskRequiresElevationException ex) {
@@ -1422,9 +1425,7 @@ namespace FlashpointSecurePlayer {
 
                 if (templateElement.Mode.Name == ModeElement.NAME.SOFTWARE) {
                     try {
-                        Uri requestUri = await DownloadAsync(GetValidatedURL(URL)).ConfigureAwait(true);
-
-                        string htdocsFilePath = GetHTDOCSFilePath(requestUri).ToString();
+                        string htdocsFilePath = (await GetHTDOCSFilePath(URL)).ToString();
 
                         try {
                             htdocsFile = Path.GetFileName(htdocsFilePath);
@@ -1588,9 +1589,6 @@ namespace FlashpointSecurePlayer {
             // Set Current Directory
             try {
                 Directory.SetCurrentDirectory(Application.StartupPath);
-            } catch (SecurityException ex) {
-                LogExceptionToLauncher(ex);
-                throw new TaskRequiresElevationException("Setting the Current Directory requires elevation.");
             } catch {
                 // fail silently
             }
