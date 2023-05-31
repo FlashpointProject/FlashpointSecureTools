@@ -138,6 +138,17 @@ namespace FlashpointSecurePlayer {
             return true;
         }
 
+        private void ShowErrorFatal(string text) {
+            ProgressManager.ShowError();
+
+            if (text == null) {
+                return;
+            }
+            
+            MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            Application.Exit();
+        }
+
         private void ShowNoGameSelected() {
             // detect if this application was started by Flashpoint Launcher
             // none of this is strictly necessary, I'm just trying
@@ -170,9 +181,7 @@ namespace FlashpointSecurePlayer {
                 } catch (InvalidOperationException ex) {
                     // only occurs Windows XP which is unsupported
                     LogExceptionToLauncher(ex);
-                    ProgressManager.ShowError();
-                    MessageBox.Show(Properties.Resources.WindowsVersionTooOld, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    Application.Exit();
+                    ShowErrorFatal(Properties.Resources.WindowsVersionTooOld);
                     return;
                 }
 
@@ -194,9 +203,48 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
-            ProgressManager.ShowError();
-            MessageBox.Show(text.ToString(), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            Application.Exit();
+            ShowErrorFatal(text.ToString());
+        }
+
+        private void RestartApplication(bool runAsAdministrator, ref Mutex applicationMutex, ProcessStartInfo processStartInfo = null) {
+            if (processStartInfo == null) {
+                processStartInfo = new ProcessStartInfo {
+                    FileName = GetValidArgument(Application.ExecutablePath, true),
+                    // can't use GetCommandLineArgs() and String.Join because arguments that were in quotes will lose their quotes
+                    // need to use Environment.CommandLine and find arguments
+                    Arguments = GetArgumentSliceFromCommandLine(Environment.CommandLine, 1)
+                };
+            }
+
+            processStartInfo.RedirectStandardError = false;
+            processStartInfo.RedirectStandardOutput = false;
+            processStartInfo.RedirectStandardInput = false;
+
+            if (runAsAdministrator) {
+                processStartInfo.UseShellExecute = true;
+                processStartInfo.Verb = "runas";
+            }
+
+            if (applicationMutex != null) {
+                applicationMutex.ReleaseMutex();
+                applicationMutex.Close();
+                applicationMutex = null;
+            }
+
+            // hide the current form so two windows are not open at once
+            // no this is not a race condition
+            // http://stackoverflow.com/questions/33042010/in-what-cases-does-the-process-start-method-return-false
+            try {
+                Hide();
+                ControlBox = true;
+                Process.Start(processStartInfo).Dispose();
+                Application.Exit();
+            } catch (Exception ex) {
+                LogExceptionToLauncher(ex);
+                Show();
+                ShowErrorFatal(Properties.Resources.ProcessUnableToStart);
+                throw new Exceptions.ApplicationRestartRequiredException("The application failed to restart.");
+            }
         }
 
         private void AskLaunch(string applicationRestartMessage, string descriptionMessage = null) {
@@ -216,26 +264,24 @@ namespace FlashpointSecurePlayer {
         }
 
         private void AskLaunchAsAdministratorUser() {
-            if (!TestLaunchedAsAdministratorUser()) {
-                // popup message box and restart program here
-                /*
-                 this dialog is not purely here for aesthetic/politeness reasons
-                 it's a stopgap to prevent the program from reloading infinitely
-                 in case the TestLaunchedAsAdministratorUser function somehow fails
-                 you might say "but the UAC dialog would prevent it reloading unstoppably"
-                 to which I say "yes, but some very stupid people turn UAC off"
-                 then there'd be no dialog except this one - and I don't want
-                 the program to enter an infinite restart loop
-                 */
-                AskLaunch(Properties.Resources.AsAdministratorUser);
+            try {
+                if (!TestLaunchedAsAdministratorUser()) {
+                    // popup message box and restart program here
+                    /*
+                     this dialog is not purely here for aesthetic/politeness reasons
+                     it's a stopgap to prevent the program from reloading infinitely
+                     in case the TestLaunchedAsAdministratorUser function somehow fails
+                     you might say "but the UAC dialog would prevent it reloading unstoppably"
+                     to which I say "yes, but some very stupid people turn UAC off"
+                     then there'd be no dialog except this one - and I don't want
+                     the program to enter an infinite restart loop
+                     */
+                    AskLaunch(Properties.Resources.AsAdministratorUser);
 
-                try {
-                    RestartApplication(true, this, ref applicationMutex);
-                    throw new InvalidModificationException("The Modification does not work unless run as Administrator User.");
-                } catch (ApplicationRestartRequiredException ex) {
-                    LogExceptionToLauncher(ex);
-                    throw new InvalidModificationException("The Modification does not work unless run as Administrator User and the application failed to restart.");
+                    RestartApplication(true, ref applicationMutex);
                 }
+            } catch (Exception ex) {
+                LogExceptionToLauncher(ex);
             }
 
             // we're already running as admin?
@@ -244,38 +290,39 @@ namespace FlashpointSecurePlayer {
         }
 
         private void AskLaunchWithCompatibilitySettings() {
-            AskLaunch(Properties.Resources.WithCompatibilitySettings);
-
             try {
-                RestartApplication(false, this, ref applicationMutex);
-                throw new InvalidModificationException("The Modification does not work unless run with Compatibility Settings.");
-            } catch (ApplicationRestartRequiredException ex) {
+                AskLaunch(Properties.Resources.WithCompatibilitySettings);
+            
+                RestartApplication(false, ref applicationMutex);
+            } catch (Exception ex) {
                 LogExceptionToLauncher(ex);
-                throw new InvalidModificationException("The Modification does not work unless run with Compatibility Settings and the application failed to restart.");
             }
+
+            ShowError(String.Format(Properties.Resources.GameUnableToLaunch, Properties.Resources.WithCompatibilitySettings));
+            throw new InvalidModificationException("The Modification failed to run with Compatibility Settings.");
         }
 
         private void AskLaunchWithOldCPUSimulator() {
-            // only ask if Old CPU Simulator Modification exists
-            if (String.IsNullOrEmpty(TemplateName)) {
-                return;
-            }
-
-            TemplateElement templateElement = GetTemplateElement(false, TemplateName);
-
-            if (templateElement == null) {
-                return;
-            }
-
-            ModificationsElement modificationsElement = templateElement.Modifications;
-
-            if (!modificationsElement.ElementInformation.IsPresent) {
-                return;
-            }
-            
-            string parentProcessFileName = null;
-
             try {
+                // only ask if Old CPU Simulator Modification exists
+                if (String.IsNullOrEmpty(TemplateName)) {
+                    return;
+                }
+
+                TemplateElement templateElement = GetTemplateElement(false, TemplateName);
+
+                if (templateElement == null) {
+                    return;
+                }
+
+                ModificationsElement modificationsElement = templateElement.Modifications;
+
+                if (!modificationsElement.ElementInformation.IsPresent) {
+                    return;
+                }
+
+                string parentProcessFileName = null;
+            
                 Process parentProcess = null;
 
                 try {
@@ -289,53 +336,36 @@ namespace FlashpointSecurePlayer {
                         parentProcessFileName = Path.GetFileName(GetProcessName(parentProcess).ToString());
                     }
                 }
-            } catch (Exception ex) {
-                LogExceptionToLauncher(ex);
-                ProgressManager.ShowError();
-                MessageBox.Show(Properties.Resources.ProcessUnableToStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Application.Exit();
-                throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator which failed to get the Parent Process File Name.");
-            }
 
-            if (parentProcessFileName != null) {
-                if (parentProcessFileName.Equals(OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME, StringComparison.OrdinalIgnoreCase)) {
-                    return;
+                if (parentProcessFileName != null) {
+                    if (parentProcessFileName.Equals(OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME, StringComparison.OrdinalIgnoreCase)) {
+                        return;
+                    }
                 }
-            }
 
-            AskLaunch(Properties.Resources.WithOldCPUSimulator, Properties.Resources.OldCPUSimulatorSlow);
-            string fullPath = null;
+                AskLaunch(Properties.Resources.WithOldCPUSimulator, Properties.Resources.OldCPUSimulatorSlow);
+                string fullPath = null;
 
-            // Old CPU Simulator needs to be on top, not us
-            try {
+                // Old CPU Simulator needs to be on top, not us
                 fullPath = Path.GetFullPath(OLD_CPU_SIMULATOR_PATH);
-            } catch (Exception ex) {
-                LogExceptionToLauncher(ex);
-                throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator and getting the full path to Old CPU Simulator failed.");
-            }
 
-            ProcessStartInfo processStartInfo;
-
-            try {
+                ProcessStartInfo processStartInfo;
+            
                 processStartInfo = new ProcessStartInfo {
                     FileName = GetValidArgument(fullPath, true),
                     Arguments = GetOldCPUSimulatorProcessStartInfoArguments(modificationsElement.OldCPUSimulator, new StringBuilder(Environment.CommandLine)).ToString(),
                     WorkingDirectory = Environment.CurrentDirectory
                 };
-            } catch (ArgumentException ex) {
+
+                HideWindow(ref processStartInfo);
+            
+                RestartApplication(false, ref applicationMutex, processStartInfo);
+            } catch (Exception ex) {
                 LogExceptionToLauncher(ex);
-                throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator and getting the Old CPU Simulator Process Start Info Arguments failed.");
             }
 
-            HideWindow(ref processStartInfo);
-
-            try {
-                RestartApplication(false, this, ref applicationMutex, processStartInfo);
-                throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator.");
-            } catch (ApplicationRestartRequiredException ex) {
-                LogExceptionToLauncher(ex);
-                throw new InvalidModificationException("The Modification does not work unless run with Old CPU Simulator and the application failed to restart.");
-            }
+            ShowError(String.Format(Properties.Resources.GameUnableToLaunch, Properties.Resources.WithOldCPUSimulator));
+            throw new InvalidModificationException("The Modification failed to run with Old CPU Simulator.");
         }
 
         private StringBuilder GetHTDOCSFilePath(Uri requestUri) {
@@ -739,8 +769,7 @@ namespace FlashpointSecurePlayer {
                         return;
                     }
 
-                    ProgressManager.ShowError();
-                    MessageBox.Show(Properties.Resources.NoModeSelected, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    errorDelegate(Properties.Resources.NoModeSelected);
                     throw new InvalidModeException("No Mode was used.");
                 } finally {
                     modeMutex.ReleaseMutex();
@@ -798,8 +827,8 @@ namespace FlashpointSecurePlayer {
                         try {
                             activeTemplateElement = GetActiveTemplateElement(false);
                         } catch (ConfigurationErrorsException ex) {
-                            LogExceptionToLauncher(ex);
                             // fail silently
+                            LogExceptionToLauncher(ex);
                         }
 
                         if (activeTemplateElement != null) {
@@ -936,7 +965,7 @@ namespace FlashpointSecurePlayer {
                                 await downloadsBefore.ActivateAsync(TemplateName, DownloadsBeforeModificationNames).ConfigureAwait(true);
                             } catch (DownloadFailedException ex) {
                                 LogExceptionToLauncher(ex);
-                                errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, String.Join(", ", DownloadsBeforeModificationNames)));
+                                errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, String.Join("\", \"", DownloadsBeforeModificationNames)));
                             } catch (ConfigurationErrorsException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.ConfigurationUnableToLoad);
@@ -1133,8 +1162,8 @@ namespace FlashpointSecurePlayer {
                     throw new InvalidModificationException("An error occured while activating the Modification.");
                 }).ConfigureAwait(true);
             } catch (InvalidModificationException ex) {
-                LogExceptionToLauncher(ex);
                 // delegate handles error
+                LogExceptionToLauncher(ex);
                 return;
             } catch (OldCPUSimulatorRequiresApplicationRestartException ex) {
                 LogExceptionToLauncher(ex);
@@ -1150,14 +1179,12 @@ namespace FlashpointSecurePlayer {
 
             try {
                 ActivateMode(templateElement, delegate (string text) {
-                    ProgressManager.ShowError();
-                    MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    Application.Exit();
+                    ShowErrorFatal(text);
                     throw new InvalidModeException("An error occured while activating the Mode.");
                 });
             } catch (InvalidModeException ex) {
-                LogExceptionToLauncher(ex);
                 // delegate handles error
+                LogExceptionToLauncher(ex);
                 return;
             }
         }
@@ -1173,8 +1200,8 @@ namespace FlashpointSecurePlayer {
                     // I will assassinate the Cyrollan delegate myself...
                 });
             } catch (InvalidModeException ex) {
-                LogExceptionToLauncher(ex);
                 // delegate handles error
+                LogExceptionToLauncher(ex);
                 return;
             }
 
@@ -1185,8 +1212,8 @@ namespace FlashpointSecurePlayer {
                     // and this foul infestation along with it!
                 });
             } catch (InvalidModificationException ex) {
-                LogExceptionToLauncher(ex);
                 // delegate handles error
+                LogExceptionToLauncher(ex);
                 return;
             }
         }
@@ -1208,9 +1235,7 @@ namespace FlashpointSecurePlayer {
             ProgressManager.ProgressForm = this;
 
             if (oldWindowsVersion) {
-                ProgressManager.ShowError();
-                MessageBox.Show(Properties.Resources.WindowsVersionTooOld, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Application.Exit();
+                ShowErrorFatal(Properties.Resources.WindowsVersionTooOld);
                 return;
             }
 
@@ -1303,15 +1328,12 @@ namespace FlashpointSecurePlayer {
                 // it's important this succeeds
                 try {
                     DeactivateModifications(delegate (string text) {
-                        ProgressManager.ShowError();
-                        MessageBox.Show(text, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        Application.Exit();
+                        ShowErrorFatal(text);
                         throw new InvalidModificationException("An error occured while deactivating the Modification.");
                     });
                 } catch (InvalidModificationException ex) {
+                    // delegate handles error
                     LogExceptionToLauncher(ex);
-                    // can't proceed since we can't activate without deactivating first
-                    Application.Exit();
                     return;
                 }
 
@@ -1326,8 +1348,8 @@ namespace FlashpointSecurePlayer {
 
                 try {
                     AskLaunchAsAdministratorUser();
-                } catch (InvalidModificationException) {
-                    Application.Exit();
+                } catch (InvalidModificationException ex2) {
+                    LogExceptionToLauncher(ex2);
                     return;
                 }
             }
@@ -1362,19 +1384,16 @@ namespace FlashpointSecurePlayer {
                     // ActiveX Import
                     try {
                         await ImportActiveXAsync(delegate (string text) {
-                            if (!ShowError(text)) {
-                                Application.Exit();
-                            }
-
+                            ShowErrorFatal(text);
                             throw new ActiveXImportFailedException("An error occured while activating the ActiveX Import.");
                         });
                     } catch (InvalidTemplateException ex) {
-                        LogExceptionToLauncher(ex);
                         // no need to exit here, error shown in interface
+                        LogExceptionToLauncher(ex);
                         //Application.Exit();
                     } catch (ActiveXImportFailedException ex) {
-                        LogExceptionToLauncher(ex);
                         // no need to exit here, error shown in interface
+                        LogExceptionToLauncher(ex);
                         //Application.Exit();
                     }
                     return;
@@ -1388,16 +1407,12 @@ namespace FlashpointSecurePlayer {
                     templateElement = GetTemplateElement(false, TemplateName);
                 } catch (ConfigurationErrorsException ex) {
                     LogExceptionToLauncher(ex);
-                    ProgressManager.ShowError();
-                    MessageBox.Show(Properties.Resources.ConfigurationUnableToLoad, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    Application.Exit();
+                    ShowErrorFatal(Properties.Resources.ConfigurationUnableToLoad);
                     return;
                 }
 
                 if (templateElement == null) {
-                    ProgressManager.ShowError();
-                    MessageBox.Show(Properties.Resources.ConfigurationUnableToLoad, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    Application.Exit();
+                    ShowErrorFatal(Properties.Resources.ConfigurationUnableToLoad);
                     return;
                 }
 
@@ -1414,8 +1429,8 @@ namespace FlashpointSecurePlayer {
                         try {
                             htdocsFile = Path.GetFileName(htdocsFilePath);
                         } catch (ArgumentException ex) {
-                            LogExceptionToLauncher(ex);
                             // fail silently?
+                            LogExceptionToLauncher(ex);
                         }
 
                         // empty ONLY, not null
@@ -1448,16 +1463,16 @@ namespace FlashpointSecurePlayer {
                         try {
                             htdocsFileDirectory = Path.GetDirectoryName(fullHTDOCSFilePath);
                         } catch (ArgumentException ex) {
-                            LogExceptionToLauncher(ex);
                             // fail silently?
+                            LogExceptionToLauncher(ex);
                         }
 
                         if (!String.IsNullOrEmpty(htdocsFile) && !String.IsNullOrEmpty(htdocsFileDirectory)) {
                             htdocsFile = htdocsFileDirectory + "\\" + htdocsFile;
                         }
                     } catch (DownloadFailedException ex) {
-                        LogExceptionToLauncher(ex);
                         // fail silently
+                        LogExceptionToLauncher(ex);
                     }
                 }
 
@@ -1473,10 +1488,6 @@ namespace FlashpointSecurePlayer {
                 } catch (SecurityException ex) {
                     LogExceptionToLauncher(ex);
                     throw new TaskRequiresElevationException("Setting the Environment Variables requires elevation.");
-                } catch (Exception ex) {
-                    LogExceptionToLauncher(ex);
-                    Application.Exit();
-                    return;
                 }
 
                 ProgressManager.ShowOutput();
@@ -1485,13 +1496,13 @@ namespace FlashpointSecurePlayer {
                 try {
                     await StartSecurePlaybackAsync(templateElement).ConfigureAwait(false);
                 } catch (InvalidModeException ex) {
-                    LogExceptionToLauncher(ex);
                     // no need to exit here, error shown in interface
+                    LogExceptionToLauncher(ex);
                     //Application.Exit();
                     return;
                 } catch (InvalidModificationException ex) {
-                    LogExceptionToLauncher(ex);
                     // no need to exit here, error shown in interface
+                    LogExceptionToLauncher(ex);
                     //Application.Exit();
                     return;
                 } catch (InvalidTemplateException ex) {
@@ -1506,10 +1517,9 @@ namespace FlashpointSecurePlayer {
                     AskLaunchAsAdministratorUser();
                 } catch (InvalidModificationException ex2) {
                     LogExceptionToLauncher(ex2);
-                    Application.Exit();
                     return;
                 }
-            } catch (ArgumentException ex) {
+            } catch (Exception ex) {
                 LogExceptionToLauncher(ex);
                 Application.Exit();
             }
@@ -1548,17 +1558,17 @@ namespace FlashpointSecurePlayer {
                     try {
                         StopSecurePlayback(e, templateElement);
                     } catch (ActiveXImportFailedException ex) {
-                        LogExceptionToLauncher(ex);
                         // fail silently
+                        LogExceptionToLauncher(ex);
                     } catch (InvalidModeException ex) {
-                        LogExceptionToLauncher(ex);
                         // fail silently
+                        LogExceptionToLauncher(ex);
                     } catch (InvalidModificationException ex) {
-                        LogExceptionToLauncher(ex);
                         // fail silently
+                        LogExceptionToLauncher(ex);
                     } catch (InvalidTemplateException ex) {
-                        LogExceptionToLauncher(ex);
                         // fail silently
+                        LogExceptionToLauncher(ex);
                     }
                 } finally {
                     applicationMutex.ReleaseMutex();

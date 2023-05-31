@@ -506,7 +506,6 @@ namespace FlashpointSecurePlayer {
                 customSecurityManager = new CustomSecurityManager(closableWebBrowser, UseFlashActiveXControl);
             } catch (Exception ex) {
                 LogExceptionToLauncher(ex);
-                ProgressManager.ShowError();
                 MessageBox.Show(Properties.Resources.UnableToCreateCustomSecurityManager, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Application.Exit();
                 return;

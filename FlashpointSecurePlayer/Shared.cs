@@ -2567,49 +2567,6 @@ namespace FlashpointSecurePlayer {
             processStartInfo.ErrorDialog = false;
         }
 
-        public static void RestartApplication(bool runAsAdministrator, Form form, ref Mutex applicationMutex, ProcessStartInfo processStartInfo = null) {
-            if (processStartInfo == null) {
-                processStartInfo = new ProcessStartInfo {
-                    FileName = GetValidArgument(Application.ExecutablePath, true),
-                    // can't use GetCommandLineArgs() and String.Join because arguments that were in quotes will lose their quotes
-                    // need to use Environment.CommandLine and find arguments
-                    Arguments = GetArgumentSliceFromCommandLine(Environment.CommandLine, 1)
-                };
-            }
-
-            processStartInfo.RedirectStandardError = false;
-            processStartInfo.RedirectStandardOutput = false;
-            processStartInfo.RedirectStandardInput = false;
-
-            if (runAsAdministrator) {
-                processStartInfo.UseShellExecute = true;
-                processStartInfo.Verb = "runas";
-            }
-
-            if (applicationMutex != null) {
-                applicationMutex.ReleaseMutex();
-                applicationMutex.Close();
-                applicationMutex = null;
-            }
-
-            // hide the current form so two windows are not open at once
-            // no this is not a race condition
-            // http://stackoverflow.com/questions/33042010/in-what-cases-does-the-process-start-method-return-false
-            try {
-                form.Hide();
-                form.ControlBox = true;
-                Process.Start(processStartInfo).Dispose();
-                Application.Exit();
-            } catch (Exception ex) {
-                Exceptions.LogExceptionToLauncher(ex);
-                form.Show();
-                ProgressManager.ShowError();
-                MessageBox.Show(Properties.Resources.ProcessUnableToStart, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Application.Exit();
-                throw new Exceptions.ApplicationRestartRequiredException("The application failed to restart.");
-            }
-        }
-
         public static StringBuilder GetCreateProcessCommandLine(ProcessStartInfo processStartInfo) {
             if (processStartInfo == null) {
                 throw new ArgumentNullException("processStartInfo must not be null.");
