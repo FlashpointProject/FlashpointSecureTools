@@ -158,8 +158,8 @@ Please ensure Flashpoint is not corrupted, was extracted correctly, and is not r
   <data name="GameDownloading" xml:space="preserve">
     <value>The game is downloading.</value>
   </data>
-  <data name="GameIsMissingFile" xml:space="preserve">
-    <value>The game file "{0}" is missing.
+  <data name="GameIsMissingFiles" xml:space="preserve">
+    <value>The game files "{0}" are missing.
 Please ensure Flashpoint is not corrupted, was extracted correctly, and is not running from OneDrive or a network drive.</value>
   </data>
   <data name="GameNotActiveXControl" xml:space="preserve">

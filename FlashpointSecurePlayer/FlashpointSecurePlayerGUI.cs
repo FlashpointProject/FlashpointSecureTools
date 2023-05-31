@@ -393,7 +393,7 @@ namespace FlashpointSecurePlayer {
                             fullPath = Path.GetFullPath(TemplateName);
                         } catch (Exception ex) {
                             LogExceptionToLauncher(ex);
-                            errorDelegate(String.Format(Properties.Resources.GameIsMissingFile, TemplateName));
+                            errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, TemplateName));
                             throw new ActiveXImportFailedException("The ActiveX Import failed because getting the Full Path failed.");
                         }
 
@@ -415,7 +415,7 @@ namespace FlashpointSecurePlayer {
                             throw new ActiveXImportFailedException("The ActiveX Import failed because the DLL is not an ActiveX Control.");
                         } catch (Exception ex) {
                             LogExceptionToLauncher(ex);
-                            errorDelegate(String.Format(Properties.Resources.GameIsMissingFile, fullPath));
+                            errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, fullPath));
                             throw new ActiveXImportFailedException("The ActiveX Import failed because the DLL was not found.");
                         }
 
@@ -490,10 +490,18 @@ namespace FlashpointSecurePlayer {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.GameNotCuratedCorrectly);
                                 throw new ActiveXImportFailedException("The ActiveX Import failed because the Modification is invalid.");
+                            } catch (InvalidTemplateException ex) {
+                                LogExceptionToLauncher(ex);
+                                errorDelegate(Properties.Resources.CurationMissingTemplateName);
+                                throw;
                             } catch (InvalidOperationException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.RegistryStateAlreadyInProgress);
                                 throw new ActiveXImportFailedException("The ActiveX Import failed because a Registry State is already in progress.");
+                            } catch (ArgumentException ex) {
+                                LogExceptionToLauncher(ex);
+                                errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, TemplateName));
+                                throw new ActiveXImportFailedException("The ActiveX Import failed because getting the Full Path failed.");
                             }
 
                             ProgressManager.CurrentGoal.Steps++;
@@ -928,7 +936,7 @@ namespace FlashpointSecurePlayer {
                                 await downloadsBefore.ActivateAsync(TemplateName, DownloadsBeforeModificationNames).ConfigureAwait(true);
                             } catch (DownloadFailedException ex) {
                                 LogExceptionToLauncher(ex);
-                                errorDelegate(String.Format(Properties.Resources.GameIsMissingFile, String.Join(", ", DownloadsBeforeModificationNames)));
+                                errorDelegate(String.Format(Properties.Resources.GameIsMissingFiles, String.Join(", ", DownloadsBeforeModificationNames)));
                             } catch (ConfigurationErrorsException ex) {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.ConfigurationUnableToLoad);
@@ -1360,8 +1368,10 @@ namespace FlashpointSecurePlayer {
 
                             throw new ActiveXImportFailedException("An error occured while activating the ActiveX Import.");
                         });
-                    } catch (InvalidModificationException ex) {
+                    } catch (InvalidTemplateException ex) {
                         LogExceptionToLauncher(ex);
+                        // no need to exit here, error shown in interface
+                        //Application.Exit();
                     } catch (ActiveXImportFailedException ex) {
                         LogExceptionToLauncher(ex);
                         // no need to exit here, error shown in interface

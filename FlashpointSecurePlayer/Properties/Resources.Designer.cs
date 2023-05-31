@@ -180,12 +180,12 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The game file &quot;{0}&quot; is missing.
+        ///   Looks up a localized string similar to The game files &quot;{0}&quot; are missing.
         ///Please ensure Flashpoint is not corrupted, was extracted correctly, and is not running from OneDrive or a network drive..
         /// </summary>
-        internal static string GameIsMissingFile {
+        internal static string GameIsMissingFiles {
             get {
-                return ResourceManager.GetString("GameIsMissingFile", resourceCulture);
+                return ResourceManager.GetString("GameIsMissingFiles", resourceCulture);
             }
         }
         

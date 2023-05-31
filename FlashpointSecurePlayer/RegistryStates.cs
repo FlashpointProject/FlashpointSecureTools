@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
@@ -792,6 +793,7 @@ namespace FlashpointSecurePlayer {
 
             try {
                 modificationsElement.RegistryStates.BinaryType = binaryType;
+
                 pathNames = new PathNames();
 
                 resumeEventWaitHandle.Reset();
@@ -800,33 +802,39 @@ namespace FlashpointSecurePlayer {
                 kcbModificationKeyNames = new Dictionary<ulong, string>();
 
                 kernelSession = new TraceEventSession(KernelTraceEventParser.KernelSessionName);
-                kernelSession.EnableKernelProvider(KernelTraceEventParser.Keywords.Registry);
-
-                kernelSession.Source.Kernel.RegistryQueryValue += GotValue;
-
-                kernelSession.Source.Kernel.RegistryCreate += ModificationAdded;
-                kernelSession.Source.Kernel.RegistrySetValue += ModificationAdded;
-                kernelSession.Source.Kernel.RegistrySetInformation += ModificationAdded;
-
-                kernelSession.Source.Kernel.RegistryDelete += ModificationRemoved;
-                kernelSession.Source.Kernel.RegistryDeleteValue += ModificationRemoved;
-
-                //kernelSession.Source.Kernel.RegistryFlush += RegistryModified;
-
-                // http://social.msdn.microsoft.com/Forums/en-US/ff07fc25-31e3-4b6f-810e-7a1ee458084b/etw-registry-monitoring?forum=etw
-                kernelSession.Source.Kernel.RegistryKCBCreate += KCBStarted;
-                kernelSession.Source.Kernel.RegistryKCBRundownBegin += KCBStarted;
-
-                kernelSession.Source.Kernel.RegistryKCBDelete += KCBStopped;
-                kernelSession.Source.Kernel.RegistryKCBRundownEnd += KCBStopped;
-
-                Thread processThread = new Thread(delegate () {
-                    kernelSession.Source.Process();
-                });
-
-                processThread.Start();
 
                 try {
+                    try {
+                        kernelSession.EnableKernelProvider(KernelTraceEventParser.Keywords.Registry);
+                    } catch (Win32Exception ex) {
+                        LogExceptionToLauncher(ex);
+                        throw new InvalidRegistryStateException("The Kernel Trace Control could not be found.");
+                    }
+
+                    kernelSession.Source.Kernel.RegistryQueryValue += GotValue;
+
+                    kernelSession.Source.Kernel.RegistryCreate += ModificationAdded;
+                    kernelSession.Source.Kernel.RegistrySetValue += ModificationAdded;
+                    kernelSession.Source.Kernel.RegistrySetInformation += ModificationAdded;
+
+                    kernelSession.Source.Kernel.RegistryDelete += ModificationRemoved;
+                    kernelSession.Source.Kernel.RegistryDeleteValue += ModificationRemoved;
+
+                    //kernelSession.Source.Kernel.RegistryFlush += RegistryModified;
+
+                    // http://social.msdn.microsoft.com/Forums/en-US/ff07fc25-31e3-4b6f-810e-7a1ee458084b/etw-registry-monitoring?forum=etw
+                    kernelSession.Source.Kernel.RegistryKCBCreate += KCBStarted;
+                    kernelSession.Source.Kernel.RegistryKCBRundownBegin += KCBStarted;
+
+                    kernelSession.Source.Kernel.RegistryKCBDelete += KCBStopped;
+                    kernelSession.Source.Kernel.RegistryKCBRundownEnd += KCBStopped;
+
+                    Thread processThread = new Thread(delegate () {
+                        kernelSession.Source.Process();
+                    });
+
+                    processThread.Start();
+
                     // ensure the kernel session is actually processing
                     for (int i = 0; i < IMPORT_TIMEOUT; i++) {
                         // we just ping this value so it gets detected we tried to read it
@@ -846,13 +854,11 @@ namespace FlashpointSecurePlayer {
                     if (ImportPaused) {
                         throw new InvalidRegistryStateException("A timeout occured while starting the Import.");
                     }
-                } catch {
+                } finally {
                     kernelSession.Dispose();
                     kernelSession = null;
-                    pathNames = null;
-                    ImportStarted = false;
                 }
-            } catch {
+            } finally {
                 pathNames = null;
                 ImportStarted = false;
             }
