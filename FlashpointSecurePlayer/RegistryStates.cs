@@ -66,7 +66,7 @@ namespace FlashpointSecurePlayer {
         private EventWaitHandle resumeEventWaitHandle = new ManualResetEvent(false);
         private Dictionary<ulong, SortedList<DateTime, List<RegistryStateElement>>> queuedModifications = null;
         private Dictionary<ulong, string> kcbModificationKeyNames = null;
-        private TraceEventSession kernelSession;
+        private TraceEventSession kernelSession = null;
 
         // Windows XP, Windows Server 2003, Windows Vista and Windows Server 2008
         private readonly bool reflectionVersion = Environment.OSVersion.Version >= new Version(5, 1)
