@@ -854,13 +854,15 @@ namespace FlashpointSecurePlayer {
                     if (ImportPaused) {
                         throw new InvalidRegistryStateException("A timeout occured while starting the Import.");
                     }
-                } finally {
+                } catch {
                     kernelSession.Dispose();
                     kernelSession = null;
+                    throw;
                 }
-            } finally {
+            } catch {
                 pathNames = null;
                 ImportStarted = false;
+                throw;
             }
         }
 
