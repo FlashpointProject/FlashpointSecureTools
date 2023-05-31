@@ -801,6 +801,10 @@ namespace FlashpointSecurePlayer {
                 queuedModifications = new Dictionary<ulong, SortedList<DateTime, List<RegistryStateElement>>>();
                 kcbModificationKeyNames = new Dictionary<ulong, string>();
 
+                if (kernelSession != null) {
+                    kernelSession.Dispose();
+                }
+
                 kernelSession = new TraceEventSession(KernelTraceEventParser.KernelSessionName);
 
                 try {
@@ -830,6 +834,10 @@ namespace FlashpointSecurePlayer {
                     kernelSession.Source.Kernel.RegistryKCBRundownEnd += KCBStopped;
 
                     Thread processThread = new Thread(delegate () {
+                        if (kernelSession == null) {
+                            return;
+                        }
+
                         kernelSession.Source.Process();
                     });
 
@@ -897,27 +905,33 @@ namespace FlashpointSecurePlayer {
                     throw new InvalidRegistryStateException("A timeout occured while stopping the Import.");
                 }
 
-                kernelSession.Stop();
-                kernelSession.Source.Kernel.RegistryQueryValue -= GotValue;
+                if (kernelSession != null) {
+                    kernelSession.Stop();
+                    kernelSession.Source.Kernel.RegistryQueryValue -= GotValue;
 
-                kernelSession.Source.Kernel.RegistryCreate -= ModificationAdded;
-                kernelSession.Source.Kernel.RegistrySetValue -= ModificationAdded;
-                kernelSession.Source.Kernel.RegistrySetInformation -= ModificationAdded;
+                    kernelSession.Source.Kernel.RegistryCreate -= ModificationAdded;
+                    kernelSession.Source.Kernel.RegistrySetValue -= ModificationAdded;
+                    kernelSession.Source.Kernel.RegistrySetInformation -= ModificationAdded;
 
-                kernelSession.Source.Kernel.RegistryDelete -= ModificationRemoved;
-                kernelSession.Source.Kernel.RegistryDeleteValue -= ModificationRemoved;
+                    kernelSession.Source.Kernel.RegistryDelete -= ModificationRemoved;
+                    kernelSession.Source.Kernel.RegistryDeleteValue -= ModificationRemoved;
 
-                //kernelSession.Source.Kernel.RegistryFlush -= RegistryModified;
-                
-                kernelSession.Source.Kernel.RegistryKCBCreate -= KCBStarted;
-                kernelSession.Source.Kernel.RegistryKCBRundownBegin -= KCBStarted;
+                    //kernelSession.Source.Kernel.RegistryFlush -= RegistryModified;
 
-                kernelSession.Source.Kernel.RegistryKCBDelete -= KCBStopped;
-                kernelSession.Source.Kernel.RegistryKCBRundownEnd -= KCBStopped;
+                    kernelSession.Source.Kernel.RegistryKCBCreate -= KCBStarted;
+                    kernelSession.Source.Kernel.RegistryKCBRundownBegin -= KCBStarted;
+
+                    kernelSession.Source.Kernel.RegistryKCBDelete -= KCBStopped;
+                    kernelSession.Source.Kernel.RegistryKCBRundownEnd -= KCBStopped;
+                }
+
                 SetFlashpointSecurePlayerSection(TemplateName);
             } finally {
-                kernelSession.Dispose();
-                kernelSession = null;
+                if (kernelSession != null) {
+                    kernelSession.Dispose();
+                    kernelSession = null;
+                }
+
                 pathNames = null;
                 ImportStarted = false;
             }
