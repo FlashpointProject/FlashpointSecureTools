@@ -283,7 +283,7 @@ namespace FlashpointSecurePlayer {
                     RestartApplication(true, ref applicationMutex);
                 }
             } catch (InvalidModificationException) {
-                // abort the operation
+                // operation was aborted
                 //LogExceptionToLauncher(ex);
                 throw;
             } catch (Exception ex) {
@@ -302,7 +302,7 @@ namespace FlashpointSecurePlayer {
             
                 RestartApplication(false, ref applicationMutex);
             } catch (InvalidModificationException) {
-                // abort the operation
+                // operation was aborted
                 //LogExceptionToLauncher(ex);
                 throw;
             } catch (Exception ex) {
@@ -373,7 +373,7 @@ namespace FlashpointSecurePlayer {
             
                 RestartApplication(false, ref applicationMutex, processStartInfo);
             } catch (InvalidModificationException) {
-                // abort the operation
+                // operation was aborted
                 //LogExceptionToLauncher(ex);
                 throw;
             } catch (Exception ex) {
