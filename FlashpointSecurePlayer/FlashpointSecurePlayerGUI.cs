@@ -243,7 +243,7 @@ namespace FlashpointSecurePlayer {
                 LogExceptionToLauncher(ex);
                 Show();
                 ShowErrorFatal(Properties.Resources.ProcessUnableToStart);
-                throw new Exceptions.ApplicationRestartRequiredException("The application failed to restart.");
+                throw new ApplicationRestartRequiredException("The application failed to restart.");
             }
         }
 
@@ -280,11 +280,16 @@ namespace FlashpointSecurePlayer {
 
                     RestartApplication(true, ref applicationMutex);
                 }
+            } catch (InvalidModificationException ex) {
+                // abort the operation
+                LogExceptionToLauncher(ex);
+                throw;
             } catch (Exception ex) {
+                // failed to restart
                 LogExceptionToLauncher(ex);
             }
 
-            // we're already running as admin?
+            // we're already running as admin or failed to restart
             ShowError(String.Format(Properties.Resources.GameUnableToLaunch, Properties.Resources.AsAdministratorUser));
             throw new InvalidModificationException("The Modification failed to run as Administrator User.");
         }
@@ -294,7 +299,12 @@ namespace FlashpointSecurePlayer {
                 AskLaunch(Properties.Resources.WithCompatibilitySettings);
             
                 RestartApplication(false, ref applicationMutex);
+            } catch (InvalidModificationException ex) {
+                // abort the operation
+                LogExceptionToLauncher(ex);
+                throw;
             } catch (Exception ex) {
+                // failed to restart
                 LogExceptionToLauncher(ex);
             }
 
@@ -360,7 +370,12 @@ namespace FlashpointSecurePlayer {
                 HideWindow(ref processStartInfo);
             
                 RestartApplication(false, ref applicationMutex, processStartInfo);
+            } catch (InvalidModificationException ex) {
+                // abort the operation
+                LogExceptionToLauncher(ex);
+                throw;
             } catch (Exception ex) {
+                // failed to restart
                 LogExceptionToLauncher(ex);
             }
 
