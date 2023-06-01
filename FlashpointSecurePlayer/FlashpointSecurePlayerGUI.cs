@@ -282,9 +282,9 @@ namespace FlashpointSecurePlayer {
 
                     RestartApplication(true, ref applicationMutex);
                 }
-            } catch (InvalidModificationException ex) {
+            } catch (InvalidModificationException) {
                 // abort the operation
-                LogExceptionToLauncher(ex);
+                //LogExceptionToLauncher(ex);
                 throw;
             } catch (Exception ex) {
                 // failed to restart
@@ -301,9 +301,9 @@ namespace FlashpointSecurePlayer {
                 AskLaunch(Properties.Resources.WithCompatibilitySettings);
             
                 RestartApplication(false, ref applicationMutex);
-            } catch (InvalidModificationException ex) {
+            } catch (InvalidModificationException) {
                 // abort the operation
-                LogExceptionToLauncher(ex);
+                //LogExceptionToLauncher(ex);
                 throw;
             } catch (Exception ex) {
                 // failed to restart
@@ -372,9 +372,9 @@ namespace FlashpointSecurePlayer {
                 HideWindow(ref processStartInfo);
             
                 RestartApplication(false, ref applicationMutex, processStartInfo);
-            } catch (InvalidModificationException ex) {
+            } catch (InvalidModificationException) {
                 // abort the operation
-                LogExceptionToLauncher(ex);
+                //LogExceptionToLauncher(ex);
                 throw;
             } catch (Exception ex) {
                 // failed to restart
@@ -539,8 +539,8 @@ namespace FlashpointSecurePlayer {
                                 LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.GameNotCuratedCorrectly);
                                 throw new ActiveXImportFailedException("The ActiveX Import failed because the Modification is invalid.");
-                            } catch (InvalidTemplateException ex) {
-                                LogExceptionToLauncher(ex);
+                            } catch (InvalidTemplateException) {
+                                //LogExceptionToLauncher(ex);
                                 errorDelegate(Properties.Resources.CurationMissingTemplateName);
                                 throw;
                             } catch (InvalidOperationException ex) {
@@ -1019,8 +1019,8 @@ namespace FlashpointSecurePlayer {
                             if (modificationsElement.SingleInstance.ElementInformation.IsPresent) {
                                 try {
                                     singleInstance.Activate(TemplateName);
-                                } catch (InvalidModificationException ex) {
-                                    LogExceptionToLauncher(ex);
+                                } catch (InvalidModificationException) {
+                                    //LogExceptionToLauncher(ex);
                                     throw;
                                 } catch (TaskRequiresElevationException ex) {
                                     LogExceptionToLauncher(ex);
