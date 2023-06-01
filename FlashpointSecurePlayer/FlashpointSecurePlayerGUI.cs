@@ -243,10 +243,10 @@ namespace FlashpointSecurePlayer {
                 LogExceptionToLauncher(ex);
                 Show();
                 ShowErrorFatal(Properties.Resources.ProcessUnableToStart);
-                throw new ApplicationRestartRequiredException("The application failed to restart.");
+                throw new InvalidModificationException("The Modification failed because the application failed to restart.");
             }
 
-            throw new InvalidModificationException("The Modification is restarting the application.");
+            throw new InvalidModificationException("The Modification requires the application to restart.");
         }
 
         private void AskLaunch(string applicationRestartMessage, string descriptionMessage = null) {
@@ -261,7 +261,7 @@ namespace FlashpointSecurePlayer {
 
             if (dialogResult == DialogResult.No) {
                 Application.Exit();
-                throw new InvalidModificationException("The operation was aborted by the user.");
+                throw new InvalidModificationException("The Modification asked to launch and the operation was aborted by the user.");
             }
         }
 
@@ -293,7 +293,7 @@ namespace FlashpointSecurePlayer {
 
             // we're already running as admin or failed to restart
             ShowError(String.Format(Properties.Resources.GameUnableToLaunch, Properties.Resources.AsAdministratorUser));
-            throw new InvalidModificationException("The Modification failed to run as Administrator User.");
+            throw new InvalidModificationException("The Modification failed to launch as Administrator User.");
         }
 
         private void AskLaunchWithCompatibilitySettings() {
@@ -311,7 +311,7 @@ namespace FlashpointSecurePlayer {
             }
 
             ShowError(String.Format(Properties.Resources.GameUnableToLaunch, Properties.Resources.WithCompatibilitySettings));
-            throw new InvalidModificationException("The Modification failed to run with Compatibility Settings.");
+            throw new InvalidModificationException("The Modification failed to launch with Compatibility Settings.");
         }
 
         private void AskLaunchWithOldCPUSimulator() {
@@ -382,7 +382,7 @@ namespace FlashpointSecurePlayer {
             }
 
             ShowError(String.Format(Properties.Resources.GameUnableToLaunch, Properties.Resources.WithOldCPUSimulator));
-            throw new InvalidModificationException("The Modification failed to run with Old CPU Simulator.");
+            throw new InvalidModificationException("The Modification failed to launch with Old CPU Simulator.");
         }
 
         private async Task<StringBuilder> GetHTDOCSFilePath(string url) {
@@ -826,7 +826,7 @@ namespace FlashpointSecurePlayer {
                 if (!createdNew) {
                     if (!modificationsMutex.WaitOne()) {
                         errorDelegate(Properties.Resources.AnotherInstancePreventingTemplate);
-                        throw new InvalidModificationException("Another Modification is activating.");
+                        throw new InvalidModificationException("The Modification failed to activate because another Modification is activating.");
                     }
                 }
 
@@ -852,7 +852,8 @@ namespace FlashpointSecurePlayer {
 
                         if (activeTemplateElement != null) {
                             if (!String.IsNullOrEmpty(activeTemplateElement.Active)) {
-                                throw new InvalidModificationException("The Template Element \"" + activeTemplateElement.Active + "\" is active.");
+                                errorDelegate(Properties.Resources.AnotherInstancePreventingTemplate);
+                                throw new InvalidModificationException("The Modification failed to activate because the Template Element \"" + activeTemplateElement.Active + "\" is active.");
                             }
                         }
 
@@ -896,6 +897,7 @@ namespace FlashpointSecurePlayer {
                         } catch (ConfigurationErrorsException ex) {
                             LogExceptionToLauncher(ex);
                             errorDelegate(Properties.Resources.ConfigurationUnableToLoad);
+                            throw new InvalidModificationException("The Modification failed to activate because the configuration failed to load.");
                         }
 
                         if (ModificationsRevertMethod == MODIFICATIONS_REVERT_METHOD.CRASH_RECOVERY) {
@@ -1080,7 +1082,7 @@ namespace FlashpointSecurePlayer {
                 if (!createdNew) {
                     if (!modificationsMutex.WaitOne()) {
                         errorDelegate(Properties.Resources.AnotherInstancePreventingTemplate);
-                        throw new InvalidModificationException("Another Modification is activating.");
+                        throw new InvalidModificationException("The Modification failed to deactivate because another Modification is activating.");
                     }
                 }
 
@@ -1178,7 +1180,7 @@ namespace FlashpointSecurePlayer {
                         Application.Exit();
                     }
 
-                    throw new InvalidModificationException("An error occured while activating the Modification.");
+                    throw new InvalidModificationException("The Modification failed to activate.");
                 }).ConfigureAwait(true);
             } catch (InvalidModificationException ex) {
                 // delegate handles error
@@ -1349,7 +1351,7 @@ namespace FlashpointSecurePlayer {
                 try {
                     DeactivateModifications(delegate (string text) {
                         ShowErrorFatal(text);
-                        throw new InvalidModificationException("An error occured while deactivating the Modification.");
+                        throw new InvalidModificationException("The Modification failed to deactivate.");
                     });
                 } catch (InvalidModificationException ex) {
                     // delegate handles error

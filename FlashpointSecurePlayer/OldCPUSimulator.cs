@@ -138,7 +138,7 @@ namespace FlashpointSecurePlayer {
                 case ModeElement.NAME.WEB_BROWSER:
                 // server mode, need to restart the whole app
                 // handled in the GUI side of things
-                throw new OldCPUSimulatorRequiresApplicationRestartException("The Old CPU Simulator in Web Browser Mode requires a restart.");
+                throw new OldCPUSimulatorRequiresApplicationRestartException("The Old CPU Simulator in Web Browser Mode requires the application to restart.");
                 case ModeElement.NAME.SOFTWARE:
                 // USB the HDMI to .exe the database
                 string commandLineExpanded = Environment.ExpandEnvironmentVariables(modeElement.CommandLine);

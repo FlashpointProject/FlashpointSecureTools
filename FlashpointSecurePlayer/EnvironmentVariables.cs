@@ -208,7 +208,7 @@ namespace FlashpointSecurePlayer {
                                 // because the compatibility layers only take effect
                                 // on process start
                                 if (values.Except(compatibilityLayerValues, StringComparer.OrdinalIgnoreCase).Any()) {
-                                    throw new CompatibilityLayersException("The Compatibility Layers \"" + value + "\" require a restart to be set.");
+                                    throw new CompatibilityLayersException("The Compatibility Layers \"" + value + "\" require the application to restart to be set.");
                                 }
                             }
                         }
