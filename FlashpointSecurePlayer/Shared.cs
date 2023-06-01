@@ -2193,15 +2193,17 @@ namespace FlashpointSecurePlayer {
         */
 
         public static void HandleAntecedentTask(Task antecedentTask) {
-            if (antecedentTask.IsFaulted) {
-                Exception ex = antecedentTask.Exception;
-
-                while (ex is AggregateException && ex.InnerException != null) {
-                    ex = ex.InnerException;
-                }
-
-                throw ex;
+            if (!antecedentTask.IsFaulted) {
+                return;
             }
+
+            Exception ex = antecedentTask.Exception;
+
+            while (ex is AggregateException && ex.InnerException != null) {
+                ex = ex.InnerException;
+            }
+
+            throw ex;
         }
 
         public static async Task<Uri> DownloadAsync(string name) {
@@ -2376,8 +2378,8 @@ namespace FlashpointSecurePlayer {
                     Exceptions.LogExceptionToLauncher(ex2);
                     throw new ConfigurationErrorsException("The EXE Configuration is in use.");
                 }
-            } catch (IOException ex2) {
-                Exceptions.LogExceptionToLauncher(ex2);
+            } catch (IOException ex) {
+                Exceptions.LogExceptionToLauncher(ex);
                 throw new ConfigurationErrorsException("The EXE Configuration is in use.");
             }
 

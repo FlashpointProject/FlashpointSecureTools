@@ -43,15 +43,17 @@ namespace FlashpointSecurePlayer {
         }
 
         ~ActiveXControl() {
-            if (moduleHandle != IntPtr.Zero) {
-                try {
-                    if (!FreeLibrary(moduleHandle)) {
-                        Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                        return;
-                    }
-                } catch (Exception ex) {
-                    LogExceptionToLauncher(ex);
+            if (moduleHandle == IntPtr.Zero) {
+                return;
+            }
+
+            try {
+                if (!FreeLibrary(moduleHandle)) {
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                    return;
                 }
+            } catch (Exception ex) {
+                LogExceptionToLauncher(ex);
             }
         }
 

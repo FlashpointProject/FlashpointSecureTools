@@ -22,7 +22,6 @@ namespace FlashpointSecurePlayer {
         private IntPtr mouseHook = IntPtr.Zero;
 
         private IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam) {
-            // we don't want errors to prevent passing the window message
             try {
                 if (nCode >= 0) {
                     // always confirm the message first so we don't do unnecessary work
@@ -52,7 +51,7 @@ namespace FlashpointSecurePlayer {
                     }
                 }
             } catch {
-                // fail silently
+                // we don't want exceptions to prevent passing the window message
             }
             return CallNextHookEx(mouseHook, nCode, wParam, lParam);
         }
