@@ -245,6 +245,8 @@ namespace FlashpointSecurePlayer {
                 ShowErrorFatal(Properties.Resources.ProcessUnableToStart);
                 throw new ApplicationRestartRequiredException("The application failed to restart.");
             }
+
+            throw new InvalidModificationException("The Modification is restarting the application.");
         }
 
         private void AskLaunch(string applicationRestartMessage, string descriptionMessage = null) {
