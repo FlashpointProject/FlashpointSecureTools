@@ -1278,19 +1278,22 @@ namespace FlashpointSecurePlayer {
                     // fail silently
                 }
 
+                const int MIN_ARGS_LENGTH = 3;
+
                 // Get Arguments
                 string[] args = Environment.GetCommandLineArgs();
 
                 // throw on load
-                if (args.Length < 3) {
+                if (args.Length < MIN_ARGS_LENGTH) {
                     throw new InvalidTemplateException("The Template Name and URL are required.");
                 }
 
                 TemplateName = args[1];
                 URL = args[2];
+
                 string arg = null;
 
-                for (int i = 3; i < args.Length; i++) {
+                for (int i = MIN_ARGS_LENGTH; i < args.Length; i++) {
                     arg = args[i].ToLowerInvariant();
 
                     // instead of switch I use else if because C# is too lame for multiple case statements
