@@ -17,9 +17,8 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Templat
 namespace FlashpointSecurePlayer {
     public class EnvironmentVariables : Modifications {
         private const string __COMPAT_LAYER = nameof(__COMPAT_LAYER);
+
         private IList<string> UnmodifiableComparableNames { get; } = new List<string> { FP_STARTUP_PATH, FP_HTDOCS_FILE }.AsReadOnly();
-        private readonly object activationLock = new object();
-        private readonly object deactivationLock = new object();
 
         public EnvironmentVariables(EventHandler importStart, EventHandler importStop) : base(importStart, importStop) { }
 
@@ -79,7 +78,7 @@ namespace FlashpointSecurePlayer {
             return value;
         }
 
-        new public void Activate(string templateName) {
+        public override void Activate(string templateName) {
             lock (activationLock) {
                 base.Activate(templateName);
 
@@ -220,11 +219,12 @@ namespace FlashpointSecurePlayer {
                 }
             }
         }
-        
-        public void Deactivate(MODIFICATIONS_REVERT_METHOD modificationsRevertMethod = MODIFICATIONS_REVERT_METHOD.CRASH_RECOVERY) {
+
+        public void Deactivate(MODIFICATIONS_REVERT_METHOD modificationsRevertMethod) {
             lock (deactivationLock) {
                 // do the reverse of activation because we can
                 base.Deactivate();
+
                 TemplateElement activeTemplateElement = GetActiveTemplateElement(false);
 
                 // if the activation backup doesn't exist, we don't need to do stuff
@@ -356,6 +356,10 @@ namespace FlashpointSecurePlayer {
                     ProgressManager.CurrentGoal.Stop();
                 }
             }
+        }
+
+        public override void Deactivate() {
+            Deactivate(MODIFICATIONS_REVERT_METHOD.CRASH_RECOVERY);
         }
     }
 }

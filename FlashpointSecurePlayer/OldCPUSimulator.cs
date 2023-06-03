@@ -51,7 +51,6 @@ namespace FlashpointSecurePlayer {
         }
 
         public void Activate(string templateName, ref ProcessStartInfo softwareProcessStartInfo, out bool softwareIsOldCPUSimulator) {
-            OldCPUSimulatorElement oldCPUSimulatorElement = null;
             softwareIsOldCPUSimulator = false;
 
             base.Activate(templateName);
@@ -74,7 +73,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            oldCPUSimulatorElement = modificationsElement.OldCPUSimulator;
+            OldCPUSimulatorElement oldCPUSimulatorElement = modificationsElement.OldCPUSimulator;
 
             if (!oldCPUSimulatorElement.ElementInformation.IsPresent) {
                 return;

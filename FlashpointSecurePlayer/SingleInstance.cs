@@ -55,7 +55,7 @@ namespace FlashpointSecurePlayer {
             return ShowClosableMessageBox(new Task[] { task }, text, caption, messageBoxButtons, messageBoxIcon);
         }
 
-        new public void Activate(string templateName) {
+        public override void Activate(string templateName) {
             base.Activate(templateName);
 
             if (String.IsNullOrEmpty(TemplateName)) {
@@ -103,6 +103,7 @@ namespace FlashpointSecurePlayer {
             string processName = null;
             // GetProcessesByName can't have extension (stupidly)
             string activeProcessName = Path.GetFileNameWithoutExtension(executable);
+            bool clear = false;
 
             do {
                 // the strict list is the one which will be checked against for real
@@ -119,13 +120,23 @@ namespace FlashpointSecurePlayer {
                         if (processesByName[i] != null) {
                             processName = GetProcessName(processesByName[i]).ToString();
 
+                            clear = false;
+
                             try {
-                                if (ComparePaths(executable, processName)) {
-                                    processesByNameStrict.Push(processesByName[i]);
+                                if (!ComparePaths(executable, processName)) {
+                                    clear = true;
                                 }
                             } catch {
                                 // fail silently
                             }
+
+                            if (clear) {
+                                processesByName[i].Dispose();
+                            } else {
+                                processesByNameStrict.Push(processesByName[i]);
+                            }
+
+                            processesByName[i] = null;
                         }
                     }
                 } else {

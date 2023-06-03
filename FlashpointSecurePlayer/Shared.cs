@@ -984,7 +984,7 @@ namespace FlashpointSecurePlayer {
                 return BaseGet(index) as ConfigurationElement;
             }
 
-            public ConfigurationElement Get(string name) {
+            public virtual ConfigurationElement Get(string name) {
                 //BaseAdd(modificationsElement);
                 return BaseGet(name) as ConfigurationElement;
             }
@@ -994,7 +994,7 @@ namespace FlashpointSecurePlayer {
                 BaseAdd(configurationElement);
             }
 
-            public void Remove(string name) {
+            public virtual void Remove(string name) {
                 if (BaseGet(name) != null) {
                     BaseRemove(name);
                 }
@@ -1401,14 +1401,12 @@ namespace FlashpointSecurePlayer {
                                 return new EnvironmentVariablesElement();
                             }
 
-                            new public ConfigurationElement Get(string name) {
-                                name = name.ToUpperInvariant();
-                                return base.Get(name);
+                            public override ConfigurationElement Get(string name) {
+                                return base.Get(name.ToUpperInvariant());
                             }
 
-                            new public void Remove(string name) {
-                                name = name.ToUpperInvariant();
-                                base.Remove(name);
+                            public override void Remove(string name) {
+                                base.Remove(name.ToUpperInvariant());
                             }
                         }
 
@@ -1636,7 +1634,6 @@ namespace FlashpointSecurePlayer {
                                         if (!String.IsNullOrEmpty(valueName)) {
                                             valueName = valueName.ToUpperInvariant();
                                         }
-
                                         return keyName + "\\" + valueName;
                                     }
                                 }
@@ -1657,14 +1654,12 @@ namespace FlashpointSecurePlayer {
                                 return new RegistryStateElement();
                             }
 
-                            new public ConfigurationElement Get(string name) {
-                                name = name.ToUpperInvariant();
-                                return base.Get(name);
+                            public override ConfigurationElement Get(string name) {
+                                return base.Get(name.ToUpperInvariant());
                             }
 
-                            new public void Remove(string name) {
-                                name = name.ToUpperInvariant();
-                                base.Remove(name);
+                            public override void Remove(string name) {
+                                base.Remove(name.ToUpperInvariant());
                             }
                             
                             public BINARY_TYPE BinaryType {
@@ -1874,13 +1869,11 @@ namespace FlashpointSecurePlayer {
                 }
 
                 new public TemplateElement Get(string name) {
-                    name = name.ToLowerInvariant();
-                    return base.Get(name) as TemplateElement;
+                    return base.Get(name.ToLowerInvariant()) as TemplateElement;
                 }
 
-                new public void Remove(string name) {
-                    name = name.ToLowerInvariant();
-                    base.Remove(name);
+                public override void Remove(string name) {
+                    base.Remove(name.ToLowerInvariant());
                 }
             }
 

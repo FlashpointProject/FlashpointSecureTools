@@ -58,9 +58,6 @@ namespace FlashpointSecurePlayer {
         private const string IMPORT_RESUME = "FLASHPOINTSECUREPLAYERREGISTRYSTATEIMPORTRESUME";
         private const string IMPORT_PAUSE = "FLASHPOINTSECUREPLAYERREGISTRYSTATEIMPORTPAUSE";
 
-        private readonly object activationLock = new object();
-        private readonly object deactivationLock = new object();
-
         private string fullPath = null;
         private PathNames pathNames = null;
         private EventWaitHandle resumeEventWaitHandle = new ManualResetEvent(false);
@@ -937,7 +934,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        new public void StopImport() {
+        public override void StopImport() {
             // do not await this, bool hack
 #pragma warning disable CS4014
             StopImportAsync(true);
@@ -948,7 +945,7 @@ namespace FlashpointSecurePlayer {
             await StopImportAsync(false).ConfigureAwait(false);
         }
 
-        new public void Activate(string templateName) {
+        public override void Activate(string templateName) {
             lock (activationLock) {
                 base.Activate(templateName);
 
@@ -1203,9 +1200,10 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        public void Deactivate(MODIFICATIONS_REVERT_METHOD modificationsRevertMethod = MODIFICATIONS_REVERT_METHOD.CRASH_RECOVERY) {
+        public void Deactivate(MODIFICATIONS_REVERT_METHOD modificationsRevertMethod) {
             lock (deactivationLock) {
                 base.Deactivate();
+
                 TemplateElement activeTemplateElement = GetActiveTemplateElement(false);
 
                 // if the activation state doesn't exist, we don't need to do stuff
@@ -1505,6 +1503,10 @@ namespace FlashpointSecurePlayer {
                     ProgressManager.CurrentGoal.Stop();
                 }
             }
+        }
+
+        public override void Deactivate() {
+            Deactivate(MODIFICATIONS_REVERT_METHOD.CRASH_RECOVERY);
         }
 
         private void QueueModification(ulong safeKeyHandle, DateTime timeStamp, RegistryStateElement registryStateElement) {

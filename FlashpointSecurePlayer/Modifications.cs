@@ -27,7 +27,7 @@ namespace FlashpointSecurePlayer {
             Deactivate();
         }
 
-        protected virtual void OnImportStart(EventArgs e) {
+        private void OnImportStart(EventArgs e) {
             EventHandler eventHandler = importStart;
 
             if (eventHandler == null) {
@@ -37,7 +37,7 @@ namespace FlashpointSecurePlayer {
             eventHandler(this, e);
         }
 
-        protected virtual void OnImportStop(EventArgs e) {
+        private void OnImportStop(EventArgs e) {
             EventHandler eventHandler = importStop;
 
             if (eventHandler == null) {
@@ -47,20 +47,25 @@ namespace FlashpointSecurePlayer {
             eventHandler(this, e);
         }
 
+        private readonly object importStartedLock = new object();
         private bool importStarted = false;
 
         protected bool ImportStarted {
             get {
-                return importStarted;
+                lock (importStartedLock) {
+                    return importStarted;
+                }
             }
 
             set {
-                importStarted = value;
+                lock (importStartedLock) {
+                    importStarted = value;
 
-                if (importStarted) {
-                    OnImportStart(EventArgs.Empty);
-                } else {
-                    OnImportStop(EventArgs.Empty);
+                    if (importStarted) {
+                        OnImportStart(EventArgs.Empty);
+                    } else {
+                        OnImportStop(EventArgs.Empty);
+                    }
                 }
             }
         }
@@ -84,7 +89,7 @@ namespace FlashpointSecurePlayer {
 
         protected string TemplateName { get; set; } = String.Empty;
 
-        protected void StartImport(string templateName) {
+        public virtual void StartImport(string templateName) {
             if (ImportStarted) {
                 throw new InvalidOperationException("Cannot Start Import when the Import is in progress.");
             }
@@ -108,7 +113,7 @@ namespace FlashpointSecurePlayer {
         }
 
         // async for inheritence reasons
-        protected void StopImport() {
+        public virtual void StopImport() {
             if (!ImportStarted) {
                 throw new InvalidOperationException("Cannot Stop Import when the Import has not started.");
             }
@@ -125,7 +130,9 @@ namespace FlashpointSecurePlayer {
             */
         }
 
-        public void Activate(string templateName) {
+        protected readonly object activationLock = new object();
+
+        public virtual void Activate(string templateName) {
             if (ImportStarted) {
                 throw new InvalidOperationException("Cannot Activate when the Import is in progress.");
             }
@@ -140,7 +147,9 @@ namespace FlashpointSecurePlayer {
             //SetFlashpointSecurePlayerSection();
         }
 
-        public void Deactivate() {
+        protected readonly object deactivationLock = new object();
+
+        public virtual void Deactivate() {
             if (ImportStarted) {
                 throw new InvalidOperationException("Cannot Deactivate when the Import is in progress.");
             }

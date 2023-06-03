@@ -14,6 +14,7 @@ namespace FlashpointSecurePlayer {
 
         public void Activate(string templateName, bool runAsAdministrator) {
             base.Activate(templateName);
+
             /*
             ModificationsElement modificationsElement = GetModificationsElement(true, Name);
 
