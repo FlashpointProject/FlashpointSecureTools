@@ -2474,7 +2474,7 @@ namespace FlashpointSecurePlayer {
             } catch {
                 try {
                     name = GetValidEXEConfigurationName(name);
-                    await DownloadAsync("http://" + CONFIGURATION_DOWNLOAD_NAME + "/" + name + ".config").ConfigureAwait(false);
+                    await DownloadAsync("http://" + CONFIGURATION_DOWNLOAD_NAME + "/" + name + ".config").ConfigureAwait(true);
                 } catch {
                     // fail silently
                 }

@@ -942,7 +942,7 @@ namespace FlashpointSecurePlayer {
         }
 
         public async Task StopImportAsync() {
-            await StopImportAsync(false).ConfigureAwait(false);
+            await StopImportAsync(false).ConfigureAwait(true);
         }
 
         public override void Activate(string templateName) {

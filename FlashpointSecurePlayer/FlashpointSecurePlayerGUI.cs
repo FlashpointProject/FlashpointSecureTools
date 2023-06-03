@@ -1411,7 +1411,7 @@ namespace FlashpointSecurePlayer {
                         await ImportActiveXAsync(delegate (string text) {
                             ShowErrorFatal(text);
                             throw new ActiveXImportFailedException("An error occured while activating the ActiveX Import.");
-                        });
+                        }).ConfigureAwait(true);
                     } catch (InvalidTemplateException ex) {
                         // no need to exit here, error shown in interface
                         LogExceptionToLauncher(ex);
@@ -1517,7 +1517,7 @@ namespace FlashpointSecurePlayer {
 
                 // Start Secure Playback
                 try {
-                    await StartSecurePlaybackAsync(templateElement).ConfigureAwait(false);
+                    await StartSecurePlaybackAsync(templateElement).ConfigureAwait(true);
                 } catch (InvalidModeException ex) {
                     // no need to exit here, error shown in interface
                     LogExceptionToLauncher(ex);
