@@ -21,10 +21,18 @@ namespace FlashpointSecurePlayer {
 
         ~Modifications() {
             if (ImportStarted) {
-                StopImport();
+                try {
+                    StopImport();
+                } catch {
+                    // fail silently
+                }
             }
 
-            Deactivate();
+            try {
+                Deactivate();
+            } catch {
+                // fail silently
+            }
         }
 
         private void OnImportStart(EventArgs e) {
