@@ -3051,7 +3051,10 @@ namespace FlashpointSecurePlayer {
             return argumentSlice;
         }
 
-        public static StringBuilder GetOldCPUSimulatorProcessStartInfoArguments(FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement.OldCPUSimulatorElement oldCPUSimulatorElement, StringBuilder software) {
+        public static StringBuilder GetOldCPUSimulatorProcessStartInfoArguments(
+            FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement.ModificationsElement.OldCPUSimulatorElement oldCPUSimulatorElement,
+            StringBuilder software
+        ) {
             StringBuilder oldCPUSimulatorProcessStartInfoArguments = new StringBuilder("-t ");
 
             if (!int.TryParse(Environment.ExpandEnvironmentVariables(oldCPUSimulatorElement.TargetRate), out int targetRate)) {

@@ -43,9 +43,7 @@ namespace FlashpointSecurePlayer {
             }
 
             if (parentProcessFileName != null) {
-                if (parentProcessFileName.Equals(OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME, StringComparison.OrdinalIgnoreCase)) {
-                    return true;
-                }
+                return parentProcessFileName.Equals(OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME, StringComparison.OrdinalIgnoreCase);
             }
             return false;
         }
@@ -141,8 +139,8 @@ namespace FlashpointSecurePlayer {
                 case ModeElement.NAME.SOFTWARE:
                 // USB the HDMI to .exe the database
                 string commandLineExpanded = Environment.ExpandEnvironmentVariables(modeElement.CommandLine);
-                StringBuilder oldCPUSimulatorSoftware = new StringBuilder();
                 string workingDirectory = null;
+                StringBuilder software = new StringBuilder();
 
                 // the problem we're dealing with here
                 // is that we need to get the full path to
@@ -159,14 +157,15 @@ namespace FlashpointSecurePlayer {
                     
                     string fullPath = Path.GetFullPath(argv[0]);
                     workingDirectory = Path.GetDirectoryName(fullPath);
-                    oldCPUSimulatorSoftware.Append(GetValidArgument(fullPath, true));
+                    software.Append(GetValidArgument(fullPath, true));
                 } catch (Exception ex) {
                     LogExceptionToLauncher(ex);
                     throw new InvalidOldCPUSimulatorException("The command line is invalid.");
                 }
 
-                oldCPUSimulatorSoftware.Append(" ");
-                oldCPUSimulatorSoftware.Append(GetArgumentSliceFromCommandLine(commandLineExpanded, 1));
+                software.Append(" ");
+                software.Append(GetArgumentSliceFromCommandLine(commandLineExpanded, 1));
+
                 // this becomes effectively the new thing passed as --software
                 // the shared function is used both here and GUI side for restarts
                 //modeElement.CommandLine = OLD_CPU_SIMULATOR_PATH + " " + GetOldCPUSimulatorProcessStartInfoArguments(oldCPUSimulatorElement, oldCPUSimulatorSoftware.ToString());
@@ -177,7 +176,7 @@ namespace FlashpointSecurePlayer {
                 }
 
                 softwareProcessStartInfo.FileName = OLD_CPU_SIMULATOR_PATH;
-                softwareProcessStartInfo.Arguments = GetOldCPUSimulatorProcessStartInfoArguments(oldCPUSimulatorElement, oldCPUSimulatorSoftware).ToString();
+                softwareProcessStartInfo.Arguments = GetOldCPUSimulatorProcessStartInfoArguments(oldCPUSimulatorElement, software).ToString();
                 //softwareProcessStartInfo.RedirectStandardError = true;
                 softwareProcessStartInfo.RedirectStandardError = false;
                 softwareProcessStartInfo.RedirectStandardOutput = false;
