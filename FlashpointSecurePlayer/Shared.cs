@@ -1868,7 +1868,7 @@ namespace FlashpointSecurePlayer {
                     return new TemplateElement();
                 }
 
-                new public TemplateElement Get(string name) {
+                public new TemplateElement Get(string name) {
                     return base.Get(name.ToLowerInvariant()) as TemplateElement;
                 }
 
