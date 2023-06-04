@@ -22,14 +22,6 @@ namespace FlashpointSecurePlayer {
 
         public EnvironmentVariables(EventHandler importStart, EventHandler importStop) : base(importStart, importStop) { }
 
-        ~EnvironmentVariables() {
-            try {
-                Deactivate();
-            } catch {
-                // fail silently
-            }
-        }
-
         private string GetComparableName(string name) {
             if (name == null) {
                 return name;

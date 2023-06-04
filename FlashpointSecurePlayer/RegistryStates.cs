@@ -191,20 +191,6 @@ namespace FlashpointSecurePlayer {
         public RegistryStates(EventHandler importStart, EventHandler importStop) : base(importStart, importStop) { }
 
         ~RegistryStates() {
-            if (ImportStarted) {
-                try {
-                    StopImport();
-                } catch {
-                    // fail silently
-                }
-            }
-
-            try {
-                Deactivate();
-            } catch {
-                // fail silently
-            }
-
             if (resumeEventWaitHandle != null) {
                 resumeEventWaitHandle.Dispose();
                 resumeEventWaitHandle = null;
