@@ -1464,10 +1464,10 @@ namespace FlashpointSecurePlayer {
                             }
                         }
 
-                        string fullHTDOCSFilePath = null;
+                        string htdocsFileFullPath = null;
 
                         try {
-                            fullHTDOCSFilePath = Path.GetFullPath(htdocsFilePath);
+                            htdocsFileFullPath = Path.GetFullPath(htdocsFilePath);
                         } catch (SecurityException ex) {
                             LogExceptionToLauncher(ex);
                             throw new TaskRequiresElevationException("Getting the Full Path to \"" + htdocsFilePath + "\" requires elevation.");
@@ -1479,12 +1479,12 @@ namespace FlashpointSecurePlayer {
                             throw new ArgumentException("The path \"" + htdocsFilePath + "\" is not supported.");
                         }
 
-                        if (fullHTDOCSFilePath == null) {
-                            fullHTDOCSFilePath = String.Empty;
+                        if (htdocsFileFullPath == null) {
+                            htdocsFileFullPath = String.Empty;
                         }
 
                         try {
-                            htdocsFileDirectory = Path.GetDirectoryName(fullHTDOCSFilePath);
+                            htdocsFileDirectory = Path.GetDirectoryName(htdocsFileFullPath);
                         } catch (ArgumentException ex) {
                             // fail silently?
                             LogExceptionToLauncher(ex);
