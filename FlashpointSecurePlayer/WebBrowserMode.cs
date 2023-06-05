@@ -296,7 +296,7 @@ namespace FlashpointSecurePlayer {
                 Show();
             }
 
-            protected void OnTitleChanged(TitleChangedEventArgs e) {
+            private void OnTitleChanged(TitleChangedEventArgs e) {
                 EventHandler<TitleChangedEventArgs> eventHandler = titleChanged;
 
                 if (eventHandler == null) {
