@@ -229,7 +229,7 @@ namespace FlashpointSecurePlayer {
                 this.forward = forward;
             }
 
-            protected void OnBack(EventArgs e) {
+            private void OnBack(EventArgs e) {
                 EventHandler eventHandler = back;
 
                 if (eventHandler == null) {
@@ -239,7 +239,7 @@ namespace FlashpointSecurePlayer {
                 eventHandler(this, e);
             }
 
-            protected void OnForward(EventArgs e) {
+            private void OnForward(EventArgs e) {
                 EventHandler eventHandler = forward;
 
                 if (eventHandler == null) {
