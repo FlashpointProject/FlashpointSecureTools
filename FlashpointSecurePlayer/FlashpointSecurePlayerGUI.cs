@@ -385,7 +385,7 @@ namespace FlashpointSecurePlayer {
             throw new InvalidModificationException("The Modification failed to launch with Old CPU Simulator.");
         }
 
-        private async Task<StringBuilder> GetHTDOCSFilePath(string url) {
+        private async Task<StringBuilder> GetHTDOCSFilePathAsync(string url) {
             Uri requestUri = await DownloadAsync(GetValidatedURL(url)).ConfigureAwait(true);
 
             StringBuilder htdocsFilePath = new StringBuilder(HTDOCS);
@@ -1447,7 +1447,7 @@ namespace FlashpointSecurePlayer {
 
                 if (templateElement.Mode.Name == ModeElement.NAME.SOFTWARE) {
                     try {
-                        string htdocsFilePath = (await GetHTDOCSFilePath(URL).ConfigureAwait(true)).ToString();
+                        string htdocsFilePath = (await GetHTDOCSFilePathAsync(URL).ConfigureAwait(true)).ToString();
 
                         try {
                             htdocsFile = Path.GetFileName(htdocsFilePath);
