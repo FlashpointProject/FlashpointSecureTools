@@ -74,6 +74,7 @@ namespace FlashpointSecurePlayer {
                 }
             } catch (InvalidOperationException ex) {
                 LogExceptionToLauncher(ex);
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             } finally {
                 if (!createdNew) {
                     Environment.Exit(-2);
