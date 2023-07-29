@@ -190,6 +190,9 @@ If you choose No, the application will exit.</value>
   <data name="NoModeSelected" xml:space="preserve">
     <value>No mode was selected.</value>
   </data>
+  <data name="NoMultipleInstances" xml:space="preserve">
+    <value>You cannot run multiple instances of Flashpoint Secure Player.</value>
+  </data>
   <data name="OCS_CPUSpeedNotDetermined" xml:space="preserve">
     <value>The CPU's clock speed could not be determined.</value>
   </data>
