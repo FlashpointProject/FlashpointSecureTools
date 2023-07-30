@@ -230,6 +230,8 @@ namespace FlashpointSecurePlayer {
             private readonly EventHandler back;
             private readonly EventHandler forward;
 
+            public bool ProcessedCmdKeyFullscreen { get; set; } = false;
+
             public MessageFilter(EventHandler stopExitFullscreenLabelTimer, EventHandler back, EventHandler forward) {
                 this.stopExitFullscreenLabelTimer = stopExitFullscreenLabelTimer;
                 this.back = back;
@@ -274,6 +276,16 @@ namespace FlashpointSecurePlayer {
                 // mouse buttons shouldn't navigate both the
                 // main and popup windows
                 switch (m.Msg) {
+                    case WM_KEYDOWN:
+                    case WM_SYSKEYDOWN:
+                    ProcessedCmdKeyFullscreen = false;
+                    return false;
+                    case WM_KEYUP:
+                    case WM_SYSKEYUP:
+                    if (!ProcessedCmdKeyFullscreen) {
+                        OnStopExitFullscreenLabelTimer(EventArgs.Empty);
+                    }
+                    return false;
                     case WM_LBUTTONUP:
                     case WM_RBUTTONUP:
                     case WM_MBUTTONUP:
@@ -620,7 +632,9 @@ namespace FlashpointSecurePlayer {
         }
 
         private void WebBrowserMode_Activated(object sender, EventArgs e) {
-            Application.AddMessageFilter(messageFilter);
+            if (messageFilter != null) {
+                Application.AddMessageFilter(messageFilter);
+            }
 
             if (!IsHandleCreated || Handle == IntPtr.Zero) {
                 return;
@@ -640,7 +654,9 @@ namespace FlashpointSecurePlayer {
         }
 
         private void WebBrowserMode_Deactivate(object sender, EventArgs e) {
-            Application.RemoveMessageFilter(messageFilter);
+            if (messageFilter != null) {
+                Application.RemoveMessageFilter(messageFilter);
+            }
 
             if (!IsHandleCreated || Handle == IntPtr.Zero) {
                 return;
@@ -1011,6 +1027,10 @@ namespace FlashpointSecurePlayer {
                     return true;
                     case Keys.F11:
                     case Keys.Alt | Keys.Enter:
+                    if (messageFilter != null) {
+                        messageFilter.ProcessedCmdKeyFullscreen = true;
+                    }
+
                     BrowserFullscreen();
                     return true;
                 }
