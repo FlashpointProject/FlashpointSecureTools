@@ -94,7 +94,12 @@ namespace FlashpointSecurePlayer {
             }
 
             set {
-                if (exitFullscreenLabelTimer != null) {
+                if (exitFullscreenLabelTimer == null) {
+                    if (!value) {
+                        // timer not started, already hidden
+                        return;
+                    }
+                } else {
                     exitFullscreenLabelTimer.Stop();
                     exitFullscreenLabelTimer.Tick -= exitFullscreenLabelTimer_Tick;
                     exitFullscreenLabelTimer.Dispose();
@@ -221,12 +226,24 @@ namespace FlashpointSecurePlayer {
         }
         
         private class MessageFilter : IMessageFilter {
+            private readonly EventHandler stopExitFullscreenLabelTimer;
             private readonly EventHandler back;
             private readonly EventHandler forward;
 
-            public MessageFilter(EventHandler back, EventHandler forward) {
+            public MessageFilter(EventHandler stopExitFullscreenLabelTimer, EventHandler back, EventHandler forward) {
+                this.stopExitFullscreenLabelTimer = stopExitFullscreenLabelTimer;
                 this.back = back;
                 this.forward = forward;
+            }
+
+            private void OnStopExitFullscreenLabelTimer(EventArgs e) {
+                EventHandler eventHandler = stopExitFullscreenLabelTimer;
+
+                if (eventHandler == null) {
+                    return;
+                }
+
+                eventHandler(this, e);
             }
 
             private void OnBack(EventArgs e) {
@@ -256,18 +273,25 @@ namespace FlashpointSecurePlayer {
                 // for example, if there is a popup, the
                 // mouse buttons shouldn't navigate both the
                 // main and popup windows
-                if (m.Msg == WM_XBUTTONUP) {
+                switch (m.Msg) {
+                    case WM_LBUTTONUP:
+                    case WM_RBUTTONUP:
+                    case WM_MBUTTONUP:
+                    OnStopExitFullscreenLabelTimer(EventArgs.Empty);
+                    return false;
+                    case WM_XBUTTONUP:
                     int wParam = m.WParam.ToInt32();
 
-                    if ((wParam & MK_XBUTTON1) == MK_XBUTTON1) {
+                    if ((wParam & XBUTTON1) == XBUTTON1) {
                         OnBack(EventArgs.Empty);
                         return true;
                     }
 
-                    if ((wParam & MK_XBUTTON2) == MK_XBUTTON2) {
+                    if ((wParam & XBUTTON2) == XBUTTON2) {
                         OnForward(EventArgs.Empty);
                         return true;
                     }
+                    return false;
                 }
                 return false;
             }
@@ -362,7 +386,7 @@ namespace FlashpointSecurePlayer {
             UseFlashActiveXControl = useFlashActiveXControl;
 
             lowLevelMouseProc = new HookProc(LowLevelMouseProc);
-            messageFilter = new MessageFilter(Back, Forward);
+            messageFilter = new MessageFilter(StopExitFullscreenLabelTimer, Back, Forward);
             webBrowserModeTitle = new WebBrowserModeTitle(TitleChanged);
 
             statusBarStatusStrip.Renderer = new EndEllipsisTextRenderer();
@@ -375,7 +399,7 @@ namespace FlashpointSecurePlayer {
             UseFlashActiveXControl = useFlashActiveXControl;
 
             lowLevelMouseProc = new HookProc(LowLevelMouseProc);
-            messageFilter = new MessageFilter(Back, Forward);
+            messageFilter = new MessageFilter(StopExitFullscreenLabelTimer, Back, Forward);
             webBrowserModeTitle = new WebBrowserModeTitle(TitleChanged);
 
             statusBarStatusStrip.Renderer = new EndEllipsisTextRenderer();
@@ -472,6 +496,10 @@ namespace FlashpointSecurePlayer {
 
         public void BrowserFullscreen() {
             Fullscreen = !Fullscreen;
+        }
+
+        private void StopExitFullscreenLabelTimer(object sender, EventArgs e) {
+            ExitFullscreenLabelTimer = false;
         }
 
         private void Back(object sender, EventArgs e) {
