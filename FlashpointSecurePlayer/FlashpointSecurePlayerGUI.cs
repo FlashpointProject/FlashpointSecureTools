@@ -76,6 +76,7 @@ namespace FlashpointSecurePlayer {
                 LogExceptionToLauncher(ex);
             } finally {
                 if (!createdNew) {
+                    MessageBox.Show(Properties.Resources.NoMultipleInstances, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     Environment.Exit(-2);
                 }
             }

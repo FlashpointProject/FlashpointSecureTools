@@ -272,6 +272,15 @@ namespace FlashpointSecurePlayer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You cannot run multiple instances of Flashpoint Secure Player..
+        /// </summary>
+        internal static string NoMultipleInstances {
+            get {
+                return ResourceManager.GetString("NoMultipleInstances", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The CPU&apos;s clock speed could not be determined..
         /// </summary>
         internal static string OCS_CPUSpeedNotDetermined {
