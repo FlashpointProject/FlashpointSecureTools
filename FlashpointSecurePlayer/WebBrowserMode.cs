@@ -230,8 +230,6 @@ namespace FlashpointSecurePlayer {
             private readonly EventHandler back;
             private readonly EventHandler forward;
 
-            public bool ProcessedCmdKeyFullscreen { get; set; } = false;
-
             public MessageFilter(EventHandler stopExitFullscreenLabelTimer, EventHandler back, EventHandler forward) {
                 this.stopExitFullscreenLabelTimer = stopExitFullscreenLabelTimer;
                 this.back = back;
@@ -278,17 +276,9 @@ namespace FlashpointSecurePlayer {
                 switch (m.Msg) {
                     case WM_KEYDOWN:
                     case WM_SYSKEYDOWN:
-                    ProcessedCmdKeyFullscreen = false;
-                    return false;
-                    case WM_KEYUP:
-                    case WM_SYSKEYUP:
-                    if (!ProcessedCmdKeyFullscreen) {
-                        OnStopExitFullscreenLabelTimer(EventArgs.Empty);
-                    }
-                    return false;
-                    case WM_LBUTTONUP:
-                    case WM_RBUTTONUP:
-                    case WM_MBUTTONUP:
+                    case WM_LBUTTONDOWN:
+                    case WM_RBUTTONDOWN:
+                    case WM_MBUTTONDOWN:
                     OnStopExitFullscreenLabelTimer(EventArgs.Empty);
                     return false;
                     case WM_XBUTTONUP:
@@ -1027,10 +1017,6 @@ namespace FlashpointSecurePlayer {
                     return true;
                     case Keys.F11:
                     case Keys.Alt | Keys.Enter:
-                    if (messageFilter != null) {
-                        messageFilter.ProcessedCmdKeyFullscreen = true;
-                    }
-
                     BrowserFullscreen();
                     return true;
                 }

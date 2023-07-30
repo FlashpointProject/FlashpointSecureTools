@@ -159,13 +159,11 @@ namespace FlashpointSecurePlayer {
         public const int WM_DESTROY = 0x00000002;
         public const int WM_PAINT = 0x0000000F;
         public const int WM_KEYDOWN = 0x00000100;
-        public const int WM_KEYUP = 0x00000101;
         public const int WM_SYSKEYDOWN = 0x00000104;
-        public const int WM_SYSKEYUP = 0x00000105;
         public const int WM_MOUSEMOVE = 0x00000200;
-        public const int WM_LBUTTONUP = 0x00000202;
-        public const int WM_RBUTTONUP = 0x00000205;
-        public const int WM_MBUTTONUP = 0x00000208;
+        public const int WM_LBUTTONDOWN = 0x00000201;
+        public const int WM_RBUTTONDOWN = 0x00000204;
+        public const int WM_MBUTTONDOWN = 0x00000207;
         public const int WM_XBUTTONUP = 0x0000020C;
         public const int WM_PARENTNOTIFY = 0x00000210;
 
