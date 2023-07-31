@@ -708,15 +708,13 @@ namespace FlashpointSecurePlayer {
             }
 
             if (activeRegistryStateElement != null) {
+                // get value before
                 comparableRegistryStateElementValue = activeRegistryStateElement.Value;
 
                 // if value existed before
                 if (comparableRegistryStateElementValue != null) {
                     // value kind before also matters
                     if (valueKind == activeRegistryStateElement.ValueKind) {
-                        // get value before
-                        comparableRegistryStateElementValue = activeRegistryStateElement.Value;
-
                         // check value matches
                         if (comparableValue.Equals(comparableRegistryStateElementValue, StringComparison.Ordinal)) {
                             return true;
