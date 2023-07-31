@@ -1084,6 +1084,7 @@ namespace FlashpointSecurePlayer {
                             if (String.IsNullOrEmpty(keyDeleted)) {
                                 // we create a value
                                 // the value does not exist
+                                // or, we edit a value that exists
                                 activeRegistryStateElement.Type = TYPE.VALUE;
                                 activeRegistryStateElement.Value = value;
                             } else {
