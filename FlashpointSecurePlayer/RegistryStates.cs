@@ -681,33 +681,37 @@ namespace FlashpointSecurePlayer {
 
             string comparableRegistryStateElementValue = registryStateElement.Value;
 
-            // if value kind is the same as current value kind
-            if (valueKind == registryStateElement.ValueKind) {
-                if (activeRegistryStateElement != null) {
-                    // account for expanded values
-                    comparableRegistryStateElementValue = String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded)
-                        ? comparableRegistryStateElementValue
-                        : activeRegistryStateElement._ValueExpanded;
-                }
+            if (comparableRegistryStateElementValue != null) {
+                // if value kind is the same as current value kind
+                if (valueKind == registryStateElement.ValueKind) {
+                    if (activeRegistryStateElement != null) {
+                        // account for expanded values
+                        comparableRegistryStateElementValue = String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded)
+                            ? comparableRegistryStateElementValue
+                            : activeRegistryStateElement._ValueExpanded;
+                    }
 
-                // check value matches current value/current expanded value
-                if (comparableValue.Equals(comparableRegistryStateElementValue, StringComparison.Ordinal)) {
-                    return true;
-                }
-
-                // for ActiveX: check if it matches as a path
-                try {
-                    if (ComparePaths(comparableValue, comparableRegistryStateElementValue)) {
+                    // check value matches current value/current expanded value
+                    if (comparableValue.Equals(comparableRegistryStateElementValue, StringComparison.Ordinal)) {
                         return true;
                     }
-                } catch {
-                    // fail silently
+
+                    // for ActiveX: check if it matches as a path
+                    try {
+                        if (ComparePaths(comparableValue, comparableRegistryStateElementValue)) {
+                            return true;
+                        }
+                    } catch {
+                        // fail silently
+                    }
                 }
             }
 
             if (activeRegistryStateElement != null) {
+                comparableRegistryStateElementValue = activeRegistryStateElement.Value;
+
                 // if value existed before
-                if (activeRegistryStateElement.Value != null) {
+                if (comparableRegistryStateElementValue != null) {
                     // value kind before also matters
                     if (valueKind == activeRegistryStateElement.ValueKind) {
                         // get value before
@@ -1019,8 +1023,7 @@ namespace FlashpointSecurePlayer {
                             Type = registryStateElement.Type,
                             KeyName = registryStateElement.KeyName,
                             ValueName = registryStateElement.ValueName,
-                            ValueKind = valueKind,
-                            _Deleted = String.Empty
+                            ValueKind = valueKind
                         };
 
                         if (registryStateElement.Type == TYPE.KEY) {
