@@ -639,7 +639,7 @@ namespace FlashpointSecurePlayer {
                     LogExceptionToLauncher(ex);
                     throw new TaskRequiresElevationException("Accessing the key \"" + registryStateElement.KeyName + "\" requires elevation.");
                 }
-        }
+            }
             return true;
         }
 
