@@ -1139,36 +1139,38 @@ namespace FlashpointSecurePlayer {
                             }
                             break;
                             case TYPE.VALUE:
-                            try {
-                                SetValueInRegistryView(
-                                    keyName,
-                                    registryStateElement.ValueName,
-                                    String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded)
-                                    ? registryStateElement.Value
-                                    : activeRegistryStateElement._ValueExpanded,
-                                    registryStateElement.ValueKind.GetValueOrDefault(),
-                                    registryView
-                                );
-                            } catch (SecurityException ex) {
-                                // value exists and we can't set it
-                                LogExceptionToLauncher(ex);
-                                throw new TaskRequiresElevationException("Setting the value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" requires elevation.");
-                            } catch (UnauthorizedAccessException ex) {
-                                // value exists and we can't set it
-                                LogExceptionToLauncher(ex);
-                                throw new TaskRequiresElevationException("Setting the value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" requires elevation.");
-                            } catch (FormatException ex) {
-                                // value must be Base64
-                                LogExceptionToLauncher(ex);
-                                throw new InvalidRegistryStateException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" must be Base64.");
-                            } catch (InvalidOperationException ex) {
-                                // value marked for deletion
-                                LogExceptionToLauncher(ex);
-                                throw new InvalidRegistryStateException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" is marked for deletion.");
-                            } catch (Exception ex) {
-                                // value doesn't exist and can't be created
-                                LogExceptionToLauncher(ex);
-                                throw new InvalidRegistryStateException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" could not be set.");
+                            if (registryStateElement.Value != null) {
+                                try {
+                                    SetValueInRegistryView(
+                                        keyName,
+                                        registryStateElement.ValueName,
+                                        String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded)
+                                        ? registryStateElement.Value
+                                        : activeRegistryStateElement._ValueExpanded,
+                                        registryStateElement.ValueKind.GetValueOrDefault(),
+                                        registryView
+                                    );
+                                } catch (SecurityException ex) {
+                                    // value exists and we can't set it
+                                    LogExceptionToLauncher(ex);
+                                    throw new TaskRequiresElevationException("Setting the value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" requires elevation.");
+                                } catch (UnauthorizedAccessException ex) {
+                                    // value exists and we can't set it
+                                    LogExceptionToLauncher(ex);
+                                    throw new TaskRequiresElevationException("Setting the value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" requires elevation.");
+                                } catch (FormatException ex) {
+                                    // value must be Base64
+                                    LogExceptionToLauncher(ex);
+                                    throw new InvalidRegistryStateException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" must be Base64.");
+                                } catch (InvalidOperationException ex) {
+                                    // value marked for deletion
+                                    LogExceptionToLauncher(ex);
+                                    throw new InvalidRegistryStateException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" is marked for deletion.");
+                                } catch (Exception ex) {
+                                    // value doesn't exist and can't be created
+                                    LogExceptionToLauncher(ex);
+                                    throw new InvalidRegistryStateException("The value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" could not be set.");
+                                }
                             }
                             break;
                         }
