@@ -1254,6 +1254,7 @@ namespace FlashpointSecurePlayer {
                 RegistryStateElement activeRegistryStateElement = null;
                 string activeCurrentUser = activeModificationsElement.RegistryStates._CurrentUser;
                 bool activeAdministrator = activeModificationsElement.RegistryStates._Administrator.GetValueOrDefault();
+                string keyName = null;
                 string value = null;
                 bool clear = false;
                 
@@ -1296,7 +1297,7 @@ namespace FlashpointSecurePlayer {
                                             clear = true;
                                         }
                                     } else {
-                                        string keyName = GetUserKeyValueName(registryStateElement.KeyName, activeCurrentUser, activeAdministrator);
+                                        keyName = GetUserKeyValueName(registryStateElement.KeyName, activeCurrentUser, activeAdministrator);
 
                                         try {
                                             value = GetValueInRegistryView(keyName, registryStateElement.ValueName, registryView) as string;
@@ -1386,88 +1387,98 @@ namespace FlashpointSecurePlayer {
                                 case TYPE.KEY:
                                 if (!String.IsNullOrEmpty(activeRegistryStateElement._Deleted)
                                     || modificationsRevertMethod == MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
-                                    try {
-                                        // key didn't exist before
-                                        DeleteKeyInRegistryView(
-                                            GetUserKeyValueName(
-                                                activeRegistryStateElement._Deleted,
-                                                activeCurrentUser,
-                                                activeAdministrator
-                                            ),
+                                    keyName = String.IsNullOrEmpty(activeRegistryStateElement._Deleted)
+                                                ? activeRegistryStateElement.KeyName
+                                                : activeRegistryStateElement._Deleted;
 
-                                            registryView
-                                        );
-                                    } catch (SecurityException ex) {
-                                        // key exists and we can't modify it
-                                        LogExceptionToLauncher(ex);
-                                        throw new TaskRequiresElevationException("Deleting the key \"" + activeRegistryStateElement._Deleted + "\" requires elevation.");
-                                    } catch (UnauthorizedAccessException ex) {
-                                        // key exists and we can't modify it
-                                        LogExceptionToLauncher(ex);
-                                        throw new TaskRequiresElevationException("Deleting the key \"" + activeRegistryStateElement._Deleted + "\" requires elevation.");
-                                    } catch {
-                                        // key doesn't exist
+                                    if (keyName != null) {
+                                        try {
+                                            // key didn't exist before
+                                            DeleteKeyInRegistryView(
+                                                GetUserKeyValueName(
+                                                    keyName,
+                                                    activeCurrentUser,
+                                                    activeAdministrator
+                                                ),
+
+                                                registryView
+                                            );
+                                        } catch (SecurityException ex) {
+                                            // key exists and we can't modify it
+                                            LogExceptionToLauncher(ex);
+                                            throw new TaskRequiresElevationException("Deleting the key \"" + activeRegistryStateElement._Deleted + "\" requires elevation.");
+                                        } catch (UnauthorizedAccessException ex) {
+                                            // key exists and we can't modify it
+                                            LogExceptionToLauncher(ex);
+                                            throw new TaskRequiresElevationException("Deleting the key \"" + activeRegistryStateElement._Deleted + "\" requires elevation.");
+                                        } catch {
+                                            // key doesn't exist
+                                        }
                                     }
                                 }
                                 break;
                                 case TYPE.VALUE:
                                 if (activeRegistryStateElement.Value == null
                                     || modificationsRevertMethod == MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
-                                    try {
-                                        // value didn't exist before
-                                        DeleteValueInRegistryView(
-                                            GetUserKeyValueName(
-                                                activeRegistryStateElement.KeyName,
-                                                activeCurrentUser,
-                                                activeAdministrator
-                                            ),
+                                    if (activeRegistryStateElement.KeyName != null) {
+                                        try {
+                                            // value didn't exist before
+                                            DeleteValueInRegistryView(
+                                                GetUserKeyValueName(
+                                                    activeRegistryStateElement.KeyName,
+                                                    activeCurrentUser,
+                                                    activeAdministrator
+                                                ),
 
-                                            activeRegistryStateElement.ValueName,
-                                            registryView
-                                        );
-                                    } catch (SecurityException ex) {
-                                        // value exists and we can't modify it
-                                        LogExceptionToLauncher(ex);
-                                        throw new TaskRequiresElevationException("Deleting the value \"" + activeRegistryStateElement.ValueName + "\" requires elevation.");
-                                    } catch (UnauthorizedAccessException ex) {
-                                        // value exists and we can't modify it
-                                        LogExceptionToLauncher(ex);
-                                        throw new TaskRequiresElevationException("Deleting the value \"" + activeRegistryStateElement.ValueName + "\" requires elevation.");
-                                    } catch {
-                                        // value doesn't exist
+                                                activeRegistryStateElement.ValueName,
+                                                registryView
+                                            );
+                                        } catch (SecurityException ex) {
+                                            // value exists and we can't modify it
+                                            LogExceptionToLauncher(ex);
+                                            throw new TaskRequiresElevationException("Deleting the value \"" + activeRegistryStateElement.ValueName + "\" requires elevation.");
+                                        } catch (UnauthorizedAccessException ex) {
+                                            // value exists and we can't modify it
+                                            LogExceptionToLauncher(ex);
+                                            throw new TaskRequiresElevationException("Deleting the value \"" + activeRegistryStateElement.ValueName + "\" requires elevation.");
+                                        } catch {
+                                            // value doesn't exist
+                                        }
                                     }
                                 } else {
-                                    string keyName = GetUserKeyValueName(activeRegistryStateElement.KeyName, activeCurrentUser, activeAdministrator);
+                                    keyName = GetUserKeyValueName(activeRegistryStateElement.KeyName, activeCurrentUser, activeAdministrator);
 
-                                    try {
-                                        // value was different before
-                                        SetValueInRegistryView(
-                                            keyName,
-                                            activeRegistryStateElement.ValueName,
-                                            activeRegistryStateElement.Value,
-                                            activeRegistryStateElement.ValueKind.GetValueOrDefault(),
-                                            registryView
-                                        );
-                                    } catch (SecurityException ex) {
-                                        // value exists and we can't modify it
-                                        LogExceptionToLauncher(ex);
-                                        throw new TaskRequiresElevationException("Setting the value \"" + activeRegistryStateElement.ValueName + "\" in key \"" + keyName + "\" requires elevation.");
-                                    } catch (UnauthorizedAccessException ex) {
-                                        // value exists and we can't modify it
-                                        LogExceptionToLauncher(ex);
-                                        throw new TaskRequiresElevationException("Setting the value \"" + activeRegistryStateElement.ValueName + "\" in key \"" + keyName + "\" requires elevation.");
-                                    } catch (FormatException ex) {
-                                        // value must be Base64
-                                        LogExceptionToLauncher(ex);
-                                        throw new InvalidRegistryStateException("The value \"" + activeRegistryStateElement.ValueName + "\" in key \"" + keyName + "\" must be Base64.");
-                                    } catch (InvalidOperationException ex) {
-                                        // value marked for deletion
-                                        LogExceptionToLauncher(ex);
-                                        throw new InvalidRegistryStateException("The value \"" + activeRegistryStateElement.ValueName + "\" in key \"" + keyName + "\" is marked for deletion.");
-                                    } catch (Exception ex) {
-                                        // value doesn't exist and can't be created
-                                        LogExceptionToLauncher(ex);
-                                        throw new InvalidRegistryStateException("The value \"" + activeRegistryStateElement.ValueName + "\" in key \"" + keyName + "\" could not be set.");
+                                    if (keyName != null) {
+                                        try {
+                                            // value was different before
+                                            SetValueInRegistryView(
+                                                keyName,
+                                                activeRegistryStateElement.ValueName,
+                                                activeRegistryStateElement.Value,
+                                                activeRegistryStateElement.ValueKind.GetValueOrDefault(),
+                                                registryView
+                                            );
+                                        } catch (SecurityException ex) {
+                                            // value exists and we can't modify it
+                                            LogExceptionToLauncher(ex);
+                                            throw new TaskRequiresElevationException("Setting the value \"" + activeRegistryStateElement.ValueName + "\" in key \"" + keyName + "\" requires elevation.");
+                                        } catch (UnauthorizedAccessException ex) {
+                                            // value exists and we can't modify it
+                                            LogExceptionToLauncher(ex);
+                                            throw new TaskRequiresElevationException("Setting the value \"" + activeRegistryStateElement.ValueName + "\" in key \"" + keyName + "\" requires elevation.");
+                                        } catch (FormatException ex) {
+                                            // value must be Base64
+                                            LogExceptionToLauncher(ex);
+                                            throw new InvalidRegistryStateException("The value \"" + activeRegistryStateElement.ValueName + "\" in key \"" + keyName + "\" must be Base64.");
+                                        } catch (InvalidOperationException ex) {
+                                            // value marked for deletion
+                                            LogExceptionToLauncher(ex);
+                                            throw new InvalidRegistryStateException("The value \"" + activeRegistryStateElement.ValueName + "\" in key \"" + keyName + "\" is marked for deletion.");
+                                        } catch (Exception ex) {
+                                            // value doesn't exist and can't be created
+                                            LogExceptionToLauncher(ex);
+                                            throw new InvalidRegistryStateException("The value \"" + activeRegistryStateElement.ValueName + "\" in key \"" + keyName + "\" could not be set.");
+                                        }
                                     }
                                 }
                                 break;
