@@ -443,6 +443,10 @@ namespace FlashpointSecurePlayer {
         }
 
         private string TestKeyDeletedInRegistryView(string keyName, RegistryView registryView) {
+            if (keyName == null) {
+                return keyName;
+            }
+
             List<string> keyNames = keyName.Split('\\').ToList();
 
             if (!keyNames.Any()) {
@@ -612,7 +616,9 @@ namespace FlashpointSecurePlayer {
                 return true;
             }
 
-            if (String.IsNullOrEmpty(activeRegistryStateElement._Deleted)) {
+            // empty = key existed before
+            // null = key ignored
+            if (activeRegistryStateElement._Deleted == String.Empty) {
                 // key did exist before
                 // that means it should still exist
                 try {
@@ -1121,34 +1127,38 @@ namespace FlashpointSecurePlayer {
                         // therefore, _Deleted is ignored on all but the active registry state
                         switch (registryStateElement.Type) {
                             case TYPE.KEY:
-                            try {
-                                SetKeyInRegistryView(keyName, registryView);
-                            } catch (SecurityException ex) {
-                                // key doesn't exist and we can't set it
-                                LogExceptionToLauncher(ex);
-                                throw new TaskRequiresElevationException("Setting the key \"" + keyName + "\" requires elevation.");
-                            } catch (UnauthorizedAccessException ex) {
-                                // key exists and we can't set it
-                                LogExceptionToLauncher(ex);
-                            } catch (InvalidOperationException ex) {
-                                // key marked for deletion
-                                LogExceptionToLauncher(ex);
-                                throw new InvalidRegistryStateException("The key \"" + keyName + "\" is marked for deletion.");
-                            } catch (Exception ex) {
-                                // key doesn't exist and can't be created
-                                LogExceptionToLauncher(ex);
-                                throw new InvalidRegistryStateException("The key \"" + keyName + "\" could not be set.");
+                            if (keyName != null) {
+                                try {
+                                    SetKeyInRegistryView(keyName, registryView);
+                                } catch (SecurityException ex) {
+                                    // key doesn't exist and we can't set it
+                                    LogExceptionToLauncher(ex);
+                                    throw new TaskRequiresElevationException("Setting the key \"" + keyName + "\" requires elevation.");
+                                } catch (UnauthorizedAccessException ex) {
+                                    // key exists and we can't set it
+                                    LogExceptionToLauncher(ex);
+                                } catch (InvalidOperationException ex) {
+                                    // key marked for deletion
+                                    LogExceptionToLauncher(ex);
+                                    throw new InvalidRegistryStateException("The key \"" + keyName + "\" is marked for deletion.");
+                                } catch (Exception ex) {
+                                    // key doesn't exist and can't be created
+                                    LogExceptionToLauncher(ex);
+                                    throw new InvalidRegistryStateException("The key \"" + keyName + "\" could not be set.");
+                                }
                             }
                             break;
                             case TYPE.VALUE:
-                            if (registryStateElement.Value != null) {
+                            value = String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded)
+                                    ? registryStateElement.Value
+                                    : activeRegistryStateElement._ValueExpanded;
+
+                            if (keyName != null && value != null) {
                                 try {
                                     SetValueInRegistryView(
                                         keyName,
                                         registryStateElement.ValueName,
-                                        String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded)
-                                        ? registryStateElement.Value
-                                        : activeRegistryStateElement._ValueExpanded,
+                                        value,
                                         registryStateElement.ValueKind.GetValueOrDefault(),
                                         registryView
                                     );
