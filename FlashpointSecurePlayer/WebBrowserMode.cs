@@ -994,7 +994,8 @@ namespace FlashpointSecurePlayer {
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
             // don't disable keys on e.g. the address bar
-            if (ActiveControl != null && ActiveControl == closableWebBrowser) {
+            if (ActiveControl != null
+                && ActiveControl == closableWebBrowser) {
                 // IMPORTANT: these controls (such as Backspace to navigate back)
                 // must be handled here in ProcessCmdKey, not on PreviewKeyDown!
                 // otherwise, controls on the page won't recieve the input
