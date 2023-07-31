@@ -736,7 +736,10 @@ namespace FlashpointSecurePlayer {
             }
 
             int progress = e.MaximumProgress > 0 ? (int)Math.Min((double)e.CurrentProgress / e.MaximumProgress * 100, 100) : 0;
-            webBrowserModeTitle.Progress = progress;
+
+            if (webBrowserModeTitle != null) {
+                webBrowserModeTitle.Progress = progress;
+            }
             
             progressToolStripProgressBar.Style = progress == 0 ? ProgressBarStyle.Marquee : ProgressBarStyle.Continuous;
             progressToolStripProgressBar.Value = progress;
@@ -764,7 +767,9 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            webBrowserModeTitle.DocumentTitle = closableWebBrowser.DocumentTitle;
+            if (webBrowserModeTitle != null) {
+                webBrowserModeTitle.DocumentTitle = closableWebBrowser.DocumentTitle;
+            }
         }
 
         private void closableWebBrowser_StatusTextChanged(object sender, EventArgs e) {
@@ -879,7 +884,11 @@ namespace FlashpointSecurePlayer {
             */
 
             DownloadCompleted = false;
-            webBrowserModeTitle.Progress = 0;
+
+            if (webBrowserModeTitle != null) {
+                webBrowserModeTitle.Progress = 0;
+            }
+
             progressToolStripProgressBar.Style = ProgressBarStyle.Marquee;
             progressToolStripProgressBar.Value = 0;
             progressToolStripProgressBar.ToolTipText = "0%";
@@ -901,7 +910,11 @@ namespace FlashpointSecurePlayer {
             */
 
             DownloadCompleted = true;
-            webBrowserModeTitle.Progress = -1;
+
+            if (webBrowserModeTitle != null) {
+                webBrowserModeTitle.Progress = -1;
+            }
+
             progressToolStripProgressBar.Style = ProgressBarStyle.Blocks;
             progressToolStripProgressBar.Value = 0;
             progressToolStripProgressBar.ToolTipText = String.Empty;
