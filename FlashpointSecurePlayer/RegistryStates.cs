@@ -707,7 +707,7 @@ namespace FlashpointSecurePlayer {
 
             if (activeRegistryStateElement != null) {
                 // if value existed before
-                if (!String.IsNullOrEmpty(activeRegistryStateElement._Deleted)) {
+                if (activeRegistryStateElement.Value != null) {
                     // value kind before also matters
                     if (valueKind == activeRegistryStateElement.ValueKind) {
                         // get value before
@@ -1042,7 +1042,7 @@ namespace FlashpointSecurePlayer {
                             try {
                                 valueExpanded = Environment.ExpandEnvironmentVariables(registryStateElement.Value);
 
-                                if (valueExpanded != registryStateElement.Value) {
+                                if (!valueExpanded.Equals(registryStateElement.Value, StringComparison.Ordinal)) {
                                     activeRegistryStateElement._ValueExpanded = valueExpanded;
                                 }
                             } catch {
@@ -1076,22 +1076,20 @@ namespace FlashpointSecurePlayer {
                                     LogExceptionToLauncher(ex);
                                     throw new TaskRequiresElevationException("Accessing the key \"" + keyName + "\" requires elevation.");
                                 }
-
-                                if (String.IsNullOrEmpty(keyDeleted)) {
-                                    // we create a value
-                                    // the value does not exist
-                                    activeRegistryStateElement.Type = TYPE.VALUE;
-                                    activeRegistryStateElement._Deleted = registryStateElement.ValueName;
-                                } else {
-                                    // we create a value
-                                    // the value, and the key it belonged to, does not exist
-                                    activeRegistryStateElement.Type = TYPE.KEY;
-                                    activeRegistryStateElement._Deleted = keyDeleted;
-                                }
                             } else {
-                                // we edit a value that exists
+                                keyDeleted = null;
+                            }
+                            
+                            if (String.IsNullOrEmpty(keyDeleted)) {
+                                // we create a value
+                                // the value does not exist
                                 activeRegistryStateElement.Type = TYPE.VALUE;
                                 activeRegistryStateElement.Value = value;
+                            } else {
+                                // we create a value
+                                // the value, and the key it belonged to, does not exist
+                                activeRegistryStateElement.Type = TYPE.KEY;
+                                activeRegistryStateElement._Deleted = keyDeleted;
                             }
                         }
 
@@ -1300,11 +1298,11 @@ namespace FlashpointSecurePlayer {
                                             // value doesn't exist
                                             value = null;
                                         }
-
+                                        
                                         if ((activeRegistryStateElement.Type == TYPE.KEY
                                             && registryStateElement.Type == TYPE.VALUE)
                                             || (activeRegistryStateElement.Type == TYPE.VALUE
-                                            && !String.IsNullOrEmpty(activeRegistryStateElement._Deleted))) {
+                                            && activeRegistryStateElement.Value == null)) {
                                             // we previously created a value
                                             // the value, (and potentially the key it belonged to) did not exist before
                                             // the value may or may not exist now
@@ -1323,7 +1321,7 @@ namespace FlashpointSecurePlayer {
                                                 }
                                             }
                                         } else if (activeRegistryStateElement.Type == TYPE.VALUE
-                                            && String.IsNullOrEmpty(activeRegistryStateElement._Deleted)) {
+                                            && activeRegistryStateElement.Value != null) {
                                             // we previously edited a value that existed before
                                             // we need to check it still exists in one of the two valid states
                                             if (value == null) {
@@ -1399,9 +1397,32 @@ namespace FlashpointSecurePlayer {
                                 }
                                 break;
                                 case TYPE.VALUE:
-                                if (String.IsNullOrEmpty(activeRegistryStateElement._Deleted)
-                                    && activeRegistryStateElement.Value != null // in case ValueName is also empty
-                                    && modificationsRevertMethod != MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
+                                if (activeRegistryStateElement.Value == null
+                                    || modificationsRevertMethod == MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
+                                    try {
+                                        // value didn't exist before
+                                        DeleteValueInRegistryView(
+                                            GetUserKeyValueName(
+                                                activeRegistryStateElement.KeyName,
+                                                activeCurrentUser,
+                                                activeAdministrator
+                                            ),
+
+                                            activeRegistryStateElement.ValueName,
+                                            registryView
+                                        );
+                                    } catch (SecurityException ex) {
+                                        // value exists and we can't modify it
+                                        LogExceptionToLauncher(ex);
+                                        throw new TaskRequiresElevationException("Deleting the value \"" + activeRegistryStateElement.ValueName + "\" requires elevation.");
+                                    } catch (UnauthorizedAccessException ex) {
+                                        // value exists and we can't modify it
+                                        LogExceptionToLauncher(ex);
+                                        throw new TaskRequiresElevationException("Deleting the value \"" + activeRegistryStateElement.ValueName + "\" requires elevation.");
+                                    } catch {
+                                        // value doesn't exist
+                                    }
+                                } else {
                                     string keyName = GetUserKeyValueName(activeRegistryStateElement.KeyName, activeCurrentUser, activeAdministrator);
 
                                     try {
@@ -1433,30 +1454,6 @@ namespace FlashpointSecurePlayer {
                                         // value doesn't exist and can't be created
                                         LogExceptionToLauncher(ex);
                                         throw new InvalidRegistryStateException("The value \"" + activeRegistryStateElement.ValueName + "\" in key \"" + keyName + "\" could not be set.");
-                                    }
-                                } else {
-                                    try {
-                                        // value didn't exist before
-                                        DeleteValueInRegistryView(
-                                            GetUserKeyValueName(
-                                                activeRegistryStateElement.KeyName,
-                                                activeCurrentUser,
-                                                activeAdministrator
-                                            ),
-
-                                            activeRegistryStateElement.ValueName,
-                                            registryView
-                                        );
-                                    } catch (SecurityException ex) {
-                                        // value exists and we can't modify it
-                                        LogExceptionToLauncher(ex);
-                                        throw new TaskRequiresElevationException("Deleting the value \"" + activeRegistryStateElement.ValueName + "\" requires elevation.");
-                                    } catch (UnauthorizedAccessException ex) {
-                                        // value exists and we can't modify it
-                                        LogExceptionToLauncher(ex);
-                                        throw new TaskRequiresElevationException("Deleting the value \"" + activeRegistryStateElement.ValueName + "\" requires elevation.");
-                                    } catch {
-                                        // value doesn't exist
                                     }
                                 }
                                 break;
