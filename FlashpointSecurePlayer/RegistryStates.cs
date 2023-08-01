@@ -652,11 +652,15 @@ namespace FlashpointSecurePlayer {
         private bool CompareValues(object value, RegistryView registryView, RegistryStateElement registryStateElement, RegistryStateElement activeRegistryStateElement, string activeCurrentUser = null, bool activeAdministrator = true) {
             // caller needs to decide what to do if value is null
             if (!(value is string comparableValue)) {
-                throw new ArgumentNullException("The comparableValueString is null.");
+                throw new ArgumentNullException("The comparableValue is null.");
             }
 
             if (registryStateElement == null) {
-                throw new ArgumentNullException("The registryStateElement is null.");
+                registryStateElement = activeRegistryStateElement;
+
+                if (registryStateElement == null) {
+                    throw new ArgumentNullException("The registryStateElement is null.");
+                }
             }
 
             RegistryValueKind? valueKind = null;
@@ -713,7 +717,8 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
-            if (activeRegistryStateElement != null) {
+            if (activeRegistryStateElement != null
+                && activeRegistryStateElement != registryStateElement) {
                 // get value before
                 comparableRegistryStateElementValue = activeRegistryStateElement.Value;
 
@@ -721,12 +726,12 @@ namespace FlashpointSecurePlayer {
                 if (comparableRegistryStateElementValue != null) {
                     // value kind before also matters
                     if (valueKind == activeRegistryStateElement.ValueKind) {
-                        // check value matches
+                        // check value matches current value
                         if (comparableValue.Equals(comparableRegistryStateElementValue, StringComparison.Ordinal)) {
                             return true;
                         }
 
-                        // check if it matches as a path
+                        // for ActiveX: check if it matches as a path
                         try {
                             if (ComparePaths(comparableValue, comparableRegistryStateElementValue)) {
                                 return true;
@@ -1033,6 +1038,7 @@ namespace FlashpointSecurePlayer {
                         if (registryStateElement.Type == TYPE.KEY) {
                             // we create a key
                             activeRegistryStateElement.Type = TYPE.KEY;
+                            activeRegistryStateElement.Value = null;
 
                             try {
                                 activeRegistryStateElement._Deleted = TestKeyDeletedInRegistryView(keyName, registryView);
@@ -1093,10 +1099,12 @@ namespace FlashpointSecurePlayer {
                                 // or, we edit a value that exists
                                 activeRegistryStateElement.Type = TYPE.VALUE;
                                 activeRegistryStateElement.Value = value;
+                                activeRegistryStateElement._Deleted = null;
                             } else {
                                 // we create a value
                                 // the value, and the key it belonged to, does not exist
                                 activeRegistryStateElement.Type = TYPE.KEY;
+                                activeRegistryStateElement.Value = null;
                                 activeRegistryStateElement._Deleted = keyDeleted;
                             }
                         }
