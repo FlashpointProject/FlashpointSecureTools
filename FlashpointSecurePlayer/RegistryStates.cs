@@ -649,10 +649,10 @@ namespace FlashpointSecurePlayer {
             return true;
         }
 
-        private bool CompareValues(object value, RegistryView registryView, RegistryStateElement registryStateElement, RegistryStateElement activeRegistryStateElement, string activeCurrentUser = null, bool activeAdministrator = true) {
+        private bool CompareValues(string value, RegistryView registryView, RegistryStateElement registryStateElement, RegistryStateElement activeRegistryStateElement, string activeCurrentUser = null, bool activeAdministrator = true) {
             // caller needs to decide what to do if value is null
-            if (!(value is string comparableValue)) {
-                throw new ArgumentNullException("The comparableValue is null.");
+            if (value == null) {
+                throw new ArgumentNullException("The value is null.");
             }
 
             if (registryStateElement == null) {
@@ -689,26 +689,26 @@ namespace FlashpointSecurePlayer {
                 valueKind = null;
             }
 
-            string comparableRegistryStateElementValue = registryStateElement.Value;
+            string registryStateElementValue = registryStateElement.Value;
 
-            if (comparableRegistryStateElementValue != null) {
+            if (registryStateElementValue != null) {
                 // if value kind is the same as current value kind
                 if (valueKind == registryStateElement.ValueKind) {
                     if (activeRegistryStateElement != null) {
                         // account for expanded values
-                        comparableRegistryStateElementValue = String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded)
-                            ? comparableRegistryStateElementValue
+                        registryStateElementValue = String.IsNullOrEmpty(activeRegistryStateElement._ValueExpanded)
+                            ? registryStateElementValue
                             : activeRegistryStateElement._ValueExpanded;
                     }
 
                     // check value matches current value/current expanded value
-                    if (comparableValue.Equals(comparableRegistryStateElementValue, StringComparison.Ordinal)) {
+                    if (value.Equals(registryStateElementValue, StringComparison.Ordinal)) {
                         return true;
                     }
 
                     // for ActiveX: check if it matches as a path
                     try {
-                        if (ComparePaths(comparableValue, comparableRegistryStateElementValue)) {
+                        if (ComparePaths(value, registryStateElementValue)) {
                             return true;
                         }
                     } catch {
@@ -720,20 +720,20 @@ namespace FlashpointSecurePlayer {
             if (activeRegistryStateElement != null
                 && activeRegistryStateElement != registryStateElement) {
                 // get value before
-                comparableRegistryStateElementValue = activeRegistryStateElement.Value;
+                registryStateElementValue = activeRegistryStateElement.Value;
 
                 // if value existed before
-                if (comparableRegistryStateElementValue != null) {
+                if (registryStateElementValue != null) {
                     // value kind before also matters
                     if (valueKind == activeRegistryStateElement.ValueKind) {
                         // check value matches current value
-                        if (comparableValue.Equals(comparableRegistryStateElementValue, StringComparison.Ordinal)) {
+                        if (value.Equals(registryStateElementValue, StringComparison.Ordinal)) {
                             return true;
                         }
 
                         // for ActiveX: check if it matches as a path
                         try {
-                            if (ComparePaths(comparableValue, comparableRegistryStateElementValue)) {
+                            if (ComparePaths(value, registryStateElementValue)) {
                                 return true;
                             }
                         } catch {
