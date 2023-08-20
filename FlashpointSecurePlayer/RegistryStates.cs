@@ -28,26 +28,6 @@ using static FlashpointSecurePlayer.Shared.FlashpointSecurePlayerSection.Templat
 
 namespace FlashpointSecurePlayer {
     public class RegistryStates : Modifications {
-        // http://social.msdn.microsoft.com/Forums/vstudio/en-US/0f3557ee-16bd-4a36-a4f3-00efbeae9b0d/app-config-multiple-sections-in-sectiongroup-with-same-name?forum=csharpgeneral
-        private class WOW64Key {
-            public enum EFFECT {
-                SHARED,
-                SHARED_VISTA,
-                REDIRECTED,
-                REDIRECTED_EXCEPTION_VALUE_IS_DEFINED
-            }
-
-            public string Name = null;
-            public EFFECT Effect = EFFECT.SHARED;
-            public List<string> EffectExceptionValueNames = null;
-
-            public WOW64Key(string name = null, EFFECT effect = EFFECT.SHARED, List<string> effectExceptionValueNames = null) {
-                Name = name;
-                Effect = effect;
-                EffectExceptionValueNames = effectExceptionValueNames;
-            }
-        }
-        
         public enum TYPE {
             KEY,
             VALUE
@@ -65,129 +45,53 @@ namespace FlashpointSecurePlayer {
         private Dictionary<ulong, string> kcbModificationKeyNames = null;
         private TraceEventSession kernelSession = null;
 
-        // Windows XP, Windows Server 2003, Windows Vista and Windows Server 2008
-        private readonly bool reflectionVersion = Environment.OSVersion.Version >= new Version(5, 1)
-            && Environment.OSVersion.Version <= new Version(6, 0);
+        // http://docs.microsoft.com/en-us/windows/win32/winprog64/shared-registry-keys#redirected-shared-and-reflected-keys-under-wow64
 
-        private Dictionary<string, List<WOW64Key>> wow64KeyLists = null;
+        // the docs list of redirected/shared keys is pretty unintuitive here
+        // but to summarize the upshot of the redirection rules...
 
-        private Dictionary<string, List<WOW64Key>> WOW64KeyLists {
-            get {
-                if (wow64KeyLists == null) {
-                    if (reflectionVersion) {
-                        wow64KeyLists = new Dictionary<string, List<WOW64Key>>() {
-                            {"HKEY_LOCAL_MACHINE", new List<WOW64Key>() {
-                                { new WOW64Key("SOFTWARE", WOW64Key.EFFECT.REDIRECTED) }
-                            }},
-                            {"HKEY_LOCAL_MACHINE\\SOFTWARE", new List<WOW64Key>() {
-                                { new WOW64Key("CLASSES", WOW64Key.EFFECT.REDIRECTED) },
-                                { new WOW64Key("CLIENTS", WOW64Key.EFFECT.REDIRECTED) }
-                            }},
-                            {"HKEY_LOCAL_MACHINE\\SOFTWARE\\CLASSES", new List<WOW64Key>() {
-                                { new WOW64Key("APPID", WOW64Key.EFFECT.REDIRECTED)},
-                                { new WOW64Key("CLSID", WOW64Key.EFFECT.REDIRECTED_EXCEPTION_VALUE_IS_DEFINED)},
-                                { new WOW64Key("DIRECTSHOW", WOW64Key.EFFECT.REDIRECTED)},
-                                { new WOW64Key("INTERFACE", WOW64Key.EFFECT.REDIRECTED)},
-                                { new WOW64Key("MEDIA TYPE", WOW64Key.EFFECT.REDIRECTED)},
-                                { new WOW64Key("MEDIAFOUNDATION", WOW64Key.EFFECT.REDIRECTED)}
-                            }},
-                            {"HKEY_LOCAL_MACHINE\\SOFTWARE\\MICROSOFT", new List<WOW64Key>() {
-                                { new WOW64Key("COM3", WOW64Key.EFFECT.REDIRECTED) },
-                                { new WOW64Key("EVENTSYSTEM", WOW64Key.EFFECT.REDIRECTED) },
-                                { new WOW64Key("OLE", WOW64Key.EFFECT.REDIRECTED) },
-                                { new WOW64Key("RPC", WOW64Key.EFFECT.REDIRECTED) }
-                            }},
-                            {"HKEY_LOCAL_MACHINE\\SOFTWARE\\MICROSOFT\\NOTEPAD", new List<WOW64Key>() {
-                                { new WOW64Key("DEFAULTFONTS", WOW64Key.EFFECT.REDIRECTED) }
-                            }},
-                            {"HKEY_LOCAL_MACHINE\\SOFTWARE\\MICROSOFT\\WINDOWS\\CURRENTVERSION", new List<WOW64Key>() {
-                                { new WOW64Key("APP PATHS", WOW64Key.EFFECT.REDIRECTED) },
-                                { new WOW64Key("PREVIEWHANDLERS", WOW64Key.EFFECT.REDIRECTED) }
-                            }},
-                            {"HKEY_LOCAL_MACHINE\\SOFTWARE\\MICROSOFT\\WINDOWS\\CURRENTVERSION\\EXPLORER", new List<WOW64Key>() {
-                                { new WOW64Key("AUTOPLAYHANDLERS", WOW64Key.EFFECT.REDIRECTED) },
-                                { new WOW64Key("DRIVEICONS", WOW64Key.EFFECT.REDIRECTED) },
-                                { new WOW64Key("KINDMAP", WOW64Key.EFFECT.REDIRECTED) }
-                            }},
-                            {"HKEY_LOCAL_MACHINE\\SOFTWARE\\MICROSOFT\\WINDOWS NT\\CURRENTVERSION", new List<WOW64Key>() {
-                                { new WOW64Key("CONSOLE", WOW64Key.EFFECT.REDIRECTED) },
-                                { new WOW64Key("FONTLINK", WOW64Key.EFFECT.REDIRECTED) },
-                                { new WOW64Key("GRE_INITIALIZE", WOW64Key.EFFECT.REDIRECTED) },
-                                { new WOW64Key("IMAGE FILE EXECUTION OPTIONS", WOW64Key.EFFECT.REDIRECTED) },
-                                { new WOW64Key("LANGUAGE PACK", WOW64Key.EFFECT.REDIRECTED) }
-                            }},
-                            {"HKEY_CURRENT_USER\\SOFTWARE", new List<WOW64Key>() {
-                                { new WOW64Key("CLASSES", WOW64Key.EFFECT.REDIRECTED) }
-                            }},
-                            {"HKEY_CURRENT_USER\\SOFTWARE\\CLASSES", new List<WOW64Key>() {
-                                { new WOW64Key("APPID", WOW64Key.EFFECT.REDIRECTED) },
-                                { new WOW64Key("CLSID", WOW64Key.EFFECT.REDIRECTED) },
-                                { new WOW64Key("DIRECTSHOW", WOW64Key.EFFECT.REDIRECTED) },
-                                { new WOW64Key("INTERFACE", WOW64Key.EFFECT.REDIRECTED) },
-                                { new WOW64Key("MEDIA TYPE", WOW64Key.EFFECT.REDIRECTED) },
-                                { new WOW64Key("MEDIAFOUNDATION", WOW64Key.EFFECT.REDIRECTED) }
-                            }}
-                        };
-                    } else {
-                        wow64KeyLists = new Dictionary<string, List<WOW64Key>>() {
-                            {"HKEY_LOCAL_MACHINE", new List<WOW64Key>() {
-                                { new WOW64Key("SOFTWARE", WOW64Key.EFFECT.REDIRECTED) }
-                            }},
-                            {"HKEY_LOCAL_MACHINE\\SOFTWARE", new List<WOW64Key>() {
-                                { new WOW64Key("CLASSES", WOW64Key.EFFECT.SHARED) },
-                                { new WOW64Key("CLIENTS", WOW64Key.EFFECT.SHARED) }
-                            }},
-                            {"HKEY_LOCAL_MACHINE\\SOFTWARE\\CLASSES", new List<WOW64Key>() {
-                                { new WOW64Key("APPID", WOW64Key.EFFECT.SHARED)},
-                                { new WOW64Key("CLSID", WOW64Key.EFFECT.REDIRECTED)},
-                                { new WOW64Key("DIRECTSHOW", WOW64Key.EFFECT.REDIRECTED)},
-                                { new WOW64Key("INTERFACE", WOW64Key.EFFECT.REDIRECTED)},
-                                { new WOW64Key("MEDIA TYPE", WOW64Key.EFFECT.REDIRECTED)},
-                                { new WOW64Key("MEDIAFOUNDATION", WOW64Key.EFFECT.REDIRECTED)}
-                            }},
-                            {"HKEY_LOCAL_MACHINE\\SOFTWARE\\MICROSOFT", new List<WOW64Key>() {
-                                { new WOW64Key("COM3", WOW64Key.EFFECT.SHARED) },
-                                { new WOW64Key("EVENTSYSTEM", WOW64Key.EFFECT.SHARED) },
-                                { new WOW64Key("OLE", WOW64Key.EFFECT.SHARED) },
-                                { new WOW64Key("RPC", WOW64Key.EFFECT.SHARED) }
-                            }},
-                            {"HKEY_LOCAL_MACHINE\\SOFTWARE\\MICROSOFT\\NOTEPAD", new List<WOW64Key>() {
-                                { new WOW64Key("DEFAULTFONTS", WOW64Key.EFFECT.SHARED) }
-                            }},
-                            {"HKEY_LOCAL_MACHINE\\SOFTWARE\\MICROSOFT\\WINDOWS\\CURRENTVERSION", new List<WOW64Key>() {
-                                { new WOW64Key("APP PATHS", WOW64Key.EFFECT.SHARED) },
-                                { new WOW64Key("PREVIEWHANDLERS", WOW64Key.EFFECT.SHARED) }
-                            }},
-                            {"HKEY_LOCAL_MACHINE\\SOFTWARE\\MICROSOFT\\WINDOWS\\CURRENTVERSION\\EXPLORER", new List<WOW64Key>() {
-                                { new WOW64Key("AUTOPLAYHANDLERS", WOW64Key.EFFECT.SHARED) },
-                                { new WOW64Key("DRIVEICONS", WOW64Key.EFFECT.SHARED) },
-                                { new WOW64Key("KINDMAP", WOW64Key.EFFECT.SHARED) }
-                            }},
-                            {"HKEY_LOCAL_MACHINE\\SOFTWARE\\MICROSOFT\\WINDOWS NT\\CURRENTVERSION", new List<WOW64Key>() {
-                                { new WOW64Key("CONSOLE", WOW64Key.EFFECT.SHARED) },
-                                { new WOW64Key("FONTLINK", WOW64Key.EFFECT.SHARED) },
-                                { new WOW64Key("GRE_INITIALIZE", WOW64Key.EFFECT.SHARED) },
-                                { new WOW64Key("IMAGE FILE EXECUTION OPTIONS", WOW64Key.EFFECT.SHARED) },
-                                { new WOW64Key("LANGUAGE PACK", WOW64Key.EFFECT.SHARED) }
-                            }},
-                            {"HKEY_CURRENT_USER\\SOFTWARE", new List<WOW64Key>() {
-                                { new WOW64Key("CLASSES", WOW64Key.EFFECT.SHARED) }
-                            }},
-                            {"HKEY_CURRENT_USER\\SOFTWARE\\CLASSES", new List<WOW64Key>() {
-                                { new WOW64Key("APPID", WOW64Key.EFFECT.SHARED) },
-                                { new WOW64Key("CLSID", WOW64Key.EFFECT.REDIRECTED) },
-                                { new WOW64Key("DIRECTSHOW", WOW64Key.EFFECT.REDIRECTED) },
-                                { new WOW64Key("INTERFACE", WOW64Key.EFFECT.REDIRECTED) },
-                                { new WOW64Key("MEDIA TYPE", WOW64Key.EFFECT.REDIRECTED) },
-                                { new WOW64Key("MEDIAFOUNDATION", WOW64Key.EFFECT.REDIRECTED) }
-                            }}
-                        };
-                    }
-                }
-                return wow64KeyLists;
-            }
-        }
-        
+        // there are only two locations where (legitimate) WOW64XXNODE subkeys appear
+        // under HKEY_LOCAL_MACHINE\SOFTWARE
+        // and under HKEY_LOCAL_MACHINE\SOFTWARE\CLASSES or HKEY_CURRENT_USER\SOFTWARE\CLASSES
+
+        // for HKEY_LOCAL_MACHINE\SOFTWARE, WOW64XXNODE is always used in the 32-bit view
+        // *even for shared keys, the WOW64XXNODE equivalent still exists
+        // **this is also true on Vista, all the keys the docs says are redirected are handled by this,
+        // it's just that on later versions they're shared, but we don't care about that
+
+        // for HKEY_LOCAL_MACHINE\SOFTWARE\CLASSES or HKEY_CURRENT_USER\SOFTWARE\CLASSES
+        // WOW64XXNODE is only used for specific subkeys (so not every class ends up there)
+        // for example, HKEY_LOCAL_MACHINE\SOFTWARE\CLASSES\WOW64XXNODE\HELLO is not redirected
+        // and it's inaccessible in the 32-bit view under HKEY_LOCAL_MACHINE\SOFTWARE\CLASSES\HELLO
+        // but HKEY_LOCAL_MACHINE\SOFTWARE\CLASSES\WOW64XXNODE\CLSID is redirected
+        // and is accessible in the 32-bit view as HKEY_LOCAL_MACHINE\SOFTWARE\CLASSES\CLSID
+
+        // APPID, PROTOCOLS, and TYPELIB subkeys are symlinks, applying only to HKEY_LOCAL_MACHINE
+        // HKEY_LOCAL_MACHINE\SOFTWARE\WOW64XXNODE\CLASSES also has a symlink
+        // (but that's already handled, so it doesn't matter)
+
+        // note the trailing slashes on keys to make lookups easier
+        private Dictionary<string, List<string>> WOW64KeyList = new Dictionary<string, List<string>>() {
+            {"HKEY_LOCAL_MACHINE\\SOFTWARE\\", null},
+            {"HKEY_LOCAL_MACHINE\\SOFTWARE\\CLASSES\\", new List<string>() {
+                "APPID",
+                "CLSID",
+                "DIRECTSHOW",
+                "INTERFACE",
+                "MEDIA TYPE",
+                "MEDIAFOUNDATION",
+                "PROTOCOLS",
+                "TYPELIB"
+            }},
+            {"HKEY_CURRENT_USER\\SOFTWARE\\CLASSES\\", new List<string>() {
+                "CLSID",
+                "DIRECTSHOW",
+                "INTERFACE",
+                "MEDIA TYPE",
+                "MEDIAFOUNDATION"
+            }}
+        };
+
         public RegistryStates(EventHandler importStart, EventHandler importStop) : base(importStart, importStop) { }
 
         ~RegistryStates() {
@@ -504,12 +408,7 @@ namespace FlashpointSecurePlayer {
         // older than Windows XP 64-bit
         private readonly bool notWOW64Version = !Environment.Is64BitOperatingSystem
             || Environment.OSVersion.Version < new Version(5, 1);
-
-        // Windows XP and Windows Server 2003
-        private readonly bool notSharedVistaVersion = Environment.OSVersion.Version >= new Version(5, 1)
-            && Environment.OSVersion.Version < new Version(6, 0);
         
-        // http://docs.microsoft.com/en-us/windows/win32/winprog64/shared-registry-keys#redirected-shared-and-reflected-keys-under-wow64
         private string GetRedirectedKeyValueName(string keyValueName, BINARY_TYPE binaryType) {
             if (notWOW64Version) {
                 // the version isn't WOW64
@@ -525,90 +424,66 @@ namespace FlashpointSecurePlayer {
             if (keyValueName == null) {
                 return keyValueName;
             }
-            
-            // make these keys uppercase using a regex
-            keyValueName = Regex.Replace(keyValueName, "\\\\WOW6432NODE\\\\", "\\WOW6432NODE\\", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-            keyValueName = Regex.Replace(keyValueName, "\\\\WOW64AANODE\\\\", "\\WOW64AANODE\\", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
-            // remove Wow6432Node and WowAA32Node after affected keys
-            List<string> keyValueNameSplit = keyValueName.Split(new string[] { "\\WOW6432NODE\\", "\\WOW64AANODE\\" }, StringSplitOptions.None).ToList();
+            // for testing: all WOW64XXNODE's should be gone except the last two
+            //keyValueName = "HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432NODE\\WOW64AANODE\\WOW6432NODE\\CLASSES\\WOW6432NODE\\WOW6432NODE\\CLSID\\WOW6432NODE\\HELLO\\WOW64AANODE";
 
-            if (keyValueNameSplit.Count < 2) {
-                return keyValueName;
-            }
+            string[] keyValueNameSplit = keyValueName.Split('\\');
+            int keyValueNameSplitEndIndex = keyValueNameSplit.Length - 1;
 
-            string wow64KeyUpper = keyValueNameSplit[0].ToUpperInvariant();
-            string wow64KeyName = keyValueNameSplit[1] + "\\";
+            // redirect WOW64XXNODE subkeys
+            bool wow64Node = false;
+            string subkey = null;
+            StringBuilder wow64NodeSubkeys = new StringBuilder();
 
-            if (WOW64KeyLists.ContainsKey(wow64KeyUpper)) {
-                List<WOW64Key> wow64KeyList = WOW64KeyLists[wow64KeyUpper];
-                WOW64Key.EFFECT effect = WOW64Key.EFFECT.SHARED;
-                List<string> effectExceptionValueNames = new List<string>();
-                bool removeWOW64Subkey = false;
+            bool redirected = false;
+            StringBuilder redirectedKeyValueName = new StringBuilder();
 
-                for (int i = 0; i < wow64KeyList.Count; i++) {
-                    if (wow64KeyName.StartsWith(wow64KeyList[i].Name + "\\", StringComparison.OrdinalIgnoreCase)) {
-                        effect = wow64KeyList[i].Effect;
-                        effectExceptionValueNames = wow64KeyList[i].EffectExceptionValueNames;
+            for (int i = 0; i <= keyValueNameSplitEndIndex; i++) {
+                wow64Node = false;
+                subkey = keyValueNameSplit[i];
 
-                        if (effect == WOW64Key.EFFECT.SHARED_VISTA) {
-                            effect = notSharedVistaVersion ? WOW64Key.EFFECT.REDIRECTED : WOW64Key.EFFECT.SHARED;
-                        }
+                if (subkey.Equals("WOW6432NODE", StringComparison.OrdinalIgnoreCase)
+                    || subkey.Equals("WOW64AANODE", StringComparison.OrdinalIgnoreCase)) {
+                    wow64Node = true;
+                }
 
-                        switch (effect) {
-                            case WOW64Key.EFFECT.REDIRECTED:
-                            removeWOW64Subkey = true;
-                            break;
-                            case WOW64Key.EFFECT.REDIRECTED_EXCEPTION_VALUE_IS_DEFINED:
-                            // check exceptions for value defined in registry
-                            object effectExceptionValue = null;
+                if (wow64Node) {
+                    wow64NodeSubkeys.Append(subkey);
+                    wow64NodeSubkeys.Append("\\");
+                }
 
-                            for (int j = 0; j < effectExceptionValueNames.Count; j++) {
-                                try {
-                                    effectExceptionValue = GetValueInRegistryView(
-                                        GetKeyValueNameFromKernelRegistryString(
-                                            String.Join(
-                                                "\\",
-                                                keyValueNameSplit.GetRange(0, i)
-                                            )
-                                        ),
-                                    
-                                        effectExceptionValueNames[j],
-                                        RegistryView.Registry64
-                                    );
-                                } catch (SecurityException ex) {
-                                    // value exists but we can't get it
-                                    LogExceptionToLauncher(ex);
-                                    removeWOW64Subkey = true;
-                                } catch (UnauthorizedAccessException ex) {
-                                    // value exists but we can't get it
-                                    LogExceptionToLauncher(ex);
-                                    removeWOW64Subkey = true;
-                                } catch {
-                                    // value doesn't exist
-                                    effectExceptionValue = null;
-                                }
+                // if this is not a WOW64XXNODE, or we are at the end
+                if ((!wow64Node || (wow64Node && i == keyValueNameSplitEndIndex))
+                    && wow64NodeSubkeys.Length > 0) {
+                    redirected = false;
 
-                            // just checking it exists
-                            if (effectExceptionValue != null) {
-                                    removeWOW64Subkey = true;
+                    if (WOW64KeyList.TryGetValue(redirectedKeyValueName.ToString().ToUpperInvariant(), out List<string> wow64SubkeyList)) {
+                        if (wow64SubkeyList == null) {
+                            redirected = true;
+                        } else {
+                            for (int j = 0; j < wow64SubkeyList.Count; j++) {
+                                if (subkey.Equals(wow64SubkeyList[j], StringComparison.OrdinalIgnoreCase)) {
+                                    redirected = true;
+                                    break;
                                 }
                             }
-                            break;
                         }
-
-                        if (removeWOW64Subkey) {
-                            // key after WOW64XXNODE will shift into current position
-                            // therefore, after the next loop...
-                            // one is added to i so we effectively move two keys
-                            // so we will be looking at the next potential WOW64XXNODE candidate
-                            keyValueName = String.Join("\\", keyValueNameSplit);
-                        }
-                        break;
                     }
+
+                    if (!redirected) {
+                        redirectedKeyValueName.Append(wow64NodeSubkeys);
+                    }
+
+                    wow64NodeSubkeys.Clear();
+                }
+
+                if (!wow64Node) {
+                    redirectedKeyValueName.Append(subkey);
+                    redirectedKeyValueName.Append("\\");
                 }
             }
-            return keyValueName;
+            return RemoveTrailingSlash(redirectedKeyValueName.ToString());
         }
 
         private bool CompareKeys(RegistryView registryView, RegistryStateElement registryStateElement, RegistryStateElement activeRegistryStateElement, string activeCurrentUser = null, bool activeAdministrator = true) {

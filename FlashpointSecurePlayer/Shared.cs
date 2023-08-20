@@ -971,6 +971,7 @@ namespace FlashpointSecurePlayer {
         private static SemaphoreSlim downloadSemaphoreSlim = new SemaphoreSlim(1, 1);
 
         // it'd be nice to move all the configuration, template, section stuff to their own class one day
+        // http://social.msdn.microsoft.com/Forums/vstudio/en-US/0f3557ee-16bd-4a36-a4f3-00efbeae9b0d/app-config-multiple-sections-in-sectiongroup-with-same-name?forum=csharpgeneral
         private static FlashpointSecurePlayerSection flashpointSecurePlayerSection = null;
         private static FlashpointSecurePlayerSection activeFlashpointSecurePlayerSection = null;
 
@@ -2808,6 +2809,10 @@ namespace FlashpointSecurePlayer {
             //return path.TrimEnd('\\');
         }
 
+        // number chosen because of similar behaviour for Program Files
+        // http://learn.microsoft.com/en-us/windows/win32/winprog64/registry-redirector
+        public static readonly int MAX_REPLACE_STARTUP_PATH = MAX_PATH * 2 + FP_STARTUP_PATH.Length;
+
         // pathNames is intentionally not ref
         // it's a class, so it's already a reference type
         // it can be null, which is supported,
@@ -2818,7 +2823,7 @@ namespace FlashpointSecurePlayer {
                 return value;
             }
 
-            if (value.Length > MAX_PATH + MAX_PATH + FP_STARTUP_PATH.Length) {
+            if (value.Length > MAX_REPLACE_STARTUP_PATH) {
                 return value;
             }
 
@@ -2859,7 +2864,7 @@ namespace FlashpointSecurePlayer {
                 return lengthenedValue;
             }
 
-            if (lengthenedValue.Length > MAX_PATH + MAX_PATH + FP_STARTUP_PATH.Length) {
+            if (lengthenedValue.Length > MAX_REPLACE_STARTUP_PATH) {
                 return lengthenedValue;
             }
 
