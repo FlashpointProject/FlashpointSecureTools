@@ -462,10 +462,12 @@ namespace FlashpointSecurePlayer {
                         if (wow64SubkeyList == null) {
                             redirected = true;
                         } else {
-                            for (int j = 0; j < wow64SubkeyList.Count; j++) {
-                                if (subkey.Equals(wow64SubkeyList[j], StringComparison.OrdinalIgnoreCase)) {
-                                    redirected = true;
-                                    break;
+                            if (!wow64Node) {
+                                for (int j = 0; j < wow64SubkeyList.Count; j++) {
+                                    if (subkey.Equals(wow64SubkeyList[j], StringComparison.OrdinalIgnoreCase)) {
+                                        redirected = true;
+                                        break;
+                                    }
                                 }
                             }
                         }
