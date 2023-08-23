@@ -109,6 +109,14 @@ namespace FlashpointSecurePlayer {
 
             keyValueName = AddTrailingSlash(keyValueName);
 
+            const string HKEY_CLASSES_ROOT = "HKEY_CLASSES_ROOT\\";
+            const string HKEY_CURRENT_USER_SOFTWARE_CLASSES = "HKEY_CURRENT_USER\\SOFTWARE\\CLASSES\\";
+
+            // make this explicitly the current user
+            if (keyValueName.StartsWith(HKEY_CLASSES_ROOT, StringComparison.OrdinalIgnoreCase)) {
+                keyValueName = HKEY_CURRENT_USER_SOFTWARE_CLASSES + keyValueName.Substring(HKEY_CLASSES_ROOT.Length);
+            }
+
             const string HKEY_CURRENT_USER = "HKEY_CURRENT_USER\\";
             const string HKEY_LOCAL_MACHINE = "HKEY_LOCAL_MACHINE\\";
 
@@ -459,15 +467,15 @@ namespace FlashpointSecurePlayer {
                     redirected = false;
 
                     if (WOW64KeyList.TryGetValue(redirectedKeyValueName.ToString().ToUpperInvariant(), out List<string> wow64SubkeyList)) {
-                        if (wow64SubkeyList == null) {
+                        // if there's no subkey list or we are at the end
+                        if (wow64SubkeyList == null || wow64Node) {
                             redirected = true;
                         } else {
-                            if (!wow64Node) {
-                                for (int j = 0; j < wow64SubkeyList.Count; j++) {
-                                    if (subkey.Equals(wow64SubkeyList[j], StringComparison.OrdinalIgnoreCase)) {
-                                        redirected = true;
-                                        break;
-                                    }
+                            // must equal a subkey from the list
+                            for (int j = 0; j < wow64SubkeyList.Count; j++) {
+                                if (subkey.Equals(wow64SubkeyList[j], StringComparison.OrdinalIgnoreCase)) {
+                                    redirected = true;
+                                    break;
                                 }
                             }
                         }
