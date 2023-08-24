@@ -110,11 +110,15 @@ namespace FlashpointSecurePlayer {
             keyValueName = AddTrailingSlash(keyValueName);
 
             const string HKEY_CLASSES_ROOT = "HKEY_CLASSES_ROOT\\";
-            const string HKEY_CURRENT_USER_SOFTWARE_CLASSES = "HKEY_CURRENT_USER\\SOFTWARE\\CLASSES\\";
+            const string HKEY_LOCAL_MACHINE_SOFTWARE_CLASSES = "HKEY_LOCAL_MACHINE\\SOFTWARE\\CLASSES\\";
 
-            // make this explicitly the current user
+            // make this explicitly the machine
+            // need this so reverting works across users on the same machine
+            // we use HKEY_LOCAL_MACHINE not HKEY_CURRENT_USER because
+            // current user settings may be ignored as admin
+            // (but this might get changed again down below if not admin)
             if (keyValueName.StartsWith(HKEY_CLASSES_ROOT, StringComparison.OrdinalIgnoreCase)) {
-                keyValueName = HKEY_CURRENT_USER_SOFTWARE_CLASSES + keyValueName.Substring(HKEY_CLASSES_ROOT.Length);
+                keyValueName = HKEY_LOCAL_MACHINE_SOFTWARE_CLASSES + keyValueName.Substring(HKEY_CLASSES_ROOT.Length);
             }
 
             const string HKEY_CURRENT_USER = "HKEY_CURRENT_USER\\";
