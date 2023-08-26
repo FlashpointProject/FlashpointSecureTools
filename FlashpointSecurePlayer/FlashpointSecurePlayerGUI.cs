@@ -1259,6 +1259,8 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
+            webBrowserModeExiting = true;
+
             // Set Current Directory
             try {
                 Directory.SetCurrentDirectory(Application.StartupPath);
