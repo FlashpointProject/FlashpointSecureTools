@@ -40,7 +40,6 @@ namespace FlashpointSecurePlayer {
         private readonly bool oldWindowsVersion = Environment.OSVersion.Version < new Version(6, 1);
 
         private bool activeX = false;
-        private bool webBrowserModeExiting = false;
         private ProcessStartInfo softwareProcessStartInfo = null;
         private bool softwareIsOldCPUSimulator = false;
 
@@ -810,15 +809,7 @@ namespace FlashpointSecurePlayer {
                 }
 
                 try {
-                    webBrowserModeExiting = true;
-
-                    IList<WebBrowserMode> webBrowserModes = WebBrowserMode.WebBrowserModes;
-
-                    if (webBrowserModes != null) {
-                        for (int i = 0; i < webBrowserModes.Count; i++) {
-                            webBrowserModes[i].Close();
-                        }
-                    }
+                    WebBrowserMode.DeactivateMode();
                 } finally {
                     modeMutex.ReleaseMutex();
                 }
@@ -1255,12 +1246,6 @@ namespace FlashpointSecurePlayer {
         }
 
         private void WebBrowserModeExit(object sender, EventArgs e) {
-            if (webBrowserModeExiting) {
-                return;
-            }
-
-            webBrowserModeExiting = true;
-
             // Set Current Directory
             try {
                 Directory.SetCurrentDirectory(Application.StartupPath);

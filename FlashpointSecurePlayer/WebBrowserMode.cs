@@ -382,15 +382,6 @@ namespace FlashpointSecurePlayer {
 
         static private List<WebBrowserMode> webBrowserModes = new List<WebBrowserMode>() { };
 
-        static public IList<WebBrowserMode> WebBrowserModes {
-            get {
-                if (webBrowserModes == null) {
-                    return null;
-                }
-                return webBrowserModes.AsReadOnly();
-            }
-        }
-
         private readonly EventHandler webBrowserModeExit;
 
         private Uri WebBrowserURL { get; set; } = null;
@@ -441,6 +432,21 @@ namespace FlashpointSecurePlayer {
             }
 
             eventHandler(this, e);
+        }
+
+        static private bool exiting = false;
+
+        static public void DeactivateMode() {
+            // if we are here, we don't want the OnWebBrowserModeExit event to fire
+            // that would cause recursion, because the mode would be deactivated again
+            // instead, we handle the exit ourselves
+            exiting = true;
+
+            if (webBrowserModes != null) {
+                for (int i = 0; i < webBrowserModes.Count; i++) {
+                    webBrowserModes[i].Close();
+                }
+            }
         }
 
         private bool addressToolStripSpringTextBoxEntered = false;
@@ -665,6 +671,13 @@ namespace FlashpointSecurePlayer {
             if (webBrowserModes.Any()) {
                 return;
             }
+
+            // code beyond this point is single shot
+            if (exiting) {
+                return;
+            }
+
+            exiting = true;
 
             // stop form closing recursion
             FormClosing -= WebBrowserMode_FormClosing;
