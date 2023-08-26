@@ -40,7 +40,7 @@ namespace FlashpointSecurePlayer {
         private readonly bool oldWindowsVersion = Environment.OSVersion.Version < new Version(6, 1);
 
         private bool activeX = false;
-        WebBrowserMode webBrowserMode = null;
+        private bool webBrowserModeExiting = false;
         private ProcessStartInfo softwareProcessStartInfo = null;
         private bool softwareIsOldCPUSimulator = false;
 
@@ -619,7 +619,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private void ActivateMode(TemplateElement templateElement, ErrorDelegate errorDelegate) {
+        private async Task ActivateModeAsync(TemplateElement templateElement, ErrorDelegate errorDelegate) {
             bool createdNew = false;
 
             using (Mutex modeMutex = new Mutex(true, MODE_MUTEX_NAME, out createdNew)) {
@@ -662,11 +662,10 @@ namespace FlashpointSecurePlayer {
                             throw new InvalidModeException("The address \"" + URL + "\" was not understood by the Mode.");
                         }
 
-                        webBrowserMode = new WebBrowserMode(webBrowserURL, UseFlashActiveXControl) {
+                        WebBrowserMode webBrowserMode = new WebBrowserMode(WebBrowserModeExit, webBrowserURL, UseFlashActiveXControl) {
                             WindowState = FormWindowState.Maximized
                         };
-
-                        webBrowserMode.FormClosing += webBrowserMode_FormClosing;
+                        
                         Hide();
                         webBrowserMode.Show();
                         return;
@@ -726,7 +725,9 @@ namespace FlashpointSecurePlayer {
 
                                 Hide();
 
-                                softwareProcess.WaitForExit();
+                                await Task.Run(delegate () {
+                                    softwareProcess.WaitForExit();
+                                }).ConfigureAwait(true);
 
                                 Show();
                                 Refresh();
@@ -809,10 +810,14 @@ namespace FlashpointSecurePlayer {
                 }
 
                 try {
-                    if (webBrowserMode != null) {
-                        webBrowserMode.FormClosing -= webBrowserMode_FormClosing;
-                        webBrowserMode.Close();
-                        webBrowserMode = null;
+                    webBrowserModeExiting = true;
+
+                    IList<WebBrowserMode> webBrowserModes = WebBrowserMode.WebBrowserModes;
+
+                    if (webBrowserModes != null) {
+                        for (int i = 0; i < webBrowserModes.Count; i++) {
+                            webBrowserModes[i].Close();
+                        }
                     }
                 } finally {
                     modeMutex.ReleaseMutex();
@@ -1201,10 +1206,10 @@ namespace FlashpointSecurePlayer {
             }
 
             try {
-                ActivateMode(templateElement, delegate (string text) {
+                await ActivateModeAsync(templateElement, delegate (string text) {
                     ShowErrorFatal(text);
                     throw new InvalidModeException("An error occured while activating the Mode.");
-                });
+                }).ConfigureAwait(true);
             } catch (InvalidModeException ex) {
                 // delegate handles error
                 LogExceptionToLauncher(ex);
@@ -1247,6 +1252,34 @@ namespace FlashpointSecurePlayer {
 
         private void ImportStop(object sender, EventArgs e) {
             ControlBox = true;
+        }
+
+        private void WebBrowserModeExit(object sender, EventArgs e) {
+            if (webBrowserModeExiting) {
+                return;
+            }
+
+            // Set Current Directory
+            try {
+                Directory.SetCurrentDirectory(Application.StartupPath);
+            } catch {
+                // fail silently
+            }
+
+            // this should not cause an exception
+            // if it does, it means there is an infinite closing loop
+            // (a form is closing a form which is closing a form, and so on)
+            // you can debug infinite closing loops by setting breakpoints
+            // on all Form.Close functions
+            try {
+                Show();
+                Refresh();
+                Application.Exit();
+            } catch (InvalidOperationException ex) {
+                // IT IS VERY IMPORTANT THIS SHOULD NEVER HAPPEN!
+                LogExceptionToLauncher(ex);
+                Environment.Exit(-1);
+            }
         }
         
         private bool loaded = false;
@@ -1599,36 +1632,6 @@ namespace FlashpointSecurePlayer {
                     applicationMutex.Close();
                     applicationMutex = null;
                 }
-            }
-        }
-
-        private void webBrowserMode_FormClosing(object sender, FormClosingEventArgs e) {
-            // stop form closing recursion
-            if (webBrowserMode != null) {
-                webBrowserMode.FormClosing -= webBrowserMode_FormClosing;
-                webBrowserMode = null;
-            }
-
-            // Set Current Directory
-            try {
-                Directory.SetCurrentDirectory(Application.StartupPath);
-            } catch {
-                // fail silently
-            }
-
-            // this should not cause an exception
-            // if it does, it means there is an infinite closing loop
-            // (a form is closing a form which is closing a form, and so on)
-            // you can debug infinite closing loops by setting breakpoints
-            // on all Form.Close functions
-            try {
-                Show();
-                Refresh();
-                Application.Exit();
-            } catch (InvalidOperationException ex) {
-                // IT IS VERY IMPORTANT THIS SHOULD NEVER HAPPEN!
-                LogExceptionToLauncher(ex);
-                Environment.Exit(-1);
             }
         }
     }

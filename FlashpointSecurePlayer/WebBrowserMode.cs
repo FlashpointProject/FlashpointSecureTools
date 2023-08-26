@@ -380,11 +380,30 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        static private List<WebBrowserMode> webBrowserModes = new List<WebBrowserMode>() { };
+
+        static public IList<WebBrowserMode> WebBrowserModes {
+            get {
+                if (webBrowserModes == null) {
+                    return null;
+                }
+                return webBrowserModes.AsReadOnly();
+            }
+        }
+
+        private readonly EventHandler webBrowserModeExit;
+
         private Uri WebBrowserURL { get; set; } = null;
         private bool UseFlashActiveXControl { get; set; } = false;
 
-        public WebBrowserMode(bool useFlashActiveXControl = false) {
+        public WebBrowserMode(EventHandler webBrowserModeExit, bool useFlashActiveXControl = false) {
             InitializeComponent();
+
+            this.webBrowserModeExit = webBrowserModeExit;
+
+            if (webBrowserModes != null) {
+                webBrowserModes.Add(this);
+            }
 
             UseFlashActiveXControl = useFlashActiveXControl;
 
@@ -395,8 +414,14 @@ namespace FlashpointSecurePlayer {
             statusBarStatusStrip.Renderer = new EndEllipsisTextRenderer();
         }
 
-        public WebBrowserMode(Uri webBrowserURL, bool useFlashActiveXControl = false) {
+        public WebBrowserMode(EventHandler webBrowserModeExit, Uri webBrowserURL, bool useFlashActiveXControl = false) {
             InitializeComponent();
+
+            this.webBrowserModeExit = webBrowserModeExit;
+
+            if (webBrowserModes != null) {
+                webBrowserModes.Add(this);
+            }
 
             WebBrowserURL = webBrowserURL;
             UseFlashActiveXControl = useFlashActiveXControl;
@@ -406,6 +431,16 @@ namespace FlashpointSecurePlayer {
             webBrowserModeTitle = new WebBrowserModeTitle(TitleChanged);
 
             statusBarStatusStrip.Renderer = new EndEllipsisTextRenderer();
+        }
+
+        private void OnWebBrowserModeExit(EventArgs e) {
+            EventHandler eventHandler = webBrowserModeExit;
+
+            if (eventHandler == null) {
+                return;
+            }
+
+            eventHandler(this, e);
         }
 
         private bool addressToolStripSpringTextBoxEntered = false;
@@ -492,7 +527,7 @@ namespace FlashpointSecurePlayer {
 
         public WebBrowserMode BrowserNewWindow() {
             // we don't want this window to be the parent, breaks fullscreen and not otherwise useful
-            WebBrowserMode webBrowserForm = new WebBrowserMode(UseFlashActiveXControl);
+            WebBrowserMode webBrowserForm = new WebBrowserMode(webBrowserModeExit, UseFlashActiveXControl);
             webBrowserForm.Show(/*this*/);
             return webBrowserForm;
         }
@@ -620,6 +655,21 @@ namespace FlashpointSecurePlayer {
             closableWebBrowser = null;
 
             customSecurityManager = null;
+
+            if (webBrowserModes == null) {
+                return;
+            }
+
+            webBrowserModes.Remove(this);
+
+            if (webBrowserModes.Any()) {
+                return;
+            }
+
+            // stop form closing recursion
+            FormClosing -= WebBrowserMode_FormClosing;
+
+            OnWebBrowserModeExit(EventArgs.Empty);
         }
 
         private void WebBrowserMode_Activated(object sender, EventArgs e) {
