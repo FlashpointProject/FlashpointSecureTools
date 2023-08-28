@@ -79,7 +79,7 @@ namespace FlashpointSecurePlayer {
 
             // sigh... okay
             // first, we check the target rate
-            if (!int.TryParse(Environment.ExpandEnvironmentVariables(oldCPUSimulatorElement.TargetRate), out int targetRate)) {
+            if (!ulong.TryParse(Environment.ExpandEnvironmentVariables(oldCPUSimulatorElement.TargetRate), out ulong targetRate)) {
                 throw new InvalidOldCPUSimulatorException("The Target Rate is required.");
             }
 
@@ -90,8 +90,6 @@ namespace FlashpointSecurePlayer {
 
             // next... we need to check if the CPU speed is actually faster than
             // what we want to underclock to
-            long maxRate = 0;
-
             ProcessStartInfo oldCPUSimulatorProcessStartInfo = new ProcessStartInfo(OLD_CPU_SIMULATOR_PATH, "--dev-get-max-mhz") {
                 UseShellExecute = false,
                 RedirectStandardError = false,
@@ -117,18 +115,18 @@ namespace FlashpointSecurePlayer {
                         oldCPUSimulatorProcessStandardOutput = oldCPUSimulatorProcess.StandardOutput.ReadToEnd();
                     }
 
-                    if (oldCPUSimulatorProcess.ExitCode != 0 || !long.TryParse(oldCPUSimulatorProcessStandardOutput.Split('\n').Last(), out maxRate)) {
+                    if (oldCPUSimulatorProcess.ExitCode != 0 || !ulong.TryParse(oldCPUSimulatorProcessStandardOutput.Split('\n').Last(), out ulong maxRate)) {
                         throw new InvalidOldCPUSimulatorException("Failed to get Max Rate.");
+                    }
+
+                    // if our CPU is too slow, just ignore the modification
+                    if (targetRate >= maxRate) {
+                        return;
                     }
                 }
             } catch (Exception ex) {
                 LogExceptionToLauncher(ex);
                 throw new InvalidOldCPUSimulatorException("Failed to get Max Rate.");
-            }
-
-            // if our CPU is too slow, just ignore the modification
-            if (targetRate >= maxRate) {
-                return;
             }
 
             switch (modeElement.Name) {
