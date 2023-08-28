@@ -3067,14 +3067,14 @@ namespace FlashpointSecurePlayer {
         ) {
             StringBuilder oldCPUSimulatorProcessStartInfoArguments = new StringBuilder("-t ");
 
-            if (!int.TryParse(Environment.ExpandEnvironmentVariables(oldCPUSimulatorElement.TargetRate), out int targetRate)) {
+            if (!ulong.TryParse(Environment.ExpandEnvironmentVariables(oldCPUSimulatorElement.TargetRate), out ulong targetRate)) {
                 throw new ArgumentException("The Old CPU Simulator Element has an invalid Target Rate.");
             }
 
             oldCPUSimulatorProcessStartInfoArguments.Append(targetRate);
 
             if (!String.IsNullOrEmpty(oldCPUSimulatorElement.RefreshRate)) {
-                if (!int.TryParse(Environment.ExpandEnvironmentVariables(oldCPUSimulatorElement.RefreshRate), out int refreshRate)) {
+                if (!uint.TryParse(Environment.ExpandEnvironmentVariables(oldCPUSimulatorElement.RefreshRate), out uint refreshRate)) {
                     throw new ArgumentException("The Old CPU Simulator Element has an invalid Refresh Rate.");
                 }
 
