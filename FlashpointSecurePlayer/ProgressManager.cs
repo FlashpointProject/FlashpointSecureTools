@@ -11,10 +11,10 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 
 namespace FlashpointSecurePlayer {
     public static class ProgressManager {
-        public const uint PBM_SETSTATE = 0x0410;
-        public static readonly IntPtr PBST_NORMAL = (IntPtr)1;
-        public static readonly IntPtr PBST_ERROR = (IntPtr)2;
-        public static readonly IntPtr PBST_PAUSED = (IntPtr)3;
+        private const uint PBM_SETSTATE = 0x0410;
+        private static readonly IntPtr PBST_NORMAL = (IntPtr)1;
+        private static readonly IntPtr PBST_ERROR = (IntPtr)2;
+        private static readonly IntPtr PBST_PAUSED = (IntPtr)3;
 
         private enum TBPF {
             TBPF_NOPROGRESS = 0x00000000,
