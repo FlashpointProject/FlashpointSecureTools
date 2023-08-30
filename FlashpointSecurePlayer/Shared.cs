@@ -1975,7 +1975,7 @@ namespace FlashpointSecurePlayer {
                     get {
                         pathNamesShort.TryGetValue(longPath, out string pathNameShort);
 
-                        if (pathNameShort != null) {
+                        if (!String.IsNullOrEmpty(pathNameShort)) {
                             return pathNameShort;
                         }
 
@@ -1999,7 +1999,7 @@ namespace FlashpointSecurePlayer {
                     get {
                         pathNamesLong.TryGetValue(shortPath, out string pathNameLong);
 
-                        if (pathNameLong != null) {
+                        if (!String.IsNullOrEmpty(pathNameLong)) {
                             return pathNameLong;
                         }
                         

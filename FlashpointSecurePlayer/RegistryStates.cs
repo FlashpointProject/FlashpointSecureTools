@@ -1592,7 +1592,7 @@ namespace FlashpointSecurePlayer {
             if (kcbModificationKeyNames != null) {
                 kcbModificationKeyNames.TryGetValue(safeKeyHandle, out string kcbModificationKeyName);
 
-                if (kcbModificationKeyName != null) {
+                if (!String.IsNullOrEmpty(kcbModificationKeyName)) {
                     registryStateElement.KeyName = GetRedirectedKeyValueName(
                         GetKeyValueNameFromKernelRegistryString(kcbModificationKeyName + "\\" + registryStateElement.KeyName),
                         modificationsElement.RegistryStates.BinaryType
@@ -1713,7 +1713,7 @@ namespace FlashpointSecurePlayer {
             if (kcbModificationKeyNames != null) {
                 kcbModificationKeyNames.TryGetValue(safeKeyHandle, out string kcbModificationKeyName);
 
-                if (kcbModificationKeyName != null) {
+                if (!String.IsNullOrEmpty(kcbModificationKeyName)) {
                     // we have info from the handle already to get the name
                         registryStateElement.KeyName = GetRedirectedKeyValueName(
                         GetKeyValueNameFromKernelRegistryString(kcbModificationKeyName + "\\" + registryStateElement.KeyName),
