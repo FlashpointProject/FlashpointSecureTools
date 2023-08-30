@@ -1973,18 +1973,21 @@ namespace FlashpointSecurePlayer {
 
                 public string this[string longPath] {
                     get {
-                        if (!pathNamesShort.ContainsKey(longPath)) {
-                            StringBuilder shortPath = new StringBuilder(MAX_PATH);
+                        pathNamesShort.TryGetValue(longPath, out string pathNameShort);
 
-                            if (GetShortPathName(longPath, shortPath, (uint)shortPath.Capacity) >= shortPath.Capacity) {
-                                return null;
-                            }
-
-                            string pathNameShort = shortPath.ToString();
-                            pathNamesShort[longPath] = pathNameShort;
+                        if (pathNameShort != null) {
                             return pathNameShort;
                         }
-                        return pathNamesShort[longPath];
+
+                        StringBuilder shortPath = new StringBuilder(MAX_PATH);
+
+                        if (GetShortPathName(longPath, shortPath, (uint)shortPath.Capacity) >= shortPath.Capacity) {
+                            return null;
+                        }
+
+                        pathNameShort = shortPath.ToString();
+                        pathNamesShort[longPath] = pathNameShort;
+                        return pathNameShort;
                     }
                 }
             }
@@ -1994,18 +1997,21 @@ namespace FlashpointSecurePlayer {
 
                 public string this[string shortPath] {
                     get {
-                        if (!pathNamesLong.ContainsKey(shortPath)) {
-                            StringBuilder longPath = new StringBuilder(MAX_PATH);
+                        pathNamesLong.TryGetValue(shortPath, out string pathNameLong);
 
-                            if (GetLongPathName(shortPath, longPath, (uint)longPath.Capacity) >= longPath.Capacity) {
-                                return null;
-                            }
-
-                            string pathNameLong = longPath.ToString();
-                            pathNamesLong[shortPath] = pathNameLong;
+                        if (pathNameLong != null) {
                             return pathNameLong;
                         }
-                        return pathNamesLong[shortPath];
+                        
+                        StringBuilder longPath = new StringBuilder(MAX_PATH);
+
+                        if (GetLongPathName(shortPath, longPath, (uint)longPath.Capacity) >= longPath.Capacity) {
+                            return null;
+                        }
+
+                        pathNameLong = longPath.ToString();
+                        pathNamesLong[shortPath] = pathNameLong;
+                        return pathNameLong;
                     }
                 }
             }
