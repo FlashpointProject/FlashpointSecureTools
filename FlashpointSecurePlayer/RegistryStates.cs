@@ -256,7 +256,19 @@ namespace FlashpointSecurePlayer {
                     }
                 }
             } catch (UnauthorizedAccessException) {
-                // key exists and we can't set it
+                // if the key already exists and can be opened, don't worry about it
+                // (this is mainly to deal with permissions issues)
+                try {
+                    using (RegistryKey registryKey = OpenKeyInRegistryView(keyName, false, registryView)) {
+                        if (registryKey != null) {
+                            return;
+                        }
+                    }
+                } catch {
+                    // fail silently
+                }
+
+                throw;
             }
         }
 
@@ -341,10 +353,11 @@ namespace FlashpointSecurePlayer {
                     registryKey.SetValue(valueName, value, valueKind);
                 }
             } catch (UnauthorizedAccessException) {
+                // if the value already exists and is an exact string match, don't worry about it
+                // (this is mainly to deal with permissions issues)
                 try {
                     object _value = GetValueInRegistryView(keyName, valueName, out RegistryValueKind? _valueKind, registryView);
 
-                    // if it's an exact string match, don't worry about it
                     if (valueKind == _valueKind) {
                         if (value is string valueString
                             && _value is string _valueString) {
@@ -356,6 +369,7 @@ namespace FlashpointSecurePlayer {
                 } catch {
                     // fail silently
                 }
+
                 throw;
             }
         }
@@ -1016,6 +1030,10 @@ namespace FlashpointSecurePlayer {
                                     SetKeyInRegistryView(keyName, registryView);
                                 } catch (SecurityException ex) {
                                     // key doesn't exist and we can't set it
+                                    LogExceptionToLauncher(ex);
+                                    throw new TaskRequiresElevationException("Setting the key \"" + keyName + "\" requires elevation.");
+                                } catch (UnauthorizedAccessException ex) {
+                                    // key exists and we can't set it
                                     LogExceptionToLauncher(ex);
                                     throw new TaskRequiresElevationException("Setting the key \"" + keyName + "\" requires elevation.");
                                 } catch (InvalidOperationException ex) {
