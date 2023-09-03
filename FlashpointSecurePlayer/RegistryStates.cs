@@ -271,15 +271,16 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private object GetValueInRegistryView(string keyName, string valueName, RegistryView registryView) {
+        private object GetValueInRegistryView(string keyName, string valueName, out RegistryValueKind? valueKind, RegistryView registryView) {
             using (RegistryKey registryKey = OpenKeyInRegistryView(keyName, false, registryView)) {
+                valueKind = null;
+
                 if (registryKey == null) {
                     // key does not exist
                     return null;
                 }
 
                 object value = registryKey.GetValue(valueName, null, RegistryValueOptions.DoNotExpandEnvironmentNames);
-                RegistryValueKind? valueKind = null;
 
                 try {
                     valueKind = GetValueKindInRegistryView(keyName, valueName, registryView);
@@ -331,8 +332,24 @@ namespace FlashpointSecurePlayer {
                     }
                     break;
                 }
-                
-                registryKey.SetValue(valueName, value, valueKind);
+
+                try {
+                    registryKey.SetValue(valueName, value, valueKind);
+                } catch {
+                    try {
+                        object _value = GetValueInRegistryView(keyName, valueName, out RegistryValueKind? _valueKind, registryView);
+
+                        // if it's an exact string match, don't worry about it
+                        if (valueKind == _valueKind) {
+                            if ((value as string).Equals(_value as string, StringComparison.Ordinal)) {
+                                return;
+                            }
+                        }
+                    } catch {
+                        // fail silently
+                    }
+                    throw;
+                }
             }
         }
 
@@ -538,7 +555,7 @@ namespace FlashpointSecurePlayer {
             return true;
         }
 
-        private bool CompareValues(string value, RegistryView registryView, RegistryStateElement registryStateElement, RegistryStateElement activeRegistryStateElement, string activeCurrentUser = null, bool activeAdministrator = true) {
+        private bool CompareValues(string value, RegistryValueKind? valueKind, RegistryView registryView, RegistryStateElement registryStateElement, RegistryStateElement activeRegistryStateElement, string activeCurrentUser = null, bool activeAdministrator = true) {
             // caller needs to decide what to do if value is null
             if (value == null) {
                 throw new ArgumentNullException("The value is null.");
@@ -550,32 +567,6 @@ namespace FlashpointSecurePlayer {
                 if (registryStateElement == null) {
                     throw new ArgumentNullException("The registryStateElement is null.");
                 }
-            }
-
-            RegistryValueKind? valueKind = null;
-
-            try {
-                valueKind = GetValueKindInRegistryView(
-                    GetUserKeyValueName(
-                        registryStateElement.KeyName,
-                        activeCurrentUser,
-                        activeAdministrator
-                    ),
-
-                    registryStateElement.ValueName,
-                    registryView
-                );
-            } catch (SecurityException ex) {
-                // value exists but we can't get it
-                LogExceptionToLauncher(ex);
-                throw new TaskRequiresElevationException("Accessing the value \"" + registryStateElement.ValueName + "\" in key \"" + registryStateElement.KeyName + "\" requires elevation.");
-            } catch (UnauthorizedAccessException ex) {
-                // value exists but we can't get it
-                LogExceptionToLauncher(ex);
-                throw new TaskRequiresElevationException("Accessing the value \"" + registryStateElement.ValueName + "\" in key \"" + registryStateElement.KeyName + "\" requires elevation.");
-            } catch {
-                // value doesn't exist
-                valueKind = null;
             }
 
             string registryStateElementValue = registryStateElement.Value;
@@ -903,33 +894,19 @@ namespace FlashpointSecurePlayer {
                         // it should not get saved
                         keyName = GetUserKeyValueName(registryStateElement.KeyName);
                         value = null;
-
-                        try {
-                            valueKind = GetValueKindInRegistryView(keyName, registryStateElement.ValueName, registryView);
-                        } catch (SecurityException ex) {
-                            // value exists but we can't get it
-                            LogExceptionToLauncher(ex);
-                            throw new TaskRequiresElevationException("Accessing the value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" requires elevation.");
-                        } catch (UnauthorizedAccessException ex) {
-                            // value exists but we can't get it
-                            LogExceptionToLauncher(ex);
-                            throw new TaskRequiresElevationException("Accessing the value \"" + registryStateElement.ValueName + "\" in key \"" + keyName + "\" requires elevation.");
-                        } catch {
-                            // value doesn't exist
-                            valueKind = null;
-                        }
+                        valueKind = null;
 
                         activeRegistryStateElement = new RegistryStateElement {
                             Type = registryStateElement.Type,
                             KeyName = registryStateElement.KeyName,
-                            ValueName = registryStateElement.ValueName,
-                            ValueKind = valueKind
+                            ValueName = registryStateElement.ValueName
                         };
 
                         if (registryStateElement.Type == TYPE.KEY) {
                             // we create a key
                             activeRegistryStateElement.Type = TYPE.KEY;
                             activeRegistryStateElement.Value = null;
+                            activeRegistryStateElement.ValueKind = null;
 
                             try {
                                 activeRegistryStateElement._Deleted = TestKeyDeletedInRegistryView(keyName, registryView);
@@ -954,7 +931,7 @@ namespace FlashpointSecurePlayer {
                             }
 
                             try {
-                                value = GetValueInRegistryView(keyName, registryStateElement.ValueName, registryView) as string;
+                                value = GetValueInRegistryView(keyName, registryStateElement.ValueName, out valueKind, registryView) as string;
                             } catch (SecurityException ex) {
                                 // value exists but we can't get it
                                 LogExceptionToLauncher(ex);
@@ -990,12 +967,14 @@ namespace FlashpointSecurePlayer {
                                 // or, we edit a value that exists
                                 activeRegistryStateElement.Type = TYPE.VALUE;
                                 activeRegistryStateElement.Value = value;
+                                activeRegistryStateElement.ValueKind = valueKind;
                                 activeRegistryStateElement._Deleted = null;
                             } else {
                                 // we create a value
                                 // the value, and the key it belonged to, does not exist
                                 activeRegistryStateElement.Type = TYPE.KEY;
                                 activeRegistryStateElement.Value = null;
+                                activeRegistryStateElement.ValueKind = null;
                                 activeRegistryStateElement._Deleted = keyDeleted;
                             }
                         }
@@ -1166,6 +1145,7 @@ namespace FlashpointSecurePlayer {
                 bool activeAdministrator = activeModificationsElement.RegistryStates._Administrator.GetValueOrDefault();
                 string keyName = null;
                 string value = null;
+                RegistryValueKind? valueKind = null;
                 bool clear = false;
                 
                 if (activeAdministrator && !TestLaunchedAsAdministratorUser()) {
@@ -1211,7 +1191,7 @@ namespace FlashpointSecurePlayer {
                                         keyName = GetUserKeyValueName(registryStateElement.KeyName, activeCurrentUser, activeAdministrator);
 
                                         try {
-                                            value = GetValueInRegistryView(keyName, registryStateElement.ValueName, registryView) as string;
+                                            value = GetValueInRegistryView(keyName, registryStateElement.ValueName, out valueKind, registryView) as string;
                                         } catch (SecurityException ex) {
                                             // value exists but we can't get it
                                             LogExceptionToLauncher(ex);
@@ -1237,6 +1217,7 @@ namespace FlashpointSecurePlayer {
                                                 // value still exists
                                                 if (!CompareValues(
                                                     value,
+                                                    valueKind,
                                                     registryView,
                                                     registryStateElement,
                                                     activeRegistryStateElement,
@@ -1255,6 +1236,7 @@ namespace FlashpointSecurePlayer {
                                             } else {
                                                 if (!CompareValues(
                                                     value,
+                                                    valueKind,
                                                     registryView,
                                                     registryStateElement,
                                                     activeRegistryStateElement,
@@ -1531,6 +1513,7 @@ namespace FlashpointSecurePlayer {
             // http://learn.microsoft.com/en-us/windows/win32/etw/registry-typegroup1
             ulong safeKeyHandle = registryTraceData.KeyHandle & 0x00000000FFFFFFFF;
             string value = null;
+            RegistryValueKind? valueKind = null;
             RegistryView registryView = modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY ? RegistryView.Registry64 : RegistryView.Registry32;
 
             if (safeKeyHandle == 0) {
@@ -1540,19 +1523,15 @@ namespace FlashpointSecurePlayer {
                     modificationsElement.RegistryStates.BinaryType
                 );
 
-                try {
-                    registryStateElement.ValueKind = GetValueKindInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView);
-                } catch {
-                    // value doesn't exist
-                    registryStateElement.ValueKind = null;
-                }
-                
+                valueKind = null;
+
                 try {
                     value = ReplaceStartupPathEnvironmentVariable(
                         LengthenValue(
                             GetValueInRegistryView(
                                 registryStateElement.KeyName,
                                 registryStateElement.ValueName,
+                                out valueKind,
                                 registryView
                             ) as string,
 
@@ -1578,6 +1557,7 @@ namespace FlashpointSecurePlayer {
                 }
 
                 registryStateElement.Type = TYPE.VALUE;
+                registryStateElement.ValueKind = valueKind;
 
                 if (value == null) {
                     try {
@@ -1613,12 +1593,7 @@ namespace FlashpointSecurePlayer {
                         modificationsElement.RegistryStates.BinaryType
                     );
 
-                    try {
-                        registryStateElement.ValueKind = GetValueKindInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView);
-                    } catch {
-                        // value doesn't exist
-                        registryStateElement.ValueKind = null;
-                    }
+                    valueKind = null;
 
                     try {
                         value = ReplaceStartupPathEnvironmentVariable(
@@ -1626,6 +1601,7 @@ namespace FlashpointSecurePlayer {
                                 GetValueInRegistryView(
                                     registryStateElement.KeyName,
                                     registryStateElement.ValueName,
+                                    out valueKind,
                                     registryView
                                 ) as string,
 
@@ -1639,6 +1615,7 @@ namespace FlashpointSecurePlayer {
                     }
 
                     registryStateElement.Type = TYPE.VALUE;
+                    registryStateElement.ValueKind = valueKind;
 
                     if (value == null) {
                         try {
@@ -1798,6 +1775,7 @@ namespace FlashpointSecurePlayer {
             // we'll be finding these in a second
             RegistryStateElement registryStateElement = null;
             string value = null;
+            RegistryValueKind? valueKind = null;
 
             RegistryView registryView = modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY ? RegistryView.Registry64 : RegistryView.Registry32;
 
@@ -1823,12 +1801,7 @@ namespace FlashpointSecurePlayer {
                         modificationsElement.RegistryStates.BinaryType
                     );
 
-                    try {
-                        registryStateElement.ValueKind = GetValueKindInRegistryView(registryStateElement.KeyName, registryStateElement.ValueName, registryView);
-                    } catch {
-                        // value doesn't exist
-                        registryStateElement.ValueKind = null;
-                    }
+                    valueKind = null;
 
                     try {
                         value = ReplaceStartupPathEnvironmentVariable(
@@ -1836,6 +1809,7 @@ namespace FlashpointSecurePlayer {
                                 GetValueInRegistryView(
                                     registryStateElement.KeyName,
                                     registryStateElement.ValueName,
+                                    out valueKind,
                                     registryView
                                 ) as string,
 
@@ -1861,6 +1835,7 @@ namespace FlashpointSecurePlayer {
                     }
 
                     registryStateElement.Type = TYPE.VALUE;
+                    registryStateElement.ValueKind = valueKind;
 
                     if (value == null) {
                         try {
