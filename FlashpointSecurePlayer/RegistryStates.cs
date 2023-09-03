@@ -867,6 +867,7 @@ namespace FlashpointSecurePlayer {
 
                 TemplateElement activeTemplateElement = GetActiveTemplateElement(true, TemplateName);
                 ModificationsElement activeModificationsElement = activeTemplateElement.Modifications;
+                int registryStateIndex = 0;
                 RegistryStateElement registryStateElement = null;
                 RegistryStateElement activeRegistryStateElement = null;
                 string keyName = null;
@@ -894,8 +895,6 @@ namespace FlashpointSecurePlayer {
                 RegistryView registryView = modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY ? RegistryView.Registry64 : RegistryView.Registry32;
 
                 ProgressManager.CurrentGoal.Start(modificationsElement.RegistryStates.Count + modificationsElement.RegistryStates.Count);
-
-                int registryStateIndex = 0;
 
                 try {
                     // populate active modifications
@@ -1089,7 +1088,7 @@ namespace FlashpointSecurePlayer {
                         ProgressManager.CurrentGoal.Steps++;
                     }
                 } catch {
-                    // remove keys we didn't touch
+                    // remove registry states we didn't modify
                     try {
                         while (registryStateIndex < activeModificationsElement.RegistryStates.Count) {
                             activeModificationsElement.RegistryStates.RemoveAt(registryStateIndex);
