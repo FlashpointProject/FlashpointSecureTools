@@ -341,8 +341,11 @@ namespace FlashpointSecurePlayer {
 
                         // if it's an exact string match, don't worry about it
                         if (valueKind == _valueKind) {
-                            if ((value as string).Equals(_value as string, StringComparison.Ordinal)) {
-                                return;
+                            if (value is string valueString
+                                && _value is string _valueString) {
+                                if (valueString.Equals(_valueString, StringComparison.Ordinal)) {
+                                    return;
+                                }
                             }
                         }
                     } catch {
