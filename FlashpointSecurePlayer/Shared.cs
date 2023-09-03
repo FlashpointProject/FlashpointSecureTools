@@ -1969,7 +1969,7 @@ namespace FlashpointSecurePlayer {
 
         public class PathNames {
             public class PathNamesShort {
-                private readonly Dictionary<string, string> pathNamesShort = new Dictionary<string, string>();
+                private readonly Dictionary<string, string> pathNamesShort = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
                 public string this[string longPath] {
                     get {
@@ -1993,7 +1993,7 @@ namespace FlashpointSecurePlayer {
             }
 
             public class PathNamesLong {
-                private readonly Dictionary<string, string> pathNamesLong = new Dictionary<string, string>();
+                private readonly Dictionary<string, string> pathNamesLong = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
                 public string this[string shortPath] {
                     get {

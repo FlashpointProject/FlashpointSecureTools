@@ -71,7 +71,7 @@ namespace FlashpointSecurePlayer {
         // (but that's already handled, so it doesn't matter)
 
         // note the trailing slashes on keys to make lookups easier
-        private Dictionary<string, List<string>> WOW64KeyList = new Dictionary<string, List<string>>() {
+        private Dictionary<string, List<string>> WOW64KeyList = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase) {
             {"HKEY_LOCAL_MACHINE\\SOFTWARE\\", null},
             {"HKEY_LOCAL_MACHINE\\SOFTWARE\\CLASSES\\", new List<string>() {
                 "APPID",
@@ -470,7 +470,7 @@ namespace FlashpointSecurePlayer {
                     && wow64NodeSubkeys.Length > 0) {
                     redirected = false;
 
-                    if (WOW64KeyList.TryGetValue(redirectedKeyValueName.ToString().ToUpperInvariant(), out List<string> wow64SubkeyList)) {
+                    if (WOW64KeyList.TryGetValue(redirectedKeyValueName.ToString(), out List<string> wow64SubkeyList)) {
                         // if there's no subkey list or we are at the end
                         if (wow64SubkeyList == null || wow64Node) {
                             redirected = true;
@@ -884,6 +884,8 @@ namespace FlashpointSecurePlayer {
 
                 ProgressManager.CurrentGoal.Start(modificationsElement.RegistryStates.Count + modificationsElement.RegistryStates.Count);
 
+                int registryStateIndex = 0;
+
                 try {
                     // populate active modifications
                     for (int i = 0; i < modificationsElement.RegistryStates.Count; i++) {
@@ -1004,12 +1006,12 @@ namespace FlashpointSecurePlayer {
 
                     SetFlashpointSecurePlayerSection(TemplateName);
 
-                    for (int i = 0; i < modificationsElement.RegistryStates.Count; i++) {
+                    for (registryStateIndex = 0; registryStateIndex < modificationsElement.RegistryStates.Count; registryStateIndex++) {
                         // the "active" one is the one that doesn't have a name (it has the "active" attribute)
-                        registryStateElement = modificationsElement.RegistryStates.Get(i) as RegistryStateElement;
+                        registryStateElement = modificationsElement.RegistryStates.Get(registryStateIndex) as RegistryStateElement;
 
                         if (registryStateElement == null) {
-                            throw new ConfigurationErrorsException("The Registry State Element (" + i + ") is null.");
+                            throw new ConfigurationErrorsException("The Registry State Element (" + registryStateIndex + ") is null.");
                         }
 
                         activeRegistryStateElement = activeModificationsElement.RegistryStates.Get(registryStateElement.Name) as RegistryStateElement;
@@ -1087,6 +1089,18 @@ namespace FlashpointSecurePlayer {
                         ProgressManager.CurrentGoal.Steps++;
                     }
                 } catch {
+                    // remove keys we didn't touch
+                    try {
+                        while (registryStateIndex < modificationsElement.RegistryStates.Count) {
+                            modificationsElement.RegistryStates.RemoveAt(registryStateIndex);
+                            registryStateIndex++;
+                        }
+
+                        SetFlashpointSecurePlayerSection(TemplateName);
+                    } catch {
+                        // fail silently
+                    }
+
                     Deactivate();
                     throw;
                 } finally {
@@ -1389,18 +1403,20 @@ namespace FlashpointSecurePlayer {
                         ProgressManager.CurrentGoal.Steps++;
                     }
 
-                    activeModificationsElement.RegistryStates.BinaryType = BINARY_TYPE.SCS_64BIT_BINARY;
-                    activeModificationsElement.RegistryStates._Administrator = false;
-                    activeModificationsElement.RegistryStates._CurrentUser = String.Empty;
-                    SetFlashpointSecurePlayerSection(TemplateName);
-
                     if (taskRequiresElevationException != null) {
+                        SetFlashpointSecurePlayerSection(TemplateName);
                         throw taskRequiresElevationException;
                     }
 
                     if (exception != null) {
+                        SetFlashpointSecurePlayerSection(TemplateName);
                         throw exception;
                     }
+
+                    activeModificationsElement.RegistryStates.BinaryType = BINARY_TYPE.SCS_64BIT_BINARY;
+                    activeModificationsElement.RegistryStates._Administrator = false;
+                    activeModificationsElement.RegistryStates._CurrentUser = String.Empty;
+                    SetFlashpointSecurePlayerSection(TemplateName);
                 } finally {
                     ProgressManager.CurrentGoal.Stop();
                 }
