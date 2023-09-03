@@ -1091,9 +1091,8 @@ namespace FlashpointSecurePlayer {
                 } catch {
                     // remove keys we didn't touch
                     try {
-                        while (registryStateIndex < modificationsElement.RegistryStates.Count) {
-                            modificationsElement.RegistryStates.RemoveAt(registryStateIndex);
-                            registryStateIndex++;
+                        while (registryStateIndex < activeModificationsElement.RegistryStates.Count) {
+                            activeModificationsElement.RegistryStates.RemoveAt(registryStateIndex);
                         }
 
                         SetFlashpointSecurePlayerSection(TemplateName);
