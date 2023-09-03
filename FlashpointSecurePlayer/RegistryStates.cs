@@ -1094,6 +1094,12 @@ namespace FlashpointSecurePlayer {
                             activeModificationsElement.RegistryStates.RemoveAt(registryStateIndex);
                         }
 
+                        if (activeModificationsElement.RegistryStates.Count <= 0) {
+                            activeModificationsElement.RegistryStates.BinaryType = BINARY_TYPE.SCS_64BIT_BINARY;
+                            activeModificationsElement.RegistryStates._Administrator = false;
+                            activeModificationsElement.RegistryStates._CurrentUser = String.Empty;
+                        }
+
                         SetFlashpointSecurePlayerSection(TemplateName);
                     } catch {
                         // fail silently
