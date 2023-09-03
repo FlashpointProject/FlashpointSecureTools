@@ -248,11 +248,15 @@ namespace FlashpointSecurePlayer {
         }
 
         private void SetKeyInRegistryView(string keyName, RegistryView registryView) {
-            using (RegistryKey registryKey = CreateKeyInRegistryView(keyName, RegistryKeyPermissionCheck.Default, registryView)) {
-                if (registryKey == null) {
-                    // key is invalid
-                    throw new ArgumentException("The key \"" + keyName + "\" is invalid.");
+            try {
+                using (RegistryKey registryKey = CreateKeyInRegistryView(keyName, RegistryKeyPermissionCheck.Default, registryView)) {
+                    if (registryKey == null) {
+                        // key is invalid
+                        throw new ArgumentException("The key \"" + keyName + "\" is invalid.");
+                    }
                 }
+            } catch (UnauthorizedAccessException) {
+                // key exists and we can't set it
             }
         }
 
@@ -314,45 +318,45 @@ namespace FlashpointSecurePlayer {
         }
 
         private void SetValueInRegistryView(string keyName, string valueName, object value, RegistryValueKind valueKind, RegistryView registryView) {
-            using (RegistryKey registryKey = CreateKeyInRegistryView(keyName, RegistryKeyPermissionCheck.ReadWriteSubTree, registryView)) {
-                if (registryKey == null) {
-                    // key is invalid
-                    throw new ArgumentException("The key \"" + keyName + "\" is invalid.");
+            switch (valueKind) {
+                case RegistryValueKind.Binary:
+                if (value is string binaryValue) {
+                    value = Convert.FromBase64String(binaryValue);
                 }
-
-                switch (valueKind) {
-                    case RegistryValueKind.Binary:
-                    if (value is string binaryValue) {
-                        value = Convert.FromBase64String(binaryValue);
-                    }
-                    break;
-                    case RegistryValueKind.MultiString:
-                    if (value is string multiStringValue) {
-                        value = multiStringValue.Split('\0');
-                    }
-                    break;
+                break;
+                case RegistryValueKind.MultiString:
+                if (value is string multiStringValue) {
+                    value = multiStringValue.Split('\0');
                 }
+                break;
+            }
 
-                try {
+            try {
+                using (RegistryKey registryKey = CreateKeyInRegistryView(keyName, RegistryKeyPermissionCheck.ReadWriteSubTree, registryView)) {
+                    if (registryKey == null) {
+                        // key is invalid
+                        throw new ArgumentException("The key \"" + keyName + "\" is invalid.");
+                    }
+
                     registryKey.SetValue(valueName, value, valueKind);
-                } catch {
-                    try {
-                        object _value = GetValueInRegistryView(keyName, valueName, out RegistryValueKind? _valueKind, registryView);
+                }
+            } catch (UnauthorizedAccessException) {
+                try {
+                    object _value = GetValueInRegistryView(keyName, valueName, out RegistryValueKind? _valueKind, registryView);
 
-                        // if it's an exact string match, don't worry about it
-                        if (valueKind == _valueKind) {
-                            if (value is string valueString
-                                && _value is string _valueString) {
-                                if (valueString.Equals(_valueString, StringComparison.Ordinal)) {
-                                    return;
-                                }
+                    // if it's an exact string match, don't worry about it
+                    if (valueKind == _valueKind) {
+                        if (value is string valueString
+                            && _value is string _valueString) {
+                            if (valueString.Equals(_valueString, StringComparison.Ordinal)) {
+                                return;
                             }
                         }
-                    } catch {
-                        // fail silently
                     }
-                    throw;
+                } catch {
+                    // fail silently
                 }
+                throw;
             }
         }
 
@@ -363,7 +367,7 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
-                registryKey.DeleteValue(valueName);
+                registryKey.DeleteValue(valueName, false);
             }
         }
 
@@ -373,7 +377,6 @@ namespace FlashpointSecurePlayer {
                     // key does not exist
                     return null;
                 }
-
                 return registryKey.GetValueKind(valueName);
             }
         }
@@ -1015,9 +1018,6 @@ namespace FlashpointSecurePlayer {
                                     // key doesn't exist and we can't set it
                                     LogExceptionToLauncher(ex);
                                     throw new TaskRequiresElevationException("Setting the key \"" + keyName + "\" requires elevation.");
-                                } catch (UnauthorizedAccessException ex) {
-                                    // key exists and we can't set it
-                                    LogExceptionToLauncher(ex);
                                 } catch (InvalidOperationException ex) {
                                     // key marked for deletion
                                     LogExceptionToLauncher(ex);
