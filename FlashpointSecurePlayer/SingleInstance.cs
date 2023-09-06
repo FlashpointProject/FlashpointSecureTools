@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -95,8 +96,8 @@ namespace FlashpointSecurePlayer {
             if (String.IsNullOrEmpty(executable)) {
                 return;
             }
-            
-            //string[] argv = CommandLineToArgv(executablePath, out int argc);
+
+            const int PROCESS_BY_NAME_STRICT_WAIT_FOR_EXIT_MILLISECONDS = 1000;
 
             Process[] processesByName = null;
             Stack<Process> processesByNameStrict = null;
@@ -107,40 +108,54 @@ namespace FlashpointSecurePlayer {
 
             do {
                 if (processesByNameStrict != null) {
-                    // don't allow preceding further until
-                    // all processes with the same name have been killed
-                    DialogResult ? dialogResult = ShowClosableMessageBox(
-                        Task.Run(delegate () {
-                            // copy this, so it doesn't get set to null upon hitting OK
-                            Stack<Process> _processesByNameStrict = new Stack<Process>(processesByNameStrict);
+                    using (CancellationTokenSource cancellationTokenSource = new CancellationTokenSource()) {
+                        CancellationToken token = cancellationTokenSource.Token;
 
-                            while (_processesByNameStrict.Any()) {
-                                using (Process processByNameStrict = _processesByNameStrict.Pop()) {
-                                    try {
-                                        if (processByNameStrict != null) {
-                                            processByNameStrict.WaitForExit();
+                        // don't allow preceding further until
+                        // all processes with the same name have been killed
+                        DialogResult? dialogResult = ShowClosableMessageBox(
+                            Task.Run(delegate () {
+                                // copy this, so it doesn't get set to null upon hitting OK
+                                Stack<Process> _processesByNameStrict = new Stack<Process>(processesByNameStrict);
+
+                                while (_processesByNameStrict.Any()) {
+                                    using (Process processByNameStrict = _processesByNameStrict.Pop()) {
+                                        try {
+                                            if (processByNameStrict != null) {
+                                                // test for cancellation before waiting
+                                                // (so we don't wait unnecessarily for the next processes after this one)
+                                                while (!token.IsCancellationRequested) {
+                                                    if (processByNameStrict.WaitForExit(PROCESS_BY_NAME_STRICT_WAIT_FOR_EXIT_MILLISECONDS)) {
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        } catch {
+                                            // fail silently
+                                            // (ensure we dispose every process)
                                         }
-                                    } catch {
-                                        // fail silently
-                                        // (ensure we dispose every process)
                                     }
                                 }
-                            }
-                        }),
-                        
-                        String.Format(
-                            Properties.Resources.ProcessCompatibilityConflict,
-                            activeProcessName
-                        ),
+                            }),
 
-                        Properties.Resources.FlashpointSecurePlayer,
-                        MessageBoxButtons.OKCancel,
-                        MessageBoxIcon.Warning
-                    );
+                            String.Format(
+                                Properties.Resources.ProcessCompatibilityConflict,
+                                activeProcessName
+                            ),
 
-                    if (dialogResult == DialogResult.Cancel) {
-                        Application.Exit();
-                        throw new InvalidModificationException("The operation was aborted by the user.");
+                            Properties.Resources.FlashpointSecurePlayer,
+                            MessageBoxButtons.OKCancel,
+                            MessageBoxIcon.Warning
+                        );
+
+                        // end the task passed to the Closable Message Box
+                        // we'll be creating a new one on the next loop as necessary
+                        cancellationTokenSource.Cancel();
+
+                        if (dialogResult == DialogResult.Cancel) {
+                            Application.Exit();
+                            throw new InvalidModificationException("The operation was aborted by the user.");
+                        }
                     }
 
                     processesByNameStrict = null;
