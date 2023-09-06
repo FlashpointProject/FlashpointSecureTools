@@ -2221,10 +2221,11 @@ namespace FlashpointSecurePlayer {
                     }
 
                     using (Stream stream = await httpResponseMessage.Content.ReadAsStreamAsync().ConfigureAwait(true)) {
-                        bool currentGoalStarted = false;
+                        bool useCurrentGoal = false;
 
                         if (httpResponseMessage.Content.Headers.ContentLength != null) {
-                            currentGoalStarted = true;
+                            useCurrentGoal = true;
+
                             ProgressManager.CurrentGoal.Start((int)Math.Ceiling((double)httpResponseMessage.Content.Headers.ContentLength.GetValueOrDefault() / STREAM_READ_LENGTH));
                         }
 
@@ -2236,23 +2237,23 @@ namespace FlashpointSecurePlayer {
                             // for large files
                             // temporary buffer so we don't always reallocate this
                             byte[] streamReadBuffer = new byte[STREAM_READ_LENGTH];
-                            int characterNumber = 0;
+                            int streamReadLength = 0;
 
                             do {
                                 // if for whatever reason there's a problem
                                 // just ignore this download
                                 try {
-                                    characterNumber = await stream.ReadAsync(streamReadBuffer, 0, STREAM_READ_LENGTH).ConfigureAwait(true);
+                                    streamReadLength = await stream.ReadAsync(streamReadBuffer, 0, STREAM_READ_LENGTH).ConfigureAwait(true);
                                 } catch {
                                     break;
                                 }
 
-                                if (currentGoalStarted) {
+                                if (useCurrentGoal) {
                                     ProgressManager.CurrentGoal.Steps++;
                                 }
-                            } while (characterNumber > 0);
+                            } while (streamReadLength > 0);
                         } finally {
-                            if (currentGoalStarted) {
+                            if (useCurrentGoal) {
                                 ProgressManager.CurrentGoal.Stop();
                             }
                         }
