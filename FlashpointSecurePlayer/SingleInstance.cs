@@ -108,6 +108,12 @@ namespace FlashpointSecurePlayer {
 
             do {
                 if (processesByNameStrict != null) {
+                    // for future versions: would be nice if ShowClosableMessageBox created this token source
+                    // and passed it as an argument to the tasks that we give to it
+                    // (since you'll probably always want it)
+                    // but unsure how to make the WhenAll in ShowClosableMessageBox pass the arguments
+                    // to the task, or how to make the task itself recieve them
+                    // maybe ThreadPool.QueueUserWorkItem does this?
                     using (CancellationTokenSource cancellationTokenSource = new CancellationTokenSource()) {
                         CancellationToken token = cancellationTokenSource.Token;
 
@@ -136,6 +142,8 @@ namespace FlashpointSecurePlayer {
                                         }
                                     }
                                 }
+
+                                _processesByNameStrict = null;
                             }),
 
                             String.Format(
