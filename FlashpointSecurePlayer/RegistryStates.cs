@@ -330,6 +330,9 @@ namespace FlashpointSecurePlayer {
         }
 
         private void SetValueInRegistryView(string keyName, string valueName, object value, RegistryValueKind valueKind, RegistryView registryView) {
+            // save this before converting to Base64 or Array
+            object _value = value;
+
             switch (valueKind) {
                 case RegistryValueKind.Binary:
                 if (value is string binaryValue) {
@@ -356,13 +359,14 @@ namespace FlashpointSecurePlayer {
                 // if the value already exists and is an exact string match, don't worry about it
                 // (this is mainly to deal with permissions issues)
                 try {
-                    object _value = GetValueInRegistryView(keyName, valueName, out RegistryValueKind? _valueKind, registryView);
+                    if (_value is string valueString) {
+                        _value = GetValueInRegistryView(keyName, valueName, out RegistryValueKind? _valueKind, registryView);
 
-                    if (valueKind == _valueKind) {
-                        if (value is string valueString
-                            && _value is string _valueString) {
-                            if (valueString.Equals(_valueString, StringComparison.Ordinal)) {
-                                return;
+                        if (valueKind == _valueKind) {
+                            if (_value is string _valueString) {
+                                if (valueString.Equals(_valueString, StringComparison.Ordinal)) {
+                                    return;
+                                }
                             }
                         }
                     }
