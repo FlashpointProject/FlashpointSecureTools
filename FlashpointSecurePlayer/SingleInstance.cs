@@ -106,6 +106,46 @@ namespace FlashpointSecurePlayer {
             bool clear = false;
 
             do {
+                if (processesByNameStrict != null) {
+                    // don't allow preceding further until
+                    // all processes with the same name have been killed
+                    DialogResult ? dialogResult = ShowClosableMessageBox(
+                        Task.Run(delegate () {
+                            // copy this, so it doesn't get set to null upon hitting OK
+                            Stack<Process> _processesByNameStrict = new Stack<Process>(processesByNameStrict);
+
+                            while (_processesByNameStrict.Any()) {
+                                using (Process processByNameStrict = _processesByNameStrict.Pop()) {
+                                    try {
+                                        if (processByNameStrict != null) {
+                                            processByNameStrict.WaitForExit();
+                                        }
+                                    } catch {
+                                        // fail silently
+                                        // (ensure we dispose every process)
+                                    }
+                                }
+                            }
+                        }),
+                        
+                        String.Format(
+                            Properties.Resources.ProcessCompatibilityConflict,
+                            activeProcessName
+                        ),
+
+                        Properties.Resources.FlashpointSecurePlayer,
+                        MessageBoxButtons.OKCancel,
+                        MessageBoxIcon.Warning
+                    );
+
+                    if (dialogResult == DialogResult.Cancel) {
+                        Application.Exit();
+                        throw new InvalidModificationException("The operation was aborted by the user.");
+                    }
+
+                    processesByNameStrict = null;
+                }
+
                 // the strict list is the one which will be checked against for real
                 processesByName = Process.GetProcessesByName(activeProcessName);
 
@@ -144,29 +184,6 @@ namespace FlashpointSecurePlayer {
                 }
 
                 processesByName = null;
-
-                // don't allow preceding further until
-                // all processes with the same name have been killed
-                if (processesByNameStrict.Any()) {
-                    DialogResult? dialogResult = ShowClosableMessageBox(Task.Run(delegate () {
-                        while (processesByNameStrict.Any()) {
-                            using (Process processByNameStrict = processesByNameStrict.Peek()) {
-                                try {
-                                    if (processByNameStrict != null) {
-                                        processByNameStrict.WaitForExit();
-                                    }
-                                } finally {
-                                    processesByNameStrict.Pop();
-                                }
-                            }
-                        }
-                    }), String.Format(Properties.Resources.ProcessCompatibilityConflict, activeProcessName), Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
-
-                    if (dialogResult == DialogResult.Cancel) {
-                        Application.Exit();
-                        throw new InvalidModificationException("The operation was aborted by the user.");
-                    }
-                }
                 // continue this process until the problem is resolved
             } while (processesByNameStrict.Any());
         }
