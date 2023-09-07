@@ -20,43 +20,79 @@ namespace FlashpointSecurePlayer {
     public class SingleInstance : Modifications {
         public SingleInstance(EventHandler importStart, EventHandler importStop) : base(importStart, importStop) { }
 
-        // function to create a real MessageBox which
-        // automatically closes upon completion of tasks
-        private DialogResult? ShowClosableMessageBox(Task[] tasks, string text, string caption, MessageBoxButtons messageBoxButtons, MessageBoxIcon messageBoxIcon) {
-            Form closableForm = new Form() {
-                Size = new Size(0, 0)
-            };
+        private delegate Task[] ClosableMessageBoxTasksDelegate(CancellationToken token);
+        private delegate Task ClosableMessageBoxTaskDelegate(CancellationToken token);
 
-            closableForm.BringToFront();
-
-            // need this because dialogResult defaults to Cancel when
-            // we want it to default to null
-            bool dialogResultSet = true;
-
-            Task.WhenAll(tasks).ContinueWith(delegate (Task antecedentTask) {
-                HandleAntecedentTask(antecedentTask);
-
-                // this closes the form hosting the Message Box and
-                // causes it to stop blocking
-                closableForm.Close();
-                dialogResultSet = false;
-            }, TaskScheduler.FromCurrentSynchronizationContext());
-
-            // this line blocks execution, but the task above causes it to stop blocking
-            DialogResult dialogResult = MessageBox.Show(closableForm, text, caption, messageBoxButtons, messageBoxIcon);
-
-            if (!dialogResultSet) {
-                return null;
+        // function to create a MessageBox which
+        // automatically closes upon completion of multiple tasks
+        private DialogResult? MessageBoxShowClosable(Form owner, string text, string caption, MessageBoxButtons buttons, MessageBoxIcon icon, ClosableMessageBoxTasksDelegate tasksDelegate) {
+            if (owner == null) {
+                throw new ArgumentNullException("The owner is null.");
             }
-            return dialogResult;
+
+            Form closable = null;
+            
+            // owner is required for this invoke
+            owner.InvokeIfRequired(new MethodInvoker(delegate () {
+                // the form is created, but not shown
+                // its owner is set so the Message Box will act as an owned window
+                closable = new Form {
+                    Owner = owner
+                };
+            }));
+
+            using (CancellationTokenSource cancellationTokenSource = new CancellationTokenSource()) {
+                try {
+                    Task task = Task.WhenAll(
+                        tasksDelegate(
+                            cancellationTokenSource.Token
+                        )
+                    ).ContinueWith(
+                        delegate (Task antecedentTask) {
+                            HandleAntecedentTask(antecedentTask);
+
+                            // this closes the form hosting the Message Box and
+                            // causes it to stop blocking
+                            closable.InvokeIfRequired(new MethodInvoker(delegate () {
+                                closable.Close();
+                            }));
+                        },
+
+                        TaskScheduler.FromCurrentSynchronizationContext()
+                    );
+
+                    DialogResult? dialogResult = null;
+
+                    // this blocks execution, but the task above causes it to stop blocking
+                    // if the dialog was closed upon completion of the tasks, we return null
+                    // faulted/cancelled task status doesn't count
+                    // (because it happens last, the task must run to completion to close the dialog)
+                    closable.InvokeIfRequired(new MethodInvoker(delegate () {
+                        dialogResult = MessageBox.Show(closable, text, caption, buttons, icon);
+                    }));
+                    return task.Status == TaskStatus.RanToCompletion ? null : dialogResult;
+                } finally {
+                    cancellationTokenSource.Cancel();
+                }
+            }
         }
 
-        // single task version
-        private DialogResult? ShowClosableMessageBox(Task task, string text, string caption, MessageBoxButtons messageBoxButtons, MessageBoxIcon messageBoxIcon) {
-            return ShowClosableMessageBox(new Task[] { task }, text, caption, messageBoxButtons, messageBoxIcon);
+        // overload for a single task
+        private DialogResult? MessageBoxShowClosable(Form owner, string text, string caption, MessageBoxButtons buttons, MessageBoxIcon icon, ClosableMessageBoxTaskDelegate taskDelegate) {
+            return MessageBoxShowClosable(
+                owner,
+                text,
+                caption,
+                buttons,
+                icon,
+                
+                delegate (CancellationToken token) {
+                    return new Task[] { taskDelegate(token) };
+                }
+            );
         }
 
-        public override void Activate(string templateName) {
+        public void Activate(string templateName, Form owner) {
             base.Activate(templateName);
 
             if (String.IsNullOrEmpty(TemplateName)) {
@@ -97,6 +133,10 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
+            if (owner == null) {
+                throw new ArgumentNullException("The owner is null.");
+            }
+
             const int PROCESS_BY_NAME_STRICT_WAIT_FOR_EXIT_MILLISECONDS = 1000;
 
             Process[] processesByName = null;
@@ -108,19 +148,22 @@ namespace FlashpointSecurePlayer {
 
             do {
                 if (processesByNameStrict != null) {
-                    // for future versions: would be nice if ShowClosableMessageBox created this token source
-                    // and passed it as an argument to the tasks that we give to it
-                    // (since you'll probably always want it)
-                    // but unsure how to make the WhenAll in ShowClosableMessageBox pass the arguments
-                    // to the task, or how to make the task itself recieve them
-                    // maybe ThreadPool.QueueUserWorkItem does this?
-                    using (CancellationTokenSource cancellationTokenSource = new CancellationTokenSource()) {
-                        CancellationToken token = cancellationTokenSource.Token;
+                    // don't allow preceding further until
+                    // all processes with the same name have been killed
+                    DialogResult? dialogResult = MessageBoxShowClosable(
+                        owner,
 
-                        // don't allow preceding further until
-                        // all processes with the same name have been killed
-                        DialogResult? dialogResult = ShowClosableMessageBox(
-                            Task.Run(delegate () {
+                        String.Format(
+                            Properties.Resources.ProcessCompatibilityConflict,
+                            activeProcessName
+                        ),
+
+                        Properties.Resources.FlashpointSecurePlayer,
+                        MessageBoxButtons.OKCancel,
+                        MessageBoxIcon.Warning,
+                        
+                        delegate (CancellationToken token) {
+                            return Task.Run(delegate () {
                                 // copy this, so it doesn't get set to null upon hitting OK
                                 Stack<Process> _processesByNameStrict = new Stack<Process>(processesByNameStrict);
 
@@ -130,7 +173,8 @@ namespace FlashpointSecurePlayer {
                                             if (processByNameStrict != null) {
                                                 // test for cancellation before waiting
                                                 // (so we don't wait unnecessarily for the next processes after this one)
-                                                while (!token.IsCancellationRequested) {
+                                                while (token == null
+                                                || !token.IsCancellationRequested) {
                                                     if (processByNameStrict.WaitForExit(PROCESS_BY_NAME_STRICT_WAIT_FOR_EXIT_MILLISECONDS)) {
                                                         break;
                                                     }
@@ -144,26 +188,13 @@ namespace FlashpointSecurePlayer {
                                 }
 
                                 _processesByNameStrict = null;
-                            }),
-
-                            String.Format(
-                                Properties.Resources.ProcessCompatibilityConflict,
-                                activeProcessName
-                            ),
-
-                            Properties.Resources.FlashpointSecurePlayer,
-                            MessageBoxButtons.OKCancel,
-                            MessageBoxIcon.Warning
-                        );
-
-                        // end the task passed to the Closable Message Box
-                        // we'll be creating a new one on the next loop as necessary
-                        cancellationTokenSource.Cancel();
-
-                        if (dialogResult == DialogResult.Cancel) {
-                            Application.Exit();
-                            throw new InvalidModificationException("The operation was aborted by the user.");
+                            });
                         }
+                    );
+
+                    if (dialogResult == DialogResult.Cancel) {
+                        Application.Exit();
+                        throw new InvalidModificationException("The operation was aborted by the user.");
                     }
 
                     processesByNameStrict = null;

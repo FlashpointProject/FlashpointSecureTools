@@ -35,6 +35,7 @@ namespace FlashpointSecurePlayer {
 
         //private const int IMPORT_TIMEOUT = 5;
         private const int IMPORT_TIMEOUT = 60;
+        private const int IMPORT_MILLISECONDS = 1000;
         private const string IMPORT_RESUME = "FLASHPOINTSECUREPLAYERREGISTRYSTATEIMPORTRESUME";
         private const string IMPORT_PAUSE = "FLASHPOINTSECUREPLAYERREGISTRYSTATEIMPORTPAUSE";
 
@@ -753,9 +754,9 @@ namespace FlashpointSecurePlayer {
                         }
 
                         //if (sync) {
-                        //Thread.Sleep(1000);
+                        //Thread.Sleep(IMPORT_MILLISECONDS);
                         //} else {
-                        await Task.Delay(1000).ConfigureAwait(true);
+                        await Task.Delay(IMPORT_MILLISECONDS).ConfigureAwait(true);
                         //}
                     }
 
@@ -795,9 +796,9 @@ namespace FlashpointSecurePlayer {
                     }
 
                     if (sync) {
-                        Thread.Sleep(1000);
+                        Thread.Sleep(IMPORT_MILLISECONDS);
                     } else {
-                        await Task.Delay(1000).ConfigureAwait(true);
+                        await Task.Delay(IMPORT_MILLISECONDS).ConfigureAwait(true);
                     }
                 }
 

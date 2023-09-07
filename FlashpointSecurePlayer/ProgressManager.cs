@@ -393,14 +393,10 @@ namespace FlashpointSecurePlayer {
                 if (ProgressBar == null) {
                     return;
                 }
-
-                if (ProgressBar.InvokeRequired) {
-                    ProgressBar.Invoke(new MethodInvoker(delegate () {
-                        ProgressBar.Style = value;
-                    }));
-                } else {
+                
+                ProgressBar.InvokeIfRequired(new MethodInvoker(delegate () {
                     ProgressBar.Style = value;
-                }
+                }));
             }
         }
 
@@ -418,14 +414,10 @@ namespace FlashpointSecurePlayer {
                 if (ProgressBar == null) {
                     return;
                 }
-
-                if (ProgressBar.InvokeRequired) {
-                    ProgressBar.Invoke(new MethodInvoker(delegate () {
-                        ProgressBar.Value = value;
-                    }));
-                } else {
+                
+                ProgressBar.InvokeIfRequired(new MethodInvoker(delegate () {
                     ProgressBar.Value = value;
-                }
+                }));
             }
         }
 

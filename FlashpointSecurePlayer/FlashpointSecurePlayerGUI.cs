@@ -1017,7 +1017,7 @@ namespace FlashpointSecurePlayer {
                         if (modificationsElement.ElementInformation.IsPresent) {
                             if (modificationsElement.SingleInstance.ElementInformation.IsPresent) {
                                 try {
-                                    singleInstance.Activate(TemplateName);
+                                    singleInstance.Activate(TemplateName, this);
                                 } catch (InvalidModificationException) {
                                     //LogExceptionToLauncher(ex);
                                     throw;

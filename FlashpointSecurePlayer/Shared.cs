@@ -2211,6 +2211,14 @@ namespace FlashpointSecurePlayer {
             throw ex;
         }
 
+        public static void InvokeIfRequired(this Control control, MethodInvoker method) {
+            if (control.InvokeRequired) {
+                control.Invoke(method);
+            } else {
+                method();
+            }
+        }
+
         public static async Task<Uri> DownloadAsync(string name) {
             await downloadSemaphoreSlim.WaitAsync().ConfigureAwait(true);
 
@@ -2577,7 +2585,7 @@ namespace FlashpointSecurePlayer {
 
         public static StringBuilder GetCreateProcessCommandLine(ProcessStartInfo processStartInfo) {
             if (processStartInfo == null) {
-                throw new ArgumentNullException("processStartInfo must not be null.");
+                throw new ArgumentNullException("The processStartInfo is null.");
             }
 
             string fileName = processStartInfo.FileName.Trim();
@@ -2606,7 +2614,7 @@ namespace FlashpointSecurePlayer {
             process = null;
 
             if (processStartInfo == null) {
-                throw new ArgumentNullException("processStartInfo must not be null.");
+                throw new ArgumentNullException("The processStartInfo is null.");
             }
 
             if (processStartInfo.UseShellExecute) {

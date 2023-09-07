@@ -29,6 +29,11 @@ namespace FlashpointSecurePlayer {
             // we know the file downloaded all the way before the
             // server/software starts
             //DownloadBeforeElement downloadBeforeElement = null;
+
+            if (downloadsBeforeNames == null) {
+                return;
+            }
+
             ProgressManager.CurrentGoal.Start(downloadsBeforeNames.Count);
 
             try {
