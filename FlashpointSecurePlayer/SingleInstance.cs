@@ -21,7 +21,6 @@ namespace FlashpointSecurePlayer {
         public SingleInstance(EventHandler importStart, EventHandler importStop) : base(importStart, importStop) { }
 
         private delegate Task[] ClosableMessageBoxTasksDelegate(CancellationToken token);
-        private delegate Task ClosableMessageBoxTaskDelegate(CancellationToken token);
 
         // function to create a MessageBox which
         // automatically closes upon completion of multiple tasks
@@ -76,6 +75,8 @@ namespace FlashpointSecurePlayer {
                 }
             }
         }
+
+        private delegate Task ClosableMessageBoxTaskDelegate(CancellationToken token);
 
         // overload for a single task
         private DialogResult? MessageBoxShowClosable(Form owner, string text, string caption, MessageBoxButtons buttons, MessageBoxIcon icon, ClosableMessageBoxTaskDelegate taskDelegate) {
