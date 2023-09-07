@@ -2075,6 +2075,7 @@ namespace FlashpointSecurePlayer {
 
             // the URI Scheme is always lowercase
             string scheme = uri.Scheme;
+
             return scheme.Equals(URI_SCHEME_HTTP, StringComparison.Ordinal)
                 || scheme.Equals(URI_SCHEME_HTTPS, StringComparison.Ordinal)
                 || scheme.Equals(URI_SCHEME_FTP, StringComparison.Ordinal);
