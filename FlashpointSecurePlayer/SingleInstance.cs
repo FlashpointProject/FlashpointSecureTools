@@ -20,11 +20,11 @@ namespace FlashpointSecurePlayer {
     public class SingleInstance : Modifications {
         public SingleInstance(EventHandler importStart, EventHandler importStop) : base(importStart, importStop) { }
 
-        private delegate Task[] MessageBoxClosableTasksDelegate(CancellationToken token);
+        private delegate Task[] ClosableTasksDelegate(CancellationToken token);
 
         // function to create a MessageBox which
         // automatically closes upon completion of multiple tasks
-        private DialogResult? MessageBoxShowClosable(Form owner, string text, string caption, MessageBoxButtons buttons, MessageBoxIcon icon, MessageBoxClosableTasksDelegate tasksDelegate) {
+        private DialogResult? MessageBoxShowClosable(Form owner, string text, string caption, MessageBoxButtons buttons, MessageBoxIcon icon, ClosableTasksDelegate tasksDelegate) {
             if (owner == null) {
                 throw new ArgumentNullException("The owner is null.");
             }
@@ -76,10 +76,10 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private delegate Task MessageBoxClosableTaskDelegate(CancellationToken token);
+        private delegate Task ClosableTaskDelegate(CancellationToken token);
 
         // overload for a single task
-        private DialogResult? MessageBoxShowClosable(Form owner, string text, string caption, MessageBoxButtons buttons, MessageBoxIcon icon, MessageBoxClosableTaskDelegate taskDelegate) {
+        private DialogResult? MessageBoxShowClosable(Form owner, string text, string caption, MessageBoxButtons buttons, MessageBoxIcon icon, ClosableTaskDelegate taskDelegate) {
             return MessageBoxShowClosable(
                 owner,
                 text,
