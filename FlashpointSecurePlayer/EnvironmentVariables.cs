@@ -56,6 +56,10 @@ namespace FlashpointSecurePlayer {
                 throw new InvalidEnvironmentVariablesException("Failed to get the \"" + environmentVariablesElement.Name + "\" Environment Variable.");
             }
 
+            if (value == null) {
+                return value;
+            }
+
             Regex regex = null;
 
             try {
@@ -71,8 +75,7 @@ namespace FlashpointSecurePlayer {
                 LogExceptionToLauncher(ex);
                 throw new InvalidEnvironmentVariablesException("The Regex Match timed out.");
             } catch (Exception ex) {
-                // value was not defined
-                // fail silently
+                // match failed?
                 LogExceptionToLauncher(ex);
             }
             return value;

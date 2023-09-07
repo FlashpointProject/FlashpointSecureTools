@@ -2075,7 +2075,9 @@ namespace FlashpointSecurePlayer {
 
             // the URI Scheme is always lowercase
             string scheme = uri.Scheme;
-            return scheme == URI_SCHEME_HTTP || scheme == URI_SCHEME_HTTPS || scheme == URI_SCHEME_FTP;
+            return scheme.Equals(URI_SCHEME_HTTP, StringComparison.Ordinal)
+                || scheme.Equals(URI_SCHEME_HTTPS, StringComparison.Ordinal)
+                || scheme.Equals(URI_SCHEME_FTP, StringComparison.Ordinal);
         }
 
         /*
@@ -2089,7 +2091,7 @@ namespace FlashpointSecurePlayer {
                     versionName.Append("95");
                     break;
                     case 10:
-                    if (operatingSystem.Version.Revision.ToString() == "2222A") {
+                    if (operatingSystem.Version.Revision.ToString().Equals("2222A", StringComparison.Ordinal)) {
                         versionName.Append("98 SE");
                     } else {
                         versionName.Append("98");

@@ -1350,7 +1350,9 @@ namespace FlashpointSecurePlayer {
                 }
 
                 if (ModificationsRevertMethod == MODIFICATIONS_REVERT_METHOD.DELETE_ALL) {
-                    if (MessageBox.Show(Properties.Resources.ForceDeleteAllWarning, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No) {
+                    DialogResult dialogResult = MessageBox.Show(Properties.Resources.ForceDeleteAllWarning, Properties.Resources.FlashpointSecurePlayer, MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                    if (dialogResult == DialogResult.No) {
                         ModificationsRevertMethod = MODIFICATIONS_REVERT_METHOD.CRASH_RECOVERY;
                         Application.Exit();
                         return;
