@@ -18,7 +18,7 @@ namespace FlashpointSecurePlayer {
     public class EnvironmentVariables : Modifications {
         private const string __COMPAT_LAYER = nameof(__COMPAT_LAYER);
 
-        private IList<string> UnmodifiableComparableNames { get; } = new List<string> { FP_STARTUP_PATH, FP_HTDOCS_FILE }.AsReadOnly();
+        private IReadOnlyList<string> UnmodifiableComparableNames { get; } = new List<string> { FP_STARTUP_PATH, FP_HTDOCS_FILE }.AsReadOnly();
 
         public EnvironmentVariables(EventHandler importStart, EventHandler importStop) : base(importStart, importStop) { }
 

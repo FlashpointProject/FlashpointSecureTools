@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
@@ -72,26 +73,41 @@ namespace FlashpointSecurePlayer {
         // (but that's already handled, so it doesn't matter)
 
         // note the trailing slashes on keys to make lookups easier
-        private Dictionary<string, List<string>> WOW64KeyList = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase) {
-            {"HKEY_LOCAL_MACHINE\\SOFTWARE\\", null},
-            {"HKEY_LOCAL_MACHINE\\SOFTWARE\\CLASSES\\", new List<string>() {
-                "APPID",
-                "CLSID",
-                "DIRECTSHOW",
-                "INTERFACE",
-                "MEDIA TYPE",
-                "MEDIAFOUNDATION",
-                "PROTOCOLS",
-                "TYPELIB"
-            }},
-            {"HKEY_CURRENT_USER\\SOFTWARE\\CLASSES\\", new List<string>() {
-                "CLSID",
-                "DIRECTSHOW",
-                "INTERFACE",
-                "MEDIA TYPE",
-                "MEDIAFOUNDATION"
-            }}
-        };
+        private ReadOnlyDictionary<string, IReadOnlyList<string>> WOW64KeyList { get; } = new ReadOnlyDictionary<string, IReadOnlyList<string>>(
+            new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase) {
+                {
+                    "HKEY_LOCAL_MACHINE\\SOFTWARE\\",
+                    null
+                },
+
+                {
+                    "HKEY_LOCAL_MACHINE\\SOFTWARE\\CLASSES\\",
+
+                    new List<string>() {
+                        "APPID",
+                        "CLSID",
+                        "DIRECTSHOW",
+                        "INTERFACE",
+                        "MEDIA TYPE",
+                        "MEDIAFOUNDATION",
+                        "PROTOCOLS",
+                        "TYPELIB"
+                    }.AsReadOnly()
+                },
+
+                {
+                    "HKEY_CURRENT_USER\\SOFTWARE\\CLASSES\\",
+
+                    new List<string>() {
+                        "CLSID",
+                        "DIRECTSHOW",
+                        "INTERFACE",
+                        "MEDIA TYPE",
+                        "MEDIAFOUNDATION"
+                    }.AsReadOnly()
+                }
+            }
+        );
 
         public RegistryStates(EventHandler importStart, EventHandler importStop) : base(importStart, importStop) { }
 
@@ -512,7 +528,7 @@ namespace FlashpointSecurePlayer {
                     && wow64NodeSubkeys.Length > 0) {
                     redirected = false;
 
-                    if (WOW64KeyList.TryGetValue(redirectedKeyValueName.ToString(), out List<string> wow64SubkeyList)) {
+                    if (WOW64KeyList.TryGetValue(redirectedKeyValueName.ToString(), out IReadOnlyList<string> wow64SubkeyList)) {
                         // if there's no subkey list or we are at the end
                         if (wow64SubkeyList == null || wow64Node) {
                             redirected = true;
