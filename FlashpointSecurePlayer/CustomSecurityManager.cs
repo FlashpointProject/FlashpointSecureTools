@@ -108,12 +108,12 @@ namespace FlashpointSecurePlayer {
             return INET_E_DEFAULT_ACTION;
         }
 
-        int InternetInterfaces.IInternetSecurityManager.ProcessUrlAction([MarshalAs(UnmanagedType.LPWStr)] string pwszUrl, uint dwAction, out uint pPolicy, uint cbPolicy, IntPtr pContext, uint cbContext, uint dwFlags, uint dwReserved) {
-            pPolicy = URLPOLICY_DISALLOW;
-
+        int InternetInterfaces.IInternetSecurityManager.ProcessUrlAction([MarshalAs(UnmanagedType.LPWStr)] string pwszUrl, uint dwAction, ref uint pPolicy, uint cbPolicy, IntPtr pContext, uint cbContext, uint dwFlags, uint dwReserved) {
             if (cbPolicy < Marshal.SizeOf(pPolicy.GetType())) {
                 return S_FALSE;
             }
+
+            pPolicy = URLPOLICY_DISALLOW;
 
             // don't process file:// URLS, they are outside the proxy
             if ((dwFlags & PUAF_ISFILE) == PUAF_ISFILE) {
@@ -186,7 +186,7 @@ namespace FlashpointSecurePlayer {
 
             pPolicy = URLPOLICY_JAVA_LOW;
 
-            if (dwAction == URLACTION_JAVA_PERMISSIONS) { // allow Java applets to be as terrible as they need to be to function
+            if (dwAction == URLACTION_JAVA_PERMISSIONS) { // allow Java applets (in case we ever need Java in IE?)
                 // for URLACTION_JAVA_PERMISSIONS, should return S_OK if
                 // the policy is not URLPOLICY_JAVA_PROHIBIT
                 // (though in practice, return value seems to not matter?)
