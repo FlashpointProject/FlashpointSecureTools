@@ -64,7 +64,13 @@ namespace FlashpointSecurePlayer {
             return INET_E_DEFAULT_ACTION;
         }
 
-        int InternetInterfaces.IInternetSecurityManager.MapUrlToZone([MarshalAs(UnmanagedType.LPWStr)] string pwszUrl, ref uint pdwZone, uint dwFlags) {
+        int InternetInterfaces.IInternetSecurityManager.MapUrlToZone(
+            [MarshalAs(UnmanagedType.LPWStr)]
+            string pwszUrl,
+            
+            ref uint pdwZone,
+            uint dwFlags
+        ) {
             // behave like local intranet
             pdwZone = 1;
 
@@ -104,11 +110,31 @@ namespace FlashpointSecurePlayer {
             return S_OK;
         }
 
-        int InternetInterfaces.IInternetSecurityManager.GetSecurityId([MarshalAs(UnmanagedType.LPWStr)] string pwszUrl, [MarshalAs(UnmanagedType.LPArray)] byte[] pbSecurityId, ref uint pcbSecurityId, uint dwReserved) {
+        int InternetInterfaces.IInternetSecurityManager.GetSecurityId(
+            [MarshalAs(UnmanagedType.LPWStr)]
+            string pwszUrl,
+            
+            [MarshalAs(UnmanagedType.LPArray)]
+            byte[] pbSecurityId,
+            
+            ref uint pcbSecurityId,
+            uint dwReserved
+        ) {
             return INET_E_DEFAULT_ACTION;
         }
 
-        int InternetInterfaces.IInternetSecurityManager.ProcessUrlAction([MarshalAs(UnmanagedType.LPWStr)] string pwszUrl, uint dwAction, ref uint pPolicy, uint cbPolicy, IntPtr pContext, uint cbContext, uint dwFlags, uint dwReserved) {
+        int InternetInterfaces.IInternetSecurityManager.ProcessUrlAction(
+            [MarshalAs(UnmanagedType.LPWStr)]
+            string pwszUrl,
+            
+            uint dwAction,
+            ref uint pPolicy,
+            uint cbPolicy,
+            IntPtr pContext,
+            uint cbContext,
+            uint dwFlags,
+            uint dwReserved
+        ) {
             if (cbPolicy < Marshal.SizeOf(pPolicy.GetType())) {
                 return S_FALSE;
             }

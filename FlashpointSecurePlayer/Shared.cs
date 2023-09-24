@@ -164,6 +164,7 @@ namespace FlashpointSecurePlayer {
         public const int WM_LBUTTONDOWN = 0x00000201;
         public const int WM_RBUTTONDOWN = 0x00000204;
         public const int WM_MBUTTONDOWN = 0x00000207;
+        public const int WM_XBUTTONDOWN = 0x0000020B;
         public const int WM_XBUTTONUP = 0x0000020C;
         public const int WM_PARENTNOTIFY = 0x00000210;
 

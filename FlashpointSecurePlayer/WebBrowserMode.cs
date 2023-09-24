@@ -279,6 +279,7 @@ namespace FlashpointSecurePlayer {
                     case WM_LBUTTONDOWN:
                     case WM_RBUTTONDOWN:
                     case WM_MBUTTONDOWN:
+                    case WM_XBUTTONDOWN:
                     // these are intended to always return false
                     OnStopExitFullscreenLabelTimer(EventArgs.Empty);
                     return false;

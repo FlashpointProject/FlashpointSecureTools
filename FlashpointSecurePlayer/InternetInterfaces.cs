@@ -254,19 +254,60 @@ namespace FlashpointSecurePlayer {
             int GetSecuritySite(out IntPtr pSite);
             
             [PreserveSig]
-            int MapUrlToZone([MarshalAs(UnmanagedType.LPWStr)] string pwszUrl, ref uint pdwZone, uint dwFlags);
+            int MapUrlToZone(
+                [MarshalAs(UnmanagedType.LPWStr)]
+                string pwszUrl,
+                
+                ref uint pdwZone,
+                uint dwFlags
+            );
             
             [PreserveSig]
-            int GetSecurityId([MarshalAs(UnmanagedType.LPWStr)] string pwszUrl, [MarshalAs(UnmanagedType.LPArray)] byte[] pbSecurityId, ref uint pcbSecurityId, uint dwReserved);
+            int GetSecurityId(
+                [MarshalAs(UnmanagedType.LPWStr)]
+                string pwszUrl,
+                
+                [MarshalAs(UnmanagedType.LPArray)] byte[] pbSecurityId,
+                ref uint pcbSecurityId,
+                uint dwReserved
+            );
             
             [PreserveSig]
-            int ProcessUrlAction([MarshalAs(UnmanagedType.LPWStr)] string pwszUrl, uint dwAction, ref uint pPolicy, uint cbPolicy, IntPtr pContext, uint cbContext, uint dwFlags, uint dwReserved);
+            int ProcessUrlAction(
+                [MarshalAs(UnmanagedType.LPWStr)]
+                string pwszUrl,
+                
+                uint dwAction,
+                ref uint pPolicy,
+                uint cbPolicy,
+                IntPtr pContext,
+                uint cbContext,
+                uint dwFlags,
+                uint dwReserved
+            );
             
             [PreserveSig]
-            int QueryCustomPolicy([MarshalAs(UnmanagedType.LPWStr)] string pwszUrl, ref Guid guidKey, ref byte ppPolicy, ref uint pcbPolicy, ref byte pContext, uint cbContext, uint dwReserved);
+            int QueryCustomPolicy(
+                [MarshalAs(UnmanagedType.LPWStr)]
+                string pwszUrl,
+                
+                ref Guid guidKey,
+                ref byte ppPolicy,
+                ref uint pcbPolicy,
+                ref byte pContext,
+                uint cbContext,
+                uint dwReserved
+            );
             
             [PreserveSig]
-            int SetZoneMapping(uint dwZone, [MarshalAs(UnmanagedType.LPWStr)] string lpszPattern, uint dwFlags);
+            int SetZoneMapping(
+                uint dwZone,
+                
+                [MarshalAs(UnmanagedType.LPWStr)]
+                string lpszPattern,
+                
+                uint dwFlags
+            );
             
             [PreserveSig]
             int GetZoneMappings(uint dwZone, out IEnumString ppenumString, uint dwFlags);
