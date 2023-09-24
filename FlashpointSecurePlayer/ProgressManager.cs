@@ -290,20 +290,23 @@ namespace FlashpointSecurePlayer {
             }
 
             private static void Show() {
-                Goal[] goalsArray = Goals.ToArray();
+                // when the stack is converted to an array
+                // it is done in reverse!!
+                // this caused bugs when
+                // adapting this from the JavaScript version
+                // (which just uses array push/pop)
+                Goal[] goalsArray = Goals.Reverse().ToArray();
 
                 if (goalsArray.ElementAtOrDefault(0) == null) {
                     return;
                 }
-
-                int len = goalsArray.Length - 1;
+                
                 int size = 0;
                 double reciprocal = 1;
                 double multiplier = 0;
-
-                // this MUST loop backwards
-                for (int i = len; i >= 0; i--) {
-                    for (int j = len; j > i; j--) {
+                
+                for (int i = 0; i < goalsArray.Length; i++) {
+                    for (int j = 0; j < i; j++) {
                         size = goalsArray[j].Size;
 
                         if (size == 0) {
