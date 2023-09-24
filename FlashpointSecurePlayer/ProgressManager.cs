@@ -296,13 +296,14 @@ namespace FlashpointSecurePlayer {
                     return;
                 }
 
+                int len = goalsArray.Length - 1;
                 int size = 0;
                 double reciprocal = 1;
                 double multiplier = 0;
 
                 // this MUST loop backwards
-                for (int i = goalsArray.Length - 1; i >= 0; i--) {
-                    for (int j = goalsArray.Length - 1; j > i; j--) {
+                for (int i = len; i >= 0; i--) {
+                    for (int j = len; j > i; j--) {
                         size = goalsArray[j].Size;
 
                         if (size == 0) {
