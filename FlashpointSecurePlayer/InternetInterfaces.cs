@@ -267,7 +267,9 @@ namespace FlashpointSecurePlayer {
                 [MarshalAs(UnmanagedType.LPWStr)]
                 string pwszUrl,
                 
-                [MarshalAs(UnmanagedType.LPArray)] byte[] pbSecurityId,
+                [MarshalAs(UnmanagedType.LPArray)]
+                byte[] pbSecurityId,
+
                 ref uint pcbSecurityId,
                 uint dwReserved
             );
