@@ -89,8 +89,6 @@ namespace FlashpointSecurePlayer {
         private static extern bool InternetSetOption(IntPtr hInternet, INTERNET_OPTION dwOption, IntPtr lpBuffer, uint dwBufferLength);
         
         private static void GetSystemProxy(ref INTERNET_PER_CONN_OPTION_LIST internetPerConnOptionList, ref INTERNET_PER_CONN_OPTION[] internetPerConnOptionListOptions) {
-            uint internetPerConnOptionListSize = (uint)Marshal.SizeOf(internetPerConnOptionList);
-
             if (internetPerConnOptionListOptions.Length < 2) {
                 throw new ArgumentException("The Internet Per Connection Option List Options must not have a Length of less than two.");
             }
@@ -116,6 +114,8 @@ namespace FlashpointSecurePlayer {
                     Marshal.StructureToPtr(internetPerConnOptionListOptions[i], internetPerConnOptionPointer, false);
                     internetPerConnOptionPointer = (IntPtr)((int)internetPerConnOptionPointer + Marshal.SizeOf(internetPerConnOptionListOptions[i]));
                 }
+
+                uint internetPerConnOptionListSize = (uint)Marshal.SizeOf(internetPerConnOptionList);
 
                 // fill the internetPerConnOptionList structure
                 internetPerConnOptionList.dwSize = internetPerConnOptionListSize;
