@@ -950,6 +950,8 @@ namespace FlashpointSecurePlayer {
         public const string OLD_CPU_SIMULATOR_PATH = "OldCPUSimulator\\OldCPUSimulator.exe";
         public const string OLD_CPU_SIMULATOR_PARENT_PROCESS_FILE_NAME = "OLDCPUSIMULATOR.EXE";
 
+        public const long PREFERENCE_DEFAULT = -1;
+
         public const string FP_STARTUP_PATH = nameof(FP_STARTUP_PATH);
         public const string FP_URL = nameof(FP_URL);
         public const string FP_ARGUMENTS = nameof(FP_ARGUMENTS);

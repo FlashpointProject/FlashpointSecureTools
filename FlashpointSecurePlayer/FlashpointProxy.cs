@@ -167,7 +167,9 @@ namespace FlashpointSecurePlayer {
                     // fail silently
                 }
 
-                if (!bool.TryParse(proxyEnvironmentVariable, out proxy)) {
+                if (long.TryParse(proxyEnvironmentVariable, out long _proxy) && _proxy != PREFERENCE_DEFAULT) {
+                    proxy = _proxy != 0;
+                } else {
                     proxy = FP_PROXY_DEFAULT;
                 }
             } else {
@@ -183,7 +185,9 @@ namespace FlashpointSecurePlayer {
                     // fail silently
                 }
 
-                if (!int.TryParse(portEnvironmentVariable, out port)) {
+                if (long.TryParse(portEnvironmentVariable, out long _port) && _port != PREFERENCE_DEFAULT) {
+                    port = (int)_port;
+                } else {
                     port = FP_PROXY_PORT_DEFAULT;
                 }
             } else {
