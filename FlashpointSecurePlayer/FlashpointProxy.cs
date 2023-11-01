@@ -15,6 +15,12 @@ namespace FlashpointSecurePlayer {
 
         private const uint INTERNET_OPEN_TYPE_DIRECT = 1;
 
+        private const bool FP_PROXY_DEFAULT = true;
+        private const int FP_PROXY_PORT_DEFAULT = 22500;
+
+        private const string FP_PROXY = nameof(FP_PROXY);
+        private const string FP_PROXY_PORT = nameof(FP_PROXY_PORT);
+
         [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Ansi)]
         private static extern IntPtr InternetOpen(string lpszAgent, uint dwAccessType, IntPtr lpszProxy, IntPtr lpszProxyBypass, uint dwFlags);
 
@@ -129,8 +135,71 @@ namespace FlashpointSecurePlayer {
                 throw;
             }
         }
-        
-        public static void Enable(string proxyServer) {
+
+        public static void GetPreferences(out bool proxy, out int port) {
+            FlashpointSecurePlayerSection.FlashpointProxyElement flashpointProxyElement = null;
+
+            try {
+                FlashpointSecurePlayerSection flashpointSecurePlayerSection = GetFlashpointSecurePlayerSection(false, ACTIVE_EXE_CONFIGURATION_NAME);
+                flashpointProxyElement = flashpointSecurePlayerSection.FlashpointProxy;
+            } catch {
+                // fail silently
+            }
+
+            bool? proxyFile = null;
+            int? portFile = null;
+
+            if (flashpointProxyElement != null
+                && flashpointProxyElement.ElementInformation.IsPresent) {
+                proxyFile = flashpointProxyElement.Proxy;
+                portFile = flashpointProxyElement.Port;
+            }
+
+            // try getting from the proxy element
+            // if that fails, try from the environment variables
+            // if that fails, use the default
+            if (proxyFile == null) {
+                string proxyEnvironmentVariable = null;
+
+                try {
+                    proxyEnvironmentVariable = Environment.GetEnvironmentVariable(FP_PROXY, EnvironmentVariableTarget.Process);
+                } catch {
+                    // fail silently
+                }
+
+                if (!bool.TryParse(proxyEnvironmentVariable, out proxy)) {
+                    proxy = FP_PROXY_DEFAULT;
+                }
+            } else {
+                proxy = proxyFile.GetValueOrDefault();
+            }
+
+            if (portFile == null) {
+                string portEnvironmentVariable = null;
+
+                try {
+                    portEnvironmentVariable = Environment.GetEnvironmentVariable(FP_PROXY_PORT, EnvironmentVariableTarget.Process);
+                } catch {
+                    // fail silently
+                }
+
+                if (!int.TryParse(portEnvironmentVariable, out port)) {
+                    port = FP_PROXY_PORT_DEFAULT;
+                }
+            } else {
+                port = portFile.GetValueOrDefault();
+            }
+        }
+
+        public static void Enable() {
+            GetPreferences(out bool proxy, out int port);
+
+            if (!proxy) {
+                return;
+            }
+
+            string proxyServer = "http=127.0.0.1:" + port + ";https=127.0.0.1:" + port + ";ftp=127.0.0.1:" + port;
+
             IntPtr internetHandle = InternetOpen(AGENT, INTERNET_OPEN_TYPE_DIRECT, IntPtr.Zero, IntPtr.Zero, 0);
 
             if (internetHandle == IntPtr.Zero) {

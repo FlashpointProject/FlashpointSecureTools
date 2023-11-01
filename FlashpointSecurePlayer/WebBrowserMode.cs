@@ -567,7 +567,7 @@ namespace FlashpointSecurePlayer {
             }
 
             try {
-                FlashpointProxy.Enable("http=127.0.0.1:22500;https=127.0.0.1:22500;ftp=127.0.0.1:22500");
+                FlashpointProxy.Enable();
             } catch (FlashpointProxyException ex) {
                 // popup message box but allow through anyway
                 LogExceptionToLauncher(ex);

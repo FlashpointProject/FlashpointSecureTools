@@ -958,12 +958,32 @@ namespace FlashpointSecurePlayer {
 
         // there should be only one HTTP Client per application
         // (as of right now though this is exclusively used by DownloadsBefore class)
-        private static readonly HttpClientHandler httpClientHandler = new HttpClientHandler {
-            Proxy = new WebProxy("127.0.0.1", 22500),
-            UseProxy = true
-        };
+        private static HttpClientHandler httpClientHandler = null;
 
-        public static readonly HttpClient httpClient = new HttpClient(httpClientHandler);
+        private static HttpClientHandler HttpClientHandler {
+            get {
+                if (httpClientHandler == null) {
+                    FlashpointProxy.GetPreferences(out bool proxy, out int port);
+
+                    httpClientHandler = new HttpClientHandler {
+                        Proxy = proxy ? new WebProxy("127.0.0.1", port) : null,
+                        UseProxy = proxy
+                    };
+                }
+                return httpClientHandler;
+            }
+        }
+
+        private static HttpClient httpClient = null;
+
+        public static HttpClient HttpClient {
+            get {
+                if (httpClient == null) {
+                    httpClient = new HttpClient(HttpClientHandler);
+                }
+                return httpClient;
+            }
+        }
 
         // no parallel downloads
         // if parallel downloads are ever supported, the max value should
@@ -1264,7 +1284,7 @@ namespace FlashpointSecurePlayer {
                             if (String.IsNullOrEmpty(Name) || _mode == null) {
                                 return null;
                             }
-                            return base[_mode] as ModeElement;
+                            return (ModeElement)base[_mode];
                         }
 
                         set {
@@ -1400,7 +1420,7 @@ namespace FlashpointSecurePlayer {
                             }
 
                             protected override object GetElementKey(ConfigurationElement configurationElement) {
-                                EnvironmentVariablesElement environmentVariablesElement = configurationElement as EnvironmentVariablesElement;
+                                EnvironmentVariablesElement environmentVariablesElement = (EnvironmentVariablesElement)configurationElement;
                                 return environmentVariablesElement._Key;
                             }
 
@@ -1444,7 +1464,7 @@ namespace FlashpointSecurePlayer {
                             }
 
                             protected override object GetElementKey(ConfigurationElement configurationElement) {
-                                DownloadBeforeElement downloadBeforeElement = configurationElement as DownloadBeforeElement;
+                                DownloadBeforeElement downloadBeforeElement = (DownloadBeforeElement)configurationElement;
                                 return downloadBeforeElement.Name;
                             }
 
@@ -1653,7 +1673,7 @@ namespace FlashpointSecurePlayer {
                             }
 
                             protected override object GetElementKey(ConfigurationElement configurationElement) {
-                                RegistryStateElement registryStateElement = configurationElement as RegistryStateElement;
+                                RegistryStateElement registryStateElement = (RegistryStateElement)configurationElement;
                                 return registryStateElement.Name;
                             }
 
@@ -1848,10 +1868,10 @@ namespace FlashpointSecurePlayer {
                             }
                         }
                     }
-                    
+
                     public ModificationsElement Modifications {
                         get {
-                            return base[_modifications] as ModificationsElement;
+                            return (ModificationsElement)base[_modifications];
                         }
 
                         set {
@@ -1867,7 +1887,7 @@ namespace FlashpointSecurePlayer {
                 }
 
                 protected override object GetElementKey(ConfigurationElement configurationElement) {
-                    TemplateElement templateElement = configurationElement as TemplateElement;
+                    TemplateElement templateElement = (TemplateElement)configurationElement;
                     return templateElement.Name;
                 }
 
@@ -1884,6 +1904,22 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
+            public class FlashpointProxyElement : ConfigurationElement {
+                [ConfigurationProperty("proxy", IsRequired = false)]
+                public bool? Proxy {
+                    get {
+                        return base["proxy"] as bool?;
+                    }
+                }
+
+                [ConfigurationProperty("port", IsRequired = false)]
+                public int? Port {
+                    get {
+                        return base["port"] as int?;
+                    }
+                }
+            }
+
             [ConfigurationProperty("templates", IsDefaultCollection = true, IsRequired = true)]
             [ConfigurationCollection(typeof(TemplatesElementCollection), AddItemName = "template")]
             public TemplatesElementCollection Templates {
@@ -1893,6 +1929,13 @@ namespace FlashpointSecurePlayer {
 
                 set {
                     base["templates"] = value;
+                }
+            }
+
+            [ConfigurationProperty("flashpointProxy", IsDefaultCollection = false, IsRequired = false)]
+            public FlashpointProxyElement FlashpointProxy {
+                get {
+                    return (FlashpointProxyElement)base["flashpointProxy"];
                 }
             }
         }
@@ -2227,7 +2270,7 @@ namespace FlashpointSecurePlayer {
             await downloadSemaphoreSlim.WaitAsync().ConfigureAwait(true);
 
             try {
-                using (HttpResponseMessage httpResponseMessage = await httpClient.GetAsync(name, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(true)) {
+                using (HttpResponseMessage httpResponseMessage = await HttpClient.GetAsync(name, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(true)) {
                     if (!httpResponseMessage.IsSuccessStatusCode) {
                         throw new Exceptions.DownloadFailedException("The HTTP Response Message failed with a Status Code of \"" + httpResponseMessage.StatusCode + "\".");
                     }
@@ -2510,8 +2553,11 @@ namespace FlashpointSecurePlayer {
         public static FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement GetTemplateElement(bool createTemplateElement, string exeConfigurationName) {
             // need the section to operate on
             FlashpointSecurePlayerSection flashpointSecurePlayerSection = GetFlashpointSecurePlayerSection(createTemplateElement, exeConfigurationName);
+            
             // get the element
-            FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement templateElement = flashpointSecurePlayerSection.Templates.Get(exeConfigurationName) as FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement;
+            FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement templateElement
+                = flashpointSecurePlayerSection.Templates.Get(exeConfigurationName)
+                as FlashpointSecurePlayerSection.TemplatesElementCollection.TemplateElement;
 
             // create it if it doesn't exist...
             if (createTemplateElement && templateElement == null) {
@@ -2614,9 +2660,9 @@ namespace FlashpointSecurePlayer {
             return commandLine;
         }
 
-        public static void StartProcessCreateBreakawayFromJob(ProcessStartInfo processStartInfo, out Process process) {
-            process = null;
-
+        public static Process StartProcessCreateBreakawayFromJob(ProcessStartInfo processStartInfo) {
+            Process process = null;
+            
             if (processStartInfo == null) {
                 throw new ArgumentNullException("The processStartInfo is null.");
             }
@@ -2651,7 +2697,7 @@ namespace FlashpointSecurePlayer {
 
             if (!CreateProcess(null, commandLine, IntPtr.Zero, IntPtr.Zero, false, creationFlags, IntPtr.Zero, currentDirectory, ref startupInfo, out processInformation)) {
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                return;
+                return process;
             }
 
             try {
@@ -2666,7 +2712,7 @@ namespace FlashpointSecurePlayer {
 
                     if (ResumeThread(processInformation.hThread) == -1) {
                         Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-                        return;
+                        return process;
                     }
                 } catch {
                     process.Kill();
@@ -2683,6 +2729,7 @@ namespace FlashpointSecurePlayer {
                     Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
                 }
             }
+            return process;
         }
 
         public static BINARY_TYPE GetLibraryBinaryType(string libFileName) {

@@ -708,7 +708,7 @@ namespace FlashpointSecurePlayer {
 
                             try {
                                 // StartProcessCreateBreakawayFromJob required for Process Sync on Windows 7
-                                StartProcessCreateBreakawayFromJob(softwareProcessStartInfo, out softwareProcess);
+                                softwareProcess = StartProcessCreateBreakawayFromJob(softwareProcessStartInfo);
                             } catch (JobObjectException ex) {
                                 // popup message box and blow up
                                 LogExceptionToLauncher(ex);
