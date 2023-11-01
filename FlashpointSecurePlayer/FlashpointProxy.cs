@@ -155,6 +155,8 @@ namespace FlashpointSecurePlayer {
                 portFile = flashpointProxyElement.Port;
             }
 
+            long preference = PREFERENCE_DEFAULT;
+
             // try getting from the proxy element
             // if that fails, try from the environment variables
             // if that fails, use the default
@@ -167,8 +169,8 @@ namespace FlashpointSecurePlayer {
                     // fail silently
                 }
 
-                if (long.TryParse(proxyEnvironmentVariable, out long _proxy) && _proxy != PREFERENCE_DEFAULT) {
-                    proxy = _proxy != 0;
+                if (long.TryParse(proxyEnvironmentVariable, out preference) && preference != PREFERENCE_DEFAULT) {
+                    proxy = preference != 0;
                 } else {
                     proxy = FP_PROXY_DEFAULT;
                 }
@@ -185,8 +187,8 @@ namespace FlashpointSecurePlayer {
                     // fail silently
                 }
 
-                if (long.TryParse(portEnvironmentVariable, out long _port) && _port != PREFERENCE_DEFAULT) {
-                    port = (int)_port;
+                if (long.TryParse(portEnvironmentVariable, out preference) && preference != PREFERENCE_DEFAULT) {
+                    port = (int)preference;
                 } else {
                     port = FP_PROXY_PORT_DEFAULT;
                 }
