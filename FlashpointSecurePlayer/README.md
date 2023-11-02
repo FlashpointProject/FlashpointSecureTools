@@ -312,7 +312,7 @@ Set Via:
 
 The Old CPU Simulator simulates running a process on a CPU with a slower clock speed in order to make old games run at the correct speed or underclock CPU intensive processes like video encoding. For more information on how to use Old CPU Simulator, [read the README.](https://github.com/tomysshadow/OldCPUSimulator)
 
-The Old CPU Simulator Modification has six attributes. The only required attribute is `targetRate` which behaves as described in the Old CPU Simulator README. The second attribute is `refreshRate` which is optional, and behaves as described in the Old CPU Simulator README. The other attributes are `setProcessPriorityHigh`, `setSyncedProcessAffinityOne`, `syncedProcessMainThreadOnly`, and `refreshRateFloorFifteen` behave as described in the Old CPU Simulator README and default to false, true, true, and true respectively.
+The Old CPU Simulator Modification has six attributes. The only required attribute is `targetRate` which behaves as described in the Old CPU Simulator README. The second attribute is `refreshRate` which is optional, and behaves as described in the Old CPU Simulator README. The other attributes are `setProcessPriorityHigh`, `setSyncedProcessAffinityOne`, `syncedProcessMainThreadOnly`, and `refreshRateFloorFifteen` behave as described in the Old CPU Simulator README and all of them default to true.
 
 If the current rate is slower than the target rate, the Old CPU Simulator Modification is ignored.
 
