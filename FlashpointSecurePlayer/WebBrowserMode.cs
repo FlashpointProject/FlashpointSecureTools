@@ -36,35 +36,6 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private void ShowToolbar() {
-            // this is checked in LowLevelMouseProc because
-            // otherwise plugins such as Viscape which
-            // create their own window can steal the
-            // mouse move event
-            // it cannot happen in PreFilterMessage!
-            // our window may not even get these messages
-            // all that matters is the mouse position, regardless
-            // of if our window is active
-            Point toolBarToolStripMousePosition = toolBarToolStrip.PointToClient(MousePosition);
-
-            if (toolBarToolStrip.Visible) {
-                if (!toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
-                    // the standard layout when the mouse is not in the toolbar rectangle
-                    // if in fullscreen, ensure toolbar is invisible
-                    // if not in fullscreen, ensure toolbar is visible
-                    toolBarToolStrip.Visible = !Fullscreen;
-                }
-            } else {
-                if (toolBarToolStripMousePosition.Y == 0
-                    && toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
-                    // mouse in toolbar rectangle
-                    // if in fullscreen, show toolbar if we can
-                    // if not in fullscreen, ensure toolbar is visible
-                    toolBarToolStrip.Visible = CanShowToolbar || !Fullscreen;
-                }
-            }
-        }
-
         private readonly HookProc lowLevelMouseProc;
         private IntPtr mouseHook = IntPtr.Zero;
 
@@ -478,6 +449,35 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        private void ShowToolbar() {
+            // this is checked in LowLevelMouseProc because
+            // otherwise plugins such as Viscape which
+            // create their own window can steal the
+            // mouse move event
+            // it cannot happen in PreFilterMessage!
+            // our window may not even get these messages
+            // all that matters is the mouse position, regardless
+            // of if our window is active
+            Point toolBarToolStripMousePosition = toolBarToolStrip.PointToClient(MousePosition);
+
+            if (toolBarToolStrip.Visible) {
+                if (!toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
+                    // the standard layout when the mouse is not in the toolbar rectangle
+                    // if in fullscreen, ensure toolbar is invisible
+                    // if not in fullscreen, ensure toolbar is visible
+                    toolBarToolStrip.Visible = !Fullscreen;
+                }
+            } else {
+                if (toolBarToolStripMousePosition.Y == 0
+                    && toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
+                    // mouse in toolbar rectangle
+                    // if in fullscreen, show toolbar if we can
+                    // if not in fullscreen, ensure toolbar is visible
+                    toolBarToolStrip.Visible = CanShowToolbar || !Fullscreen;
+                }
+            }
+        }
+
         private bool addressToolStripSpringTextBoxEntered = false;
 
         public void AddressInvalid() {
@@ -784,6 +784,9 @@ namespace FlashpointSecurePlayer {
                     if (CanFocus) {
                         // the new window is not a dialog that prevents focus to this window
                         Fullscreen = false;
+                    } else {
+                        // the new window is a dialog that does not prevent focus to this window
+                        CanShowToolbar = false;
                     }
                     return;
                 }
