@@ -36,35 +36,6 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private void ShowToolbar() {
-            // this is checked in LowLevelMouseProc because
-            // otherwise plugins such as Viscape which
-            // create their own window can steal the
-            // mouse move event
-            // it cannot happen in PreFilterMessage!
-            // our window may not even get these messages
-            // all that matters is the mouse position, regardless
-            // of if our window is active
-            Point toolBarToolStripMousePosition = toolBarToolStrip.PointToClient(MousePosition);
-
-            if (toolBarToolStrip.Visible) {
-                if (!toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
-                    // the standard layout when the mouse is not in the toolbar rectangle
-                    // if in fullscreen, ensure toolbar is invisible
-                    // if not in fullscreen, ensure toolbar is visible
-                    toolBarToolStrip.Visible = !Fullscreen;
-                }
-            } else {
-                if (toolBarToolStripMousePosition.Y == 0
-                    && toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
-                    // mouse in toolbar rectangle
-                    // if in fullscreen, show toolbar if we can
-                    // if not in fullscreen, ensure toolbar is visible
-                    toolBarToolStrip.Visible = CanShowToolbar || !Fullscreen;
-                }
-            }
-        }
-
         private readonly HookProc lowLevelMouseProc;
         private IntPtr mouseHook = IntPtr.Zero;
 
@@ -478,6 +449,51 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        private void ShowToolbar() {
+            // this is checked in LowLevelMouseProc because
+            // otherwise plugins such as Viscape which
+            // create their own window can steal the
+            // mouse move event
+            // it cannot happen in PreFilterMessage!
+            // our window may not even get these messages
+            // all that matters is the mouse position, regardless
+            // of if our window is active
+            Point toolBarToolStripMousePosition = toolBarToolStrip.PointToClient(MousePosition);
+
+            if (toolBarToolStrip.Visible) {
+                if (!toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
+                    // the standard layout when the mouse is not in the toolbar rectangle
+                    // if in fullscreen, ensure toolbar is invisible
+                    // if not in fullscreen, ensure toolbar is visible
+                    toolBarToolStrip.Visible = !Fullscreen;
+                }
+            } else {
+                if (toolBarToolStripMousePosition.Y == 0
+                    && toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
+                    // mouse in toolbar rectangle
+                    // if in fullscreen, show toolbar if we can
+                    // if not in fullscreen, ensure toolbar is visible
+                    toolBarToolStrip.Visible = CanShowToolbar || !Fullscreen;
+                }
+            }
+        }
+
+        private bool FindDialog() {
+            // test if the new window is a dialog that prevents focus to this window
+            // if there is a window above us in the z-order
+            IntPtr previousWindow = GetWindow(Handle, GW.GW_HWNDPREV);
+
+            if (previousWindow == IntPtr.Zero) {
+                return false;
+            }
+
+            // if we own the window above us in the z-order
+            if (Handle != GetWindow(previousWindow, GW.GW_OWNER)) {
+                return false;
+            }
+            return true;
+        }
+
         private bool addressToolStripSpringTextBoxEntered = false;
 
         public void AddressInvalid() {
@@ -751,42 +767,22 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
-            IntPtr foregroundWindow = GetForegroundWindow();
+            bool foundDialog = FindDialog();
 
-            // we are the active window, because we are only now deactivating
-            // if this process has the foreground window, it'll be the active window
-            if (Handle == foregroundWindow) {
-                // this process opened a new window
-                if (!CanFocus) {
-                    // if there is a window above us in the z-order
-                    IntPtr previousWindow = GetWindow(Handle, GW.GW_HWNDPREV);
-
-                    if (previousWindow != IntPtr.Zero) {
-                        // if we own the window above us in the z-order
-                        if (Handle == GetWindow(previousWindow, GW.GW_OWNER)) {
-                            // the new window is a dialog that prevents focus to this window
-                            CanShowToolbar = false;
-                            return;
-                        }
-                    }
-                }
-
-                // the new window is not a dialog that prevents focus to this window
-                Fullscreen = false;
+            if (foundDialog && !CanFocus) {
+                // the new window is a dialog we own that prevents focus to this window
+                // in this case, it is important we don't exit fullscreen
+                // (causes softlock with minimizing)
+                CanShowToolbar = false;
                 return;
             }
-
-            // another process opened a window
-            if (foregroundWindow != IntPtr.Zero) {
-                // if we own the foreground window
-                if (Handle == GetWindow(foregroundWindow, GW.GW_OWNER)) {
-                    // the new window is owned by this window
-                    if (CanFocus) {
-                        // the new window is not a dialog that prevents focus to this window
-                        Fullscreen = false;
-                    }
-                    return;
-                }
+            
+            if (foundDialog || Handle == GetForegroundWindow()) {
+                // the new window is a dialog we own that does not prevent focus to this window, or
+                // this process opened a new window
+                // in this case, we exit fullscreen because we have a relationship with this window
+                Fullscreen = false;
+                return;
             }
 
             // we use SW_SHOWMINNOACTIVE so new windows (e.g. Task Manager) don't lose focus
