@@ -276,22 +276,6 @@ namespace FlashpointSecurePlayer {
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool IsOS(OS dwOS);
 
-        [DllImport("USER32.DLL")]
-        public static extern IntPtr GetForegroundWindow();
-
-        public enum GW : uint {
-            GW_CHILD = 5,
-            GW_ENABLEDPOPUP = 6,
-            GW_HWNDFIRST = 0,
-            GW_HWNDLAST = 1,
-            GW_HWNDNEXT = 2,
-            GW_HWNDPREV = 3,
-            GW_OWNER = 4
-        }
-
-        [DllImport("USER32.DLL", SetLastError = true)]
-        public static extern IntPtr GetWindow(IntPtr hWnd, GW uCmd);
-
         [DllImport("USER32.DLL", SetLastError = true)]
         public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 

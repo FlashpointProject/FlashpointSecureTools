@@ -714,27 +714,14 @@ namespace FlashpointSecurePlayer {
             OnWebBrowserModeExit(EventArgs.Empty);
         }
 
+        // there used to be some lengthy (buggy) code here for some custom fullscreen behaviour
+        // I was spending too much time trying to fix it for a non-essential feature of the program
+        // so I've gotten rid of it for the default behaviour instead
         private void WebBrowserMode_Activated(object sender, EventArgs e) {
             CanShowToolbar = true;
 
             if (messageFilter != null) {
                 Application.AddMessageFilter(messageFilter);
-            }
-
-            if (!IsHandleCreated || Handle == IntPtr.Zero) {
-                return;
-            }
-
-            if (!Fullscreen) {
-                return;
-            }
-            
-            SW showCmd = WindowPlacement.showCmd;
-
-            if (showCmd == SW.SW_SHOWMINIMIZED
-                || showCmd == SW.SW_MINIMIZE
-                || showCmd == SW.SW_SHOWMINNOACTIVE) {
-                BringToFront();
             }
         }
 
@@ -743,59 +730,9 @@ namespace FlashpointSecurePlayer {
                 Application.RemoveMessageFilter(messageFilter);
             }
 
-            if (!IsHandleCreated || Handle == IntPtr.Zero) {
-                return;
+            if (!CanFocus) {
+                CanShowToolbar = false;
             }
-
-            if (!Fullscreen) {
-                return;
-            }
-
-            IntPtr foregroundWindow = GetForegroundWindow();
-
-            // we are the active window, because we are only now deactivating
-            // if this process has the foreground window, it'll be the active window
-            if (Handle == foregroundWindow) {
-                // this process opened a new window
-                if (!CanFocus) {
-                    // if there is a window above us in the z-order
-                    IntPtr previousWindow = GetWindow(Handle, GW.GW_HWNDPREV);
-
-                    if (previousWindow != IntPtr.Zero) {
-                        // if we own the window above us in the z-order
-                        if (Handle == GetWindow(previousWindow, GW.GW_OWNER)) {
-                            // the new window is a dialog that prevents focus to this window
-                            CanShowToolbar = false;
-                            return;
-                        }
-                    }
-                }
-
-                // the new window is not a dialog that prevents focus to this window
-                Fullscreen = false;
-                return;
-            }
-
-            // another process opened a window
-            if (foregroundWindow != IntPtr.Zero) {
-                // if we own the foreground window
-                if (Handle == GetWindow(foregroundWindow, GW.GW_OWNER)) {
-                    // the new window is owned by this window
-                    if (CanFocus) {
-                        // the new window is not a dialog that prevents focus to this window
-                        Fullscreen = false;
-                    } else {
-                        // the new window is a dialog that does not prevent focus to this window
-                        CanShowToolbar = false;
-                    }
-                    return;
-                }
-            }
-
-            // we use SW_SHOWMINNOACTIVE so new windows (e.g. Task Manager) don't lose focus
-            WINDOWPLACEMENT windowPlacement = WindowPlacement;
-            windowPlacement.showCmd = SW.SW_SHOWMINNOACTIVE;
-            WindowPlacement = windowPlacement;
         }
 
         private void closableWebBrowser_Navigated(object sender, WebBrowserNavigatedEventArgs e) {
