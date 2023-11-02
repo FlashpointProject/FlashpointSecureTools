@@ -18,6 +18,53 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 
 namespace FlashpointSecurePlayer {
     public partial class WebBrowserMode : Form {
+        private bool canShowToolbar = true;
+
+        private bool CanShowToolbar {
+            get {
+                return canShowToolbar;
+            }
+
+            set {
+                canShowToolbar = value;
+
+                if (canShowToolbar) {
+                    ShowToolbar();
+                } else {
+                    toolBarToolStrip.Visible = false;
+                }
+            }
+        }
+
+        private void ShowToolbar() {
+            // this is checked in LowLevelMouseProc because
+            // otherwise plugins such as Viscape which
+            // create their own window can steal the
+            // mouse move event
+            // it cannot happen in PreFilterMessage!
+            // our window may not even get these messages
+            // all that matters is the mouse position, regardless
+            // of if our window is active
+            Point toolBarToolStripMousePosition = toolBarToolStrip.PointToClient(MousePosition);
+
+            if (toolBarToolStrip.Visible) {
+                if (!toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
+                    // the standard layout when the mouse is not in the toolbar rectangle
+                    // if in fullscreen, ensure toolbar is invisible
+                    // if not in fullscreen, ensure toolbar is visible
+                    toolBarToolStrip.Visible = !Fullscreen;
+                }
+            } else {
+                if (toolBarToolStripMousePosition.Y == 0
+                    && toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
+                    // mouse in toolbar rectangle
+                    // if in fullscreen, show toolbar if we can
+                    // if not in fullscreen, ensure toolbar is visible
+                    toolBarToolStrip.Visible = CanShowToolbar || !Fullscreen;
+                }
+            }
+        }
+
         private readonly HookProc lowLevelMouseProc;
         private IntPtr mouseHook = IntPtr.Zero;
 
@@ -27,26 +74,7 @@ namespace FlashpointSecurePlayer {
                     // always confirm the message first so we don't do unnecessary work
                     if (wParam.ToInt32() == WM_MOUSEMOVE) {
                         if (Fullscreen) {
-                            // this is checked in LowLevelMouseProc because
-                            // otherwise plugins such as Viscape which
-                            // create their own window can steal the
-                            // mouse move event
-                            // it cannot happen in PreFilterMessage!
-                            // our window may not even get these messages
-                            // all that matters is the mouse position, regardless
-                            // of if our window is active
-                            Point toolBarToolStripMousePosition = toolBarToolStrip.PointToClient(MousePosition);
-
-                            if (toolBarToolStrip.Visible) {
-                                if (!toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
-                                    toolBarToolStrip.Visible = false;
-                                }
-                            } else {
-                                if (toolBarToolStripMousePosition.Y == 0
-                                    && toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
-                                    toolBarToolStrip.Visible = true;
-                                }
-                            }
+                            ShowToolbar();
                         }
                     }
                 }
@@ -56,7 +84,7 @@ namespace FlashpointSecurePlayer {
             return CallNextHookEx(mouseHook, nCode, wParam, lParam);
         }
 
-        public WINDOWPLACEMENT WindowPlacement {
+        private WINDOWPLACEMENT WindowPlacement {
             get {
                 if (!IsHandleCreated || Handle == IntPtr.Zero) {
                     throw new InvalidOperationException("Handle is null.");
@@ -128,7 +156,7 @@ namespace FlashpointSecurePlayer {
         // be very careful modifying this property
         // it is very picky about the order things happen
         // and likes to cause bugs if you're not careful changing it
-        public bool Fullscreen {
+        private bool Fullscreen {
             get {
                 return fullscreen;
             }
@@ -687,6 +715,8 @@ namespace FlashpointSecurePlayer {
         }
 
         private void WebBrowserMode_Activated(object sender, EventArgs e) {
+            CanShowToolbar = true;
+
             if (messageFilter != null) {
                 Application.AddMessageFilter(messageFilter);
             }
@@ -735,6 +765,7 @@ namespace FlashpointSecurePlayer {
                         // if we own the window above us in the z-order
                         if (Handle == GetWindow(previousWindow, GW.GW_OWNER)) {
                             // the new window is a dialog that prevents focus to this window
+                            CanShowToolbar = false;
                             return;
                         }
                     }
