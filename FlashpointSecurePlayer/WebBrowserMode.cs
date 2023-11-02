@@ -31,7 +31,7 @@ namespace FlashpointSecurePlayer {
                 if (canShowToolbar) {
                     ShowToolbar();
                 } else {
-                    toolBarToolStrip.Visible = false;
+                    toolBarToolStrip.Visible = !Fullscreen;
                 }
             }
         }
