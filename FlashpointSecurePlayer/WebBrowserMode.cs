@@ -27,7 +27,7 @@ namespace FlashpointSecurePlayer {
                     // always confirm the message first so we don't do unnecessary work
                     if (wParam.ToInt32() == WM_MOUSEMOVE) {
                         if (Fullscreen) {
-                            ShowToolbar();
+                            ShowToolBar();
                         }
                     }
                 }
@@ -158,6 +158,8 @@ namespace FlashpointSecurePlayer {
                     statusBarStatusStrip.Visible = false;
                     closableWebBrowser.Dock = DockStyle.Fill;
 
+                    ShowToolBar();
+
                     // set Windows Hook for toolbar
                     if (mouseHook == IntPtr.Zero && lowLevelMouseProc != null) {
                         mouseHook = SetWindowsHookEx(HookType.WH_MOUSE_LL, lowLevelMouseProc, IntPtr.Zero, 0);
@@ -178,6 +180,8 @@ namespace FlashpointSecurePlayer {
                             mouseHook = IntPtr.Zero;
                         }
                     }
+
+                    ShowToolBar();
 
                     WINDOWPLACEMENT windowPlacement = fullscreenWindowPlacement;
 
@@ -433,7 +437,7 @@ namespace FlashpointSecurePlayer {
 
         private bool isActive = false;
 
-        private void ShowToolbar() {
+        private void ShowToolBar() {
             // this is checked in LowLevelMouseProc because
             // otherwise plugins such as Viscape which
             // create their own window can steal the
@@ -708,7 +712,7 @@ namespace FlashpointSecurePlayer {
                 Application.AddMessageFilter(messageFilter);
             }
             
-            ShowToolbar();
+            ShowToolBar();
         }
 
         private void WebBrowserMode_Deactivate(object sender, EventArgs e) {
@@ -718,7 +722,7 @@ namespace FlashpointSecurePlayer {
                 Application.RemoveMessageFilter(messageFilter);
             }
 
-            ShowToolbar();
+            ShowToolBar();
         }
 
         private void closableWebBrowser_Navigated(object sender, WebBrowserNavigatedEventArgs e) {
