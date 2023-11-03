@@ -18,24 +18,6 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 
 namespace FlashpointSecurePlayer {
     public partial class WebBrowserMode : Form {
-        private bool canShowToolbar = true;
-
-        private bool CanShowToolbar {
-            get {
-                return canShowToolbar;
-            }
-
-            set {
-                canShowToolbar = value;
-
-                if (canShowToolbar) {
-                    ShowToolbar();
-                } else {
-                    toolBarToolStrip.Visible = !Fullscreen;
-                }
-            }
-        }
-
         private readonly HookProc lowLevelMouseProc;
         private IntPtr mouseHook = IntPtr.Zero;
 
@@ -473,7 +455,7 @@ namespace FlashpointSecurePlayer {
                     // mouse in toolbar rectangle
                     // if in fullscreen, show toolbar if we can
                     // if not in fullscreen, ensure toolbar is visible
-                    toolBarToolStrip.Visible = CanShowToolbar || !Fullscreen;
+                    toolBarToolStrip.Visible = CanFocus || !Fullscreen;
                 }
             }
         }
@@ -718,21 +700,19 @@ namespace FlashpointSecurePlayer {
         // I was spending too much time trying to fix it for a non-essential feature of the program
         // so I've gotten rid of it for the default behaviour instead
         private void WebBrowserMode_Activated(object sender, EventArgs e) {
-            CanShowToolbar = true;
-
-            if (messageFilter != null) {
-                Application.AddMessageFilter(messageFilter);
+            if (messageFilter == null) {
+                return;
             }
+
+            Application.AddMessageFilter(messageFilter);
         }
 
         private void WebBrowserMode_Deactivate(object sender, EventArgs e) {
-            if (messageFilter != null) {
-                Application.RemoveMessageFilter(messageFilter);
+            if (messageFilter == null) {
+                return;
             }
 
-            if (!CanFocus) {
-                CanShowToolbar = false;
-            }
+            Application.RemoveMessageFilter(messageFilter);
         }
 
         private void closableWebBrowser_Navigated(object sender, WebBrowserNavigatedEventArgs e) {
