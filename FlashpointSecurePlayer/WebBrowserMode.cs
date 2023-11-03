@@ -431,6 +431,8 @@ namespace FlashpointSecurePlayer {
             }
         }
 
+        private bool isActive = true;
+
         private void ShowToolbar() {
             // this is checked in LowLevelMouseProc because
             // otherwise plugins such as Viscape which
@@ -442,22 +444,22 @@ namespace FlashpointSecurePlayer {
             // of if our window is active
             Point toolBarToolStripMousePosition = toolBarToolStrip.PointToClient(MousePosition);
 
-            if (toolBarToolStrip.Visible) {
-                if (!toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
-                    // the standard layout when the mouse is not in the toolbar rectangle
-                    // if in fullscreen, ensure toolbar is invisible
-                    // if not in fullscreen, ensure toolbar is visible
-                    toolBarToolStrip.Visible = !Fullscreen;
-                }
-            } else {
-                if (toolBarToolStripMousePosition.Y == 0
-                    && toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
-                    // mouse in toolbar rectangle
-                    // if in fullscreen, show toolbar if we can
-                    // if not in fullscreen, ensure toolbar is visible
-                    toolBarToolStrip.Visible = CanFocus || !Fullscreen;
-                }
+            if (toolBarToolStripMousePosition.Y != 0 && !toolBarToolStrip.Visible && Fullscreen) {
+                return;
             }
+
+            if (toolBarToolStrip.ClientRectangle.Contains(toolBarToolStripMousePosition)) {
+                // mouse in toolbar rectangle
+                // if in fullscreen, show toolbar if we can
+                // if not in fullscreen, ensure toolbar is visible
+                toolBarToolStrip.Visible = isActive || CanFocus || !Fullscreen;
+                return;
+            }
+            
+            // the standard layout when the mouse is not in the toolbar rectangle
+            // if in fullscreen, ensure toolbar is invisible
+            // if not in fullscreen, ensure toolbar is visible
+            toolBarToolStrip.Visible = !Fullscreen;
         }
 
         private bool addressToolStripSpringTextBoxEntered = false;
@@ -700,19 +702,23 @@ namespace FlashpointSecurePlayer {
         // I was spending too much time trying to fix it for a non-essential feature of the program
         // so I've gotten rid of it for the default behaviour instead
         private void WebBrowserMode_Activated(object sender, EventArgs e) {
-            if (messageFilter == null) {
-                return;
-            }
+            isActive = true;
 
-            Application.AddMessageFilter(messageFilter);
+            if (messageFilter != null) {
+                Application.AddMessageFilter(messageFilter);
+            }
+            
+            ShowToolbar();
         }
 
         private void WebBrowserMode_Deactivate(object sender, EventArgs e) {
-            if (messageFilter == null) {
-                return;
+            isActive = false;
+
+            if (messageFilter != null) {
+                Application.RemoveMessageFilter(messageFilter);
             }
 
-            Application.RemoveMessageFilter(messageFilter);
+            ShowToolbar();
         }
 
         private void closableWebBrowser_Navigated(object sender, WebBrowserNavigatedEventArgs e) {
