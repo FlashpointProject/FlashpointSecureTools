@@ -431,7 +431,7 @@ namespace FlashpointSecurePlayer {
             }
         }
 
-        private bool isActive = true;
+        private bool isActive = false;
 
         private void ShowToolbar() {
             // this is checked in LowLevelMouseProc because
