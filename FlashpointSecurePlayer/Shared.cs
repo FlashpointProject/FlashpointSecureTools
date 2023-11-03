@@ -2099,6 +2099,10 @@ namespace FlashpointSecurePlayer {
         }
 
         public static bool TestInternetURI(Uri uri) {
+            if (uri == null) {
+                return false;
+            }
+
             if (uri.IsFile) {
                 return false;
             }

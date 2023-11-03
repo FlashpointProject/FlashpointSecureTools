@@ -466,6 +466,16 @@ namespace FlashpointSecurePlayer {
             toolBarToolStrip.Visible = !Fullscreen;
         }
 
+        private void ShowAddress(Uri url) {
+            if (url == null
+                || url.Equals("about:blank")) {
+                addressToolStripSpringTextBox.Text = String.Empty;
+                return;
+            }
+
+            addressToolStripSpringTextBox.Text = url.ToString();
+        }
+
         private bool addressToolStripSpringTextBoxEntered = false;
 
         public void AddressInvalid() {
@@ -503,6 +513,7 @@ namespace FlashpointSecurePlayer {
                 return;
             }
 
+            ShowAddress(closableWebBrowser.Url);
             closableWebBrowser.Stop();
         }
 
@@ -510,7 +521,8 @@ namespace FlashpointSecurePlayer {
             if (closableWebBrowser == null) {
                 return;
             }
-            
+
+            ShowAddress(closableWebBrowser.Url);
             closableWebBrowser.Refresh();
         }
 
@@ -726,12 +738,7 @@ namespace FlashpointSecurePlayer {
         }
 
         private void closableWebBrowser_Navigated(object sender, WebBrowserNavigatedEventArgs e) {
-            if (e.Url.Equals("about:blank")) {
-                addressToolStripSpringTextBox.Text = String.Empty;
-                return;
-            }
-
-            addressToolStripSpringTextBox.Text = e.Url.ToString();
+            ShowAddress(e.Url);
         }
 
         private readonly object downloadCompletedLock = new object();
