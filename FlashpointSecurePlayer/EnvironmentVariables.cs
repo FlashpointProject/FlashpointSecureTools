@@ -31,7 +31,7 @@ namespace FlashpointSecurePlayer {
             return comparableNameLength == -1 ? name : name.Substring(0, comparableNameLength);
         }
 
-        private string GetFlashpointProxyName(bool active, string name, out string comparableName) {
+        private string GetFlashpointProxyName(string name, out string comparableName) {
             comparableName = null;
 
             if (name == null) {
@@ -57,7 +57,7 @@ namespace FlashpointSecurePlayer {
                     FlashpointProxy.GetPreferences(out bool proxy, out int port);
 
                     if (Environment.GetEnvironmentVariable(FlashpointProxy.FLASHPOINT_SECURE_PLAYER_PROXY, EnvironmentVariableTarget.Process) == null) {
-                        Environment.SetEnvironmentVariable(FlashpointProxy.FLASHPOINT_SECURE_PLAYER_PROXY, active ? (proxy ? "1" : "0") : null, EnvironmentVariableTarget.Process);
+                        Environment.SetEnvironmentVariable(FlashpointProxy.FLASHPOINT_SECURE_PLAYER_PROXY, proxy ? "1" : "0", EnvironmentVariableTarget.Process);
                     }
                 } else if (comparableName.Equals(FlashpointProxy.FP_PROXY_PORT, StringComparison.OrdinalIgnoreCase)) {
                     name = FlashpointProxy.FP_PROXY_PORT;
@@ -65,7 +65,7 @@ namespace FlashpointSecurePlayer {
                     FlashpointProxy.GetPreferences(out bool proxy, out int port);
 
                     if (Environment.GetEnvironmentVariable(FlashpointProxy.FLASHPOINT_SECURE_PLAYER_PROXY_PORT, EnvironmentVariableTarget.Process) == null) {
-                        Environment.SetEnvironmentVariable(FlashpointProxy.FLASHPOINT_SECURE_PLAYER_PROXY_PORT, active ? port.ToString() : null, EnvironmentVariableTarget.Process);
+                        Environment.SetEnvironmentVariable(FlashpointProxy.FLASHPOINT_SECURE_PLAYER_PROXY_PORT, port.ToString(), EnvironmentVariableTarget.Process);
                     }
                 }
             } catch (SecurityException ex) {
@@ -78,14 +78,14 @@ namespace FlashpointSecurePlayer {
             return name;
         }
 
-        private string GetValue(bool active, EnvironmentVariablesElement environmentVariablesElement) {
+        private string GetValue(EnvironmentVariablesElement environmentVariablesElement) {
             if (String.IsNullOrEmpty(environmentVariablesElement.Find)) {
                 return environmentVariablesElement.Value;
             }
 
             string value = null;
 
-            string name = GetFlashpointProxyName(active, environmentVariablesElement.Name, out string comparableName);
+            string name = GetFlashpointProxyName(environmentVariablesElement.Name, out string comparableName);
 
             if (name == null) {
                 return value;
@@ -193,7 +193,7 @@ namespace FlashpointSecurePlayer {
                             throw new ConfigurationErrorsException("The Environment Variables Element (" + i + ") is null while creating the Active Environment Variables Element.");
                         }
 
-                        name = GetFlashpointProxyName(true, environmentVariablesElement.Name, out comparableName);
+                        name = GetFlashpointProxyName(environmentVariablesElement.Name, out comparableName);
 
                         if (name == null) {
                             throw new InvalidEnvironmentVariablesException("The name is null while creating the Active Environment Variables Element.");
@@ -233,7 +233,7 @@ namespace FlashpointSecurePlayer {
                             throw new ConfigurationErrorsException("The Environment Variables Element (" + i + ") is null.");
                         }
                         
-                        name = GetFlashpointProxyName(true, environmentVariablesElement.Name, out comparableName);
+                        name = GetFlashpointProxyName(environmentVariablesElement.Name, out comparableName);
 
                         if (name == null) {
                             throw new InvalidEnvironmentVariablesException("The name is null.");
@@ -245,7 +245,7 @@ namespace FlashpointSecurePlayer {
                             }
                         }
 
-                        value = GetValue(true, environmentVariablesElement);
+                        value = GetValue(environmentVariablesElement);
 
                         try {
                             Environment.SetEnvironmentVariable(name, Environment.ExpandEnvironmentVariables(value), EnvironmentVariableTarget.Process);
@@ -367,7 +367,7 @@ namespace FlashpointSecurePlayer {
                             throw new InvalidEnvironmentVariablesException("The Environment Variable element (" + i + ") is null.");
                         }
 
-                        name = GetFlashpointProxyName(false, environmentVariablesElement.Name, out comparableName);
+                        name = GetFlashpointProxyName(environmentVariablesElement.Name, out comparableName);
 
                         if (name == null) {
                             throw new InvalidEnvironmentVariablesException("The name is null.");
