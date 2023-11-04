@@ -86,12 +86,6 @@ namespace FlashpointSecurePlayer {
         private const bool FP_PROXY_DEFAULT = true;
         private const int FP_PROXY_PORT_DEFAULT = 22500;
 
-        public const string FP_PROXY = nameof(FP_PROXY);
-        public const string FP_PROXY_PORT = nameof(FP_PROXY_PORT);
-
-        public const string FLASHPOINT_SECURE_PLAYER_PROXY = nameof(FLASHPOINT_SECURE_PLAYER_PROXY);
-        public const string FLASHPOINT_SECURE_PLAYER_PROXY_PORT = nameof(FLASHPOINT_SECURE_PLAYER_PROXY_PORT);
-
         private static bool Proxy { get; set; } = FP_PROXY_DEFAULT;
         private static int Port { get; set; } = FP_PROXY_PORT_DEFAULT;
 
@@ -144,6 +138,12 @@ namespace FlashpointSecurePlayer {
                 throw;
             }
         }
+
+        public const string FP_PROXY = nameof(FP_PROXY);
+        public const string FP_PROXY_PORT = nameof(FP_PROXY_PORT);
+
+        public const string FLASHPOINT_SECURE_PLAYER_PROXY = nameof(FLASHPOINT_SECURE_PLAYER_PROXY);
+        public const string FLASHPOINT_SECURE_PLAYER_PROXY_PORT = nameof(FLASHPOINT_SECURE_PLAYER_PROXY_PORT);
 
         public static void GetPreferences(out bool proxy, out int port) {
             proxy = Proxy;
