@@ -2069,7 +2069,7 @@ namespace FlashpointSecurePlayer {
                     throw new Exceptions.TaskRequiresElevationException("Getting the \"" + name + "\" Environment Variable requires elevation.");
                 } catch (Exception ex) {
                     Exceptions.LogExceptionToLauncher(ex);
-                    throw new Exceptions.InvalidEnvironmentVariablesException("Failed to get the \"" + name + "\" Environment Variable.");
+                    throw new Exceptions.FlashpointProxyException("Could not get the \"" + name + "\" Environment Variable.");
                 }
 
                 if (preferenceString != null) {
