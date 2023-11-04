@@ -190,6 +190,16 @@ It is possible to use the Environment Variables Modification to set compatibilit
 </template>
 ```
 
+**Flashpoint Proxy**
+
+The [Flashpoint Proxy](https://github.com/FlashpointProject/FlashpointProxy) uses the `FP_PROXY` and `FP_PROXY_PORT` environment variables to optionally set its preferences to values other than the defaults. Because Flashpoint Secure Player uses the Flashpoint Proxy, these environment variables also impact the player.
+
+However, if these environment variables are modified via the Environment Variables Modification, it will only affect software opened through the player. The player will only use the values of the environment variables set on startup (such as by the Flashpoint Launcher,) because the Flashpoint Proxy must be initialized before the Modifications take effect.
+
+To set the Flashpoint Proxy preferences for the Flashpoint Secure Player independently of the software it opens, uncomment the `flashpointProxy` element in its configuration and edit the values. Do not edit any other elements or values in Flashpoint Secure Player's configuration.
+
+The Flashpoint Proxy preferences cannot be set on a per-Template basis. If a configuration in the FlashpointSecurePlayerConfigs folder has a `flashpointProxy` element, it will be ignored.
+
 ## <a name="downloads-before"></a> Downloads Before
 Set Via:
  - Command Line: `--download-before` (or `-dlb`)
