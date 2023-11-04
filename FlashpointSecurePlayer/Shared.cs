@@ -2050,6 +2050,35 @@ namespace FlashpointSecurePlayer {
             public PathNamesLong Long { get; } = new PathNamesLong();
         }
 
+        public static string GetEnvironmentVariablePreference(List<string> names) {
+            string preferenceString = null;
+
+            if (names == null) {
+                return preferenceString;
+            }
+
+            string name = null;
+
+            for (int i = 0; i < names.Count; i++) {
+                name = names[i];
+
+                try {
+                    preferenceString = Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.Process);
+                } catch (SecurityException ex) {
+                    Exceptions.LogExceptionToLauncher(ex);
+                    throw new Exceptions.TaskRequiresElevationException("Getting the \"" + name + "\" Environment Variable requires elevation.");
+                } catch (Exception ex) {
+                    Exceptions.LogExceptionToLauncher(ex);
+                    throw new Exceptions.InvalidEnvironmentVariablesException("Failed to get the \"" + name + "\" Environment Variable.");
+                }
+
+                if (preferenceString != null) {
+                    return preferenceString;
+                }
+            }
+            return preferenceString;
+        }
+
         private const string URI_SCHEME_HTTP = "http";
         private const string URI_SCHEME_HTTPS = "https";
         private const string URI_SCHEME_FTP = "ftp";

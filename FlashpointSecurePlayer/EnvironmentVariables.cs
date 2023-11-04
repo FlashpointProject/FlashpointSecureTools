@@ -31,12 +31,65 @@ namespace FlashpointSecurePlayer {
             return comparableNameLength == -1 ? name : name.Substring(0, comparableNameLength);
         }
 
+        private string GetFlashpointProxyName(string name, out string comparableName) {
+            comparableName = null;
+
+            if (name == null) {
+                return name;
+            }
+
+            comparableName = GetComparableName(name);
+
+            if (comparableName == null) {
+                return name;
+            }
+
+            if (comparableName.Equals(FlashpointProxy.FLASHPOINT_SECURE_PLAYER_PROXY, StringComparison.OrdinalIgnoreCase)) {
+                comparableName = FlashpointProxy.FP_PROXY;
+            } else if (comparableName.Equals(FlashpointProxy.FLASHPOINT_SECURE_PLAYER_PROXY_PORT, StringComparison.OrdinalIgnoreCase)) {
+                comparableName = FlashpointProxy.FP_PROXY_PORT;
+            }
+
+            try {
+                if (comparableName.Equals(FlashpointProxy.FP_PROXY, StringComparison.OrdinalIgnoreCase)) {
+                    name = FlashpointProxy.FP_PROXY;
+
+                    FlashpointProxy.GetPreferences(out bool proxy, out int port);
+
+                    if (Environment.GetEnvironmentVariable(FlashpointProxy.FLASHPOINT_SECURE_PLAYER_PROXY, EnvironmentVariableTarget.Process) == null) {
+                        Environment.SetEnvironmentVariable(FlashpointProxy.FLASHPOINT_SECURE_PLAYER_PROXY, proxy ? "1" : "0", EnvironmentVariableTarget.Process);
+                    }
+                } else if (comparableName.Equals(FlashpointProxy.FP_PROXY_PORT, StringComparison.OrdinalIgnoreCase)) {
+                    name = FlashpointProxy.FP_PROXY_PORT;
+
+                    FlashpointProxy.GetPreferences(out bool proxy, out int port);
+
+                    if (Environment.GetEnvironmentVariable(FlashpointProxy.FLASHPOINT_SECURE_PLAYER_PROXY_PORT, EnvironmentVariableTarget.Process) == null) {
+                        Environment.SetEnvironmentVariable(FlashpointProxy.FLASHPOINT_SECURE_PLAYER_PROXY_PORT, port.ToString(), EnvironmentVariableTarget.Process);
+                    }
+                }
+            } catch (SecurityException ex) {
+                LogExceptionToLauncher(ex);
+                throw new TaskRequiresElevationException("Getting the \"" + FlashpointProxy.FLASHPOINT_SECURE_PLAYER_PROXY + "\" Environment Variable requires elevation.");
+            } catch (Exception ex) {
+                LogExceptionToLauncher(ex);
+                throw new InvalidEnvironmentVariablesException("Failed to get the \"" + FlashpointProxy.FLASHPOINT_SECURE_PLAYER_PROXY + "\" Environment Variable.");
+            }
+            return name;
+        }
+
         private string GetValue(EnvironmentVariablesElement environmentVariablesElement) {
             if (String.IsNullOrEmpty(environmentVariablesElement.Find)) {
                 return environmentVariablesElement.Value;
             }
 
-            string comparableName = GetComparableName(environmentVariablesElement.Name);
+            string value = null;
+
+            string name = GetFlashpointProxyName(environmentVariablesElement.Name, out string comparableName);
+
+            if (name == null) {
+                return value;
+            }
 
             if (comparableName != null) {
                 if (comparableName.Equals(__COMPAT_LAYER, StringComparison.OrdinalIgnoreCase)) {
@@ -44,16 +97,14 @@ namespace FlashpointSecurePlayer {
                 }
             }
 
-            string value = null;
-
             try {
-                value = Environment.GetEnvironmentVariable(environmentVariablesElement.Name, EnvironmentVariableTarget.Process);
+                value = Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.Process);
             } catch (SecurityException ex) {
                 LogExceptionToLauncher(ex);
-                throw new TaskRequiresElevationException("Getting the \"" + environmentVariablesElement.Name + "\" Environment Variable requires elevation.");
+                throw new TaskRequiresElevationException("Getting the \"" + name + "\" Environment Variable requires elevation.");
             } catch (Exception ex) {
                 LogExceptionToLauncher(ex);
-                throw new InvalidEnvironmentVariablesException("Failed to get the \"" + environmentVariablesElement.Name + "\" Environment Variable.");
+                throw new InvalidEnvironmentVariablesException("Failed to get the \"" + name + "\" Environment Variable.");
             }
 
             if (value == null) {
@@ -109,6 +160,7 @@ namespace FlashpointSecurePlayer {
                 ModificationsElement activeModificationsElement = activeTemplateElement.Modifications;
 
                 // initialize variables
+                string name = null;
                 string comparableName = null;
                 string value = null;
                 List<string> values = null;
@@ -141,26 +193,30 @@ namespace FlashpointSecurePlayer {
                             throw new ConfigurationErrorsException("The Environment Variables Element (" + i + ") is null while creating the Active Environment Variables Element.");
                         }
 
-                        comparableName = GetComparableName(environmentVariablesElement.Name);
+                        name = GetFlashpointProxyName(environmentVariablesElement.Name, out comparableName);
+
+                        if (name == null) {
+                            throw new InvalidEnvironmentVariablesException("The name is null while creating the Active Environment Variables Element.");
+                        }
 
                         if (comparableName != null) {
                             if (UnmodifiableComparableNames.Contains(comparableName, StringComparer.OrdinalIgnoreCase)) {
-                                throw new InvalidEnvironmentVariablesException("The \"" + environmentVariablesElement.Name + "\" Environment Variable could not be modified while creating the Active Environment Variables Element.");
+                                throw new InvalidEnvironmentVariablesException("The \"" + name + "\" Environment Variable could not be modified while creating the Active Environment Variables Element.");
                             }
                         }
 
                         try {
                             activeEnvironmentVariablesElement = new EnvironmentVariablesElement {
-                                Name = environmentVariablesElement.Name,
+                                Name = name,
                                 Find = environmentVariablesElement.Find,
-                                Value = Environment.GetEnvironmentVariable(environmentVariablesElement.Name, EnvironmentVariableTarget.Process)
+                                Value = Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.Process)
                             };
                         } catch (SecurityException ex) {
                             LogExceptionToLauncher(ex);
-                            throw new TaskRequiresElevationException("Getting the \"" + environmentVariablesElement.Name + "\" Environment Variable requires elevation.");
+                            throw new TaskRequiresElevationException("Getting the \"" + name + "\" Environment Variable requires elevation.");
                         } catch (Exception ex) {
                             LogExceptionToLauncher(ex);
-                            throw new InvalidEnvironmentVariablesException("Failed to get the \"" + environmentVariablesElement.Name + "\" Environment Variable.");
+                            throw new InvalidEnvironmentVariablesException("Failed to get the \"" + name + "\" Environment Variable.");
                         }
 
                         activeModificationsElement.EnvironmentVariables.Set(activeEnvironmentVariablesElement);
@@ -176,25 +232,29 @@ namespace FlashpointSecurePlayer {
                         if (environmentVariablesElement == null) {
                             throw new ConfigurationErrorsException("The Environment Variables Element (" + i + ") is null.");
                         }
+                        
+                        name = GetFlashpointProxyName(environmentVariablesElement.Name, out comparableName);
 
-                        comparableName = GetComparableName(environmentVariablesElement.Name);
+                        if (name == null) {
+                            throw new InvalidEnvironmentVariablesException("The name is null.");
+                        }
 
                         if (comparableName != null) {
                             if (UnmodifiableComparableNames.Contains(comparableName, StringComparer.OrdinalIgnoreCase)) {
-                                throw new InvalidEnvironmentVariablesException("The \"" + environmentVariablesElement.Name + "\" Environment Variable could not be modified at this time.");
+                                throw new InvalidEnvironmentVariablesException("The \"" + name + "\" Environment Variable could not be modified at this time.");
                             }
                         }
 
                         value = GetValue(environmentVariablesElement);
 
                         try {
-                            Environment.SetEnvironmentVariable(environmentVariablesElement.Name, Environment.ExpandEnvironmentVariables(value), EnvironmentVariableTarget.Process);
+                            Environment.SetEnvironmentVariable(name, Environment.ExpandEnvironmentVariables(value), EnvironmentVariableTarget.Process);
                         } catch (SecurityException ex) {
                             LogExceptionToLauncher(ex);
-                            throw new TaskRequiresElevationException("Setting the \"" + environmentVariablesElement.Name + "\" Environment Variable requires elevation.");
+                            throw new TaskRequiresElevationException("Setting the \"" + name + "\" Environment Variable requires elevation.");
                         } catch (Exception ex) {
                             LogExceptionToLauncher(ex);
-                            throw new InvalidEnvironmentVariablesException("Failed to set the \"" + environmentVariablesElement.Name + "\" Environment Variable.");
+                            throw new InvalidEnvironmentVariablesException("Failed to set the \"" + name + "\" Environment Variable.");
                         }
 
                         // now throw up a restart in Web Browser Mode for Compatibility Settings
@@ -272,6 +332,7 @@ namespace FlashpointSecurePlayer {
                 }
 
                 // initialize variables
+                string name = null;
                 string comparableName = null;
                 string value = null;
                 List<string> values = null;
@@ -306,11 +367,15 @@ namespace FlashpointSecurePlayer {
                             throw new InvalidEnvironmentVariablesException("The Environment Variable element (" + i + ") is null.");
                         }
 
-                        activeEnvironmentVariablesElement = activeModificationsElement.EnvironmentVariables.Get(environmentVariablesElement.Name) as EnvironmentVariablesElement;
+                        name = GetFlashpointProxyName(environmentVariablesElement.Name, out comparableName);
+
+                        if (name == null) {
+                            throw new InvalidEnvironmentVariablesException("The name is null.");
+                        }
+
+                        activeEnvironmentVariablesElement = activeModificationsElement.EnvironmentVariables.Get(name) as EnvironmentVariablesElement;
 
                         if (activeEnvironmentVariablesElement != null) {
-                            comparableName = GetComparableName(activeEnvironmentVariablesElement.Name);
-
                             if (comparableName != null) {
                                 if (UnmodifiableComparableNames.Contains(comparableName, StringComparer.OrdinalIgnoreCase)) {
                                     throw new InvalidEnvironmentVariablesException("The \"" + activeEnvironmentVariablesElement.Name + "\" Environment Variable could not be modified at this time.");
@@ -325,10 +390,10 @@ namespace FlashpointSecurePlayer {
                                     Environment.SetEnvironmentVariable(activeEnvironmentVariablesElement.Name, null, EnvironmentVariableTarget.Process);
                                 } catch (SecurityException ex) {
                                     LogExceptionToLauncher(ex);
-                                    throw new TaskRequiresElevationException("Deleting the \"" + environmentVariablesElement.Name + "\" Environment Variable requires elevation.");
+                                    throw new TaskRequiresElevationException("Deleting the \"" + name + "\" Environment Variable requires elevation.");
                                 } catch (Exception ex) {
                                     LogExceptionToLauncher(ex);
-                                    throw new InvalidEnvironmentVariablesException("Failed to delete the \"" + environmentVariablesElement.Name + "\" Environment Variable.");
+                                    throw new InvalidEnvironmentVariablesException("Failed to delete the \"" + name + "\" Environment Variable.");
                                 }
                             } else {
                                 // don't reset Compatibility Settings if we're restarting for Web Browser Mode
@@ -340,10 +405,10 @@ namespace FlashpointSecurePlayer {
                                             Environment.SetEnvironmentVariable(activeEnvironmentVariablesElement.Name, activeEnvironmentVariablesElement.Value, EnvironmentVariableTarget.Process);
                                         } catch (SecurityException ex) {
                                             LogExceptionToLauncher(ex);
-                                            throw new TaskRequiresElevationException("Setting the \"" + environmentVariablesElement.Name + "\" Environment Variable requires elevation.");
+                                            throw new TaskRequiresElevationException("Setting the \"" + name + "\" Environment Variable requires elevation.");
                                         } catch (Exception ex) {
                                             LogExceptionToLauncher(ex);
-                                            throw new InvalidEnvironmentVariablesException("Failed to set the \"" + environmentVariablesElement.Name + "\" Environment Variable.");
+                                            throw new InvalidEnvironmentVariablesException("Failed to set the \"" + name + "\" Environment Variable.");
                                         }
                                     }
                                 }

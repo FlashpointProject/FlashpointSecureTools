@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.Security;
 
 using static FlashpointSecurePlayer.Shared;
 using static FlashpointSecurePlayer.Shared.Exceptions;
@@ -10,17 +11,6 @@ using static FlashpointSecurePlayer.Shared.Exceptions;
 namespace FlashpointSecurePlayer {
     // http://blogs.msdn.microsoft.com/jpsanders/2011/04/26/how-to-set-the-proxy-for-the-webbrowser-control-in-net/
     public static class FlashpointProxy {
-        // in enabling the proxy we need to set the Agent to use
-        private const string AGENT = "Flashpoint Proxy";
-
-        private const uint INTERNET_OPEN_TYPE_DIRECT = 1;
-
-        private const bool FP_PROXY_DEFAULT = true;
-        private const int FP_PROXY_PORT_DEFAULT = 22500;
-
-        private const string FP_PROXY = nameof(FP_PROXY);
-        private const string FP_PROXY_PORT = nameof(FP_PROXY_PORT);
-
         [DllImport("WinInet.dll", SetLastError = true, CharSet = CharSet.Ansi)]
         private static extern IntPtr InternetOpen(string lpszAgent, uint dwAccessType, IntPtr lpszProxy, IntPtr lpszProxyBypass, uint dwFlags);
 
@@ -88,6 +78,25 @@ namespace FlashpointSecurePlayer {
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool InternetSetOption(IntPtr hInternet, INTERNET_OPTION dwOption, IntPtr lpBuffer, uint dwBufferLength);
         
+        // in enabling the proxy we need to set the Agent to use
+        private const string AGENT = "Flashpoint Proxy";
+
+        private const uint INTERNET_OPEN_TYPE_DIRECT = 1;
+
+        private const bool FP_PROXY_DEFAULT = true;
+        private const int FP_PROXY_PORT_DEFAULT = 22500;
+
+        public const string FP_PROXY = nameof(FP_PROXY);
+        public const string FP_PROXY_PORT = nameof(FP_PROXY_PORT);
+
+        public const string FLASHPOINT_SECURE_PLAYER_PROXY = nameof(FLASHPOINT_SECURE_PLAYER_PROXY);
+        public const string FLASHPOINT_SECURE_PLAYER_PROXY_PORT = nameof(FLASHPOINT_SECURE_PLAYER_PROXY_PORT);
+
+        private static bool Proxy { get; set; } = FP_PROXY_DEFAULT;
+        private static int Port { get; set; } = FP_PROXY_PORT_DEFAULT;
+
+        private static bool gotPreferences = false;
+
         private static void GetSystemProxy(ref INTERNET_PER_CONN_OPTION_LIST internetPerConnOptionList, ref INTERNET_PER_CONN_OPTION[] internetPerConnOptionListOptions) {
             if (internetPerConnOptionListOptions.Length < 2) {
                 throw new ArgumentException("The Internet Per Connection Option List Options must not have a Length of less than two.");
@@ -137,6 +146,13 @@ namespace FlashpointSecurePlayer {
         }
 
         public static void GetPreferences(out bool proxy, out int port) {
+            proxy = Proxy;
+            port = Port;
+            
+            if (gotPreferences) {
+                return;
+            }
+
             FlashpointSecurePlayerSection.FlashpointProxyElement flashpointProxyElement = null;
 
             try {
@@ -146,57 +162,47 @@ namespace FlashpointSecurePlayer {
                 // fail silently
             }
 
-            bool? proxyFile = null;
-            int? portFile = null;
+            bool? proxyFilePreference = null;
+            int? portFilePreference = null;
 
             if (flashpointProxyElement != null
                 && flashpointProxyElement.ElementInformation.IsPresent) {
-                proxyFile = flashpointProxyElement.Proxy;
-                portFile = flashpointProxyElement.Port;
+                proxyFilePreference = flashpointProxyElement.Proxy;
+                portFilePreference = flashpointProxyElement.Port;
             }
 
+            string environmentVariablePreferenceString = null;
             long preference = PREFERENCE_DEFAULT;
 
             // try getting from the proxy element
             // if that fails, try from the environment variables
             // if that fails, use the default
-            if (proxyFile == null) {
-                string proxyEnvironmentVariable = null;
+            if (proxyFilePreference == null) {
+                environmentVariablePreferenceString = GetEnvironmentVariablePreference(new List<string> { FLASHPOINT_SECURE_PLAYER_PROXY, FP_PROXY });
 
-                try {
-                    proxyEnvironmentVariable = Environment.GetEnvironmentVariable(FP_PROXY, EnvironmentVariableTarget.Process);
-                } catch {
-                    // fail silently
-                }
-
-                if (long.TryParse(proxyEnvironmentVariable, out preference)
+                if (long.TryParse(environmentVariablePreferenceString, out preference)
                     && preference != PREFERENCE_DEFAULT) {
                     proxy = preference != 0;
-                } else {
-                    proxy = FP_PROXY_DEFAULT;
                 }
             } else {
-                proxy = proxyFile.GetValueOrDefault();
+                proxy = proxyFilePreference.GetValueOrDefault();
             }
 
-            if (portFile == null) {
-                string portEnvironmentVariable = null;
+            if (portFilePreference == null) {
+                environmentVariablePreferenceString = GetEnvironmentVariablePreference(new List<string> { FLASHPOINT_SECURE_PLAYER_PROXY_PORT, FP_PROXY_PORT });
 
-                try {
-                    portEnvironmentVariable = Environment.GetEnvironmentVariable(FP_PROXY_PORT, EnvironmentVariableTarget.Process);
-                } catch {
-                    // fail silently
-                }
-
-                if (long.TryParse(portEnvironmentVariable, out preference)
+                if (long.TryParse(environmentVariablePreferenceString, out preference)
                     && preference != PREFERENCE_DEFAULT) {
                     port = (int)preference;
-                } else {
-                    port = FP_PROXY_PORT_DEFAULT;
                 }
             } else {
-                port = portFile.GetValueOrDefault();
+                port = portFilePreference.GetValueOrDefault();
             }
+
+            Proxy = proxy;
+            Port = port;
+
+            gotPreferences = true;
         }
 
         public static void Enable() {
