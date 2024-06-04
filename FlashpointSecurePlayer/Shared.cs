@@ -1649,18 +1649,18 @@ namespace FlashpointSecurePlayer {
                                 // delimiter for a primary key (value names can contain them)
                                 public string Name {
                                     get {
-                                        string keyName = GetComparableName(KeyName);
+                                        string comparableKeyName = GetComparableName(KeyName);
 
-                                        if (!String.IsNullOrEmpty(keyName)) {
-                                            keyName = keyName.ToUpperInvariant();
+                                        if (!String.IsNullOrEmpty(comparableKeyName)) {
+                                            comparableKeyName = comparableKeyName.ToUpperInvariant();
                                         }
 
-                                        string valueName = GetComparableName(ValueName);
+                                        string comparableValueName = GetComparableName(ValueName);
 
-                                        if (!String.IsNullOrEmpty(valueName)) {
-                                            valueName = valueName.ToUpperInvariant();
+                                        if (!String.IsNullOrEmpty(comparableValueName)) {
+                                            comparableValueName = comparableValueName.ToUpperInvariant();
                                         }
-                                        return keyName + "\0" + valueName;
+                                        return comparableKeyName + "\0" + comparableValueName;
                                     }
                                 }
 
