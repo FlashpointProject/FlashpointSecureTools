@@ -192,6 +192,8 @@ namespace FlashpointSecurePlayer {
                             keyValueName = "HKEY_CURRENT_USER\\" + keyValueName.Substring(keyValueNameCurrentUser.Length);
                         }
                     }
+                } else {
+                    return null;
                 }
             }
 
@@ -1559,17 +1561,25 @@ namespace FlashpointSecurePlayer {
             // KeyHandle is meant to be a uint32, so we discard the rest
             // http://learn.microsoft.com/en-us/windows/win32/etw/registry-typegroup1
             ulong safeKeyHandle = registryTraceData.KeyHandle & 0x00000000FFFFFFFF;
+            string keyName = null;
             string value = null;
             RegistryValueKind? valueKind = null;
             RegistryView registryView = modificationsElement.RegistryStates.BinaryType == BINARY_TYPE.SCS_64BIT_BINARY ? RegistryView.Registry64 : RegistryView.Registry32;
 
             if (safeKeyHandle == 0) {
                 // we don't need to queue it, we can just add the key right here
-                registryStateElement.KeyName = GetRedirectedKeyValueName(
+                keyName = GetRedirectedKeyValueName(
                     GetKeyValueNameFromKernelRegistryString(registryStateElement.KeyName),
                     modificationsElement.RegistryStates.BinaryType
                 );
 
+                // for keys that are not REGISTRY\MACHINE or REGISTRY\USER, ignore
+                if (keyName == null) {
+                    ModificationRemoved(registryTraceData);
+                    return;
+                }
+
+                registryStateElement.KeyName = keyName;
                 valueKind = null;
 
                 try {
@@ -1635,11 +1645,17 @@ namespace FlashpointSecurePlayer {
                 kcbModificationKeyNames.TryGetValue(safeKeyHandle, out string kcbModificationKeyName);
 
                 if (!String.IsNullOrEmpty(kcbModificationKeyName)) {
-                    registryStateElement.KeyName = GetRedirectedKeyValueName(
+                    keyName = GetRedirectedKeyValueName(
                         GetKeyValueNameFromKernelRegistryString(kcbModificationKeyName + "\\" + registryStateElement.KeyName),
                         modificationsElement.RegistryStates.BinaryType
                     );
 
+                    if (keyName == null) {
+                        ModificationRemoved(registryTraceData);
+                        return;
+                    }
+
+                    registryStateElement.KeyName = keyName;
                     valueKind = null;
 
                     try {
@@ -1821,6 +1837,7 @@ namespace FlashpointSecurePlayer {
 
             // we'll be finding these in a second
             RegistryStateElement registryStateElement = null;
+            string keyName = null;
             string value = null;
             RegistryValueKind? valueKind = null;
 
@@ -1843,64 +1860,69 @@ namespace FlashpointSecurePlayer {
                 for (int j = 0; j < registryStateElements.Count; j++) {
                     registryStateElement = registryStateElements[j];
 
-                    registryStateElement.KeyName = GetRedirectedKeyValueName(
+                    keyName = GetRedirectedKeyValueName(
                         GetKeyValueNameFromKernelRegistryString(registryTraceData.KeyName + "\\" + registryStateElement.KeyName),
                         modificationsElement.RegistryStates.BinaryType
                     );
 
-                    valueKind = null;
-
-                    try {
-                        value = ReplaceStartupPathEnvironmentVariable(
-                            LengthenValue(
-                                GetValueInRegistryView(
-                                    registryStateElement.KeyName,
-                                    registryStateElement.ValueName,
-                                    out valueKind,
-                                    registryView
-                                ) as string,
-
-                                fullPath,
-                                pathNames
-                            ),
-
-                            pathNames
-                        );
-                    } catch (SecurityException ex) {
-                        // value exists but we can't get it
-                        // this shouldn't happen because this task requires elevation
-                        LogExceptionToLauncher(ex);
-                        value = String.Empty;
-                    } catch (UnauthorizedAccessException ex) {
-                        // value exists but we can't get it
-                        // this shouldn't happen because this task requires elevation
-                        LogExceptionToLauncher(ex);
-                        value = String.Empty;
-                    } catch {
-                        // value doesn't exist
-                        value = null;
-                    }
-
-                    registryStateElement.Type = TYPE.VALUE;
-                    registryStateElement.ValueKind = valueKind;
-
-                    if (value == null) {
-                        try {
-                            if (String.IsNullOrEmpty(registryStateElement.ValueName)
-                                && String.IsNullOrEmpty(TestKeyDeletedInRegistryView(registryStateElement.KeyName, registryView))) {
-                                registryStateElement.Type = TYPE.KEY;
-                                modificationsElement.RegistryStates.Set(registryStateElement);
-                            }
-                        } catch {
-                            // fail silently
-                        }
-
-                        if (registryStateElement.Type == TYPE.VALUE) {
-                            modificationsElement.RegistryStates.Remove(registryStateElement.Name);
-                        }
+                    if (keyName == null) {
+                        modificationsElement.RegistryStates.Remove(registryStateElement.Name);
                     } else {
-                        registryStateElement.Value = value;
-                        modificationsElement.RegistryStates.Set(registryStateElement);
+                        registryStateElement.KeyName = keyName;
+                        valueKind = null;
+
+                        try {
+                            value = ReplaceStartupPathEnvironmentVariable(
+                                LengthenValue(
+                                    GetValueInRegistryView(
+                                        registryStateElement.KeyName,
+                                        registryStateElement.ValueName,
+                                        out valueKind,
+                                        registryView
+                                    ) as string,
+
+                                    fullPath,
+                                    pathNames
+                                ),
+
+                                pathNames
+                            );
+                        } catch (SecurityException ex) {
+                            // value exists but we can't get it
+                            // this shouldn't happen because this task requires elevation
+                            LogExceptionToLauncher(ex);
+                            value = String.Empty;
+                        } catch (UnauthorizedAccessException ex) {
+                            // value exists but we can't get it
+                            // this shouldn't happen because this task requires elevation
+                            LogExceptionToLauncher(ex);
+                            value = String.Empty;
+                        } catch {
+                            // value doesn't exist
+                            value = null;
+                        }
+
+                        registryStateElement.Type = TYPE.VALUE;
+                        registryStateElement.ValueKind = valueKind;
+
+                        if (value == null) {
+                            try {
+                                if (String.IsNullOrEmpty(registryStateElement.ValueName)
+                                    && String.IsNullOrEmpty(TestKeyDeletedInRegistryView(registryStateElement.KeyName, registryView))) {
+                                    registryStateElement.Type = TYPE.KEY;
+                                    modificationsElement.RegistryStates.Set(registryStateElement);
+                                }
+                            } catch {
+                                // fail silently
+                            }
+
+                            if (registryStateElement.Type == TYPE.VALUE) {
+                                modificationsElement.RegistryStates.Remove(registryStateElement.Name);
+                            }
+                        } else {
+                            registryStateElement.Value = value;
+                            modificationsElement.RegistryStates.Set(registryStateElement);
+                        }
                     }
                 }
             }
