@@ -155,9 +155,7 @@ namespace FlashpointSecurePlayer {
                     keyValueName = keyValueNameCurrentUser + keyValueName.Substring(HKEY_LOCAL_MACHINE.Length);
                 }
             }
-
-            keyValueName = RemoveTrailingSlash(keyValueName);
-            return keyValueName;
+            return RemoveTrailingSlash(keyValueName);
         }
 
         private string GetKeyValueNameFromKernelRegistryString(string kernelRegistryString) {
@@ -192,13 +190,9 @@ namespace FlashpointSecurePlayer {
                             keyValueName = "HKEY_CURRENT_USER\\" + keyValueName.Substring(keyValueNameCurrentUser.Length);
                         }
                     }
-                } else {
-                    return null;
                 }
             }
-
-            keyValueName = RemoveTrailingSlash(keyValueName);
-            return keyValueName;
+            return RemoveTrailingSlash(keyValueName);
         }
 
         private RegistryKey OpenBaseKeyInRegistryView(string keyName, RegistryView registryView) {
@@ -225,8 +219,6 @@ namespace FlashpointSecurePlayer {
             } else if (keyName.StartsWith("HKEY_DYN_DATA\\", StringComparison.OrdinalIgnoreCase)) {
                 registryHive = RegistryHive.DynData;
             }
-            
-            keyName = RemoveTrailingSlash(keyName);
 
             if (registryHive == null) {
                 return null;
@@ -1574,7 +1566,8 @@ namespace FlashpointSecurePlayer {
                 );
 
                 // for keys that are not REGISTRY\MACHINE or REGISTRY\USER, ignore
-                if (keyName == null) {
+                // (for Application Hives)
+                if (String.IsNullOrEmpty(keyName)) {
                     ModificationRemoved(registryTraceData);
                     return;
                 }
@@ -1650,7 +1643,7 @@ namespace FlashpointSecurePlayer {
                         modificationsElement.RegistryStates.BinaryType
                     );
 
-                    if (keyName == null) {
+                    if (String.IsNullOrEmpty(keyName)) {
                         ModificationRemoved(registryTraceData);
                         return;
                     }
@@ -1865,7 +1858,7 @@ namespace FlashpointSecurePlayer {
                         modificationsElement.RegistryStates.BinaryType
                     );
 
-                    if (keyName == null) {
+                    if (String.IsNullOrEmpty(keyName)) {
                         modificationsElement.RegistryStates.Remove(registryStateElement.Name);
                     } else {
                         registryStateElement.KeyName = keyName;
