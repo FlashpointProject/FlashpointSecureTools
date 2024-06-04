@@ -22,15 +22,6 @@ namespace FlashpointSecurePlayer {
 
         public EnvironmentVariables(EventHandler importStart, EventHandler importStop) : base(importStart, importStop) { }
 
-        private string GetComparableName(string name) {
-            if (name == null) {
-                return name;
-            }
-
-            int comparableNameLength = name.IndexOf('\0');
-            return comparableNameLength == -1 ? name : name.Substring(0, comparableNameLength);
-        }
-
         private string GetFlashpointProxyName(string name, out string comparableName) {
             comparableName = null;
 

@@ -2054,6 +2054,15 @@ namespace FlashpointSecurePlayer {
             public PathNamesLong Long { get; } = new PathNamesLong();
         }
 
+        public static string GetComparableName(string name) {
+            if (name == null) {
+                return name;
+            }
+
+            int comparableNameLength = name.IndexOf('\0');
+            return comparableNameLength == -1 ? name : name.Substring(0, comparableNameLength);
+        }
+
         public static string GetEnvironmentVariablePreference(List<string> names) {
             string preferenceString = null;
 
