@@ -1634,6 +1634,10 @@ namespace FlashpointSecurePlayer {
                                     }
                                 }
 
+                                // this property is never stored in configurations
+                                // and is only for internal use. The null byte is used
+                                // as seperation since the backslash is not a good enough
+                                // delimiter for a primary key (value names can contain them)
                                 public string Name {
                                     get {
                                         string keyName = KeyName;
@@ -1647,7 +1651,7 @@ namespace FlashpointSecurePlayer {
                                         if (!String.IsNullOrEmpty(valueName)) {
                                             valueName = valueName.ToUpperInvariant();
                                         }
-                                        return keyName + "\\" + valueName;
+                                        return keyName + "\0" + valueName;
                                     }
                                 }
 
