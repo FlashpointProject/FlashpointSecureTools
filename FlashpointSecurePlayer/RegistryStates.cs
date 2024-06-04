@@ -1544,11 +1544,10 @@ namespace FlashpointSecurePlayer {
             //if (!modificationsElement.ElementInformation.IsPresent) {
                 //return;
             //}
-
-            // comparable names, since registry key/value names shouldn't have null bytes in them according to Win32
+            
             RegistryStateElement registryStateElement = new RegistryStateElement {
-                KeyName = GetComparableName(registryTraceData.KeyName),
-                ValueName = GetComparableName(registryTraceData.ValueName)
+                KeyName = registryTraceData.KeyName,
+                ValueName = registryTraceData.ValueName
             };
 
             // KeyHandle is meant to be a uint32, so we discard the rest
@@ -1741,8 +1740,8 @@ namespace FlashpointSecurePlayer {
 
             // create filler element to get name
             RegistryStateElement registryStateElement = new RegistryStateElement {
-                KeyName = GetComparableName(registryTraceData.KeyName),
-                ValueName = GetComparableName(registryTraceData.ValueName)
+                KeyName = registryTraceData.KeyName,
+                ValueName = registryTraceData.ValueName
             };
 
             ulong safeKeyHandle = registryTraceData.KeyHandle & 0x00000000FFFFFFFF;
@@ -1796,7 +1795,7 @@ namespace FlashpointSecurePlayer {
                 kcbModificationKeyNames = new Dictionary<ulong, string>();
             }
 
-            kcbModificationKeyNames[safeKeyHandle] = GetComparableName(registryTraceData.KeyName);
+            kcbModificationKeyNames[safeKeyHandle] = registryTraceData.KeyName;
         }
 
         private void KCBStopped(RegistryTraceData registryTraceData) {
@@ -1855,7 +1854,7 @@ namespace FlashpointSecurePlayer {
                     registryStateElement = registryStateElements[j];
 
                     keyName = GetRedirectedKeyValueName(
-                        GetKeyValueNameFromKernelRegistryString(GetComparableName(registryTraceData.KeyName) + "\\" + registryStateElement.KeyName),
+                        GetKeyValueNameFromKernelRegistryString(registryTraceData.KeyName + "\\" + registryStateElement.KeyName),
                         modificationsElement.RegistryStates.BinaryType
                     );
 

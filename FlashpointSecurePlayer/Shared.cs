@@ -977,6 +977,15 @@ namespace FlashpointSecurePlayer {
         // (preferably, no more than eight at a time)
         private static SemaphoreSlim downloadSemaphoreSlim = new SemaphoreSlim(1, 1);
 
+        public static string GetComparableName(string name) {
+            if (name == null) {
+                return name;
+            }
+
+            int comparableNameLength = name.IndexOf('\0');
+            return comparableNameLength == -1 ? name : name.Substring(0, comparableNameLength);
+        }
+
         // it'd be nice to move all the configuration, template, section stuff to their own class one day
         // http://social.msdn.microsoft.com/Forums/vstudio/en-US/0f3557ee-16bd-4a36-a4f3-00efbeae9b0d/app-config-multiple-sections-in-sectiongroup-with-same-name?forum=csharpgeneral
         private static FlashpointSecurePlayerSection flashpointSecurePlayerSection = null;
@@ -1640,13 +1649,13 @@ namespace FlashpointSecurePlayer {
                                 // delimiter for a primary key (value names can contain them)
                                 public string Name {
                                     get {
-                                        string keyName = KeyName;
+                                        string keyName = GetComparableName(KeyName);
 
                                         if (!String.IsNullOrEmpty(keyName)) {
                                             keyName = keyName.ToUpperInvariant();
                                         }
 
-                                        string valueName = ValueName;
+                                        string valueName = GetComparableName(ValueName);
 
                                         if (!String.IsNullOrEmpty(valueName)) {
                                             valueName = valueName.ToUpperInvariant();
@@ -2052,15 +2061,6 @@ namespace FlashpointSecurePlayer {
 
             public PathNamesShort Short { get; } = new PathNamesShort();
             public PathNamesLong Long { get; } = new PathNamesLong();
-        }
-
-        public static string GetComparableName(string name) {
-            if (name == null) {
-                return name;
-            }
-
-            int comparableNameLength = name.IndexOf('\0');
-            return comparableNameLength == -1 ? name : name.Substring(0, comparableNameLength);
         }
 
         public static string GetEnvironmentVariablePreference(List<string> names) {
