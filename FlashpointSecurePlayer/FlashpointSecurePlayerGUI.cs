@@ -209,7 +209,7 @@ namespace FlashpointSecurePlayer {
         private void RestartApplication(bool runAsAdministrator, ref Mutex applicationMutex, ProcessStartInfo processStartInfo = null) {
             if (processStartInfo == null) {
                 processStartInfo = new ProcessStartInfo {
-                    FileName = GetValidArgument(Application.ExecutablePath, true),
+                    FileName = Quoted(Application.ExecutablePath, true),
                     // can't use GetCommandLineArgs() and String.Join because arguments that were in quotes will lose their quotes
                     // need to use Environment.CommandLine and find arguments
                     Arguments = GetArgumentSliceFromCommandLine(Environment.CommandLine, 1)
@@ -364,7 +364,7 @@ namespace FlashpointSecurePlayer {
                 ProcessStartInfo processStartInfo;
             
                 processStartInfo = new ProcessStartInfo {
-                    FileName = GetValidArgument(fullPath, true),
+                    FileName = Quoted(fullPath, true),
                     Arguments = GetOldCPUSimulatorProcessStartInfoArguments(modificationsElement.OldCPUSimulator, new StringBuilder(Environment.CommandLine)).ToString(),
                     WorkingDirectory = Environment.CurrentDirectory
                 };
@@ -684,7 +684,7 @@ namespace FlashpointSecurePlayer {
                             }
 
                             if (String.IsNullOrEmpty(softwareProcessStartInfo.FileName)) {
-                                softwareProcessStartInfo.FileName = GetValidArgument(fullPath, true);
+                                softwareProcessStartInfo.FileName = Quoted(fullPath, true);
                             }
 
                             if (String.IsNullOrEmpty(softwareProcessStartInfo.Arguments)) {

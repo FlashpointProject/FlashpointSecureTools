@@ -3087,40 +3087,48 @@ namespace FlashpointSecurePlayer {
         }
 
         // http://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
-        public static string GetValidArgument(string argument, bool force = false) {
-            if (argument == null) {
-                argument = String.Empty;
+        public static string Quoted(string arg, bool force = false)
+        {
+            if (arg == null)
+            {
+                arg = String.Empty;
             }
 
-            if (!force && argument != String.Empty && argument.IndexOfAny(new char[]{ ' ', '\t', '\n', '\v', '\"' }) == -1) {
-                return argument;
+            if (!force && arg != String.Empty && arg.IndexOfAny(new char[] { ' ', '\t', '\n', '\v', '\"' }) == -1)
+            {
+                return arg;
             }
 
+            int literal = 0;
             int backslashes = 0;
-            StringBuilder validArgument = new StringBuilder("\"");
+            StringBuilder result = new StringBuilder("\"");
 
-            for (int i = 0; i < argument.Length; i++) {
-                backslashes = 0;
+            for (int i = 0; i < arg.Length; i++)
+            {
+                char a = arg[i];
 
-                while (i != argument.Length && argument[i].ToString().Equals("\\", StringComparison.Ordinal)) {
+                if (a.ToString().Equals("\\", StringComparison.Ordinal))
+                {
                     backslashes++;
-                    i++;
+                    continue;
                 }
 
-                if (i != argument.Length) {
-                    if (argument[i].ToString().Equals("\"", StringComparison.Ordinal)) {
-                        validArgument.Append('\\', backslashes + backslashes + 1);
-                    } else {
-                        validArgument.Append('\\', backslashes);
-                    }
+                literal = backslashes;
 
-                    validArgument.Append(argument[i]);
+                if (a.ToString().Equals("\"", StringComparison.Ordinal))
+                {
+                    backslashes = literal * 2 + 1;
                 }
+
+                result.Append('\\', backslashes);
+                result.Append(a);
+                backslashes = 0;
             }
 
-            validArgument.Append('\\', backslashes + backslashes);
-            validArgument.Append("\"");
-            return validArgument.ToString();
+            backslashes = literal * 2;
+            result.Append('\\', backslashes);
+            result.Append("\"");
+            return result.ToString();
         }
 
         public static string GetArgumentSliceFromCommandLine(string commandLine, int begin = 0, int end = -1) {

@@ -155,7 +155,7 @@ namespace FlashpointSecurePlayer {
                     
                     string fullPath = Path.GetFullPath(argv[0]);
                     workingDirectory = Path.GetDirectoryName(fullPath);
-                    software.Append(GetValidArgument(fullPath, true));
+                    software.Append(Quoted(fullPath, true));
                 } catch (Exception ex) {
                     LogExceptionToLauncher(ex);
                     throw new InvalidOldCPUSimulatorException("The command line is invalid.");
